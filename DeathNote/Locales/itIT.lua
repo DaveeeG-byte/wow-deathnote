@@ -336,7 +336,7 @@ L.MANUAL_ALERT = "Quando un assassino compare come targhetta, bersaglio o sotto 
 L.MANUAL_ADD_HEAD = "AGGIUNGERE"  -- [max 12]
 L.MANUAL_ADD = "Scrivi un nome nel campo di ricerca, Invio. Clic destro su una riga: segna la vendetta, grazia, depenna."
 L.MANUAL_GUILD_HEAD = "GILDA"  -- [max 12]
-L.MANUAL_GUILD = "I compagni di gilda e gli amici con DeathNote vedono le tue morti accertate e le voci a mano. Manifesto o /dn hunt Nome: apri la caccia."
+L.MANUAL_GUILD = "I compagni di gilda e gli amici con DeathNote vedono le tue morti accertate e le voci a mano. Manifesto o /dn hunt Nome: apri la caccia. Clic sulla taglia: metti la tua, una promessa che si salda tra voi."
 L.MANUAL_SHARE_HEAD = "PASSARLO"  -- [max 12]
 L.MANUAL_SHARE = "Regole della casa, Salva copia: un testo da copiare, per chi non ha DeathNote."
 L.MANUAL_QUIET_HEAD = "SILENZIO"  -- [max 12]
@@ -610,5 +610,32 @@ L.ACT_TIE_MINE = "Mio amico: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Scollega nome"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "Scollegare {name} dalla tua lista amici?\nCiò che questo nome ha portato nel libro degli amici viene cancellato; il prossimo messaggio con questo nome lo ricollega."
 L.CHAT_FRIENDS_TIES = "Nomi completi collegati (* = primo contatto, non ancora confermato): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Nome [Cognome]> <oro>  metti una tua taglia (senza oro: ritirala)"
+L.CHAT_WHO_BOUNTY = "Su chi? /dn bounty <Nome> <oro>"
+L.CHAT_BOUNTY_SET = "{name}: hai messo una taglia di {gold} oro. Gilda e amici con DeathNote la vedono."
+L.CHAT_BOUNTY_OFF = "{name}: la tua taglia è ritirata."
+L.CHAT_BOUNTY_NONE = "Non hai nessuna taglia tua su {name}."
+L.CHAT_BOUNTY_BAD = "Taglia: un numero intero di monete d'oro, da 1 a 99999 (0 la ritira)."
+L.CHAT_BOUNTY_CAP = "Nessuna taglia: al massimo {count} tue."
+L.CHAT_BOUNTY_OURS = "Nessuna taglia su di te o sui tuoi (gilda o amici con DeathNote)."
+L.ACT_BOUNTY = "Metti una taglia"  -- [max 24]
+L.ACT_UNDO = "Annulla"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Togli una vendetta"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, messa da te"
+L.POSTER_BOUNTY_BY = "{gold}, messa da {name}"
+L.POSTER_BOUNTY_MANY = "Taglia {gold}: {names}"
+L.POSTER_AVENGED = "Vendicato da {names}"
+L.ROW_AVENGED = "vendicato {times}"
+L.BOUNTY_TIP_HEAD = "La tua taglia, in oro"
+L.BOUNTY_TIP_RULES = "Un numero intero, da 1 a 99999. Vuoto o 0: torna al valore del libro. Invio conferma, Esc annulla."
+L.BOUNTY_TIP_PROMISE = "Gilda e amici con DeathNote la vedono. Solo una promessa: si salda tra voi."
+L.BOUNTY_TIP_CLICK = "Clic: metti la tua taglia"
+L.CHAT_AVENGED = "{name} ha abbattuto {killer} per te."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: hai messo una taglia di {gold} oro."
+L.CHAT_BOUNTY_UNKNOWN = "{name} non è in nessuno dei tuoi libri. Una taglia va solo su un nome di un libro, come lo mostra il gioco: nome e cognome."
+L.CHAT_BOUNTY_LIST = "Le tue taglie ({count} su {max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Non hai messo nessuna taglia."
 -- <<< BOOK
 end)

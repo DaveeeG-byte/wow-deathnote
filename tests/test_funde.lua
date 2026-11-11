@@ -279,8 +279,9 @@ test("B8b Mehrere Hallos kurz hintereinander: eine Antwort je 10 s, keine geht v
   end
   M.Advance(30)
   -- fix-2: jede Antwort endet mit einem Z (Momentaufnahme der Freigaben); gezaehlt werden die Taten
+  -- (1.2.1: und mit einem Y, der Momentaufnahme der Kopfgelder)
   local n = 0
-  for _, m in ipairs(M.addonSent) do if not m.text:match("^1\tZ\t") then n = n + 1 end end
+  for _, m in ipairs(M.addonSent) do if not m.text:match("^1\t[ZY]\t") then n = n + 1 end end
   ok(n >= 2 and n <= 3, "Antworten gebuendelt: " .. n)
 end)
 

@@ -349,7 +349,7 @@ L.MANUAL_ALERT = "Když se vrah objeví jako jmenovka, cíl nebo pod myší, kni
 L.MANUAL_ADD_HEAD = "ZÁPIS"  -- [max 12]
 L.MANUAL_ADD = "Napiš jméno do vyhledávání, Enter. Pravý klik na řádek: zapsat pomstu, omilostnit, vyškrtnout."
 L.MANUAL_GUILD_HEAD = "GUILDA"  -- [max 12]
-L.MANUAL_GUILD = "Lidé z guildy a přátelé s DeathNote vidí tvoje potvrzené smrti a ruční zápisy. Plakát nebo /dn hunt Jméno: vyhlásit hon."
+L.MANUAL_GUILD = "Lidé z guildy a přátelé s DeathNote vidí tvoje potvrzené smrti a ruční zápisy. Plakát nebo /dn hunt Jméno: vyhlásit hon. Klik na odměnu: vypsat vlastní, jen slib, vyrovnáte se mezi sebou."
 L.MANUAL_SHARE_HEAD = "PŘEDAT"  -- [max 12]
 L.MANUAL_SHARE = "Domácí řád, Zálohovat knihu: text ke zkopírování, pro všechny bez DeathNote."
 L.MANUAL_QUIET_HEAD = "KLID"  -- [max 12]
@@ -623,5 +623,32 @@ L.ACT_TIE_MINE = "Můj přítel: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Odpojit jméno"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "Odpojit {name} od seznamu přátel?\nCo toto jméno přineslo do knihy přátel, se smaže; další zpráva pod tímto jménem se propojí znovu."
 L.CHAT_FRIENDS_TIES = "Propojená celá jména (* = první kontakt, zatím nepotvrzeno): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Jméno [Příjmení]> <zlato>  vypsat vlastní odměnu (bez částky: stáhnout)"
+L.CHAT_WHO_BOUNTY = "Na koho? /dn bounty <Jméno> <zlato>"
+L.CHAT_BOUNTY_SET = "{name}: tvoje odměna {gold}g je vypsaná. Guilda a přátelé s DeathNote ji vidí."
+L.CHAT_BOUNTY_OFF = "{name}: tvoje odměna je stažena."
+L.CHAT_BOUNTY_NONE = "{name}: nemáš tu vlastní odměnu."
+L.CHAT_BOUNTY_BAD = "Odměna: celé číslo ve zlatě, od 1 do 99999 (0 ji stáhne)."
+L.CHAT_BOUNTY_CAP = "Bez odměny: nejvýš {count} vlastních."
+L.CHAT_BOUNTY_OURS = "Žádná odměna na sebe ani na své (guilda nebo přátelé s DeathNote)."
+L.ACT_BOUNTY = "Vypsat odměnu"  -- [max 24]
+L.ACT_UNDO = "Vrátit zpět"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Odečíst jednu pomstu"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, tvoje odměna"
+L.POSTER_BOUNTY_BY = "{gold}, vypisuje: {name}"
+L.POSTER_BOUNTY_MANY = "Odměna {gold}: {names}"
+L.POSTER_AVENGED = "Pomstili: {names}"
+L.ROW_AVENGED = "pomstěno {times}"
+L.BOUNTY_TIP_HEAD = "Tvoje vlastní odměna ve zlatě"
+L.BOUNTY_TIP_RULES = "Celé číslo od 1 do 99999. Prázdné nebo 0: zpět na hodnotu knihy. Enter nastaví, Esc zruší."
+L.BOUNTY_TIP_PROMISE = "Guilda a přátelé s DeathNote ji vidí. Jen slib: vyrovnáte se mezi sebou."
+L.BOUNTY_TIP_CLICK = "Klik: vypsat vlastní odměnu"
+L.CHAT_AVENGED = "Pomsta za tebe: {killer}, od {name}."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: tvoje odměna {gold}g je vypsaná."
+L.CHAT_BOUNTY_UNKNOWN = "{name}: není v žádné z tvých knih. Odměna jen na jméno z knihy, tak jak ho ukazuje hra: jméno a příjmení."
+L.CHAT_BOUNTY_LIST = "Tvoje odměny ({count} z {max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Nemáš žádnou vlastní odměnu."
 -- <<< BOOK
 end)

@@ -350,7 +350,7 @@ L.MANUAL_ALERT = "범인이 이름표, 대상, 마우스 오버로 나타나면 
 L.MANUAL_ADD_HEAD = "추가"  -- [max 12]
 L.MANUAL_ADD = "검색창에 이름을 쓰고 Enter. 줄을 오른쪽 클릭: 복수 기록, 사면, 지우기."
 L.MANUAL_GUILD_HEAD = "길드"  -- [max 12]
-L.MANUAL_GUILD = "DeathNote를 쓰는 길드원과 친구는 범인이 확실한 네 죽음과 직접 추가한 항목을 본다. 수배서 또는 /dn hunt 이름: 척살 명단에 올리기."
+L.MANUAL_GUILD = "DeathNote를 쓰는 길드원과 친구는 범인이 확실한 네 죽음과 직접 추가한 항목을 본다. 수배서 또는 /dn hunt 이름: 척살 명단에 올리기. 현상금 클릭: 내 현상금 걸기 (약속일 뿐, 정산은 너희끼리)."
 L.MANUAL_SHARE_HEAD = "전달"  -- [max 12]
 L.MANUAL_SHARE = "이용 규칙, 수첩 백업: DeathNote가 없는 모두에게 줄 복사용 텍스트."
 L.MANUAL_QUIET_HEAD = "조용히"  -- [max 12]
@@ -624,5 +624,32 @@ L.ACT_TIE_MINE = "내 친구: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "연결 해제"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "{name}의 연결을 친구 목록에서 해제할까?\n이 이름이 친구 수첩에 가져온 것은 지워지고, 이 이름으로 오는 다음 메시지가 새로 연결된다."
 L.CHAT_FRIENDS_TIES = "연결된 전체 이름 (* = 첫 접촉, 아직 확인 안 됨): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <이름 [성]> <골드>  내 현상금 걸기 (골드 없이: 철회)"
+L.CHAT_WHO_BOUNTY = "누구에게? /dn bounty <이름> <골드>"
+L.CHAT_BOUNTY_SET = "{name}: 현상금 {gold}골드를 걸었다. DeathNote를 쓰는 길드원과 친구가 본다."
+L.CHAT_BOUNTY_OFF = "{name}: 네 현상금을 철회했다."
+L.CHAT_BOUNTY_NONE = "네가 건 현상금이 없다: {name}"
+L.CHAT_BOUNTY_BAD = "현상금: 1부터 99999까지의 정수 골드 (0이면 철회)."
+L.CHAT_BOUNTY_CAP = "현상금을 걸 수 없다: 내 현상금은 최대 {count}개."
+L.CHAT_BOUNTY_OURS = "너 자신이나 같은 편(DeathNote를 쓰는 길드원이나 친구)에게는 현상금을 걸 수 없다."
+L.ACT_BOUNTY = "현상금 걸기"  -- [max 24]
+L.ACT_UNDO = "되돌리기"  -- [max 19]
+L.ACT_REVENGE_TAKE = "복수 하나 빼기"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, 내가 건 현상금"
+L.POSTER_BOUNTY_BY = "{gold}, 건 사람: {name}"
+L.POSTER_BOUNTY_MANY = "현상금 {gold}: {names}"
+L.POSTER_AVENGED = "대신 복수한 사람: {names}"
+L.ROW_AVENGED = "대신 복수 {times}"
+L.BOUNTY_TIP_HEAD = "내 현상금 (골드)"
+L.BOUNTY_TIP_RULES = "1부터 99999까지의 정수. 비우거나 0: 수첩의 값으로. Enter는 확정, Esc는 취소."
+L.BOUNTY_TIP_PROMISE = "DeathNote를 쓰는 길드원과 친구가 본다. 약속일 뿐이다: 정산은 너희끼리."
+L.BOUNTY_TIP_CLICK = "클릭: 내 현상금 걸기"
+L.CHAT_AVENGED = "{name}: 너 대신 {killer} 처치함"
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: 현상금 {gold}골드를 걸었다."
+L.CHAT_BOUNTY_UNKNOWN = "{name}: 어느 책에도 없다. 현상금은 책에 있는 이름에만 걸 수 있다. 게임에 표시되는 대로 이름과 성까지 입력해."
+L.CHAT_BOUNTY_LIST = "내 현상금 ({count}/{max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "건 현상금이 없다."
 -- <<< BOOK
 end)

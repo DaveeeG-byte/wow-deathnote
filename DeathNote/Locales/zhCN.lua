@@ -350,7 +350,7 @@ L.MANUAL_ALERT = "凶手一出现在姓名板、目标或鼠标指向中，记�
 L.MANUAL_ADD_HEAD = "添加"  -- [max 12]
 L.MANUAL_ADD = "在搜索框输入名字，按回车。右键点击一行：记下复仇、赦免、划掉。"
 L.MANUAL_GUILD_HEAD = "公会"  -- [max 12]
-L.MANUAL_GUILD = "装有DeathNote的公会成员和好友能看到你已查明凶手的死亡和手动条目。通缉令或/dn hunt 名字：列入追杀名单。"
+L.MANUAL_GUILD = "装有DeathNote的公会成员和好友能看到你已查明凶手的死亡和手动条目。通缉令或/dn hunt 名字：列入追杀名单。点击赏金：悬赏你自己的（只是承诺，兑现在你们之间）。"
 L.MANUAL_SHARE_HEAD = "传阅"  -- [max 12]
 L.MANUAL_SHARE = "家规，备份记仇本：生成一段可复制的文本，给所有没装DeathNote的人。"
 L.MANUAL_QUIET_HEAD = "安静"  -- [max 12]
@@ -624,5 +624,32 @@ L.ACT_TIE_MINE = "我的好友：{name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "解除绑定"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "解除{name}与好友名单的绑定？\n这个名字带进好友记仇本的内容将被删除；之后以这个名字发来的下一条消息会重新绑定。"
 L.CHAT_FRIENDS_TIES = "已绑定的完整名字（* = 首次接触，尚未确认）：{list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <名字 [姓氏]> <金币>  悬赏你自己的赏金（不写金额：撤回）"
+L.CHAT_WHO_BOUNTY = "悬赏谁？/dn bounty <名字> <金币>"
+L.CHAT_BOUNTY_SET = "{name}：你悬赏了{gold}金币。装有DeathNote的公会成员和好友都能看到。"
+L.CHAT_BOUNTY_OFF = "{name}：你的赏金已撤回。"
+L.CHAT_BOUNTY_NONE = "你没有给{name}悬赏。"
+L.CHAT_BOUNTY_BAD = "赏金：1到99999之间的整数金币（0为撤回）。"
+L.CHAT_BOUNTY_CAP = "无法悬赏：你自己最多{count}份。"
+L.CHAT_BOUNTY_OURS = "不能悬赏你自己或自己人（装有DeathNote的公会成员或好友）。"
+L.ACT_BOUNTY = "设置赏金"  -- [max 24]
+L.ACT_UNDO = "撤销"  -- [max 19]
+L.ACT_REVENGE_TAKE = "减去一次复仇"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}，由你悬赏"
+L.POSTER_BOUNTY_BY = "{gold}，由{name}悬赏"
+L.POSTER_BOUNTY_MANY = "赏金{gold}：{names}"
+L.POSTER_AVENGED = "代为复仇：{names}"
+L.ROW_AVENGED = "代为复仇{times}"
+L.BOUNTY_TIP_HEAD = "你自己的赏金（金币）"
+L.BOUNTY_TIP_RULES = "1到99999之间的整数。留空或0：恢复记仇本的数值。回车确认，Esc取消。"
+L.BOUNTY_TIP_PROMISE = "装有DeathNote的公会成员和好友都能看到。只是一句承诺，兑现在你们之间。"
+L.BOUNTY_TIP_CLICK = "点击：设置你自己的赏金"
+L.CHAT_AVENGED = "{name}替你击杀了{killer}。"
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}：你悬赏了{gold}金币。"
+L.CHAT_BOUNTY_UNKNOWN = "{name}不在你的任何一本书里。只能悬赏书中的名字，按游戏中显示的写：名字和姓氏。"
+L.CHAT_BOUNTY_LIST = "你的悬赏（{count}/{max}）：{list}"
+L.CHAT_BOUNTY_LIST_NONE = "你没有悬赏任何人。"
 -- <<< BOOK
 end)

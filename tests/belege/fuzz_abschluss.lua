@@ -10,6 +10,10 @@
 -- ausgenommen), ein ausgeblendetes Ziel alarmiert nie, Zaehler und neue Tabellen bleiben unter ihren Deckeln.
 -- Verstoesse, die auf bekannte Funde dieser Jagd zurueckgehen (Verfall, Merkfrist der Abblasen), werden getrennt
 -- als "bekannt" gezaehlt und machen den Lauf nicht rot.
+-- 1.2.1 (nach der Jagd): Kopfgelder setzen und zuruecknehmen (B, Y), Todesstoss mit der eigenen GUID auch in Laeufen
+-- mit GUIDs (E und V), Herkunft und Stand der Kopfgelder, "geraecht" nie ueber den echten Toetungen. Einordnung genau:
+-- jeder Sprung der Uhr (auch die Operation "Uhr" und das Zurueckstellen am Ende) zaehlt mit Vorzeichen fuer die Taten,
+-- die davor entstanden; die Absender gefaelschter Hallos gelten als Fremde.
 -- Aufruf: luajit fuzz_final.lua <Projektkopie> [Laeufe=60] [Startsaat=1] [Schritte=140] [ohneverlust]
 local DIRARG = (arg[1] or "."):gsub("/+$", "")
 package.path = DIRARG .. "/tests/?.lua;" .. package.path
@@ -77,7 +81,8 @@ local function bekannt(seed, kind, detail)
   seenKnown[kind].n = seenKnown[kind].n + 1
 end
 local problems, seenProblem = {}, {}
-local tally = { zs = 0, zdel = 0, forged = 0, choose = 0, clock = 0, humor = 0, guidRuns = 0, sent = 0, cmp = 0, deeds = 0, hunts = 0, relog = 0, pairs = 0, jumps = 0, days = 0, langs = 0, strings = 0, hidden = 0, bn = 0 }
+local tally = { zs = 0, zdel = 0, forged = 0, choose = 0, clock = 0, humor = 0, guidRuns = 0, sent = 0, cmp = 0, deeds = 0, hunts = 0, relog = 0, pairs = 0, jumps = 0, days = 0, langs = 0, strings = 0, hidden = 0, bn = 0,
+  bset = 0, boff = 0, bseen = 0, bcmp = 0, kills = 0, guidKills = 0, eSent = 0, vSent = 0, avenged = 0, strangerWait = 0 }
 local function problem(seed, kind, detail)
   if not seenProblem[kind] then
     seenProblem[kind] = { n = 0, first = ("Saat %d: %s"):format(seed, tostring(detail)) }
@@ -92,9 +97,11 @@ local function run(seed)
   M.Reset()
   local W = M.NewWorld({ "HUNT_BAGGED", "GUILD_ENEMY_SPOTTED" })
   local langOf, bnOf, tainted, expireOf, jumped, maxJump = {}, {}, {}, {}, 0, 0
+  local everExpire = {}   -- 1.2.1: wer je einen Verfall eingestellt hatte (eigene Kopfgelder koennen dabei ablaufen)
   W.guids = R() < 0.5
   if W.guids then tally.guidRuns = tally.guidRuns + 1 end
   local strangers = {}
+  local forgedGuid = {}   -- 1.2.1: Faelscher und die fremde GUID, die er im Hallo trug
   local clockBack = 0
   local FIRSTONLY = R() < 0.5     -- Berta und Dora stehen nur mit Vornamen auf den Listen
   local function listName(j)
@@ -102,22 +109,26 @@ local function run(seed)
     return NAMES[j][1] .. " " .. NAMES[j][2]
   end
   local jumpLog = {}
-  -- Tage, die nach dem Zeitpunkt t uebersprungen wurden (ab 3 Tagen deckt die Rueckschau eines Hallo t nicht mehr)
-  local function tageNach(t)
+  -- 1.2.1: jede Tat merkt sich, wie viele Spruenge es bei ihrem Entstehen gab (Uhr-Operationen eingeschlossen)
+  local bornAt = {}
+  -- Tage, um die die Uhr nach dem Entstehen der Tat id vorging (Zeitspruenge, Uhr vor/zurueck, Zurueckstellen am Ende;
+  -- ab 3 Tagen deckt die Rueckschau eines Hallo die Tat nicht mehr)
+  local function tageNach(id)
     local n = 0
-    for _, j in ipairs(jumpLog) do if j[1] > t then n = n + j[2] end end
+    for k = (bornAt[id] or 0) + 1, #jumpLog do n = n + jumpLog[k][2] end
     return n
   end
   local N = R(2, 4)
   local C, friendsOf, guildOf = {}, {}, {}
   -- Wahrheit: was jeder Char je selbst erzeugt hat
-  local truth = { kills = {}, listed = {}, released = {}, gone = {} }
+  local truth = { kills = {}, listed = {}, released = {}, gone = {}, bounty = {}, bountyEver = {}, pk = {} }
   for i = 1, N do
     local full = NAMES[i][1] .. " " .. NAMES[i][2]
     guildOf[i] = ({ GUILDS[1], GUILDS[1], GUILDS[2], nil })[R(1, 4)]
     friendsOf[i] = {}
     langOf[i], bnOf[i], expireOf[i] = LANGS[R(#LANGS)], {}, 0
     truth.kills[full], truth.listed[full], truth.released[full] = {}, {}, {}
+    truth.bounty[full], truth.bountyEver[full], truth.pk[full] = {}, {}, {}
   end
   for i = 1, N do for j = 1, N do
     if i ~= j and R() < 0.6 then friendsOf[i][#friendsOf[i] + 1] = listName(j) end
@@ -217,6 +228,7 @@ local function run(seed)
       local e = ENEMIES[R(#ENEMIES)]
       local key = H.tod(c, e[1], e[2])
       truth.kills[c.full][key .. "\t" .. time()] = true
+      bornAt[c.full .. "\t" .. key .. "\t" .. time()] = #jumpLog
     end,
     function(c)   -- von Hand eintragen / entfernen
       local e = ENEMIES[R(#ENEMIES)]
@@ -224,6 +236,8 @@ local function run(seed)
       local own = c.ns.Store.Get(key)
       if own and own.manual and R() < 0.5 then
         c.ns.Store.Remove(key)
+        -- 1.2.1: gestrichen, und kein anderes Buch zeigt ihn: das eigene Kopfgeld geht mit
+        if truth.bounty[c.full][key] and not c.ns.Guild.OwnBounty(key) then truth.bounty[c.full][key] = nil end
         -- selbst geloeschte Taten muss niemand mehr bekommen
         for id in pairs(truth.kills[c.full]) do if id:match("^(.-)\t") == key then truth.gone[c.full .. "\t" .. id] = true end end
       elseif not own then
@@ -236,7 +250,35 @@ local function run(seed)
       if g or f then truth.released[c.full][key] = true end
     end,
     function(c) c.ns.Guild.CallOff(ekey(ENEMIES[R(#ENEMIES)]), ({ nil, "guild", "friends" })[R(3)]) end,
-    function(c) c.fire("PARTY_KILL", "Player-1-" .. c.name, "Player-9-E" .. R(#ENEMIES)) end,
+    function(c)   -- eigener Todesstoss (1.2.1: mit der eigenen GUID, auch in Laeufen mit GUIDs: E und V entstehen)
+      local n = R(#ENEMIES)
+      local key = ekey(ENEMIES[n])
+      local e0, v0 = 0, 0
+      for _, m in ipairs(W.sent) do if m.sender == c then
+        if m.text:find("^1\tE\t") then e0 = e0 + 1 elseif m.text:find("^1\tV\t") then v0 = v0 + 1 end end end
+      local was = #W.sent
+      c.fire("PARTY_KILL", c.env.UnitGUID("player"), "Player-9-E" .. n)
+      tally.kills = tally.kills + 1
+      if W.guids then tally.guidKills = tally.guidKills + 1 end
+      if c.ns.Util.IsOpenWorld() then truth.pk[c.full][key] = (truth.pk[c.full][key] or 0) + 1 end
+      for k = was + 1, #W.sent do local m = W.sent[k]
+        if m.text:find("^1\tE\t") then tally.eSent = tally.eSent + 1 elseif m.text:find("^1\tV\t") then tally.vSent = tally.vSent + 1 end end
+    end,
+    function(c)   -- 1.2.1: eigenes Kopfgeld setzen, aendern oder zuruecknehmen
+      local key = ekey(ENEMIES[R(#ENEMIES)])
+      local g = ({ 1, 50, 500, 99999 })[R(4)]
+      if R() < 0.4 then   -- zuruecknehmen: meist ein eigenes, das es gibt
+        g = 0
+        local own = {}
+        for k in pairs(truth.bounty[c.full]) do own[#own + 1] = k end
+        table.sort(own)
+        if #own > 0 and R() < 0.8 then key = own[R(#own)] end
+      end
+      if c.ns.Guild.SetBounty(key, g) then
+        if g == 0 then truth.bounty[c.full][key] = nil; tally.boff = tally.boff + 1
+        else truth.bounty[c.full][key] = g; truth.bountyEver[c.full][key .. "\t" .. g] = true; tally.bset = tally.bset + 1 end
+      end
+    end,
     function(c)   -- Freundschaft schliessen oder loesen
       local j = R(N)
       if j == c.idx then return end
@@ -258,6 +300,7 @@ local function run(seed)
     function(c)   -- Verfall der Freigaben einstellen (W1)
       if R() < 0.4 then
         expireOf[c.idx] = ({ 0, 0, 30, 90, 180 })[R(5)]
+        if expireOf[c.idx] > 0 then everExpire[c.idx] = true end
         c.ns.Store.Setting("guild.huntExpire", expireOf[c.idx])
       end
     end,
@@ -279,6 +322,9 @@ local function run(seed)
       local P = c.ns.Guild.Proto
       local liar = ({ "Fremd Ling", NAMES[j][1] .. " Fremd", NAMES[R(N)][1] .. " " .. NAMES[R(N)][2] })[R(3)]
       if liar == victim or liar == c.full then return end
+      -- 1.2.1: wer ein Hallo faelscht und kein Char des Laufs ist, ist ein Fremder (er kann gebunden werden)
+      if not truth.kills[liar] then strangers[liar] = true end
+      if C[j] then forgedGuid[liar .. "\t" .. W.guidOf(C[j])] = true end
       local z = P.EncodeSnapshot(victim, R(0, 2))
       local hello = P.EncodeHello(0, "1.2.0", C[j] and W.guidOf(C[j]) or nil)
       for _, ch in ipairs({ "GUILD", "WHISPER" }) do
@@ -314,6 +360,7 @@ local function run(seed)
         local d = R() < 0.5 and -86400 or 86400
         M.epoch = M.epoch + d; tally.clock = tally.clock + 1
         if d < 0 then clockBack = clockBack + 1 end
+        jumpLog[#jumpLog + 1] = { time(), d / 86400 }   -- 1.2.1: die Uhr-Operation zaehlt mit Vorzeichen
       end
     end,
     function(c)   -- Humor-Anlaesse: Rache, Begnadigen, versteckte Befehle
@@ -358,6 +405,7 @@ local function run(seed)
   -- ruhige Phase: alle online, kein Verlust, zweimal abgleichen
   lossy = false
   M.epoch = M.epoch + clockBack * 86400   -- die Uhr stimmt wieder (sonst laegen Taten in der Zukunft)
+  if clockBack > 0 then jumpLog[#jumpLog + 1] = { time(), clockBack } end   -- 1.2.1: auch das zaehlt
   for i = 1, N do if offline[i] then spawn(i, offline[i]); offline[i] = nil end; C[i].combat = false; C[i].fire("PLAYER_REGEN_ENABLED") end
   for _ = 1, 3 do
     W.run(60); M.Advance(400)
@@ -382,9 +430,9 @@ local function run(seed)
     local Gd, Cst = c.ns.Guild, c.ns.Guild.C
     local gl = Gd.DB().lists
     local stores = {}
-    for gname, L in pairs(gl) do stores[#stores + 1] = { "guild:" .. gname, L.enemies, L.hunts or {} } end
+    for gname, L in pairs(gl) do stores[#stores + 1] = { "guild:" .. gname, L.enemies, L.hunts or {}, L.bounty or {} } end
     local fdb = c.ns.Friends.DB()
-    stores[#stores + 1] = { "friends", fdb.enemies, fdb.hunts }
+    stores[#stores + 1] = { "friends", fdb.enemies, fdb.hunts, fdb.bounty or {} }
     for _, s in ipairs(stores) do
       local n, hn = 0, 0
       for key, e in pairs(s[2]) do
@@ -411,13 +459,44 @@ local function run(seed)
               local ln = char:match("^(%S+)")
               local tie = fdb.ties[ln] or {}
               local fx = c.ns.Friends.FriendOf(ln)
-              if fx and fx.guid and not tie.rival then problem(seed, "Fremder im Freundesbuch, obwohl die Freundesliste die GUID nennt", c.full .. ": " .. key .. " von " .. char .. (" | Bindung %s/%s/%s, GUID der Liste %s, auf der Liste %s"):format(tostring(tie.full), tostring(tie.rival), tostring(tie.sure), tostring(fx and fx.guid), tostring(fx and fx.listed))) end
+              if fx and fx.guid and not tie.rival then
+                -- 1.2.1 (Entscheidung nach der Jagd): nichts wird auf Verdacht geloescht. Eine nie bewiesene Bindung an den
+                -- Fremden bleibt, bis das Hallo des echten Freunds entscheidet; das kann nur ausbleiben, wenn der echte
+                -- Freund den Betrachter nicht auf seiner Liste hat (er antwortet ihm nie). Sonst ist es ein Verstoss.
+                local real
+                for jj = 1, N do if NAMES[jj][1] == ln and listName(jj) == ln then real = jj end end
+                local detail = c.full .. ": " .. key .. " von " .. char .. (" | Bindung %s/%s/%s/%s, GUID der Liste %s, auf der Liste %s"):format(tostring(tie.full), tostring(tie.rival), tostring(tie.sure), tostring(tie.guid), tostring(fx and fx.guid), tostring(fx and fx.listed))
+                if tie.full == char and tie.guid and forgedGuid[char .. "\t" .. tie.guid] then
+                  bekannt(seed, "Fremder mit gefaelschter GUID im Hallo gebunden (die GUID des echten Freunds; Grenze des Ausweises seit 1.2.0, im Spiel nicht pruefbar)", detail)
+                elseif tie.full == char and not tie.guid and real and not hasFriend(real, i) then
+                  tally.strangerWait = tally.strangerWait + 1
+                  bekannt(seed, "Fremder vorlaeufig gebunden, der echte Freund hat den Betrachter nicht auf der Liste (sein Hallo kommt nie): bleibt bis zum Beweis", detail)
+                else
+                  problem(seed, "Fremder im Freundesbuch, obwohl die Freundesliste die GUID nennt", detail)
+                end
+              end
             end
           elseif not (truth.released[char] and truth.released[char][key]) then problem(seed, "Herkunft: Freigabe ohne Urheber", c.full .. ": " .. key .. " von " .. char) end
           if type(r.why) == "string" and (r.why:find("[%c|]") or #r.why > Cst.REASON_BYTES) then problem(seed, "Grund nicht sauber", r.why) end
         end
         if not any then problem(seed, "Ziel ohne Freigabe in den Daten", c.full .. ": " .. key) end
       end
+      -- 1.2.1: Kopfgelder anderer: nur von dem Char, der es selbst gesetzt hat, mit einem Betrag, den er gesetzt hat
+      local nb = 0
+      for key, x in pairs(s[4]) do
+        nb = nb + 1
+        local per = 0
+        for char, r in pairs(x) do
+          tally.bseen = tally.bseen + 1
+          per = per + 1
+          if char == c.full then problem(seed, "eigenes Kopfgeld in einem fremden Buch", s[1] .. " " .. key) end
+          if not (truth.bountyEver[char] and truth.bountyEver[char][key .. "\t" .. tostring(r.g)]) then
+            problem(seed, "Herkunft: Kopfgeld ohne Urheber", c.full .. " in " .. s[1] .. ": " .. key .. " von " .. char .. " " .. tostring(r.g))
+          end
+        end
+        if per == 0 then problem(seed, "Ziel ohne Kopfgeld in den Daten", key) end
+      end
+      if nb > Cst.BOUNTY_MAX then problem(seed, "Deckel: Kopfgeld-Ziele", nb) end
       if n > Cst.MAX_ENEMIES then problem(seed, "Deckel: Eintraege", n) end
       if hn > Cst.HUNT_MAX then problem(seed, "Deckel: Ziele", hn) end
     end
@@ -425,6 +504,14 @@ local function run(seed)
     for _, s in ipairs(stores) do
       for key, h in pairs(s[3]) do
         if (h.bagged or 0) > Cst.BAGGED_MAX or #(h.bags or {}) > Cst.BAGS_MAX then problem(seed, "Deckel: Erlegt", key) end
+      end
+    end
+    -- 1.2.1: "geraecht" nie ueber der Zahl echter eigener Todesstoesse dieses Chars auf dieses Ziel
+    for key, a in pairs(c.env.DeathNoteDB.avenged or {}) do
+      for char, k in pairs(a.by or {}) do
+        tally.avenged = tally.avenged + k
+        local real = truth.pk[char] and truth.pk[char][key] or 0
+        if k > real then problem(seed, "geraecht ueber den echten Toetungen", c.full .. ": " .. key .. " von " .. char .. " " .. k .. " > " .. real) end
       end
     end
     local nh, nt = 0, 0
@@ -482,28 +569,72 @@ local function run(seed)
         end
       end
     end
+    -- 1.2.1: das Kopfgeld von y, wie x es sieht, gleicht dem, das y selbst hat (Verfall eingestellt: ausgenommen)
+    -- (verglichen wird mit dem, was y selbst hat; dass y nichts verliert, prueft der Abgleich mit der Wahrheit unten)
+    local function bcmp(tag, bx)
+      if everExpire[i] then return end
+      local seen = {}
+      local mineNow = {}
+      for key, xx in pairs(y.env.DeathNoteDB.bounty or {}) do if xx[y.full] then mineNow[key] = xx[y.full].g end end
+      for key, g in pairs(mineNow) do
+        seen[key] = true
+        tally.bcmp = tally.bcmp + 1
+        local r = bx and bx[key] and bx[key][y.full]
+        if not r or r.g ~= g then
+          local tie = x.ns.Friends.DB().ties[listName(j)] or {}
+          local back = y.ns.Friends.DB().ties[listName(i)] or {}
+          if tag == "Freunde" and (tie.rival or back.rival or strangers[tie.full or ""] or strangers[back.full or ""]) then
+            bekannt(seed, "Konflikt offen oder Fremder vorlaeufig gebunden (ohne GUID): vom Freund wird nichts angenommen (Kopfgeld)", key)
+          else
+            problem(seed, "Stand ungleich: Kopfgeld (" .. tag .. ")", ("%s sieht %s von %s: %s, dort selbst %d"):format(x.full, key, y.full, tostring(r and r.g), g))
+          end
+        end
+      end
+      for key, xx in pairs(bx or {}) do
+        local tie = x.ns.Friends.DB().ties[listName(j)] or {}
+        local back = y.ns.Friends.DB().ties[listName(i)] or {}
+        if xx[y.full] and not seen[key] and tag == "Freunde" and (tie.rival or back.rival or strangers[tie.full or ""] or strangers[back.full or ""]) then
+          bekannt(seed, "Konflikt offen oder Fremder vorlaeufig gebunden (ohne GUID): vom Freund wird nichts angenommen (Kopfgeld)", key)
+        elseif xx[y.full] and not seen[key] then
+          problem(seed, "Stand ungleich: zurueckgenommenes Kopfgeld steht noch (" .. tag .. ")", ("%s sieht %s von %s: %d"):format(x.full, key, y.full, xx[y.full].g))
+        end
+      end
+    end
+    if i == 1 or (i == 2 and j == 1) then
+      -- eigene Kopfgelder von y: genau die gesetzten (Verfall eingestellt: ablaufen darf es)
+      local own = y.env.DeathNoteDB.bounty or {}
+      for key, g in pairs(truth.bounty[y.full]) do
+        local r = own[key] and own[key][y.full]
+        if not (r and r.g == g) and not everExpire[j] then problem(seed, "eigenes Kopfgeld verloren oder falsch", y.full .. " " .. key .. " " .. g .. " -> " .. tostring(r and r.g)) end
+      end
+      for key, xx in pairs(own) do
+        if xx[y.full] and truth.bounty[y.full][key] == nil then problem(seed, "eigenes Kopfgeld, das nicht gesetzt ist", y.full .. " " .. key) end
+      end
+    end
     if sameGuild then
       local lx, ly = x.ns.Guild.DB().lists[guildOf[i]], y.ns.Guild.DB().lists[guildOf[j]]
       cmp("Gilde", lx and lx.hunts, ly and ly.hunts)
+      bcmp("Gilde", lx and lx.bounty)
       for id in pairs(truth.kills[y.full]) do
         local key, t = id:match("^(.-)\t(%d+)$")
         local e = lx and lx.enemies[key]
         local found = false
         for _, d in ipairs(e and e.deeds or {}) do if d.victim == y.full and d.t == tonumber(t) then found = true end end
         if not found and not truth.gone[y.full .. "\t" .. id] then
-          if tageNach(tonumber(t)) >= 3 then bekannt(seed, "Tat fehlt nach Zeitsprung (Gilde): ein Hallo fragt nur bis kurz vor dem letzten Logout zurueck", x.full .. " fehlt " .. key .. " von " .. y.full)
+          if tageNach(y.full .. "\t" .. id) >= 3 then bekannt(seed, "Tat fehlt nach Zeitsprung (Gilde): ein Hallo fragt nur bis kurz vor dem letzten Logout zurueck", x.full .. " fehlt " .. key .. " von " .. y.full)
           else problem(seed, "Stand ungleich: Tat fehlt (Gilde)", x.full .. " fehlt " .. key .. " von " .. y.full) end
         end
       end
     elseif pals then
       cmp("Freunde", x.ns.Friends.DB().hunts, y.ns.Friends.DB().hunts)
+      bcmp("Freunde", x.ns.Friends.DB().bounty)
       for id in pairs(truth.kills[y.full]) do
         local key, t = id:match("^(.-)\t(%d+)$")
         local e = x.ns.Friends.DB().enemies[key]
         local found = false
         for _, d in ipairs(e and e.deeds or {}) do if d.victim == y.full and d.t == tonumber(t) then found = true end end
         if not found and not truth.gone[y.full .. "\t" .. id] and not tainted[i .. ">" .. j] then
-          if tageNach(tonumber(t)) >= 3 then bekannt(seed, "Tat fehlt nach Zeitsprung (Freunde): das Hallo fragt accountweit nur bis kurz vor dem letzten Logout zurueck", x.full .. " fehlt " .. key .. " von " .. y.full)
+          if tageNach(y.full .. "\t" .. id) >= 3 then bekannt(seed, "Tat fehlt nach Zeitsprung (Freunde): das Hallo fragt accountweit nur bis kurz vor dem letzten Logout zurueck", x.full .. " fehlt " .. key .. " von " .. y.full)
           else
             local fx = x.ns.Friends
             local tie = fx.DB().ties[listName(j)] or {}
@@ -526,6 +657,7 @@ end
 io.write(("  geprueft: %d Nachrichten auf der Leitung, %d Taten und %d Freigaben in fremden Buechern, %d Partnerpaare, %d Freigabe-Vergleiche\n"):format(tally.sent, tally.deeds, tally.hunts, tally.pairs, tally.cmp))
 io.write(("  dazu: %d Zeitspruenge (%d Tage), %d Sprachwechsel, %d Laeufe mit Battle.net-Freunden, %d Mal ausgeblendet, %d gespeicherte Texte geprueft\n"):format(tally.jumps, tally.days, tally.langs, tally.bn, tally.hidden, tally.strings))
 for _, k in ipairs(known) do io.write(("  bekannt %4dx %s\n         zuerst %s\n"):format(seenKnown[k].n, k, seenKnown[k].first)) end
+io.write(("  1.2.1: %d Kopfgelder gesetzt, %d zurueckgenommen, %d in fremden Buechern geprueft, %d Kopfgeld-Vergleiche; %d Todesstoesse (%d mit GUIDs), %d E und %d V gesendet, %d mal geraecht gezaehlt; %d Mal Fremder wartet auf Beweis\n"):format(tally.bset, tally.boff, tally.bseen, tally.bcmp, tally.kills, tally.guidKills, tally.eSent, tally.vSent, tally.avenged, tally.strangerWait))
 io.write(("  Abschluss: %d Z zugestellt, %d Freigaben durch Z geloescht, %d Faelschungen, %d Wahlen/Loesungen, %d Uhr-Spruenge, %d Humor-Anlaesse, %d Laeufe mit GUID in der Freundesliste, %d Freigaben von Fremden in Buechern ohne GUID\n"):format(tally.zs, tally.zdel, tally.forged, tally.choose, tally.clock, tally.humor, tally.guidRuns, tally.strangerIn or 0))
 io.write(("fuzz_abschluss: %d Laeufe (Saat %d bis %d, %d Schritte), %d Arten von Verstoessen\n"):format(RUNS, SEED0, SEED0 + RUNS - 1, STEPS, #problems))
 for _, k in ipairs(problems) do io.write(("  ROT %4dx %s\n         zuerst %s\n"):format(seenProblem[k].n, k, seenProblem[k].first)) end

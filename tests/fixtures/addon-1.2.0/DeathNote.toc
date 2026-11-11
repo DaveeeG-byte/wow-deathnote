@@ -1,0 +1,58 @@
+## Interface: 16001
+## Title: DeathNote
+## Notes: Death list for open-world PvP: remembers who killed you and warns you when they are near.
+## Notes-deDE: Todesliste für Open-World-PvP: merkt sich, wer dich getötet hat, und warnt, wenn er in der Nähe ist.
+## Notes-frFR: Liste noire pour le JcJ en monde ouvert : retient tes tueurs et te prévient quand ils rôdent près de toi.
+## Notes-esES: Lista negra para el JcJ en el mundo abierto: recuerda quién te mató y te avisa cuando anda cerca.
+## Notes-esMX: Lista negra para el JcJ en el mundo abierto: recuerda quién te mató y te avisa cuando anda cerca.
+## Notes-itIT: Lista nera per il PvP nel mondo aperto: ricorda chi ti ha ucciso e ti avvisa quando è nei paraggi.
+## Notes-ptBR: Lista de caça para PvP no mundo aberto: lembra quem matou você e avisa quando essa pessoa está por perto.
+## Notes-ruRU: Список смертей для PvP в открытом мире: запоминает, кто тебя убил, и предупреждает, когда убийца рядом.
+## Notes-koKR: 필드 PvP 복수 수첩: 너를 죽인 자를 기억하고, 가까이 오면 알려 준다.
+## Notes-zhCN: 野外PvP记仇本：记住谁杀了你，并在他们靠近时提醒你。
+## Notes-zhTW: 野外PvP記仇本：記住誰殺了你，並在他們靠近時提醒你。
+## Author: DaveeeG
+## Version: 1.2.0
+## X-Curse-Project-ID: 1797508
+## SavedVariables: DeathNoteDB
+## IconTexture: Interface\AddOns\DeathNote\Media\icon.tga
+## AddonCompartmentFunc: DeathNote_OnCompartmentClick
+## AddonCompartmentFuncOnEnter: DeathNote_OnCompartmentEnter
+## AddonCompartmentFuncOnLeave: DeathNote_OnCompartmentLeave
+
+# Language choice first, then English (fallback for every key), then the other 20. Each language
+# file only registers a builder; Locale.lua builds one language at ADDON_LOADED: the chosen one, else the client's.
+Locale.lua
+Locales\enUS.lua
+Locales\deDE.lua
+Locales\frFR.lua
+Locales\esES.lua
+Locales\itIT.lua
+Locales\ptBR.lua
+Locales\ruRU.lua
+Locales\koKR.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
+Locales\svSE.lua
+Locales\nbNO.lua
+Locales\daDK.lua
+Locales\fiFI.lua
+Locales\nlNL.lua
+Locales\plPL.lua
+Locales\csCZ.lua
+Locales\huHU.lua
+Locales\hrHR.lua
+Locales\ukUA.lua
+Locales\trTR.lua
+
+Core.lua
+Store.lua
+Tracker.lua
+Attribution.lua
+Probe.lua
+Sync.lua
+Friends.lua
+Alert.lua
+UI.lua
+Extras.lua
+Humor.lua

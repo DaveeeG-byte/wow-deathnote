@@ -16,7 +16,7 @@ M.ADDON_DIR = ADDON_DIR
 -- opts.lang = false (M.Load / W.client) leaves the language unchosen like a fresh install.
 -- GetLocale() returns M.client or M.locale (the client's language: the default without an own choice).
 M.FILES = { "Locale.lua", "Locales/enUS.lua", "Locales/deDE.lua",
-  "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Probe.lua", "Sync.lua", "Friends.lua" }
+  "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Probe.lua", "Sync.lua", "Friends.lua", "Bounty.lua" }
 M.locale = os.getenv("DN_LANG") or "deDE"
 
 -- the file list for the active M.locale (its file is added after deDE when it is another one)
@@ -419,7 +419,11 @@ function M.NewWorld(watch)
       env.GetGuildRosterInfo = function(i)
         local x = mates()[i]
         if not x then return nil end
-        return x.name .. "-Forever", "Mitglied", 1, 40, "Krieger", "Zone", "", "", x.online ~= false and x.loggedIn == true
+        -- 1.2.1: W.guids = true: the GUID as 17th value (OpenMap/ElvUI read it there)
+        -- 1.2.1: with W.guids a client that is named with surname (fullSender) stands so in the roster too
+        local rn = (W.guids and x.fullSender and x.surname) and (x.name .. " " .. x.surname) or x.name
+        return rn .. "-Forever", "Mitglied", 1, 40, "Krieger", "Zone", "", "", x.online ~= false and x.loggedIn == true,
+          nil, "WARRIOR", 0, 0, false, false, 0, W.guids and W.guidOf(x) or nil
       end
       env.C_GuildInfo = { GuildRoster = function() end }
     end

@@ -352,7 +352,7 @@ L.MANUAL_ALERT = "Bir katil isim plakası, hedef ya da fare altında belirince d
 L.MANUAL_ADD_HEAD = "EKLEME"  -- [max 12]
 L.MANUAL_ADD = "Arama kutusuna bir isim yaz, Enter. Bir satıra sağ tık: intikamı not et, affet, sil."
 L.MANUAL_GUILD_HEAD = "LONCA"  -- [max 12]
-L.MANUAL_GUILD = "DeathNote kullanan lonca üyeleri ve arkadaşlar katili belli ölümlerini ve elle eklenenleri görür. Afiş ya da /dn hunt İsim: av listesine koy."
+L.MANUAL_GUILD = "DeathNote kullanan lonca üyeleri ve arkadaşlar katili belli ölümlerini ve elle eklenenleri görür. Afiş ya da /dn hunt İsim: av listesine koy. Kelle parasına tıkla: kendininkini koy, sadece bir söz."
 L.MANUAL_SHARE_HEAD = "AKTARMA"  -- [max 12]
 L.MANUAL_SHARE = "Ev Kuralları, Defteri yedekle: DeathNote kullanmayan herkes için kopyalanacak bir metin."
 L.MANUAL_QUIET_HEAD = "SESSİZLİK"  -- [max 12]
@@ -626,5 +626,32 @@ L.ACT_TIE_MINE = "Arkadaşım: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Bağı kopar"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "{name} arkadaş listenden ayrılsın mı?\nBu ismin arkadaş defterine getirdikleri silinir; bu isimle gelen sonraki mesaj yeniden bağlanır."
 L.CHAT_FRIENDS_TIES = "Bağlı tam isimler (* = ilk temas, henüz doğrulanmadı): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <İsim [Soyad]> <altın>  kendi kelle paranı koy (tutar yok: geri al)"
+L.CHAT_WHO_BOUNTY = "Kime? /dn bounty <İsim> <altın>"
+L.CHAT_BOUNTY_SET = "{name}: {gold} altın kelle parası koydun. DeathNote kullanan lonca ve arkadaşlar görür."
+L.CHAT_BOUNTY_OFF = "{name}: kelle paran geri alındı."
+L.CHAT_BOUNTY_NONE = "Kendi kelle paran yok: {name}"
+L.CHAT_BOUNTY_BAD = "Kelle parası: 1 ile 99999 arası tam sayı altın (0 geri alır)."
+L.CHAT_BOUNTY_CAP = "Kelle parası yok: en fazla {count} tane senin olabilir."
+L.CHAT_BOUNTY_OURS = "Kendine ya da kendi adamlarına (DeathNote kullanan lonca üyesi ya da arkadaş) kelle parası konmaz."
+L.ACT_BOUNTY = "Kelle parası koy"  -- [max 24]
+L.ACT_UNDO = "Geri al"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Bir intikamı düş"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, sen koydun"
+L.POSTER_BOUNTY_BY = "{gold}, koyan: {name}"
+L.POSTER_BOUNTY_MANY = "Kelle parası {gold}: {names}"
+L.POSTER_AVENGED = "İntikamını alan: {names}"
+L.ROW_AVENGED = "intikam {times}"
+L.BOUNTY_TIP_HEAD = "Kendi kelle paran, altın olarak"
+L.BOUNTY_TIP_RULES = "1 ile 99999 arası tam sayı. Boş ya da 0: defterin değerine döner. Enter koyar, Esc vazgeçer."
+L.BOUNTY_TIP_PROMISE = "DeathNote kullanan lonca ve arkadaşlar görür. Sadece bir söz: hesap aranızda görülür."
+L.BOUNTY_TIP_CLICK = "Tıkla: kendi kelle paranı koy"
+L.CHAT_AVENGED = "{name} senin yerine avladı: {killer}."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: {gold} altın kelle parası koydun."
+L.CHAT_BOUNTY_UNKNOWN = "{name} hiçbir defterinde yok. Kelle parası yalnızca defterdeki bir isme konur, oyunda göründüğü gibi: ad ve soyad."
+L.CHAT_BOUNTY_LIST = "Kelle paraların ({count}/{max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Hiç kelle parası koymadın."
 -- <<< BOOK
 end)

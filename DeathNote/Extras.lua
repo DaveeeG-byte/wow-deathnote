@@ -271,6 +271,7 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   if not banner then BuildBanner() end
   banner.guild = guild and true or false
   banner.key = key
+  banner.kind = stamp
   banner.open = open
   banner:EnableMouse(open ~= nil)
   banner.kicker:SetText(kicker)
@@ -360,6 +361,25 @@ local function OnRevenge(key)
   local r, g, b = Look.ClassRGB(e.class)
   Banner(L.BANNER_REVENGE, Look.Name(e), { r, g, b },
          Fmt(L.BANNER_REVENGE_LINE, { count = e.revenge or 1 }), "rache", false, key)
+  Look.Alarm("revenge")
+end
+
+-- 1.2.1: eine von Hand vermerkte Rache wurde zurueckgenommen: steht noch ihre Meldung, geht sie weg
+local function OnRevengeUndone(key)
+  if not (banner and banner:IsShown() and banner.key == key and banner.kind == "rache") then return end
+  banner.anim:Stop(); banner:Hide()
+  banner.open, banner.key, banner.kind, banner.guild = nil, nil, nil, false
+  banner:EnableMouse(false)
+  if #guildQueue > 0 then C_Timer.After(0.4, NextGuild) end
+end
+
+-- 1.2.1: ein Kollege oder Freund hat einen Taeter erledigt, der im eigenen Buch steht: eine Chatzeile und der
+-- kurze Ton der Rache-Meldung, kein Fenster (ist er zugleich Ziel der Abschussliste, kommt nur die Erlegt-Meldung)
+local function OnAvenged(key, char, t)
+  if not ready or type(key) ~= "string" or Look.Secret(key) or type(char) ~= "string" or Look.Secret(char) then return end
+  local e = ns.Store.Get(key)
+  local name = e and Look.Name(e) or (key:match("^([^%-]+)") or key)
+  if ns.Util and ns.Util.Print then ns.Util.Print(Fmt(L.CHAT_AVENGED, { name = Look.First(char), killer = name })) end
   Look.Alarm("revenge")
 end
 
@@ -466,6 +486,8 @@ ns:On("READY", function()
 end)
 ns:On("DEATH_RECORDED", OnDeath)
 ns:On("REVENGE", OnRevenge)
+ns:On("REVENGE_UNDONE", OnRevengeUndone)
+ns:On("AVENGED", OnAvenged)
 ns:On("GUILD_KILL", OnGuildKill)
 ns:On("HUNT_BAGGED", OnBagged)
 ns:On("HUNT_NEW", OnNewHunt)

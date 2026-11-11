@@ -188,6 +188,11 @@ function Probe.Run(verbose, opts)
       unlistSent = st.unlistSent, unlistReceived = st.unlistReceived, unlistDropped = st.unlistDropped,
       -- 1.2.0: hunt list of this guild
       hunts = G.HuntCount and G.HuntCount("guild") or nil, huntReceived = st.huntReceived,
+      -- 1.2.1: the first send attempt in an instance ({ kind, result = ok | throttle | refused, code, at }), also
+      -- from an earlier session; bounties and "avenged" received on GUILD
+      instanceSend = st.instanceSend or (db and type(db.probe) == "table" and type(db.probe.guild) == "table"
+        and type(db.probe.guild.instanceSend) == "table" and db.probe.guild.instanceSend or nil),
+      bountyReceived = st.bountyReceived, avengedReceived = st.avengedReceived,
     }
   end
   -- 1.2.0: friends' book (sent, received, lastSendResult, lastReason, health, online, withAddon, ...)

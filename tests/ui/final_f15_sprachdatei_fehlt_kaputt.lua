@@ -12,7 +12,7 @@ local pass, fail, lines = 0, 0, {}
 local function erwartet(name, cond, detail)
   if cond then pass = pass + 1 else fail = fail + 1; lines[#lines + 1] = "  ROT: " .. name .. (detail ~= nil and ("  -> " .. tostring(detail)) or "") end
 end
-local LOGIC = { "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Probe.lua", "Sync.lua", "Friends.lua" }
+local LOGIC = { "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Probe.lua", "Sync.lua", "Friends.lua", "Bounty.lua" }
 -- opts: locales = Liste der Sprachdateien, die "in der TOC" geladen werden; inject = function(ns) nach Locale.lua;
 -- events = function() vor dem Login; noAddonLoaded
 local function world(db, opts)

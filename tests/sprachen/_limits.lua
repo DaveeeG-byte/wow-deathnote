@@ -251,5 +251,9 @@ return {
   MEMBER_CONFLICT = { max = 40, field = "row sub line By guildmate, 300 px, Friz 10" },
   ACT_TIE_MINE = { max = 24, field = "menu button 148 px, Friz 10" },
   ACT_TIE_LOOSE = { max = 14, field = "menu button 148 px / dialog button ~120 px" },
+  -- Bounty, revenge taken back (1.2.1)
+  ACT_BOUNTY = { max = 24, field = "menu button 148 px, Friz 10" },
+  ACT_UNDO = { max = 19, field = "poster button 104 px, Friz 10, no wrap (same place as ACT_REVENGE)" },
+  ACT_REVENGE_TAKE = { max = 24, field = "menu button 148 px, Friz 10" },
   -- <<< BOOK
 }

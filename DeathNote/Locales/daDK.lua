@@ -342,7 +342,7 @@ L.MANUAL_ALERT = "Når en morder dukker op som navneplade, mål eller under muse
 L.MANUAL_ADD_HEAD = "SKRIV IND"  -- [max 12]
 L.MANUAL_ADD = "Skriv et navn i søgefeltet, Enter. Højreklik på en linje: notér hævn, benåd, stryg."
 L.MANUAL_GUILD_HEAD = "GUILD"  -- [max 12]
-L.MANUAL_GUILD = "Guildkammerater og venner med DeathNote ser dine bekræftede dødsfald og håndskrevne navne. Plakaten eller /dn hunt Navn: udlys jagt."
+L.MANUAL_GUILD = "Guildkammerater og venner med DeathNote ser dine bekræftede dødsfald og håndskrevne navne. Plakaten eller /dn hunt Navn: udlys jagt. Klik på dusøren: udlov din egen, et løfte I gør op indbyrdes."
 L.MANUAL_SHARE_HEAD = "GIV VIDERE"  -- [max 12]
 L.MANUAL_SHARE = "Husregler, Gem bogen: en tekst at kopiere, til alle uden DeathNote."
 L.MANUAL_QUIET_HEAD = "STILLE"  -- [max 12]
@@ -616,5 +616,32 @@ L.ACT_TIE_MINE = "Min ven: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Frakobl navn"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "Frakobl {name} fra din venneliste?\nDet, navnet har bragt ind i vennebogen, slettes; næste besked under dette fornavn kobles på ny."
 L.CHAT_FRIENDS_TIES = "Koblede fulde navne (* = første kontakt, endnu ikke bekræftet): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Navn [Efternavn]> <guld>  udlov en egen dusør (uden guld: træk den tilbage)"
+L.CHAT_WHO_BOUNTY = "På hvem? /dn bounty <Navn> <guld>"
+L.CHAT_BOUNTY_SET = "{name}: du har udlovet {gold} guld i dusør. Guild og venner med DeathNote ser det."
+L.CHAT_BOUNTY_OFF = "{name}: din dusør er trukket tilbage."
+L.CHAT_BOUNTY_NONE = "Du har ingen egen dusør på {name}."
+L.CHAT_BOUNTY_BAD = "Dusør: et helt antal guld, 1 til 99999 (0 trækker den tilbage)."
+L.CHAT_BOUNTY_CAP = "Ingen dusør: højst {count} egne."
+L.CHAT_BOUNTY_OURS = "Ingen dusør på dig selv eller dine egne (guild eller venner med DeathNote)."
+L.ACT_BOUNTY = "Udlov dusør"  -- [max 24]
+L.ACT_UNDO = "Fortryd"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Træk én hævn fra"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, udlovet af dig"
+L.POSTER_BOUNTY_BY = "{gold}, udlovet af {name}"
+L.POSTER_BOUNTY_MANY = "Dusør {gold}: {names}"
+L.POSTER_AVENGED = "Hævnet af {names}"
+L.ROW_AVENGED = "hævnet {times}"
+L.BOUNTY_TIP_HEAD = "Din egen dusør i guld"
+L.BOUNTY_TIP_RULES = "Et helt tal, 1 til 99999. Tomt eller 0: tilbage til bogens værdi. Enter sætter, Esc afbryder."
+L.BOUNTY_TIP_PROMISE = "Guild og venner med DeathNote ser den. Kun et løfte: I gør op indbyrdes."
+L.BOUNTY_TIP_CLICK = "Klik: udlov en egen dusør"
+L.CHAT_AVENGED = "{name} nedlagde {killer} for dig."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: du har udlovet {gold} guld i dusør."
+L.CHAT_BOUNTY_UNKNOWN = "{name} står ikke i nogen af dine bøger. Dusør kun på et navn fra en bog, sådan som spillet viser det: fornavn og efternavn."
+L.CHAT_BOUNTY_LIST = "Dine dusører ({count} af {max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Du har ikke udlovet nogen dusør."
 -- <<< BOOK
 end)

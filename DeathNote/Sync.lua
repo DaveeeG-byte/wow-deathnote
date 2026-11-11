@@ -16,8 +16,13 @@
 --   1 E key char t                              a target of the hunt list killed by char (1.2.0)
 --   1 Z char n [book]                           end of an answer: these n J were ALL releases of char (1.2.0);
 --                                               only sent when the answer was not capped
+--   1 B key char gold t [book]                  own bounty of char on key in whole gold (1.2.1); gold 0 = taken back
+--   1 Y char n [book]                           end of an answer: these n B were ALL bounties of char (1.2.1)
+--   1 V key char t e                            char killed key, a killer of others in the guild or friends' book (1.2.1);
+--                                               e = "1" when an E for the same kill went the same way
 -- book (optional last field of J and Z, 1.2.0): the book id of the SavedVariables the release was made in;
 -- a Z only takes back releases of that char with the same book id (another device or a lost file never does).
+-- B, Y and V are new types: 1.2.0 and 1.1.0 drop them as "type" without touching their data (Bounty.lua).
 -- A hello to a friend (WHISPER/Battle.net, never GUILD) may carry a fifth field: the sender's GUID (1.2.0).
 -- The first field is the protocol version; unknown versions and types are dropped silently
 -- (1.1.0 and older drop J/A/E as "type").
@@ -51,11 +56,12 @@ local C = {
   SEND_GAP = 0.3,           -- seconds between two sent messages
   BACKOFF = 1.5,            -- seconds after a throttled or failed send
   REPLY_MAX = 30,           -- R messages per answer to a hello
-  QUEUE_MAX = 120,
+  QUEUE_MAX = 140,          -- 1.2.1: room for an answer with bounties next to a friend's answer
   QUEUE_TTL = 600,          -- a queued message older than this is dropped
   TRIES = 5,                -- send attempts per message
   HOLD_RETRY = 30,          -- fallback timer while sending is held back
-  HOLD_MAX = 20,            -- fallback timer rounds before the queue is dropped
+  HOLD_MAX = 20,            -- fallback timer rounds; 1.2.1: then slower ones (HOLD_SLOW), at most HOLD_SLOW_MAX
+  HOLD_SLOW = 120, HOLD_SLOW_MAX = 30,
   HELLO_MIN = 8, HELLO_MAX = 20,
   REPLY_MIN = 2, REPLY_MAX_DELAY = 8,
   SYNC_COOLDOWN = 60,       -- own /dn sync: one hello per minute
@@ -92,6 +98,7 @@ local C = {
   CLEARED_MAX = 200,        -- releases "cleared" by the player, remembered against the next answer (1.2.0)
   HUNT_LIVE_MAX = 5, HUNT_LIVE_WINDOW = 600, -- new releases per sender taken live in 10 minutes
   ANSWER_WINDOW = 60,       -- after the OWN hello: J messages are answers (own cap, collective notice)
+  ANSWER_GAP = 40, ANSWER_LONG = 600,   -- 1.2.1: an answer under way keeps its sender's window open (each part)
   NEW_NOTICE_DELAY = 8,     -- new releases of others are announced together after this
   HIDDEN_MAX = 200,         -- targets hidden "for me"
   MATE_RECENT = 300,        -- without the guild roster API: a member heard this recently is a guildmate
@@ -99,6 +106,14 @@ local C = {
   ROSTER_MIN = 5,           -- a roster event within this many seconds and with the same number of members: no new read          -- the guild roster is read again after this (on demand, never per message)
   MATE_GONE = 14 * 86400,   -- not in the roster and not heard on GUILD this long: left the guild (1.2.0)
   EXPIRE_DAYS = { 0, 30, 90, 180 },   -- releases expire after (0 = never, the default)
+  -- bounties (B/Y, 1.2.1): whole gold, per char and target; they expire like releases (huntExpire)
+  BOUNTY_GOLD_MAX = 99999,
+  BOUNTY_PER_SENDER = 20,   -- bounties one char may have in a store (and own ones per char)
+  BOUNTY_MAX = 200,         -- targets with bounties per store
+  BOUNTY_REPLY = 20,        -- B messages per answer to a hello (= every own bounty of the char)
+  -- avenged (V, 1.2.1): the same limits as E (BAG_FRESH, BAG_DEDUPE, BAGS_MAX, BAGGED_MAX, BAG_WINDOW)
+  AVENGE_PER_SENDER = 3,    -- V accepted per sender in BAG_WINDOW
+  AVENGED_MAX = 200,        -- targets remembered with "avenged by"
 }
 Guild.PREFIX, Guild.C = PREFIX, C
 
@@ -381,6 +396,34 @@ function P.EncodeBagged(key, by, t)
   return msg
 end
 
+-- 1.2.1: own bounty (whole gold 1..BOUNTY_GOLD_MAX, 0 = taken back) and the end of its answer
+function P.EncodeBounty(key, by, g, t, b)
+  if IsSecret(key) or IsSecret(by) or IsSecret(g) or IsSecret(t) then return nil end
+  if type(key) ~= "string" or plain(key) ~= key or type(by) ~= "string" or by == "" or plain(by) ~= by then return nil end
+  if type(g) ~= "number" or g ~= math.floor(g) or g < 0 or g > C.BOUNTY_GOLD_MAX or not P.Finite(t) then return nil end
+  local msg = table.concat({ PROTO, "B", P.Escape(key), P.Escape(by), tostring(g), tostring(math.floor(t)) }, "\t")
+  if P.ValidBook(b) then msg = msg .. "\t" .. b end
+  if #msg > C.MAX_MSG then return nil end
+  return msg
+end
+function P.EncodeBountySnapshot(by, n, b)
+  if IsSecret(by) or IsSecret(n) then return nil end
+  if type(by) ~= "string" or by == "" or plain(by) ~= by or type(n) ~= "number" then return nil end
+  local msg = table.concat({ PROTO, "Y", P.Escape(by), tostring(math.floor(n)) }, "\t")
+  if P.ValidBook(b) then msg = msg .. "\t" .. b end
+  if #msg > C.MAX_MSG then return nil end
+  return msg
+end
+-- 1.2.1: char killed key (own killing blow); e = an E for the same kill went the same way
+function P.EncodeAvenged(key, by, t, e)
+  if IsSecret(key) or IsSecret(by) or IsSecret(t) then return nil end
+  if type(key) ~= "string" or plain(key) ~= key or type(by) ~= "string" or by == "" or plain(by) ~= by
+    or not P.Finite(t) then return nil end
+  local msg = table.concat({ PROTO, "V", P.Escape(key), P.Escape(by), tostring(math.floor(t)), e and "1" or "0" }, "\t")
+  if #msg > C.MAX_MSG then return nil end
+  return msg
+end
+
 -- Canonical key check: "Name-Surname" exactly as Util.KeyFor would build it.
 function P.ValidKey(key)
   if type(key) ~= "string" or #key < 3 or #key > C.MAX_FIELD then return nil end
@@ -413,7 +456,9 @@ local function int(s, lo, hi)
   return v
 end
 
-local FIELDS = { K = 9, R = 9, H = 4, S = 5, J = 9, A = 4, E = 5, Z = 4, M = 8, X = 4 }
+local FIELDS = { K = 9, R = 9, H = 4, S = 5, J = 9, A = 4, E = 5, Z = 4, B = 6, Y = 4, V = 6, M = 8, X = 4 }
+-- types with one optional last field: GUID of a hello, book id of J, Z, B, Y
+local OPTIONAL = { H = true, Z = true, J = true, B = true, Y = true }
 
 -- Parses an incoming text into `out` (a reused table). Returns out or nil, reason.
 -- Never raises for any input.
@@ -425,10 +470,8 @@ function P.Decode(text, now, out)
   local kind = F[2]
   local want = FIELDS[kind]
   if not want then return nil, "type" end
-  -- optional last fields (1.2.0): the GUID of a hello, the book id of J and Z
-  if n ~= want and not ((kind == "H" or kind == "Z") and n == want + 1) and not (kind == "J" and n == want + 1) then
-    return nil, "fields"
-  end
+  -- optional last fields (1.2.0): the GUID of a hello, the book id of J and Z (1.2.1: also B and Y)
+  if n ~= want and not (OPTIONAL[kind] and n == want + 1) then return nil, "fields" end
   out = out or {}
   for k in pairs(out) do out[k] = nil end
   out.kind = kind
@@ -441,10 +484,10 @@ function P.Decode(text, now, out)
     if n == 5 and P.ValidGUID(F[5]) then out.guid = F[5] end
     return out
   end
-  if kind == "Z" then
+  if kind == "Z" or kind == "Y" then
     out.by = P.Unescape(F[3])
     if not out.by or out.by == "" then return nil, "by" end
-    out.n = int(F[4], 0, C.HUNT_REPLY)
+    out.n = int(F[4], 0, kind == "Z" and C.HUNT_REPLY or C.BOUNTY_REPLY)
     if not out.n then return nil, "fields" end
     if n == 5 and P.ValidBook(F[5]) then out.b = F[5] end
     return out
@@ -465,11 +508,26 @@ function P.Decode(text, now, out)
     if not out.by or out.by == "" then return nil, "by" end
     return out
   end
-  if kind == "E" then
+  if kind == "E" or kind == "V" then
     out.by = P.Unescape(F[4])
     if not out.by or out.by == "" then return nil, "by" end
     out.t = int(F[5], now - C.MAX_AGE, now + C.FUTURE)
     if not out.t then return nil, "time" end
+    if kind == "V" then
+      if F[6] ~= "0" and F[6] ~= "1" then return nil, "fields" end
+      out.e = F[6] == "1"
+    end
+    return out
+  end
+  if kind == "B" then
+    -- 1.2.1: the amount is a number, never text: whole gold in range, else the message goes
+    out.by = P.Unescape(F[4])
+    if not out.by or out.by == "" then return nil, "by" end
+    out.g = int(F[5], 0, C.BOUNTY_GOLD_MAX)
+    if not out.g then return nil, "gold" end
+    out.t = int(F[6], now - C.LISTED_MAX_AGE, now + C.FUTURE)
+    if not out.t then return nil, "time" end
+    if n == 7 and P.ValidBook(F[7]) then out.b = F[7] end
     return out
   end
   local display = P.Unescape(F[4])
@@ -1274,9 +1332,13 @@ local owns = P.Owns
 -- (at most every ROSTER_TTL seconds) and on GUILD_ROSTER_UPDATE, never per message.
 -- API as OpenMap/Map/Friends.lua ScanGuild uses it: GetNumGuildMembers, GetGuildRosterInfo.
 ---------------------------------------------------------------------------
--- roster: lower first name -> { [lower surname or ""] = { name = surname or false, n = count } }; nil = no
--- API. The own char is taken out once (a guildmate with the same first name stays in).
+-- roster: lower first name -> { [lower surname or ""] = { surname or false, count, GUID or false } }; nil = no
+-- API. The own char is taken out once (a guildmate with the same first name stays in). (1.2.1: a row is a small
+-- array, [1] surname, [2] count, [3] GUID: three named fields cost twice the memory on every read of the roster)
 local roster, rosterAt, rosterN
+-- name and GUID of a roster row (GetGuildRosterInfo: guid is the 17th value, as OpenMap/Map/Friends.lua and
+-- ElvUI/Game/Shared/Modules/DataTexts/Guild.lua read it; 1.2.1)
+local function nameAndGuid(...) return (...), (select(17, ...)) end
 local function readRoster()
   rosterAt = GetTime()
   if not (_G.GetNumGuildMembers and _G.GetGuildRosterInfo) or not inGuild() then roster = nil; return end
@@ -1284,7 +1346,8 @@ local function readRoster()
   rosterN = n
   local r = {}
   for i = 1, math.min(n, 1000) do
-    local name = Str((Call(_G.GetGuildRosterInfo, i)))
+    local name, guid = nameAndGuid(Call(_G.GetGuildRosterInfo, i))
+    name = Str(name)
     if name and #name <= 80 and not name:find("[%c|]") then
       local f, s = splitName(name)
       local k = f:lower()
@@ -1292,8 +1355,10 @@ local function readRoster()
       if not x then x = {}; r[k] = x end
       local sk = s and s:lower() or ""
       local y = x[sk]
-      if not y then y = { name = s or false, n = 0 }; x[sk] = y end
-      y.n = y.n + 1
+      if not y then y = { s or false, 0, false }; x[sk] = y end
+      y[2] = y[2] + 1
+      -- 1.2.1: the GUID of exactly this full name (two members of the same name: none)
+      y[3] = y[2] == 1 and P.ValidGUID(guid) and guid or false
     end
   end
   -- the own char: by full name, else by the first name alone
@@ -1303,8 +1368,8 @@ local function readRoster()
     local sk = ms and x[ms:lower()] and ms:lower() or ""
     local y = x[sk]
     if y then
-      y.n = y.n - 1
-      if y.n <= 0 then x[sk] = nil end
+      y[2] = y[2] - 1
+      if y[2] <= 0 then x[sk] = nil end
       if next(x) == nil then r[mf:lower()] = nil end
     end
   end
@@ -1316,6 +1381,26 @@ local function rosterNow()
 end
 Guild.ReadRoster = readRoster
 
+-- 1.2.1: the GUID the guild roster gives a full name ("Name Surname"), when exactly one member has it; else nil
+-- (a roster with first names only proves no surname)
+function Guild.RosterGUID(full)
+  if IsSecret(full) or type(full) ~= "string" then return nil end
+  local f, s = splitName(full)
+  local r = s and rosterNow()
+  local y = r and r[f:lower()] and r[f:lower()][s:lower()]
+  return y and y[2] == 1 and y[3] or nil
+end
+
+-- 1.2.1 fix: the surname of the one guild member with this first name and exactly this GUID, or nil
+function Guild.RosterSurnameOf(first, guid)
+  if IsSecret(first) or IsSecret(guid) or type(first) ~= "string" or type(guid) ~= "string" then return nil end
+  local r = rosterNow()
+  local x = r and r[first:lower()]
+  if not x then return nil end
+  for _, y in pairs(x) do if y[3] == guid and y[1] then return y[1] end end
+  return nil
+end
+
 -- the surname the guild roster gives a first name, when it is the only one with that first name
 local function rosterSurname(first)
   local r = rosterNow()
@@ -1323,10 +1408,10 @@ local function rosterSurname(first)
   if not x then return nil end
   local only
   for _, y in pairs(x) do
-    if only ~= nil or y.n > 1 then return nil end
+    if only ~= nil or y[2] > 1 then return nil end
     only = y
   end
-  return only and only.name or nil
+  return only and only[1] or nil
 end
 
 ---------------------------------------------------------------------------
@@ -1481,6 +1566,8 @@ local function useList(name)
   if L.huntCleared ~= nil and type(L.huntCleared) ~= "table" then L.huntCleared = nil end
   if L.huntCleared then P.SanitizeCleared(L.huntCleared) end
   GCTX.cleared = L.huntCleared
+  -- 1.2.1: bounties of this guild (Bounty.lua; additive, older versions keep the unknown field untouched)
+  if Guild.Ext and Guild.Ext.useList then Guild.Ext.useList(L, GCTX) end
   GH = inGuild() and L.hunts or nil
   if not sanitized[L] then
     sanitized[L] = true
@@ -1552,21 +1639,27 @@ local function inRoster(r, char)
 end
 function Guild.PurgeLeavers()
   local r = roster
-  if not r or not GH or not list then return 0 end
+  if not r or not list then return 0 end
   local t, n = now(), 0
-  for key, h in pairs(GH) do
-    for c in pairs(h.by) do
-      if not isOwnChar(c) and not inRoster(r, c) and not (friends and friends.FriendOf(c)) then
-        local f, s = splitName(c)
-        local heard = false
-        for _, m in pairs(list.members) do
-          if type(m.lastHeard) == "number" and t - m.lastHeard < C.MATE_GONE and sameName(f, s, m.name) then heard = true; break end
-        end
-        if not heard then h.by[c] = nil; n = n + 1 end
-      end
+  -- a char stays while he is an own char, in the roster, a friend or heard on GUILD within MATE_GONE
+  local function stays(c)
+    if isOwnChar(c) or inRoster(r, c) or (friends and friends.FriendOf(c)) then return true end
+    local f, s = splitName(c)
+    for _, m in pairs(list.members) do
+      if type(m.lastHeard) == "number" and t - m.lastHeard < C.MATE_GONE and sameName(f, s, m.name) then return true end
     end
-    if next(h.by) == nil then GH[key] = nil end
+    return false
   end
+  if GH then
+    for key, h in pairs(GH) do
+      for c in pairs(h.by) do
+        if not stays(c) then h.by[c] = nil; n = n + 1 end
+      end
+      if next(h.by) == nil then GH[key] = nil end
+    end
+  end
+  -- 1.2.1: his bounties go by the same rule
+  if GCTX.bounty and ns.Bounty and ns.Bounty.Purge then n = n + ns.Bounty.Purge(GCTX, stays) end
   if n > 0 then setHook(); updated() end
   return n
 end
@@ -1597,10 +1690,37 @@ function P.SendOutcome(ok, res, success, throttle1, throttle2, general, lockdown
   return "ok"
 end
 
--- Why sending must wait right now, or nil.
-local function holdReason()
-  local inInst = call1(_G.IsInInstance)
-  if Util.True(inInst) then return "instance" end
+-- Instances (1.2.1): dungeons and raids send like the open world (the guild channel carries there, seen live
+-- 11.11.2026; DBM-Core sends its GUILD syncs in instances unless an encounter or the chat lockdown is on,
+-- DBM-Core/DBM-Core.lua MidRestrictionsActive and modules/AddonComms.lua sendGuildSync). Battlegrounds and arenas
+-- wait. The first refusal of the client in an instance holds the queue for this instance (instBlock), nothing is
+-- dropped and nothing is tried again until the zone changes (PLAYER_ENTERING_WORLD); the waiting messages do not
+-- age meanwhile (heldSince). W4.kind(): kind of the instance the player is in, or nil.
+-- 1.2.1 fix: the refusal holds only its own way (W4.block[GUILD | WHISPER:name | BN:name]): a refused whisper to one
+-- friend no longer stops the guild channel or the other friends.
+local W4 = { block = {}, tried = false, refused = false, heldSince = nil, replyHeld = false }
+function W4.key(channel, target)
+  if channel == "GUILD" or channel == nil then return "GUILD" end
+  return channel .. ":" .. tostring(target)
+end
+function W4.kind()
+  local inInst, kind = Call(_G.IsInInstance)
+  local k = Str(kind)
+  if Util.True(inInst) or (k and k ~= "none") then return k or "instance" end
+  return nil
+end
+-- the queue waits for the instance (battleground, arena, or the client refused this way here); combat aside.
+-- way: nil = the guild channel, false = battleground and arena only, else a key of W4.key
+function W4.held(way)
+  local k = W4.kind()
+  if k == nil then return false end
+  if k == "pvp" or k == "arena" then return true end
+  return way ~= false and W4.block[way or "GUILD"] == true
+end
+Guild.InstanceHeld = W4.held
+
+-- Why sending must wait right now, or nil (way: see W4.held; nil asks for the guild channel).
+local function holdReason(way)
   local combat = call1(_G.InCombatLockdown)
   if Util.True(combat) then return "combat" end
   local CI = _G.C_ChatInfo
@@ -1613,25 +1733,40 @@ local function holdReason()
     local r = call1(CI.AreOutgoingAddonChatMessagesRestricted)
     stats.realmRestricted = Util.True(r) or nil
   end
+  if W4.held(way) then return "instance" end
   return nil
 end
 Guild.HoldReason = holdReason
 
+-- /dn probe (1.2.1): the result of the first send attempt in an instance, kept in the file (probe.guild.instanceSend)
+-- (1.2.1 fix: the first refusal overwrites an "ok" of the first attempt; channel says which way)
+function W4.note(kind, outcome, result, channel)
+  local x = { kind = kind, result = (outcome == "ok" or outcome == "throttle") and outcome or "refused", code = result,
+    at = now(), channel = channel }
+  stats.instanceSend = x
+  local db = ns.Store and ns.Store.DB and ns.Store.DB()
+  if type(db) == "table" then
+    if type(db.probe) ~= "table" then db.probe = {} end
+    if type(db.probe.guild) ~= "table" then db.probe.guild = {} end
+    db.probe.guild.instanceSend = x
+  end
+end
+
 local pump
 local lastSendAt          -- GetTime() of the last send attempt (spacing, also after an empty queue)
 local function scheduleHold()
+  -- the held time never counts as age, also while a timer is already running (pump cleared heldSince)
+  W4.heldSince = W4.heldSince or GetTime()
   if holdTimer then return end
   holdRounds = holdRounds + 1
-  if holdRounds > C.HOLD_MAX then
-    -- never endless: give up on what is waiting
-    stats.dropped = stats.dropped + #queue
-    queue, queued, holdRounds = {}, {}, 0
-    return
-  end
+  -- never endless: after HOLD_MAX rounds the timer gets slower (a lockdown may end without an event), after
+  -- HOLD_SLOW_MAX more it stops; 1.2.1: what waits is kept (the end of the fight or of the lockdown sends it,
+  -- PLAYER_REGEN_ENABLED / ADDON_RESTRICTION_STATE_CHANGED, or the next own message), the queue is capped
+  if holdRounds > C.HOLD_MAX + C.HOLD_SLOW_MAX then return end
   local After = _G.C_Timer and _G.C_Timer.After
   if not After then return end
   holdTimer = true
-  After(C.HOLD_RETRY, function() holdTimer = false; pump() end)
+  After(holdRounds > C.HOLD_MAX and C.HOLD_SLOW or C.HOLD_RETRY, function() holdTimer = false; pump() end)
 end
 
 -- May this queued message still go out? GUILD: sharing on and in a guild; WHISPER: Friends.lua decides
@@ -1670,17 +1805,50 @@ function pump()
     queue, queued = {}, {}
     return
   end
-  local t = now()
-  while queue[1] and (t - queue[1].at > C.QUEUE_TTL or not allowed(queue[1])) do
+  -- 1.2.1: waiting for the instance: no timer, no ageing, no dropping; PLAYER_ENTERING_WORLD goes on
+  if W4.held(false) then
+    stats.lastReason = "instance"
+    W4.heldSince = W4.heldSince or GetTime()
+    holdRounds = 0
+    return
+  end
+  -- 1.2.1: the age of a waiting message in session time (GetTime): a clock set forward or back no longer drops the
+  -- queue, and the time sending was held (fight, lockdown, instance) does not count
+  local t = GetTime()
+  if W4.heldSince then
+    local d = t - W4.heldSince
+    W4.heldSince = nil
+    if d > 0 then for i = 1, #queue do queue[i].at = queue[i].at + d end end
+  end
+  -- (a message on a way refused in this instance does not age: it waits for the zone change)
+  while queue[1] and not W4.block[W4.key(queue[1].channel, queue[1].target)]
+    and (t - queue[1].at > C.QUEUE_TTL or not allowed(queue[1])) do
     local x = table.remove(queue, 1)
     queued[x.id] = nil
     local st = statsOf(x)
     st.dropped = st.dropped + 1
   end
-  local m = queue[1]
+  local m, qi = queue[1], 1
   if not m then holdRounds = 0; return end
-  local why = holdReason()
+  local why = holdReason(false)
   if why then stats.lastReason = why; scheduleHold(); return end
+  -- 1.2.1 fix: the first message on a way that is not refused in this instance goes; when all wait, the zone change
+  -- sends them
+  if next(W4.block) and W4.kind() then
+    while m and W4.block[W4.key(m.channel, m.target)] do qi = qi + 1; m = queue[qi] end
+    if not m then
+      if W4.block.GUILD then stats.lastReason = "instance" end
+      holdRounds = 0
+      return
+    end
+    if t - m.at > C.QUEUE_TTL or not allowed(m) then
+      table.remove(queue, qi)
+      queued[m.id] = nil
+      local st = statsOf(m)
+      st.dropped = st.dropped + 1
+      return pump()
+    end
+  end
   -- 1.2.0 fix: two sends never closer than SEND_GAP, also when the queue was empty before (a burst such
   -- as "call off all" goes out spaced, not at once)
   local gt = GetTime()
@@ -1700,6 +1868,22 @@ function pump()
   st.lastResult = ok and (res == nil and "nil" or tostring(res)) or "error"
   local outcome = P.SendOutcome(ok, res, enum("Success", 0), enum("AddonMessageThrottle", 3),
     enum("ChannelThrottle", 8), enum("GeneralError", 9), enum("AddOnMessageLockdown", 11))
+  -- 1.2.1: in an instance the first refusal holds the queue until the zone changes; the message stays first,
+  -- counts no try and no failure (neither the guild's state nor a friend's whispers suffer from it)
+  local ik = W4.kind()
+  if ik then
+    if not W4.tried then W4.tried = true; W4.note(ik, outcome, st.lastResult, m.channel) end
+    if outcome ~= "ok" and outcome ~= "throttle" then
+      if not W4.refused then W4.refused = true; W4.note(ik, outcome, st.lastResult, m.channel) end
+      W4.block[W4.key(m.channel, m.target)] = true
+      if m.channel == "GUILD" then stats.lastReason = "instance" end
+      holdRounds = 0
+      -- the other ways go on
+      local After = _G.C_Timer and _G.C_Timer.After
+      if After and #queue > 1 then pumping = true; After(C.SEND_GAP, function() pumping = false; pump() end) end
+      return
+    end
+  end
   if outcome == "ok" then
     st.failStreak, st.hardFail = 0, nil
     m.throttled = nil
@@ -1712,6 +1896,12 @@ function pump()
   end
   if outcome == "ok" then
     st.sent = st.sent + 1
+    holdRounds = 0   -- something went out: a later lockdown gets its timer again
+    -- 1.2.1: the answer window opens when the own hello really went out
+    if m.kind == "H" then
+      if m.channel == "GUILD" then GCTX.helloAt = GetTime()
+      elseif friends and friends.OnHelloSent then friends.OnHelloSent(m.target) end
+    end
     if m.kind == "M" then st.listSent = (st.listSent or 0) + 1
     elseif m.kind == "X" then st.unlistSent = (st.unlistSent or 0) + 1 end
   elseif outcome ~= "throttle" then   -- throttled messages wait (bounded by QUEUE_TTL)
@@ -1721,7 +1911,7 @@ function pump()
   local maxTries = m.channel ~= "GUILD" and 2 or C.TRIES
   if outcome == "ok" or outcome == "drop" or m.tries >= maxTries then
     if outcome ~= "ok" then st.dropped = st.dropped + 1 end
-    table.remove(queue, 1)
+    table.remove(queue, qi)
     queued[m.id] = nil
   end
   if m.channel ~= "GUILD" and friends and friends.OnSent then friends.OnSent(m.target, outcome, m.channel) end
@@ -1731,7 +1921,7 @@ function pump()
       pumping = true
       local gap = outcome == "ok" and C.SEND_GAP or C.BACKOFF
       -- a throttled message waits longer each time (1.5, 3, 6 ... 30 s) instead of knocking every 1.5 s
-      if outcome == "throttle" and queue[1] == m then
+      if outcome == "throttle" and queue[qi] == m then
         gap = math.min(30, C.BACKOFF * 2 ^ math.min((m.throttled or 1) - 1, 6))
       end
       After(gap, function() pumping = false; pump() end)
@@ -1747,7 +1937,8 @@ Guild.Pump = pump
 -- Release and call-off (J/A) as well as listing and removal (M/X) of the same key take each other
 -- back while they wait: only the last word goes out (1.2.0 fix: release, call off, release, call
 -- off in a waiting queue lost the second call-off).
-local SUPERSEDE = { J = { J = true, A = true }, A = { J = true, A = true }, M = { M = true, X = true }, X = { M = true, X = true } }
+local SUPERSEDE = { J = { J = true, A = true }, A = { J = true, A = true }, M = { M = true, X = true }, X = { M = true, X = true },
+  B = { B = true } }   -- 1.2.1: a new amount (or taking it back) replaces the waiting one of the same target
 local function supersede(kind, text, channel, target)
   local takes = SUPERSEDE[kind]
   if not takes then return end
@@ -1774,7 +1965,7 @@ local function enqueue(text, kind, channel, target)
     st.dropped = st.dropped + 1
     return false, "full"
   end
-  queue[#queue + 1] = { text = text, at = now(), tries = 0, kind = kind, channel = channel, target = target, id = id,
+  queue[#queue + 1] = { text = text, at = GetTime(), tries = 0, kind = kind, channel = channel, target = target, id = id,
     guild = channel == "GUILD" and guildNameNow() or nil }
   queued[id] = true
   pump()
@@ -1812,7 +2003,7 @@ local function sendHello()
   if not canSend() or setting("receive") ~= true then return false end
   lastHello = GetTime()
   GCTX.helloAt = lastHello
-  return enqueue(P.EncodeHello(since(), addonVersion()))
+  return enqueue(P.EncodeHello(since(), addonVersion()), "H")
 end
 
 function Guild.SyncNow()
@@ -1890,6 +2081,9 @@ local function answer(ctx, since, send)
   -- 1.2.0: the answer names all own releases: Z says so, with their number (a capped answer or
   -- one with a lost J is no snapshot; the receiver compares the number)
   if all and mine and sent == #hunts then send(P.EncodeSnapshot(mine, sent, book), "Z") end
+  -- 1.2.1: own bounties and their end (Y), after the Z (1.2.0 drops both)
+  local ext = Guild.Ext
+  if ext and ext.answer then ext.answer(ctx, send, mine, book) end
 end
 
 local function sendGuild(text, kind) return enqueue(text, kind) end
@@ -1898,6 +2092,9 @@ local function sendReply()
   local r = reply
   reply = nil
   if not r or not canSend() then return end
+  -- 1.2.1: while the queue waits for the instance the answer waits too (one answer, hellos meanwhile merge into
+  -- it); it goes out when the zone changes, so the queue does not fill up in a battleground
+  if W4.held() then reply = r; W4.replyHeld = true; return end
   -- no answer (and so no Z) while the guild name is not known yet after the login: the bound list could be
   -- the one of another guild of this account. Tried again a little later.
   if not bind() then
@@ -1962,6 +2159,11 @@ local function fireBagged(key, char, t, src)
   bagSeen[key] = { by = char, t = t }
   ns:Fire("HUNT_BAGGED", key, char, t, src)
 end
+-- 1.2.1: was this kill reported as "taken down" already? (one kill, one notice: Bounty.lua asks before "avenged")
+function Guild.BagSeen(key, char, t)
+  local b = type(key) == "string" and bagSeen[key] or nil
+  return b ~= nil and b.by == char and type(t) == "number" and math.abs(b.t - t) < C.BAG_DEDUPE
+end
 
 -- Targets hidden "for me" (1.2.0 fix): no alarm, pale at the end of the list, undone at the poster.
 -- gdb.huntHidden = { [key] = time hidden } (account-wide, additive)
@@ -1972,12 +2174,20 @@ end
 
 -- the answer window of a channel: open for ANSWER_WINDOW seconds after the OWN hello on it (1.2.0:
 -- the hello of somebody else no longer opens it); returns the window's id (GetTime of the hello) or nil
+-- 1.2.1 fix: the window opens when the hello really went out (a hello that waited in the queue no longer finds
+-- the answers outside of it), and it stays open for a sender as long as his answer comes in (ANSWER_GAP after each
+-- part, ANSWER_LONG at most): a long answer under the client's throttle is still one answer.
 local EMPTY_KEYS = {}
-local function answerWindow(ctx)
+local function answerWindow(ctx, who)
   local ha = ctx.helloAt
-  if ha and GetTime() - ha <= C.ANSWER_WINDOW then return ha end
+  if not ha then return nil end
+  local gt = GetTime()
+  if gt - ha <= C.ANSWER_WINDOW then return ha end
+  local s = who and ctx.fresh[who]
+  if s and s.awin == ha and gt <= s.aend and gt - ha <= C.ANSWER_LONG then return ha end
   return nil
 end
+Guild.AnswerWindow = answerWindow
 
 -- Cap per sender (1.2.0): new releases (J) and kills (E). In the answer window after the own
 -- hello a J is an answer: at most HUNT_REPLY per sender and window (what the protocol puts into one answer);
@@ -1987,7 +2197,7 @@ local function mayTakeRelease(ctx, who, t)
   local f = ctx.fresh
   local s = f[who]
   if not s then s = { at = t, n = 0, w = 0 }; f[who] = s end
-  local ha = answerWindow(ctx)
+  local ha = answerWindow(ctx, who)
   if ha then
     if s.win ~= ha then s.win, s.w = ha, 0 end
     if s.w >= C.HUNT_REPLY then return false end
@@ -2004,7 +2214,7 @@ end
 -- says how many J his answer had. When the numbers agree the answer was complete and every other release of
 -- this owner in the table is called off (he no longer names it). A capped or broken answer is no snapshot.
 local function noteAnswered(ctx, who, key)
-  local ha = answerWindow(ctx)
+  local ha = answerWindow(ctx, who)
   if not ha then return end
   local s = ctx.fresh[who]
   if not s then s = { at = now(), n = 0, w = 0 }; ctx.fresh[who] = s end
@@ -2014,7 +2224,7 @@ end
 
 local function applySnapshot(ctx, m, short, full)
   local hunts = ctx.hunts
-  local ha = answerWindow(ctx)
+  local ha = answerWindow(ctx, full)
   if not hunts or not ha then return false end
   local s = ctx.fresh[full]
   local keys = s and s.zwin == ha and s.zkeys or EMPTY_KEYS
@@ -2079,6 +2289,13 @@ end
 local function apply(ctx, m, short, full, t, known)
   local st, kind = ctx.stats, m.kind
   if ctx == GCTX and (setting("receive") ~= true or not list) then return end
+  -- 1.2.1: a part of his answer keeps the window open for him
+  local ha = answerWindow(ctx, full)
+  if ha then
+    local s = ctx.fresh[full]
+    if not s then s = { at = now(), n = 0, w = 0 }; ctx.fresh[full] = s end
+    s.awin, s.aend = ha, GetTime() + C.ANSWER_GAP
+  end
   if kind == "K" or kind == "R" then
     if not owns(m.victim, short, known) then
       st.dropped = st.dropped + 1; st.lastReason = "victim"
@@ -2133,6 +2350,11 @@ local function apply(ctx, m, short, full, t, known)
   elseif kind == "Z" then
     if not owns(m.by, short, known) then st.dropped = st.dropped + 1; st.lastReason = "by"; return end
     if applySnapshot(ctx, m, short, full) then setHook(); updated() end
+  elseif kind == "B" or kind == "Y" or kind == "V" then
+    -- 1.2.1: bounties and "avenged" (Bounty.lua); the same check of the sender
+    if not owns(m.by, short, known) then st.dropped = st.dropped + 1; st.lastReason = "by"; return end
+    local ext = Guild.Ext
+    if ext and ext.apply then ext.apply(ctx, m, short, full, t) end
   elseif kind == "J" or kind == "A" or kind == "E" then
     local hunts = ctx.hunts
     if not hunts then return end
@@ -2863,6 +3085,8 @@ function Guild.Clear()
     GCTX.cleared = list.huntCleared
     P.ClearForeign(list.hunts, isOwnChar, list.huntCleared)
   end
+  -- 1.2.1: the bounties others set in this guild go too (own ones live apart and stay)
+  if list and Guild.Ext and Guild.Ext.clear then Guild.Ext.clear(list) end
   setHook()
   updated()
 end
@@ -3176,13 +3400,24 @@ local function isHunted(key)
   return (GH and GH[key]) or (fh and fh[key]) or nil
 end
 
--- Key of a killed player for the hunt list: tracker, own book, else a unique first name.
-local function huntKeyForGUID(guid)
+-- 1.2.1: the key the tracker or the own book knows for a GUID. Returns key when has(key), else nil and whether the
+-- player is known by his full name: a known other player never falls back to the first name (a namesake of a
+-- killer is not the killer).
+function Guild.KeyOfGUID(guid, has)
   local r = ns.Tracker and ns.Tracker.ByGUID and ns.Tracker.ByGUID(guid)
-  if type(r) == "table" and type(r.key) == "string" and isHunted(r.key) then return r.key end
+  local rk = type(r) == "table" and type(r.key) == "string" and r.key or nil
+  if rk and has(rk) then return rk end
   local Store = ns.Store
   local k = Store and Store.ByGUID and Store.ByGUID(guid)
-  if k and isHunted(k) then return k end
+  if k and has(k) then return k end
+  local e = k and Store.Get and Store.Get(k)
+  return nil, (rk ~= nil and r.surname ~= nil) or (type(e) == "table" and e.surname ~= nil)
+end
+
+-- Key of a killed player for the hunt list: tracker, own book, else a unique first name.
+local function huntKeyForGUID(guid)
+  local k, sure = Guild.KeyOfGUID(guid, isHunted)
+  if k or sure then return k end
   local _, _, _, _, _, name = Call(_G.GetPlayerInfoByGUID, guid)
   name = Str(name)
   if not name then return nil end
@@ -3204,27 +3439,35 @@ end
 
 -- PARTY_KILL with my (or my pet's) GUID as attacker: a sure own killing blow, the same signal
 -- that counts revenge. A target of the hunt list is "erlegt" in every list that hunts it.
+-- 1.2.1: the same kill of a killer of others in the guild or friends' book goes out as V (Bounty.lua), after the E.
 function Guild.OnPartyKill(attackerGUID, targetGUID)
-  if not anyHunt() then return false end
+  local ext = Guild.Ext
+  local hunted = anyHunt()
+  local av = ext ~= nil and ext.wants ~= nil and ext.wants() == true
+  if not hunted and not av then return false end
   attackerGUID, targetGUID = Str(attackerGUID), Str(targetGUID)
   if not attackerGUID or not targetGUID or not targetGUID:find("^Player%-") then return false end
   local meG, pet = Str(call1(_G.UnitGUID, "player")), Str(call1(_G.UnitGUID, "pet"))
   if attackerGUID ~= meG and attackerGUID ~= pet then return false end
   if not Util.IsOpenWorld() then return false end
-  local key = huntKeyForGUID(targetGUID)
+  local key = hunted and huntKeyForGUID(targetGUID) or nil
   local mine = myFullName()
-  if not key or not mine then return false end
+  if not mine then return false end
   local t = now()
   local hit = false
-  local inG = false
-  if GH and GH[key] and P.BagHunt(GH, key, mine, t) then
+  local inG, inF = false, false
+  if key and GH and GH[key] and P.BagHunt(GH, key, mine, t) then
     hit, inG = true, true
     if canSend() then enqueue(P.EncodeBagged(key, mine, t), "E") end
   end
   local fh = fhunts()
-  if fh and fh[key] and P.BagHunt(fh, key, mine, t) then
-    hit = true
+  if key and fh and fh[key] and P.BagHunt(fh, key, mine, t) then
+    hit, inF = true, true
     friends.Broadcast(P.EncodeBagged(key, mine, t), "E", not inG)
+  end
+  if av then
+    local ok, err = pcall(ext.partyKill, targetGUID, t, mine, inG, inF)
+    if not ok and ns.ReportError then ns.ReportError(err) end
   end
   if not hit then return false end
   updated()
@@ -3244,6 +3487,9 @@ Guild.Bridge = {
   touchMembers = function() membersVersion = membersVersion + 1 end,
   ownHunts = ownHunts, ownTombs = ownTombs, released = function(key) return Guild.Released(key) end,
   huntOpts = function() return Guild.HuntOpts() end, fireBagged = fireBagged,
+  -- 1.2.1: the guild's receiving context (Bounty.lua) and the instance wait (Friends.lua: answers wait too)
+  gctx = GCTX, instanceHeld = W4.held, wayKey = W4.key, book = function() return book end,
+  guildList = function() return list end, inGuild = inGuild,
 }
 
 function Guild.AttachFriends(F)
@@ -3263,6 +3509,8 @@ local function sanitizeList(L, t)
   if L.used ~= nil and type(L.used) ~= "number" then L.used = nil end
   -- hunt list (1.2.0): broken tables out; the releases are checked when the list is used
   if L.hunts ~= nil and type(L.hunts) ~= "table" then L.hunts = nil end
+  -- bounties (1.2.1): checked when the list is used (Bounty.lua)
+  if L.bounty ~= nil and type(L.bounty) ~= "table" then L.bounty = nil end
   if type(L.huntOff) == "table" then
     for key, x in pairs(L.huntOff) do
       if type(key) ~= "string" or type(x) ~= "table" or type(x.t) ~= "number" or type(x.by) ~= "string"
@@ -3325,13 +3573,14 @@ function Guild.Init()
     end
   end
   list, sanitized, GH = nil, {}, nil
-  GCTX.hunts, GCTX.huntOff, GCTX.fresh, GCTX.helloAt, GCTX.cleared = nil, nil, {}, nil, nil
+  GCTX.hunts, GCTX.huntOff, GCTX.fresh, GCTX.helloAt, GCTX.cleared, GCTX.bounty = nil, nil, {}, nil, nil, nil
   roster, rosterAt, newRel, newPlanned = nil, nil, {}, false
   store.enemies, store.count, store.bySender, store.listedBySender = {}, 0, {}, {}
   if gdb.name and gdb.lists[gdb.name] then useList(gdb.name) end
   flood, queue, queued, reply, backfilled, lastSendAt = {}, {}, {}, nil, false, nil
   seenWrite, sightSent, spotFrame = {}, {}, {}
   helloFrom, announced, lastReplyAt, meFull = {}, {}, nil, nil
+  W4.block, W4.tried, W4.refused, W4.heldSince, W4.replyHeld = {}, false, false, nil, false
   for k in pairs(bagSeen) do bagSeen[k] = nil end
   invalidate()
   local CI = _G.C_ChatInfo
@@ -3522,11 +3771,30 @@ ns:RegisterEvent("GUILD_ROSTER_UPDATE", function()
   leaversPlanned = true
   After(2, function()
     leaversPlanned = false
-    if GH then rosterNow(); Guild.PurgeLeavers() end
+    if GH or (GCTX.bounty and next(GCTX.bounty)) then rosterNow(); Guild.PurgeLeavers() end
   end)
 end)
 ns:RegisterEvent("PLAYER_REGEN_ENABLED", function() if #queue > 0 then pump() end end)
-ns:RegisterEvent("PLAYER_ENTERING_WORLD", function() if #queue > 0 then pump() end end)
+-- 1.2.1: a new zone (loading screen): the refusal of the last instance no longer holds; what waited for the
+-- instance goes on without having aged meanwhile, and the answers that waited go out
+ns:RegisterEvent("PLAYER_ENTERING_WORLD", function()
+  -- the messages that waited on a refused way start their age anew
+  if next(W4.block) then
+    local gt = GetTime()
+    for i = 1, #queue do if W4.block[W4.key(queue[i].channel, queue[i].target)] then queue[i].at = gt end end
+  end
+  W4.block, W4.tried, W4.refused = {}, false, false
+  if W4.held(false) then
+    if #queue > 0 then pump() end
+    return
+  end
+  if W4.replyHeld then
+    W4.replyHeld = false
+    if reply then sendReply() end
+  end
+  if friends and friends.OnResume then friends.OnResume() end
+  if #queue > 0 then pump() end
+end)
 ns:RegisterEvent("ADDON_RESTRICTION_STATE_CHANGED", function() if #queue > 0 then pump() end end)
 ns:RegisterEvent("PLAYER_LOGOUT", function()
   if not gdb then return end

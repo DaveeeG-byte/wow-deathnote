@@ -336,7 +336,7 @@ L.MANUAL_ALERT = "Quand un tueur apparaît en barre d'info, en cible ou sous la 
 L.MANUAL_ADD_HEAD = "AJOUTER"  -- [max 12]
 L.MANUAL_ADD = "Tape un nom dans le champ de recherche, Entrée. Clic droit sur une ligne : noter une vengeance, gracier, rayer."
 L.MANUAL_GUILD_HEAD = "GUILDE"  -- [max 12]
-L.MANUAL_GUILD = "Ta guilde et tes amis qui ont DeathNote voient tes morts avérées et tes ajouts manuels. Affiche ou /dn hunt Nom : ouvrir la chasse."
+L.MANUAL_GUILD = "Ta guilde et tes amis qui ont DeathNote voient tes morts avérées et tes ajouts manuels. Affiche ou /dn hunt Nom : ouvrir la chasse. Clic sur la prime : mettre la tienne, une promesse réglée entre vous."
 L.MANUAL_SHARE_HEAD = "TRANSMETTRE"  -- [max 12]
 L.MANUAL_SHARE = "Règlement intérieur, Sauvegarder : un texte à copier, pour tous ceux qui n'ont pas DeathNote."
 L.MANUAL_QUIET_HEAD = "SILENCE"  -- [max 12]
@@ -610,5 +610,32 @@ L.ACT_TIE_MINE = "Mon ami : {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Délier le nom"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "Délier {name} de ta liste d'amis ?\nCe que ce nom a apporté au carnet des amis est effacé ; le prochain message sous ce prénom crée un nouveau lien."
 L.CHAT_FRIENDS_TIES = "Noms complets liés (* = premier contact, pas encore prouvé) : {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Prénom [Nom]> <or>  mettre ta propre prime (sans montant : la retirer)"
+L.CHAT_WHO_BOUNTY = "Sur qui ? /dn bounty <Nom> <or>"
+L.CHAT_BOUNTY_SET = "{name} : tu offres une prime de {gold} po. Ta guilde et tes amis avec DeathNote la voient."
+L.CHAT_BOUNTY_OFF = "{name} : ta prime est retirée."
+L.CHAT_BOUNTY_NONE = "Tu n'as mis aucune prime sur {name}."
+L.CHAT_BOUNTY_BAD = "Prime : un nombre entier de pièces d'or, de 1 à 99999 (0 la retire)."
+L.CHAT_BOUNTY_CAP = "Pas de prime : au plus {count} de ta part."
+L.CHAT_BOUNTY_OURS = "Pas de prime sur toi ni sur les tiens (guilde ou amis avec DeathNote)."
+L.ACT_BOUNTY = "Mettre une prime"  -- [max 24]
+L.ACT_UNDO = "Annuler"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Retirer une vengeance"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, offerte par toi"
+L.POSTER_BOUNTY_BY = "{gold}, offerte par {name}"
+L.POSTER_BOUNTY_MANY = "Prime {gold} : {names}"
+L.POSTER_AVENGED = "Vengé par {names}"
+L.ROW_AVENGED = "vengé {times}"
+L.BOUNTY_TIP_HEAD = "Ta propre prime, en or"
+L.BOUNTY_TIP_RULES = "Un nombre entier, de 1 à 99999. Vide ou 0 : retour à la valeur du carnet. Entrée valide, Échap annule."
+L.BOUNTY_TIP_PROMISE = "Ta guilde et tes amis avec DeathNote la voient. Simple promesse : ça se règle entre vous."
+L.BOUNTY_TIP_CLICK = "Clic : mettre ta propre prime"
+L.CHAT_AVENGED = "{name} a abattu {killer} pour toi."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name} : tu offres une prime de {gold} po."
+L.CHAT_BOUNTY_UNKNOWN = "{name} n'est dans aucun de tes carnets. Une prime ne se met que sur un nom d'un carnet, tel que le jeu l'affiche : prénom et nom."
+L.CHAT_BOUNTY_LIST = "Tes primes ({count} sur {max}) : {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Tu n'as mis aucune prime."
 -- <<< BOOK
 end)

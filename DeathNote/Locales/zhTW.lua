@@ -350,7 +350,7 @@ L.MANUAL_ALERT = "兇手一出現在名條、目標或滑鼠指向中，記仇�
 L.MANUAL_ADD_HEAD = "新增"  -- [max 12]
 L.MANUAL_ADD = "在搜尋欄輸入名字，按Enter。右鍵點擊一行：記下復仇、赦免、劃掉。"
 L.MANUAL_GUILD_HEAD = "公會"  -- [max 12]
-L.MANUAL_GUILD = "裝了DeathNote的公會成員和好友看得到你已查明兇手的死亡和手動條目。通緝令或/dn hunt 名字：列入追殺名單。"
+L.MANUAL_GUILD = "裝了DeathNote的公會成員和好友看得到你已查明兇手的死亡和手動條目。通緝令或/dn hunt 名字：列入追殺名單。點擊賞金：懸賞你自己的（只是承諾，兌現在你們之間）。"
 L.MANUAL_SHARE_HEAD = "傳閱"  -- [max 12]
 L.MANUAL_SHARE = "家規，備份記仇本：產生一段可複製的文字，給所有沒裝DeathNote的人。"
 L.MANUAL_QUIET_HEAD = "安靜"  -- [max 12]
@@ -624,5 +624,32 @@ L.ACT_TIE_MINE = "我的好友：{name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "解除綁定"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "解除{name}與好友名單的綁定？\n這個名字帶進好友記仇本的內容將被刪除；之後以這個名字傳來的下一則訊息會重新綁定。"
 L.CHAT_FRIENDS_TIES = "已綁定的完整名字（* = 首次接觸，尚未確認）：{list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <名字 [姓氏]> <金幣>  懸賞你自己的賞金（不寫金額：撤回）"
+L.CHAT_WHO_BOUNTY = "懸賞誰？/dn bounty <名字> <金幣>"
+L.CHAT_BOUNTY_SET = "{name}：你懸賞了{gold}金幣。裝了DeathNote的公會成員和好友都看得到。"
+L.CHAT_BOUNTY_OFF = "{name}：你的賞金已撤回。"
+L.CHAT_BOUNTY_NONE = "你沒有給{name}懸賞。"
+L.CHAT_BOUNTY_BAD = "賞金：1到99999之間的整數金幣（0為撤回）。"
+L.CHAT_BOUNTY_CAP = "無法懸賞：你自己最多{count}份。"
+L.CHAT_BOUNTY_OURS = "不能懸賞你自己或自己人（裝了DeathNote的公會成員或好友）。"
+L.ACT_BOUNTY = "設定賞金"  -- [max 24]
+L.ACT_UNDO = "撤銷"  -- [max 19]
+L.ACT_REVENGE_TAKE = "減去一次復仇"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}，由你懸賞"
+L.POSTER_BOUNTY_BY = "{gold}，由{name}懸賞"
+L.POSTER_BOUNTY_MANY = "賞金{gold}：{names}"
+L.POSTER_AVENGED = "代為復仇：{names}"
+L.ROW_AVENGED = "代為復仇{times}"
+L.BOUNTY_TIP_HEAD = "你自己的賞金（金幣）"
+L.BOUNTY_TIP_RULES = "1到99999之間的整數。留空或0：恢復記仇本的數值。Enter確認，Esc取消。"
+L.BOUNTY_TIP_PROMISE = "裝了DeathNote的公會成員和好友都看得到。只是一句承諾，兌現在你們之間。"
+L.BOUNTY_TIP_CLICK = "點擊：設定你自己的賞金"
+L.CHAT_AVENGED = "{name}替你擊殺了{killer}。"
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}：你懸賞了{gold}金幣。"
+L.CHAT_BOUNTY_UNKNOWN = "{name}不在你的任何一本書裡。只能懸賞書中的名字，照遊戲中顯示的寫：名字和姓氏。"
+L.CHAT_BOUNTY_LIST = "你的懸賞（{count}/{max}）：{list}"
+L.CHAT_BOUNTY_LIST_NONE = "你沒有懸賞任何人。"
 -- <<< BOOK
 end)

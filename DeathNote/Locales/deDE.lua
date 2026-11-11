@@ -337,7 +337,7 @@ L.MANUAL_ALERT = "Taucht ein Täter als Namensplakette, Ziel oder unter der Maus
 L.MANUAL_ADD_HEAD = "EINTRAGEN"  -- [max 12]
 L.MANUAL_ADD = "Namen ins Suchfeld schreiben, Enter. Rechtsklick auf eine Zeile: Rache vermerken, begnadigen, streichen."
 L.MANUAL_GUILD_HEAD = "GILDE"  -- [max 12]
-L.MANUAL_GUILD = "Kollegen und Freunde mit DeathNote sehen deine sicheren Tode und Einträge von Hand. Plakat oder /dn jagd Name: zur Jagd freigeben."
+L.MANUAL_GUILD = "Kollegen und Freunde mit DeathNote sehen deine sicheren Tode und Einträge von Hand. Plakat oder /dn jagd Name: zur Jagd freigeben. Klick aufs Kopfgeld: eigenes ausloben, eine Ansage, eingelöst wird untereinander."
 L.MANUAL_SHARE_HEAD = "WEITERGEBEN"  -- [max 12]
 L.MANUAL_SHARE = "Hausordnung, Buch sichern: ein Text zum Kopieren, für alle ohne DeathNote."
 L.MANUAL_QUIET_HEAD = "RUHE"  -- [max 12]
@@ -611,5 +611,32 @@ L.ACT_TIE_MINE = "Mein Freund: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Bindung lösen"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "Die Bindung an {name} lösen?\nWas dieser Name ins Freundesbuch gebracht hat, wird gelöscht; die nächste Meldung unter diesem Vornamen bindet neu."
 L.CHAT_FRIENDS_TIES = "Gebundene volle Namen (* = erster Kontakt, noch nicht belegt): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn kopfgeld <Name [Nachname]> <Gold>  eigenes Kopfgeld ausloben (ohne Gold: zurücknehmen)"
+L.CHAT_WHO_BOUNTY = "Auf wen? /dn kopfgeld <Name> <Gold>"
+L.CHAT_BOUNTY_SET = "{name}: {gold} Gold Kopfgeld ausgelobt. Gilde und Freunde mit DeathNote sehen es."
+L.CHAT_BOUNTY_OFF = "{name}: dein Kopfgeld ist zurückgenommen."
+L.CHAT_BOUNTY_NONE = "Kein eigenes Kopfgeld auf {name}."
+L.CHAT_BOUNTY_BAD = "Kopfgeld: ganze Zahl Gold, 1 bis 99999 (0 nimmt es zurück)."
+L.CHAT_BOUNTY_CAP = "Kein Kopfgeld: höchstens {count} eigene."
+L.CHAT_BOUNTY_OURS = "Kein Kopfgeld auf dich oder deine Leute (Gilde oder Freunde mit DeathNote)."
+L.ACT_BOUNTY = "Kopfgeld ausloben"  -- [max 24]
+L.ACT_UNDO = "Rückgängig"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Eine Rache abziehen"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, ausgelobt von dir"
+L.POSTER_BOUNTY_BY = "{gold}, ausgelobt von {name}"
+L.POSTER_BOUNTY_MANY = "Kopfgeld {gold}: {names}"
+L.POSTER_AVENGED = "Gerächt von {names}"
+L.ROW_AVENGED = "gerächt {times}"
+L.BOUNTY_TIP_HEAD = "Dein eigenes Kopfgeld in Gold"
+L.BOUNTY_TIP_RULES = "Ganze Zahl, 1 bis 99999. Leer oder 0: zurück zum Wert des Buchs. Enter setzt, Esc bricht ab."
+L.BOUNTY_TIP_PROMISE = "Gilde und Freunde mit DeathNote sehen es. Nur eine Ansage, eingelöst wird untereinander."
+L.BOUNTY_TIP_CLICK = "Klick: eigenes Kopfgeld ausloben"
+L.CHAT_AVENGED = "{name} hat {killer} für dich erledigt."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: {gold} Gold Kopfgeld ausgelobt."
+L.CHAT_BOUNTY_UNKNOWN = "{name} steht in keinem deiner Bücher. Kopfgeld nur auf Namen aus einem Buch, so wie das Spiel sie zeigt: Vorname und Nachname."
+L.CHAT_BOUNTY_LIST = "Deine Kopfgelder ({count} von {max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Du hast kein Kopfgeld ausgelobt."
 -- <<< BOOK
 end)

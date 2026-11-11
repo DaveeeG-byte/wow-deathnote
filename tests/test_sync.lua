@@ -442,14 +442,21 @@ test("Warteschlange: Drosselung, Kampf, Ablehnung, nie endlos", function()
   ownDeath(ns, "Wirft", "Fehler", time())
   M.Advance(60)
   eq(ns.Guild.QueueSize(), 0)
-  -- held forever (combat never ends): the queue is given up, no timer remains
+  -- held forever (combat never ends): no timer remains (1.2.1: what waits is kept, the end of the fight sends it;
+  -- the time held does not count against the age of a message)
   M.sendResult = nil
   M.inCombat = true
+  M.addonSent = {}
   ownDeath(ns, "Ewig", "Kampf", time())
+  -- (1.2.1 fix: after the fast rounds slower ones follow for a lockdown that ends without an event; then none)
+  M.Advance(1800)
+  ok(#M.timers > 0, "nach 30 Minuten noch der langsame Zeitgeber")
   M.Advance(3600)
-  eq(ns.Guild.QueueSize(), 0, "nie endlos")
   eq(#M.timers, 0, "kein Timer läuft weiter")
+  eq(ns.Guild.QueueSize(), 1, "nichts verloren")
   M.inCombat = false
+  M.FireEvent("PLAYER_REGEN_ENABLED")
+  eq(#M.addonSent, 1, "nach dem Kampf gesendet")
   eq(#M.errors, 0)
 end)
 
@@ -494,7 +501,8 @@ test("Antwort auf H: nur eigene Kills, neuer als since, neueste zuerst, höchste
   hear("1\tH\t" .. (base + 5) .. "\t1.0.0", "Dritter-Forever")   -- merged into the pending answer
   M.Advance(60)
   -- fix-2: am Ende jeder Antwort steht ein Z (Momentaufnahme der Freigaben); gezaehlt werden die Taten
-  for i = #M.addonSent, 1, -1 do if M.addonSent[i].text:match("^1\tZ\t") then table.remove(M.addonSent, i) end end
+  -- (1.2.1: danach ein Y, die Momentaufnahme der Kopfgelder)
+  for i = #M.addonSent, 1, -1 do if M.addonSent[i].text:match("^1\t[ZY]\t") then table.remove(M.addonSent, i) end end
   eq(#M.addonSent, 30, "höchstens 30")
   local P = ns.Guild.Proto
   local prev = math.huge
@@ -509,7 +517,7 @@ test("Antwort auf H: nur eigene Kills, neuer als since, neueste zuerst, höchste
   M.addonSent = {}
   hear("1\tH\t" .. (base + 500) .. "\t1.0.0", "Vierter-Forever")
   M.Advance(30)
-  for i = #M.addonSent, 1, -1 do if M.addonSent[i].text:match("^1\tZ\t") then table.remove(M.addonSent, i) end end
+  for i = #M.addonSent, 1, -1 do if M.addonSent[i].text:match("^1\t[ZY]\t") then table.remove(M.addonSent, i) end end
   eq(#M.addonSent, 20, "Vierter bekommt eine Antwort (20 Taten neuer als sein since)")
   -- the same member again within 5 minutes: not answered
   M.addonSent = {}

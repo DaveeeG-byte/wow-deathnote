@@ -400,7 +400,7 @@ end
 -- 1.2.0: the lines come from the language table (HELP_*), in the active language; ns.HELP is built
 -- at activation. The German subcommands stay valid forever, the English ones work in every language.
 local HELP_KEYS = { "HELP_TOGGLE", "HELP_ADD", "HELP_DEL", "HELP_QUIET", "HELP_TEST", "HELP_GUILD", "HELP_FRIENDS",
-  "HELP_SYNC", "HELP_HUNT", "HELP_CALLOFF", "HELP_LANG", "HELP_PROBE", "HELP_PROBE_COMBATLOG", "HELP_DEBUG",
+  "HELP_SYNC", "HELP_HUNT", "HELP_CALLOFF", "HELP_BOUNTY", "HELP_LANG", "HELP_PROBE", "HELP_PROBE_COMBATLOG", "HELP_DEBUG",
   "HELP_HELP", "HELP_SILENT_ZONES" }
 ns.HELP_KEYS = HELP_KEYS
 local HELP = {}
@@ -422,6 +422,71 @@ local function haveList(members)
   local list = table.concat(names, ", ")
   if #members > 15 then return Fmt(L.CHAT_HAVE_DN_MORE, { names = list, count = #members - 15 }) end
   return Fmt(L.CHAT_HAVE_DN, { names = list })
+end
+
+-- 1.2.1: one chat line for setting or taking back an own bounty (slash command and the poster)
+-- disp = the target as shown, gold = whole gold (0 = taken back), ok/why = Guild.SetBounty's answer
+function Util.BountyReport(disp, gold, ok, why)
+  disp = Str(disp) or "?"
+  if ok then
+    if gold and gold > 0 then
+      -- 1.2.1 fix: "Gilde und Freunde sehen es" only when there is somebody to see it
+      local G, F = ns.Guild, ns.Friends
+      local fdb = F and F.DB and F.DB()
+      local shared = (G and G.HuntTargets and G.HuntTargets()) or (type(fdb) == "table" and type(fdb.members) == "table"
+        and next(fdb.members) ~= nil)
+      Util.Print(Fmt(shared and L.CHAT_BOUNTY_SET or L.CHAT_BOUNTY_SET_ALONE, { name = disp, gold = gold }))
+    else
+      Util.Print(Fmt(L.CHAT_BOUNTY_OFF, { name = disp }))
+    end
+  elseif why == "none" then Util.Print(Fmt(L.CHAT_BOUNTY_NONE, { name = disp }))
+  elseif why == "cap" then Util.Print(Fmt(L.CHAT_BOUNTY_CAP, { count = ns.Guild and ns.Guild.C and ns.Guild.C.BOUNTY_PER_SENDER or 20 }))
+  elseif why == "ours" then Util.Print(L.CHAT_BOUNTY_OURS)
+  elseif why == "gold" then Util.Print(L.CHAT_BOUNTY_BAD)
+  else Util.Print(Fmt(L.CHAT_HUNT_UNKNOWN, { name = disp })) end
+end
+
+-- /dn kopfgeld <Name [Surname]> [gold]: the last word is the amount when it is a number; none or 0 takes it back
+-- 1.2.1 fix: without anything it lists the own bounties of this char; only names from a book get one (a typo no
+-- longer posts a bounty nobody can see); an amount with a unit ("50g", "50 Gold", "1e3") gets the rule line.
+local function slashBounty(rest)
+  local G = ns.Guild
+  if not (G and G.SetBounty) then Util.Print(L.CHAT_HUNT_NOT_LOADED); return end
+  local Store = ns.Store
+  local function shown(key)
+    local x = (Store and Store.Get(key)) or G.Get(key, "all") or G.Hunt(key, "all")
+    return type(x) == "table" and Util.Display(x) or (key:gsub("%-", " "))
+  end
+  if rest == "" then
+    local own = ns.Bounty and ns.Bounty.OwnList and ns.Bounty.OwnList() or {}
+    if #own == 0 then Util.Print(L.CHAT_BOUNTY_LIST_NONE); Util.Print(L.CHAT_WHO_BOUNTY); return end
+    local parts = {}
+    for i = 1, #own do parts[i] = shown(own[i].key) .. " " .. Fmt(L.MONEY_GOLD, { count = own[i].g }) end
+    Util.Print(Fmt(L.CHAT_BOUNTY_LIST, { count = #own, max = G.C and G.C.BOUNTY_PER_SENDER or 20,
+      list = table.concat(parts, ", ") }))
+    return
+  end
+  local name, amount = rest:match("^(.-)%s+(%S+)$")
+  local gold = 0
+  if amount and amount:match("^%d+$") then
+    gold = tonumber(amount)
+    if #amount > 6 or gold > (G.C and G.C.BOUNTY_GOLD_MAX or 99999) then Util.Print(L.CHAT_BOUNTY_BAD); return end
+  elseif amount and amount:match("^[%d%.,%-%+]+$") then
+    Util.Print(L.CHAT_BOUNTY_BAD); return
+  else
+    name = rest
+  end
+  -- names carry no digits: a digit in the name part is a wrongly written amount
+  if name and name:find("%d") then Util.Print(L.CHAT_BOUNTY_BAD); return end
+  local key = G.FindTarget(name)
+  if not key then Util.Print(Fmt(L.CHAT_HUNT_UNKNOWN, { name = name })); return end
+  local inBook = (Store and Store.Get(key)) or G.Get(key, "all") or G.Hunt(key, "all")
+  -- a name from no book: refused (taking back an own one still works)
+  if not inBook and not (gold == 0 and G.OwnBounty and G.OwnBounty(key)) then
+    Util.Print(Fmt(L.CHAT_BOUNTY_UNKNOWN, { name = name })); return
+  end
+  local ok, why = G.SetBounty(key, gold)
+  Util.BountyReport(shown(key), gold, ok, why)
 end
 
 -- /dn lang [code]: shows or stores the language (works after /reload)
@@ -587,6 +652,8 @@ function ns.HandleSlash(msg)
     else
       Util.Print(Fmt(L.CHAT_NO_OWN_CALL, { name = rest }))
     end
+  elseif cmd == "kopfgeld" or cmd == "bounty" then
+    slashBounty(rest)
   elseif cmd == "lang" or cmd == "sprache" or cmd == "language" then
     slashLang(rest)
   elseif cmd == "hilfe" or cmd == "help" or cmd == "?" then

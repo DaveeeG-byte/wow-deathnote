@@ -12,6 +12,7 @@ local DB_VERSION = 3      -- 2: combat log stage off by default (closed on Forev
                           -- 3: every deed has a role (kill/assist/suspect), entries count assists
 local MAX_ENEMY_DEATHS = 30
 local MAX_JOURNAL = 100
+local HAND_TIMES = 10     -- 1.2.1: times of hand revenges kept per entry (revengeHandAt)
 local VALID_STATUS = { wanted = true, suspect = true, pardoned = true }
 local VALID_ROLE = { kill = true, assist = true, suspect = true }
 
@@ -168,6 +169,33 @@ local function sanitizeEntry(key, e)
   e.suspected = num(e.suspected, 0)
   e.assists = num(e.assists, 0)
   e.revenge = num(e.revenge, 0)
+  -- 1.2.1: revenge noted by hand (part of revenge); a broken or too big mark is repaired, never grows the count
+  if e.revengeHand ~= nil then
+    local h = num(e.revengeHand, 0)
+    h = math.min(math.floor(h), e.revenge)
+    e.revengeHand = h >= 1 and h or nil
+  end
+  -- 1.2.1 fix: times of the hand revenges (newest last) and of the last recognised one, for "last revenge" after
+  -- taking one back; broken ones go (then the time simply stays as it was)
+  if e.revengeHandAt ~= nil then
+    local l, ok = e.revengeHandAt, type(e.revengeHandAt) == "table" and e.revengeHand ~= nil
+    if ok then
+      for i = #l, 1, -1 do if type(l[i]) ~= "number" or l[i] ~= l[i] or l[i] == math.huge or l[i] == -math.huge then ok = false end end
+      ok = ok and #l <= math.min(HAND_TIMES, e.revengeHand)
+    end
+    if not ok then e.revengeHandAt = nil end
+  end
+  if e.revengeAutoAt ~= nil and (type(e.revengeAutoAt) ~= "number" or e.revengeAutoAt ~= e.revengeAutoAt
+    or e.revenge <= (e.revengeHand or 0)) then e.revengeAutoAt = nil end
+  -- 1.2.1 fix: an older version recognised a revenge after these times (back to 1.2.0 and up again): its time is
+  -- the last revenge, newer than every noted one; it becomes the time of the last recognised one
+  local lr = e.lastRevenge
+  if (e.revengeAutoAt ~= nil or e.revengeHandAt ~= nil) and e.revenge > (e.revengeHand or 0) and type(lr) == "number"
+    and lr == lr and lr < math.huge and lr > (e.revengeAutoAt or -math.huge) then
+    local l, newer = e.revengeHandAt or {}, true
+    for i = 1, #l do if l[i] >= lr then newer = false end end
+    if newer then e.revengeAutoAt = lr end
+  end
   e.sightings = num(e.sightings, 0)
   if not VALID_STATUS[e.status] then
     e.status = (e.kills > 0 or e.assists > 0 or e.manual) and "wanted" or (e.suspected > 0 and "suspect" or "wanted")
@@ -870,14 +898,65 @@ function Store.DismissSuspect(key)
   return true
 end
 
-function Store.AddRevenge(key)
+-- byHand (1.2.1): noted by the player ("Rache vermerken"), counted apart in e.revengeHand (additive) so that
+-- only such a revenge can be taken back; revenge the addon recognised (own killing blow, honor) stays. Books of
+-- 1.2.0 and older carry no mark: their revenge counts as recognised.
+function Store.AddRevenge(key, byHand)
   local e = Store.Get(key)
   if not e then return false end
+  local t = now()
+  if byHand == true then
+    -- the recognised revenge before the first hand one (books of 1.2.0 and older): its time is the last one so far
+    if e.revengeAutoAt == nil and e.revenge > (tonumber(e.revengeHand) or 0) then e.revengeAutoAt = e.lastRevenge end
+    e.revengeHand = (tonumber(e.revengeHand) or 0) + 1
+    local l = type(e.revengeHandAt) == "table" and e.revengeHandAt or {}
+    l[#l + 1] = t
+    while #l > HAND_TIMES do table.remove(l, 1) end
+    e.revengeHandAt = l
+  else
+    e.revengeAutoAt = t
+  end
   e.revenge = e.revenge + 1
-  e.lastRevenge = now()
+  e.lastRevenge = t
   changed(key)
   ns:Fire("REVENGE", key)
   return true
+end
+
+-- Takes back the newest revenge noted by hand (1.2.1). The last revenge time becomes the newest that is left (the
+-- remaining hand ones, the last recognised one); when none of them is known: prevLast (the undo right after noting
+-- knows it), else it stays. Fires ENEMY_UPDATED and REVENGE_UNDONE.
+function Store.UndoRevenge(key, prevLast)
+  local e = Store.Get(key)
+  if not e or (tonumber(e.revengeHand) or 0) < 1 or (tonumber(e.revenge) or 0) < 1 then return false end
+  local l = type(e.revengeHandAt) == "table" and e.revengeHandAt or nil
+  if l then table.remove(l) end
+  e.revenge = e.revenge - 1
+  e.revengeHand = e.revengeHand - 1
+  if e.revengeHand <= 0 then e.revengeHand, e.revengeHandAt, l = nil, nil, nil end
+  if e.revenge <= (e.revengeHand or 0) then e.revengeAutoAt = nil end
+  local last = l and l[#l] or nil
+  local auto = tonumber(e.revengeAutoAt)
+  if auto and (not last or auto > last) then last = auto end
+  -- known: every kind that is left has a time (hand revenges beyond HAND_TIMES are older than the noted ones)
+  local hand = e.revengeHand or 0
+  local known = (hand == 0 or (l ~= nil and #l > 0)) and (e.revenge <= hand or auto ~= nil)
+  if e.revenge == 0 then
+    e.lastRevenge = nil
+  elseif known and last then
+    e.lastRevenge = last
+  elseif type(prevLast) == "number" and prevLast == prevLast then
+    e.lastRevenge = prevLast
+  end
+  changed(key)
+  ns:Fire("REVENGE_UNDONE", key)
+  return true
+end
+
+-- revenge noted by hand that can still be taken back
+function Store.HandRevenge(e)
+  if Util.IsSecret(e) or type(e) ~= "table" then return 0 end
+  return math.min(tonumber(e.revengeHand) or 0, tonumber(e.revenge) or 0)
 end
 
 -- Additive: turns journal entry `index` into a sure kill by `key` (source "manual").

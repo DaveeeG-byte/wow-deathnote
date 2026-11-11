@@ -1,25 +1,28 @@
-# DeathNote 1.2.0
+# DeathNote 1.2.1
 
 Addon für WoW Forever (Interface 16001). Schreibt im Open-World-PvP mit, wer dich getötet hat, zeigt die Täter als
 Buch und warnt, wenn einer wieder in Sicht ist. Teilt sichere Kills unsichtbar mit den Kollegen der Gilde (Gildenbuch)
-und mit Freunden von der Freundesliste (Freundesbuch); gemeinsam lassen sich Täter zur Jagd freigeben (Abschussliste).
+und mit Freunden von der Freundesliste (Freundesbuch); gemeinsam lassen sich Täter zur Jagd freigeben (Abschussliste) und
+eigene Kopfgelder ausloben. Änderungen je Version: `CHANGELOG.md`.
 
 ## Ordner
 - `DeathNote/` das Addon (so nach `_forever_/Interface/AddOns/DeathNote/` kopieren)
 - `DeathNote/Media/` Texturen (TGA); `DeathNote/Media/Sounds/` Alarmtöne (Ogg Vorbis, mono): `feder`, `glocke`,
   `gong`, `herzschlag`, `sirene`, je in 5 Stufen `_1` bis `_5` (leise bis laut)
 - `tests/` Logik-Tests (`bash tests/run.sh`), `tests/ui/` Oberflächen-Tests (`bash tests/ui/run.sh`), beide mit luajit;
-  `tests/fixtures/` echte SavedVariables von 1.0.1 als Migrations-Testfall
+  `tests/fixtures/` echte SavedVariables von 1.0.1 als Migrations-Testfall, `addon-1.1.0/` und `addon-1.2.0/` als alte
+  Clients für die Mischtests
 - `tests/ui/make_media.sh` erzeugt die Texturen neu (ImageMagick), `tests/ui/make_sounds.sh` die Töne
 
 ## Befehle
 `/dn` Buch auf/zu · `/dn add <Name [Nachname]>` Täter von Hand eintragen · `/dn del <Name>` streichen ·
 `/dn still` Alarm aus/an · `/dn test` Probe-Alarm · `/dn gilde` Stand des Gildenbuchs · `/dn freunde` Stand des
 Freundesbuchs · `/dn sync` Gilde und Freunde abgleichen · `/dn jagd <Name [Nachname]>` zur Jagd freigeben (ohne Name:
-die Abschussliste) · `/dn abblasen <Name>` eigene Freigabe zurücknehmen ·
+die Abschussliste) · `/dn abblasen <Name>` eigene Freigabe zurücknehmen · `/dn kopfgeld <Name [Nachname]> <Gold>`
+eigenes Kopfgeld ausloben (ohne Gold oder 0: zurücknehmen; ohne alles: die eigenen auflisten) ·
 `/dn sprache <Kennung|auto>` Sprache des Buchs (nach `/reload`) · `/dn probe` Fehlersuche · `/dn debug` Mitschnitt je Tod ·
 `/dn hilfe`. Gleichwertig: `/deathnote`, `/todesliste`, `/deathlist`. Englische Unterbefehle gelten in jeder Sprache
-(`help quiet guild friends test sync add del hunt calloff lang`), die deutschen bleiben gültig. Beim ersten Login
+(`help quiet guild friends test sync add del hunt calloff bounty lang`), die deutschen bleiben gültig. Beim ersten Login
 (einmal je Account) steht 5 s danach eine Begrüßungszeile im Chat, nie im Kampf.
 
 ## Sprachen (1.2.0)
@@ -44,8 +47,9 @@ DB-Version 3 stellt ältere Bücher beim ersten Login einmal um (Mittäter aus d
 
 ## Freundesbuch (1.2.0)
 Dieselben unsichtbaren Nachrichten wie in der Gilde (Protokoll Version 1), aber als Flüstern an Charakter-Freunde der
-Freundesliste, die online sind. Erst ein Hallo an jeden Freund online (beim Login nach 22 bis 34 s, ein Freund, der später
-online kommt, nach 25 bis 40 s); Live-Nachrichten gehen nur an Freunde, die in dieser Sitzung geantwortet haben, also
+Freundesliste, die online sind. Erst ein Hallo an die Freunde online (beim Login nach 22 bis 34 s, ein Freund, der später
+online kommt, nach 25 bis 40 s; höchstens 30 Hallos in 10 Minuten, je Freund höchstens eins in 5 Minuten, in der Reihenfolge
+der Liste); Live-Nachrichten gehen nur an Freunde, die in dieser Sitzung geantwortet haben, also
 DeathNote haben, höchstens 10 gleichzeitig. Ein Freund, der sicher (mit vollem Namen) in der eigenen Gilde ist, bekommt
 nichts per Flüstern (er hört es in der Gilde; nur Freigaben allein für Freunde gehen auch an ihn per Flüstern); nennt der
 Client nur Vornamen, wird im Zweifel geflüstert (Doppel werden zusammengelegt). Wer die Gilde verlässt, wird sofort per
@@ -53,7 +57,7 @@ Flüstern bedient. Derselbe Mensch auf Freundesliste und Battle.net ist ein Freu
 nur, was von einem Namen der eigenen Freundesliste kommt, alles andere wird vor dem Lesen verworfen. Steht ein Freund
 ohne Nachnamen auf der Liste: Das Hallo an Freunde trägt die eigene GUID; nennt die Freundesliste die GUID des Freundes,
 wird nur angenommen, wer sie hat (auch wenn der Client den Absender nur mit Vornamen nennt; fehlt der Beleg, sagt es die
-Statuszeile). Ein Kollege, der auf der Liste ohne Nachnamen steht, bekommt Freigaben allein für Freunde per Flüstern. Sonst bindet der erste Kontakt den vollen Namen vorläufig; meldet sich ein zweiter
+Statuszeile; ein schon gebundener Name wartet still auf sein Hallo, siehe Protokoll Punkt 17). Ein Kollege, der auf der Liste ohne Nachnamen steht, bekommt Freigaben allein für Freunde per Flüstern. Sonst bindet der erste Kontakt den vollen Namen vorläufig; meldet sich ein zweiter
 voller Name mit demselben Vornamen, nimmt das Buch von keinem mehr etwas an, die Daten des Gebundenen bleiben ohne Alarm,
 eine Chatzeile und die Statuszeile nennen beide, und der Spieler wählt im Reiter "Gilde & Freunde", Ansicht "Nach
 Kollege" per Rechtsklick ("Mein Freund: …"). Dort auch "Bindung lösen" (löscht, was der Name gebracht hat); Entfernen
@@ -87,6 +91,60 @@ leeren" und "Freundesbuch leeren" (Hausordnung, Blatt Gilde, Mehr) entfernen auc
 Freigabe kommt mit dem nächsten Abgleich nicht wieder (eine neue Freigabe desselben Spielers schon). Schalter
 "Abschussliste melden: neu und erlegt" für die Meldungen neuer und erlegter Ziele. Sind beide Teilen-Schalter aus,
 bleiben Abschussliste und eigene Freigaben im vierten Reiter sichtbar und bedienbar, solange es Ziele gibt.
+
+## Kopfgeld (1.2.1)
+Am Plakat aufs Kopfgeld klicken (oder Zeilenmenü "Kopfgeld ausloben", Rechtsklick aufs Plakat, `/dn kopfgeld`): eine
+ganze Zahl Gold von 1 bis 99999; Enter setzt, leer oder 0 nimmt zurück auf den Wert des Buchs, Esc bricht ab. Nicht auf
+Begnadigte (ein schon ausgelobtes lässt sich dort zurücknehmen). `/dn kopfgeld` nimmt nur Namen aus einem Buch (Vorname und
+Nachname wie im Spiel; ein Tippfehler lobt nichts aus), ohne alles listet es die eigenen. Wird ein Täter aus dem eigenen
+Buch gestrichen und steht in keinem anderen Buch und nicht auf der Abschussliste, geht das eigene Kopfgeld mit. Ein
+ausgelobtes Kopfgeld steht am Plakat des Täters (eigenes Buch, Gilden- und Freundesbuch, Abschussliste) als Zeile
+"500g, ausgelobt von dir" bzw. "… von Anna"; mehrere: Summe und der größte Auslober ("Kopfgeld 700g: Anna +2"), alle mit
+Betrag im Tooltip der Zeile; ist die Zeile zu breit, wird der Name gekürzt. Fehlt am Plakat der Platz, weichen Rasse und
+Gilde zuerst, dann die Kopfgeld-Zeile; "zuletzt gesehen" bleibt. Am eigenen Plakat groß die Summe in roter Tinte. In den
+Listen steht eine kleine Münze am Täter (nicht mehr, sobald es abgelaufen ist). Geteilt mit
+Gilde und Freunden mit DeathNote, unabhängig von der Abschussliste; kein Fenster, kein Ton beim Eintreffen. Jeder sendet
+nur das eigene, niemand reicht weiter, zurücknehmen nur das eigene. Höchstens 20 eigene je Char, nicht auf eigene Chars,
+Kollegen oder Freunde mit DeathNote (auch beim Empfang: ein Kopfgeld auf den Empfänger selbst, seine Chars oder
+Kollegen und Freunde, die er mit DeathNote unter vollem Namen gehört hat, wird verworfen). Kopfgelder verfallen wie Freigaben ("Freigaben gelten"); wer die Gilde verlässt, verliert sein Kopfgeld im
+Gildenbuch wie seine Freigaben. Das Addon zahlt nichts und
+prüft nichts: eine Ansage, eingelöst wird untereinander. Der automatische Wert des Buchs (Kills, Beteiligungen, Stufe,
+Rache) bleibt, wie er war, und gilt, solange niemand etwas ausgelobt hat.
+
+## Rache (1.2.1)
+"Rache vermerken" zählt eine Rache von Hand; derselbe Knopf heißt danach etwa 8 Sekunden lang "Rückgängig" und nimmt
+genau diese Rache zurück (die Meldung verschwindet mit; ein Doppelklick zählt nicht doppelt und nimmt nicht gleich zurück,
+"Rückgängig" gilt erst nach einer halben Sekunde). Später: "Eine Rache abziehen" im Zeilenmenü bzw. per Rechtsklick
+aufs Plakat, solange es von Hand vermerkte Rachen gibt. Vom Buch erkannte Rache (eigener Todesstoß, Ehre) bleibt; sie wird
+getrennt gezählt (`revengeHand` am Eintrag, additiv; dazu die Zeiten `revengeHandAt` und `revengeAutoAt`, damit "letzte
+Rache" nach dem Abziehen die neueste verbliebene zeigt). Rache aus Büchern von 1.2.0 und älter gilt als erkannt. Stempel,
+Zähler, Kopfgeld des Buchs und Rang folgen dem Zähler; ein schon gezeigter Meilenstein ("erste Rache") kommt nicht wieder.
+
+Für dich gerächt: tötet jemand mit DeathNote per eigenem Todesstoß einen Täter, der im Gilden- oder Freundesbuch gegen
+andere steht, geht das an die Gilde bzw. nur an die Freunde, die er getötet hat. Wem dieser Täter im eigenen Buch
+etwas getan hat (Kill oder Beteiligung), bekommt eine Chatzeile "Anna hat Grimm Bart für dich erledigt." mit dem kurzen
+Ton der Rache-Meldung, kein Fenster; alle anderen sehen es nur am Plakat ("Gerächt von Anna 2×", mehrere "Gerächt von
+Anna +2", alle mit Zahl im Tooltip) und in der
+Zeile des Gilden- und Freundesbuchs ("gerächt 3×"). Ist der Täter zugleich Ziel der Abschussliste, gibt es nur die
+Erlegt-Meldung; beide Zähler zählen (kommt das Erlegt nicht an, meldet sich "für dich erledigt" einmal). Gezählt wird nur
+der Getötete selbst: kennt der Tracker oder das eigene Buch ihn unter vollem Namen, zählt kein gleicher Vorname eines
+anderen Täters (gilt auch für "erlegt"). Der Stempel RACHE GENOMMEN bleibt der eigenen Rache vorbehalten. Schalter:
+"Abschussliste melden: neu und erlegt".
+
+## Instanzen (1.2.1)
+In Dungeons und Schlachtzügen sendet das Buch außerhalb des Kampfes wie draußen. Lehnt der Client dort ab, wartet für
+diese Instanz nur dieser Weg (die Gilde, das Flüstern an genau diesen Freund oder Battle.net an ihn; ein Versuch, kein
+Dauerversuch), alle anderen Wege senden weiter; nach dem Verlassen geht das Wartende hinaus; es verfällt in der Zeit
+nicht, Antworten auf ein Hallo an diesen Weg warten mit. In Schlachtfeldern und Arenen, im Kampf und bei Chat-Sperre wird
+gewartet; was wartet, geht danach hinaus, auch nach langem Kampf (die Schlange ist auf 140 gedeckelt, das Alter einer
+Nachricht zählt in Sitzungszeit ohne die Wartezeit; endet eine Sperre ohne Ereignis, prüft ein langsamer Zeitgeber noch
+etwa eine Stunde lang alle zwei Minuten und läuft wieder an, sobald etwas hinausging; nach einer längeren Sperre geht das
+Wartende mit dem nächsten Ereignis oder der nächsten eigenen Nachricht hinaus). Was nach langem Warten auf einmal hinausgeht, nimmt der Empfänger live nur bis
+zu seinem Deckel an (5 neue Freigaben bzw. Kopfgelder je Absender in 10 Minuten, "erlegt" und "gerächt" nur bis 10
+Minuten alt); den Rest bringt die nächste Antwort. Empfangen wird überall. Die Statuszeile und `/dn gilde` sagen, worauf
+die Gilde wartet; `/dn probe` vermerkt das Ergebnis des ersten Versuchs in einer Instanz und überschreibt es mit der
+ersten Ablehnung (`probe.guild.instanceSend`: Art, ok, throttle oder refused, Kennzahl, Weg, Zeit). Das
+Buch selbst schweigt in Instanzen wie bisher (kein Alarm, keine feindlichen Namen).
 
 ## Todesjournal (1.2.0)
 Der dritte Reiter führt eigene Tode durch Spieler: sichere PvP-Tode und Tode mit unklarem Täter. Tode durch Monster
@@ -123,6 +181,7 @@ Schnell aus: `/dn still`.
 | `Probe.lua` | Diagnose-Sonde, schreibt nach `DeathNoteDB.probe` |
 | `Sync.lua` | Gildenbuch über Addon-Nachrichten im Kanal GUILD, Sendeschlange für beide Kanäle, Abschussliste |
 | `Friends.lua` | Freundesbuch: Freundesliste, Vertrauen, Hallo an Freunde, Flüstern (1.2.0) |
+| `Bounty.lua` | eigenes Kopfgeld und "für dich gerächt": Senden, Empfangen, Momentaufnahme, Verfall (1.2.1) |
 | `Alert.lua` | Alarm-Popup mit Anvisieren-Knopf, gemeinsame Gestaltungs-Helfer |
 | `UI.lua` | das Buch: Gesucht, Zu klären, Todesjournal, Gilde, Hausordnung, Gebrauchsanweisung |
 | `Extras.lua` | Tooltip-Zeile, Meldungen nach Tod, Rache und Gildentod, neue Ziele der Abschussliste |
@@ -164,7 +223,42 @@ Schnell aus: `/dn still`.
     Ein `A` auf GUILD nimmt auch die Kopie derselben Freigabe im Freundesbuch zurück. Verlässt ein Freigebender die Gilde (nicht im Roster, 14 Tage nicht auf GUILD zu
     hören) und ist kein Freund, fallen seine Freigaben beim nächsten Roster-Abgleich aus dem Gildenbuch.
 17. (1.2.0) Das Hallo an einen Freund (nie an die Gilde) hat ein fünftes Feld: die eigene GUID. Eine Antwort an einen
-    Freund beginnt mit diesem Hallo.
+    Freund beginnt mit diesem Hallo. (1.2.1) Die GUID im Hallo eines vorläufig gebundenen Namens wird an der Bindung
+    gemerkt (`tie.hg`). Nennt die Freundesliste später die GUID eines Freunds ohne Nachnamen, beweist dieselbe GUID die
+    Bindung, ebenso das Gildenverzeichnis, wenn es den gebundenen vollen Namen mit dieser GUID nennt; sonst bleibt die
+    Bindung mit ihren Daten, Neues nimmt der Gebundene erst nach dem Beweis an, und der Freund wird gefragt (höchstens
+    dreimal je Sitzung, dazu wie immer, wenn er online kommt). Nichts wird auf Verdacht gelöscht: die Daten eines
+    Gebundenen gehen erst, wenn sein eigenes Hallo eine andere GUID als die der Liste trägt oder sich der Freund mit der
+    GUID der Liste unter einem anderen Namen ausweist, per Hallo oder im Gildenverzeichnis (dann nennt die Statuszeile den
+    Fremden einmal). Ausnahme: eine Bindung, die der Spieler selbst gewählt hat und deren eigenes Hallo nichts anderes
+    sagte, überstimmt kein Hallo; ein Hallo mit der GUID der Liste unter anderem Namen wird ein Konflikt, die Daten beider
+    bleiben, der Spieler wählt (oder das Hallo des Gewählten mit dieser GUID klärt es). Die GUID im Hallo lässt sich im
+    Spiel an einem Spieler ablesen: ein Namensvetter mit gefälschter GUID beendet weiter eine nur vorläufige Bindung samt
+    Daten (wie in 1.2.0), und eine per GUID bewiesene wechselt auf ihn (ihre Daten gehen beim nächsten Aufräumen und kommen mit dem nächsten Hallo des Freunds zurück, wie in 1.2.0; ist der Freund zugleich Kollege, bleibt der Fälscher gebunden, bis man die Bindung von Hand löst). Ebenso, wenn ein Battle.net-Freund mit bloßem Vornamen, an den ein
+    Name per Char-Flüstern gebunden war, mit demselben Battle.net-Konto als Char mit Nachnamen und GUID auf der Liste steht
+    und der gebundene Name einen anderen Nachnamen hat (auch wenn er ein Zweitchar des Freundes war: das ist dort nicht
+    zu unterscheiden). Ein Kollege, der auf der Liste ohne Nachnamen steht, flüstert
+    Freigaben allein für Freunde; nennt das Gildenverzeichnis für seinen vollen Namen eine andere GUID als die Liste, wird
+    verworfen, nennt es keine brauchbare, wird angenommen wie in 1.2.0. Bekannt offen: ein Fremder, der gebunden wurde,
+    bevor die Liste die GUID nannte, und dessen Freund den Spieler nicht auf seiner Liste hat (dessen Hallo kommt nie),
+    bleibt gebunden; Neues nimmt das Buch von ihm nicht an.
+18. (1.2.1) `B` = eigenes Kopfgeld (Täter, Char, Gold, Zeit, Buchkennung), sofort an Gilde und Freunde und in jeder
+    Antwort auf `H` (alle eigenen, höchstens 20); Gold `0` nimmt zurück (nur das eigene und nur ein nicht neueres).
+    `Y` = Ende der Kopfgelder einer Antwort (Char, Zahl, Buchkennung), nach dem `Z`: wie `Z` für Freigaben, was der
+    Absender nicht mehr nennt, ist zurückgenommen (nur dieser Char, nur dieselbe Buchkennung, nur wenn die Zahl der
+    angekommenen `B` stimmt; ein `Y` auf GUILD räumt auch die Kopie im Freundesbuch). Der Betrag ist eine ganze Zahl 1 bis
+    99999, alles andere wird verworfen. Deckel: 20 je Absender, 200 Ziele je Buch, neue live höchstens 5 in 10 Minuten
+    (im Antwortfenster 20). Verfall und Austritt wie Freigaben. Das Antwortfenster (für `J`, `Z`, `B`, `Y`) öffnet, wenn
+    das eigene Hallo wirklich hinausging, und bleibt für einen Absender offen, solange seine Antwort eintrifft (40 s nach
+    jedem Teil, höchstens 10 Minuten): eine lange Antwort unter der Drossel des Clients gilt weiter als Antwort.
+19. (1.2.1) `V` = gerächt (Täter, Char, Zeit, Kennzeichen `1`, wenn auf demselben Weg ein `E` derselben Tötung ging): nur
+    mit eigenem Todesstoß (`PARTY_KILL`), nur in der offenen Welt, nur für einen Täter, der im Gilden- bzw. Freundesbuch
+    andere getötet hat; an die Gilde bzw. nur an die betroffenen Freunde. Wie `E`: jede Tötung einmal, nur bis 10 Minuten
+    alt, höchstens 3 je Absender in 10 Minuten, Zähler je Rächer höchstens 99, 200 Täter. Angenommen nur für einen Täter,
+    der im Buch des Kanals steht oder dem Empfänger selbst etwas getan hat.
+20. (1.2.1) 1.2.0 und 1.1.0 verwerfen `B`, `Y` und `V` als unbekannte Art, ohne ihre Daten zu ändern; `E` bleibt, wie
+    es war (1.2.0 zählt "erlegt" weiter genau einmal). Antworten enthalten ein `Y` mehr, Freunde-Antworten warten auf
+    Platz für bis zu 103 Nachrichten (Schlange 140).
 
 ## Grenzen des Clients
 Kein Combat-Log für Addons, keine Erkennung getarnter Spieler, keine Entfernung oder Richtung. Erkannt wird nur, wer als

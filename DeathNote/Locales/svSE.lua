@@ -342,7 +342,7 @@ L.MANUAL_ALERT = "När en mördare dyker upp som namnskylt, mål eller under mus
 L.MANUAL_ADD_HEAD = "SKRIVA IN"  -- [max 12]
 L.MANUAL_ADD = "Skriv ett namn i sökfältet, Enter. Högerklicka på en rad: notera hämnd, benåda, stryk."
 L.MANUAL_GUILD_HEAD = "GUILD"  -- [max 12]
-L.MANUAL_GUILD = "Guildkompisar och vänner med DeathNote ser dina bekräftade dödsfall och handinskrivna namn. Affischen eller /dn hunt Namn: utlys jakt."
+L.MANUAL_GUILD = "Guildkompisar och vänner med DeathNote ser dina bekräftade dödsfall och handinskrivna namn. Affischen eller /dn hunt Namn: utlys jakt. Klicka på belöningen: utlys din egen, ett löfte ni gör upp sinsemellan."
 L.MANUAL_SHARE_HEAD = "DELA VIDARE"  -- [max 12]
 L.MANUAL_SHARE = "Husregler, Spara boken: en text att kopiera, för alla utan DeathNote."
 L.MANUAL_QUIET_HEAD = "TYST"  -- [max 12]
@@ -616,5 +616,32 @@ L.ACT_TIE_MINE = "Min vän: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Koppla loss"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "Koppla loss {name} från din vänlista?\nDet som namnet har fört in i vänboken raderas; nästa meddelande under det här förnamnet kopplas på nytt."
 L.CHAT_FRIENDS_TIES = "Kopplade fullständiga namn (* = första kontakt, ännu inte bekräftat): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Namn [Efternamn]> <guld>  utlys en egen belöning (utan guld: ta tillbaka)"
+L.CHAT_WHO_BOUNTY = "På vem? /dn bounty <Namn> <guld>"
+L.CHAT_BOUNTY_SET = "{name}: du har utlyst {gold} guld i belöning. Guild och vänner med DeathNote ser det."
+L.CHAT_BOUNTY_OFF = "{name}: din belöning är tillbakatagen."
+L.CHAT_BOUNTY_NONE = "Du har ingen egen belöning på {name}."
+L.CHAT_BOUNTY_BAD = "Belöning: ett heltal guld, 1 till 99999 (0 tar tillbaka den)."
+L.CHAT_BOUNTY_CAP = "Ingen belöning: högst {count} egna."
+L.CHAT_BOUNTY_OURS = "Ingen belöning på dig själv eller dina egna (guild eller vänner med DeathNote)."
+L.ACT_BOUNTY = "Utlys belöning"  -- [max 24]
+L.ACT_UNDO = "Ångra"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Dra av en hämnd"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, utlyst av dig"
+L.POSTER_BOUNTY_BY = "{gold}, utlyst av {name}"
+L.POSTER_BOUNTY_MANY = "Belöning {gold}: {names}"
+L.POSTER_AVENGED = "Hämnad av {names}"
+L.ROW_AVENGED = "hämnad {times}"
+L.BOUNTY_TIP_HEAD = "Din egen belöning i guld"
+L.BOUNTY_TIP_RULES = "Ett heltal, 1 till 99999. Tomt eller 0: tillbaka till bokens värde. Enter sätter, Esc avbryter."
+L.BOUNTY_TIP_PROMISE = "Guild och vänner med DeathNote ser den. Bara ett löfte: ni gör upp sinsemellan."
+L.BOUNTY_TIP_CLICK = "Klick: utlys en egen belöning"
+L.CHAT_AVENGED = "{name} fällde {killer} åt dig."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: du har utlyst {gold} guld i belöning."
+L.CHAT_BOUNTY_UNKNOWN = "{name} står inte i någon av dina böcker. Belöning bara på ett namn ur en bok, så som spelet visar det: förnamn och efternamn."
+L.CHAT_BOUNTY_LIST = "Dina belöningar ({count} av {max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Du har inte utlyst någon belöning."
 -- <<< BOOK
 end)

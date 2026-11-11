@@ -337,7 +337,7 @@ L.MANUAL_ALERT = "Cuando un asesino aparece como placa de nombre, objetivo o baj
 L.MANUAL_ADD_HEAD = "APUNTAR"  -- [max 12]
 L.MANUAL_ADD = "Escribe un nombre en el campo de búsqueda, Enter. Clic derecho en una fila: anotar venganza, indultar, tachar."
 L.MANUAL_GUILD_HEAD = "HERMANDAD"  -- [max 12]
-L.MANUAL_GUILD = "La hermandad y los amigos con DeathNote ven tus muertes confirmadas y tus entradas a mano. Cartel o /dn hunt Nombre: abrir la caza."
+L.MANUAL_GUILD = "La hermandad y los amigos con DeathNote ven tus muertes confirmadas y tus entradas a mano. Cartel o /dn hunt Nombre: abrir la caza. Clic en la recompensa: pon la tuya, una promesa que se paga entre vosotros."
 L.MANUAL_SHARE_HEAD = "PASARLO"  -- [max 12]
 L.MANUAL_SHARE = "Normas de la casa, Guardar copia: un texto para copiar, para todos los que no tienen DeathNote."
 L.MANUAL_QUIET_HEAD = "SILENCIO"  -- [max 12]
@@ -611,5 +611,32 @@ L.ACT_TIE_MINE = "Mi amigo: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Desvincular"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "¿Desvincular a {name} de tu lista de amigos?\nLo que este nombre trajo al libro de los amigos se borra; el próximo mensaje con este nombre vuelve a vincular."
 L.CHAT_FRIENDS_TIES = "Nombres completos vinculados (* = primer contacto, aún sin confirmar): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Nombre [Apellido]> <oro>  poner tu propia recompensa (sin oro: retirarla)"
+L.CHAT_WHO_BOUNTY = "¿Por quién? /dn bounty <Nombre> <oro>"
+L.CHAT_BOUNTY_SET = "{name}: ofreces una recompensa de {gold} de oro. La hermandad y los amigos con DeathNote la ven."
+L.CHAT_BOUNTY_OFF = "{name}: tu recompensa queda retirada."
+L.CHAT_BOUNTY_NONE = "No tienes ninguna recompensa propia por {name}."
+L.CHAT_BOUNTY_BAD = "Recompensa: un número entero de oro, de 1 a 99999 (0 la retira)."
+L.CHAT_BOUNTY_CAP = "Sin recompensa: como mucho {count} tuyas."
+L.CHAT_BOUNTY_OURS = "Ninguna recompensa por ti ni por los tuyos (hermandad o amigos con DeathNote)."
+L.ACT_BOUNTY = "Poner recompensa"  -- [max 24]
+L.ACT_UNDO = "Deshacer"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Quitar una venganza"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, ofrecida por ti"
+L.POSTER_BOUNTY_BY = "{gold}, ofrecida por {name}"
+L.POSTER_BOUNTY_MANY = "Recompensa {gold}: {names}"
+L.POSTER_AVENGED = "Vengado por {names}"
+L.ROW_AVENGED = "vengado {times}"
+L.BOUNTY_TIP_HEAD = "Tu propia recompensa, en oro"
+L.BOUNTY_TIP_RULES = "Un número entero, de 1 a 99999. Vacío o 0: vuelve al valor del libro. Intro la pone, Esc cancela."
+L.BOUNTY_TIP_PROMISE = "La hermandad y los amigos con DeathNote la ven. Solo una promesa: se paga entre vosotros."
+L.BOUNTY_TIP_CLICK = "Clic: poner tu propia recompensa"
+L.CHAT_AVENGED = "{name} ha abatido a {killer} por ti."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: ofreces una recompensa de {gold} de oro."
+L.CHAT_BOUNTY_UNKNOWN = "{name} no está en ninguno de tus libros. Solo se pone recompensa a un nombre de un libro, tal como lo muestra el juego: nombre y apellido."
+L.CHAT_BOUNTY_LIST = "Tus recompensas ({count} de {max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "No has puesto ninguna recompensa."
 -- <<< BOOK
 end)

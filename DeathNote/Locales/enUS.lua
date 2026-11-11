@@ -357,7 +357,7 @@ L.MANUAL_ALERT = "When a killer shows up as a nameplate, target or under the mou
 L.MANUAL_ADD_HEAD = "ADDING"  -- [max 12] help label, capitals, letter-spaced
 L.MANUAL_ADD = "Type a name into the search field, Enter. Right-click a row: note revenge, pardon, strike."  -- help paragraph, 232 px wide, wraps
 L.MANUAL_GUILD_HEAD = "GUILD"  -- [max 12] help label, capitals, letter-spaced
-L.MANUAL_GUILD = "Guildmates and friends with DeathNote see your confirmed deaths and entries by hand. Poster or /dn hunt Name: put on the hit list."  -- help paragraph, 232 px wide, wraps; "confirmed deaths" = deaths with a known killer (not: a certain death)
+L.MANUAL_GUILD = "Guildmates and friends with DeathNote see your confirmed deaths and entries by hand. Poster or /dn hunt Name: put on the hit list. Click the bounty to post your own: a promise, settled among yourselves."  -- help paragraph, 232 px wide, wraps; "confirmed deaths" = deaths with a known killer (not: a certain death)
 L.MANUAL_SHARE_HEAD = "PASS ON"  -- [max 12] help label, capitals, letter-spaced
 L.MANUAL_SHARE = "House Rules, Back up book: a text to copy, for everyone without DeathNote."  -- help paragraph, 232 px wide, wraps
 L.MANUAL_QUIET_HEAD = "QUIET"  -- [max 12] help label, capitals, letter-spaced
@@ -631,5 +631,32 @@ L.ACT_TIE_MINE = "My friend: {name}"  -- [max 24] row menu By guildmate: this fu
 L.ACT_TIE_LOOSE = "Unlink name"  -- [max 14] row menu By guildmate and dialog button: the friend list entry forgets this full name, the next message under the first name links anew
 L.CONFIRM_TIE_LOOSE = "Unlink {name} from your friend list?\nWhat this name brought into the friends' book is deleted; the next message under this first name links anew."  -- dialog; {name} = full name; \n = line break
 L.CHAT_FRIENDS_TIES = "Linked full names (* = first contact, not proven yet): {list}"  -- chat, /dn friends; {list} = "Berta = Berta Senf, Carla = Carla Klee*"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Name [Surname]> <gold>  post your own bounty (no gold: take it back)"  -- help line (/dn help); bounty = an amount of gold the player promises for the killer's death
+L.CHAT_WHO_BOUNTY = "On whom? /dn bounty <Name> <gold>"  -- chat: /dn bounty without a name
+L.CHAT_BOUNTY_SET = "{name}: you posted a bounty of {gold} gold. Guild and friends with DeathNote see it."  -- chat: own bounty set; {name} = the target, {gold} = whole gold pieces (number)
+L.CHAT_BOUNTY_OFF = "{name}: your bounty is taken back."  -- chat: own bounty taken back; {name} = the target
+L.CHAT_BOUNTY_NONE = "You have no bounty of your own on {name}."  -- chat: nothing to take back; {name} = what the player typed or the target
+L.CHAT_BOUNTY_BAD = "Bounty: a whole number of gold, 1 to 99999 (0 takes it back)."  -- chat: the amount is no whole number in range
+L.CHAT_BOUNTY_CAP = "No bounty: at most {count} of your own."  -- chat: too many own bounties; {count} = the limit (20)
+L.CHAT_BOUNTY_OURS = "No bounty on yourself or your own people (guild or friends with DeathNote)."  -- chat: no bounty on an own char, guildmates or friends with DeathNote (like REL_MATE)
+L.ACT_BOUNTY = "Post a bounty"  -- [max 24] row menu and right-click on the poster: type in your own bounty
+L.ACT_UNDO = "Undo"  -- [max 19] poster button for a few seconds after ACT_REVENGE: takes exactly that revenge back
+L.ACT_REVENGE_TAKE = "Take back one revenge"  -- [max 24] row menu: take back one revenge you noted by hand (the book's own stay)
+L.POSTER_BOUNTY_MINE = "{gold}, posted by you"  -- fact line on the poster; {gold} = "500g" (MONEY_GOLD); the only bounty is yours
+L.POSTER_BOUNTY_BY = "{gold}, posted by {name}"  -- fact line on the poster; {gold} = "500g", {name} = first name of whoever posted it
+L.POSTER_BOUNTY_MANY = "Bounty {gold}: {names}"  -- fact line on the poster, several bounties; {gold} = the sum, {names} = NAMES_PLUS: "Anna +2" (all with their amounts in the tooltip)
+L.POSTER_AVENGED = "Avenged by {names}"  -- fact line on the poster: guildmates or friends killed this killer for others; {names} = "Anna 2×" or NAMES_PLUS "Anna +2" (all with their counts in the tooltip)
+L.ROW_AVENGED = "avenged {times}"  -- guild/friends book row, second line: how often guildmates or friends killed him for others; {times} = "3×"
+L.BOUNTY_TIP_HEAD = "Your own bounty, in gold"  -- tooltip title at the input field on the poster
+L.BOUNTY_TIP_RULES = "A whole number, 1 to 99999. Empty or 0: back to the book's value. Enter sets, Esc cancels."  -- tooltip at the input field: the rules (Enter, Esc are key names)
+L.BOUNTY_TIP_PROMISE = "Guild and friends with DeathNote see it. A promise only: you settle it among yourselves."  -- tooltip at the input field: who sees it, the addon pays nothing
+L.BOUNTY_TIP_CLICK = "Click: post your own bounty"  -- tooltip on the bounty of the poster (last line)
+L.CHAT_AVENGED = "{name} took down {killer} for you."  -- chat with the short revenge sound: a guildmate or friend killed a killer of yours; {name} = his first name, {killer} = the killer
+L.NAMES_PLUS = "{name} +{count}"  -- fact line on the poster: the first name and how many more (all of them are in the tooltip); {name} = first name (maybe with "2×"), {count} = how many more. Keep it this short
+L.CHAT_BOUNTY_SET_ALONE = "{name}: you posted a bounty of {gold} gold."  -- chat: own bounty set while nobody can see it (no guild, no friends with DeathNote); first sentence of CHAT_BOUNTY_SET
+L.CHAT_BOUNTY_UNKNOWN = "{name} is in none of your books. A bounty goes only on a name from a book, as the game shows it: first name and surname."  -- chat: /dn bounty on a name that is in no book (typo); {name} = what the player typed
+L.CHAT_BOUNTY_LIST = "Your bounties ({count} of {max}): {list}"  -- chat: /dn bounty without anything: the own bounties of this char; {count} = how many, {max} = the limit (20), {list} = "Grimm Bart 500g, Fies Ling 50g"
+L.CHAT_BOUNTY_LIST_NONE = "You have posted no bounty."  -- chat: /dn bounty without anything and no own bounty (the next line shows how to post one)
 -- <<< BOOK
 end)

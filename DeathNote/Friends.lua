@@ -49,11 +49,12 @@ local FC = {
   HELLO_MAX = 30,          -- hellos per HELLO_WINDOW (sliding), friend list order
   HELLO_WINDOW = 600,
   HELLO_GAP = 300,         -- one hello per friend every 5 min at most
+  ASK_MAX = 3,             -- 1.2.1: hellos per session to a friend whose binding the list's GUID did not prove
   HELLO_MIN = 22, HELLO_MAX_DELAY = 34,   -- after the guild hello (8 to 20 s) and its answers
   ONLINE_MIN = 25, ONLINE_MAX = 40,       -- a friend came online: after his own guild hello (8 to 20 s)
   HELLO_RETRY = 15, HELLO_TRIES = 12,     -- a hello that found the queue full is tried again
-  -- an answer waits until the shared queue has room for a whole one (R + M + X + J + A)
-  REPLY_ROOM = C.REPLY_MAX + C.LISTED_REPLY + C.UNLISTED_REPLY + C.HUNT_REPLY + C.HUNTOFF_REPLY,
+  -- an answer waits until the shared queue has room for a whole one (R + M + X + J + A, 1.2.1: H, Z, B, Y)
+  REPLY_ROOM = C.REPLY_MAX + C.LISTED_REPLY + C.UNLISTED_REPLY + C.HUNT_REPLY + C.HUNTOFF_REPLY + C.BOUNTY_REPLY + 3,
   REPLY_WAIT = 10, REPLY_TRIES = 12,
   FAIL_MAX = 3,            -- refused whispers in a row to one friend: that friend rests for the session
   SCAN_DELAY = 1,          -- friend list events come in bursts: one scan
@@ -69,6 +70,7 @@ local FC = {
   MAX_FRIENDS = 200, MAX_MINE = 50,
 }
 Friends.C = FC
+Friends.asked = {}       -- 1.2.1: list name -> hellos sent because the list's GUID did not prove the binding
 
 local fdb                -- DeathNoteDB.friends = { enemies, members, hunts, huntOff, mine, ties, lastOnline }
 local fstore = { enemies = {}, count = 0, bySender = {}, listedBySender = {} }
@@ -76,7 +78,7 @@ local EMPTY = {}
 local stats = { sent = 0, received = 0, dropped = 0, strangers = 0, mates = 0, hellos = 0,
   listReceived = 0, listDropped = 0, unlistReceived = 0, unlistDropped = 0, huntReceived = 0 }
 local FCTX = { src = "friends", store = fstore, stats = stats, fresh = {}, helloAt = nil }
-Friends.store, Friends.stats = fstore, stats
+Friends.store, Friends.stats, Friends.ctx = fstore, stats, FCTX
 
 local roster = {}        -- lower first word -> array of friends { name, first, surname, online, listed, bn }
 local byName = {}        -- name as the friend list gives it -> friend
@@ -91,6 +93,7 @@ local blocked = false    -- the realm refuses whispers altogether (no success, s
 local suspended, failsOf, failedFriends, totalFails = {}, {}, {}, 0
 local impostorSeen = {}
 local proven = {}   -- list name -> true: a hello with the GUID of the list came in this session (sender without surname)
+local rivalHello = {}   -- list name -> { n = lower full name, g = GUID }: a rival whose hello carried the list's GUID
 local loginAt
 local muted                -- lower full names of bound friends in a conflict (no alarm), nil when none
 local scanPending = false
@@ -178,7 +181,10 @@ local function tieOf(name)
   return tie
 end
 
--- Reads the friend list. Returns true and the friends who came online since the last read.
+local impostor   -- (below) a refused name, named once in the status line
+
+-- Reads the friend list. Returns true, the friends who came online since the last read and (1.2.1) the friends
+-- whose provisional binding was loosened because the list now gives their GUID.
 local function scan()
   local CF = _G.C_FriendList
   if not (CF and CF.GetNumFriends and CF.GetFriendInfoByIndex) then return false end
@@ -287,14 +293,69 @@ local function scan()
       end
     end
   end
+  -- 1.2.1: the list gives the GUID of a friend listed without surname and his binding was never proved by it.
+  -- Nothing is deleted on a guess (fix): the hello of the bound name carried his GUID (tie.hg); the same GUID
+  -- proves the binding, else it stays as it is (his data too) and a hello asks the friend at once. His answer begins
+  -- with his hello: the GUID of the list under another name ends the binding and its data (identity below).
+  local ask
+  if fdb then
+    for i = 1, #newOrder do
+      local x = newOrder[i]
+      local tie = x.listed and not x.surname and x.guid and fdb.ties[x.name]
+      if tie and tie.full and not tie.guid then
+        -- (1.2.1 fix: a friend in the own guild sends no hello to friends; the guild roster names his full name with
+        -- the GUID of the list: that is the proof, for him or against the bound name)
+        local rs = Guild.RosterSurnameOf and Guild.RosterSurnameOf(x.first, x.guid)
+        local rfull = rs and (x.first .. " " .. rs) or nil
+        if (tie.hg == x.guid or (rfull and rfull:lower() == tie.full:lower())) and not tie.rival then
+          tie.sure, tie.guid = true, x.guid
+        elseif rfull and not tie.rival then
+          local who = tie.full
+          Friends.DropChar(who)
+          tie.full, tie.sure, tie.guid, tie.hg, tie.said = rfull, true, x.guid, nil, nil
+          if impostor then impostor(x, who) end
+          Friends.Remute()
+        else
+          ask = ask or {}
+          ask[#ask + 1] = x
+        end
+      end
+    end
+    Friends.Superseded(newBy, bnTagOf)
+  end
   -- peers who went offline or left the list are no longer served
   for name in pairs(peers) do
     local x = byName[name]
     if not x or not x.online then peers[name] = nil; peerN = peerN - 1 end
   end
-  return true, came
+  return true, came, ask
 end
 Friends.Scan = scan
+
+-- 1.2.1 fix (W5 over Battle.net): a friend first known only on Battle.net (first name, no GUID) was bound to a full
+-- name by a character whisper. When the same Battle.net account (same tag hash) now plays a char that stands on the
+-- friend list with surname and GUID, the friend is that char: a bound full name with another surname is a namesake
+-- and can never be taken for him again (his whispers no longer match the friend). The binding and its data go, the
+-- name is named once. A binding the GUID proved, or whose hello carried this very GUID, stays.
+function Friends.Superseded(by, tagOf)
+  if not fdb or not next(tagOf) then return end
+  for name, tie in pairs(fdb.ties) do
+    local first, sur = split(name)
+    if not sur and not by[name] and tie.full and tie.bnTag and not tie.guid then
+      local tf, ts = split(tie.full)
+      for xn, tag in pairs(tagOf) do
+        local x = by[xn]
+        if tag == tie.bnTag and x and x.listed and x.surname and x.guid and x.first:lower() == first:lower()
+          and tf:lower() == first:lower() and ts and ts:lower() ~= x.surname:lower() and tie.hg ~= x.guid then
+          local who = tie.full
+          Friends.Loosen(name, true)
+          if impostor then impostor(x, who) end
+          break
+        end
+      end
+    end
+  end
+end
 
 -- 1.2.0: a friend is a guildmate only with his full name (the list's or the bound one); without a
 -- known surname he is served as a friend (Guild.IsGuildmate never takes a first name alone as proof)
@@ -483,6 +544,9 @@ local function sendAnswer(name)
   replies[name] = nil
   local x = byName[name]
   if not r or not x or not x.online or not on or blocked or not fdb or isMate(x) then return end
+  -- 1.2.1: the queue waits for the instance: the answer waits with it (Friends.OnResume sends it)
+  local way = B.wayKey and B.wayKey(x.listed and x.listOnline and not suspended[name] and "WHISPER" or "BN", name)
+  if B.instanceHeld and B.instanceHeld(way) then replies[name] = r; r.held = true; return end
   if Guild.QueueRoom() < FC.REPLY_ROOM then
     -- the queue is busy (guild answer, other friends): wait instead of dropping
     r.tries = r.tries + 1
@@ -496,6 +560,27 @@ local function sendAnswer(name)
   -- (a hello he answered already within HELLO_PER_SENDER is not answered again: no loop)
   sendTo(x, Friends.HelloText(x), "H")
   B.answer(FCTX, r.since, function(text, kind) return sendTo(x, text, kind) end)
+end
+
+-- 1.2.1 fix: the own hello to a friend really went out (the queue tells): his answer window starts now
+function Friends.OnHelloSent(name)
+  if type(name) == "string" and helloAt[name] then helloAt[name] = GetTime() end
+end
+
+-- 1.2.1: the zone changed and the queue no longer waits for an instance: the answers that waited go out
+function Friends.OnResume()
+  for name, r in pairs(replies) do
+    if r.held then r.held = nil; After(C.REPLY_MIN, function() sendAnswer(name) end) end
+  end
+end
+
+-- 1.2.1: one message to one friend by his list name (V goes only to the friends whose death it answers);
+-- like a live message: only to a friend who answered in this session, never to a guildmate (he hears GUILD)
+function Friends.SendTo(name, text, kind)
+  if not text or not on or blocked or not fdb or type(name) ~= "string" then return false end
+  local x = byName[name]
+  if not x or not x.online or not peers[name] or isMate(x) then return false end
+  return sendTo(x, text, kind) and true or false
 end
 
 local function answerLater(x, s)
@@ -513,7 +598,7 @@ local function answerLater(x, s)
 end
 
 -- a second full name with the first name of a bound friend: refused, named once in the status line
-local function impostor(x, short)
+impostor = function(x, short)
   stats.strangers = stats.strangers + 1
   local k = short:lower()
   if impostorSeen[k] then return end
@@ -537,10 +622,15 @@ end
 local function dropChar(full)
   if type(full) ~= "string" then return 0 end
   local lf = full:lower()
-  local n = P.PurgeChars(fstore, fdb.hunts, function(char) return type(char) ~= "string" or char:lower() ~= lf end)
+  local keep = function(char) return type(char) ~= "string" or char:lower() ~= lf end
+  local n = P.PurgeChars(fstore, fdb.hunts, keep)
+  -- 1.2.1: his bounties too
+  if ns.Bounty and ns.Bounty.Purge then n = n + ns.Bounty.Purge(FCTX, keep) end
   if n > 0 then B.setHook(); B.updated() end
   return n
 end
+
+Friends.DropChar, Friends.Remute = dropChar, remute
 
 -- Who is behind a full name for a friend listed without surname (1.2.0)? Returns true when the
 -- message may be taken. The first contact binds provisionally; a GUID-proven hello or the player's choice
@@ -560,22 +650,55 @@ local function identity(x, tie, short, m, mate)
   end
   if x.surname then return true end
   local ls = short:lower()
-  -- a guildmate (full name in the roster or on GUILD) whispers releases for friends alone without a hello
-  if mate and MATE_KINDS[m.kind] and not tie.rival and (not tie.full or tie.full:lower() == ls) then return true end
+  -- a guildmate (full name in the roster or on GUILD) whispers releases for friends alone without a hello.
+  -- 1.2.1: when the friend list gives the friend's GUID, the guild roster must give the same GUID for this name
+  -- (then he is bound for good); a roster GUID of another char is a namesake (named once); without any GUID in the
+  -- roster nothing proves him: dropped quietly (he hears all of it on GUILD anyway, only releases for friends alone
+  -- do not come this way)
+  if mate and MATE_KINDS[m.kind] and not tie.rival and (not tie.full or tie.full:lower() == ls) then
+    if not x.guid or (tie.sure and tie.guid == x.guid) then return true end
+    local rg = Guild.RosterGUID and Guild.RosterGUID(short)
+    if rg == x.guid then
+      tie.full, tie.sure, tie.guid, tie.said = short, true, rg, nil
+      return true
+    end
+    -- 1.2.1 fix: a roster GUID of another char is a namesake; without a usable one (first names only, no GUID)
+    -- nothing speaks against him: taken as in 1.2.0
+    if rg then impostor(x, short); return false end
+    return true
+  end
   -- the friend's hello with GUID, and the friend list gives one: the strong proof
   if m.kind == "H" and m.guid and x.guid then
     if m.guid == x.guid then
-      -- a binding the GUID or the player confirmed is not deleted silently: its data stays until the clean-up
-      if tie.full and tie.full:lower() ~= ls and not tie.sure then dropChar(tie.full) end
+      -- another name bound before: its data goes, unless a GUID once proved it (then it stays until the clean-up;
+      -- 1.2.1: a choice made before the list gave the GUID is no proof, the GUID decides)
+      if tie.full and tie.full:lower() ~= ls and not tie.guid then
+        -- 1.2.1 fix: the player chose the bound name and its own hello never said otherwise: a hello (its GUID can be
+        -- read off the friend in the game) does not override the choice. The player is asked, the data of both stays;
+        -- the bound name's own hello with this GUID settles it. Did that hello carry this GUID, this one is a stranger.
+        if tie.sure and (tie.hg == nil or tie.hg == x.guid) then
+          if tie.hg then impostor(x, short)
+          elseif not tie.rival then
+            tie.rival = short
+            rivalHello[x.name] = { n = ls, g = m.guid }   -- chosen later, the player needs no second hello
+            remute()
+            B.updated()
+            if not tie.said then tie.said = true; Friends.SayConflict(x.name, tie) end
+          end
+          return false
+        end
+        if not tie.sure then dropChar(tie.full); impostor(x, tie.full) end
+        helloFrom[x.name] = nil   -- the answer went to the namesake: the friend gets his own
+      end
       if tie.rival and tie.rival:lower() ~= ls then dropChar(tie.rival) end
-      tie.full, tie.sure, tie.guid, tie.rival, tie.said = short, true, m.guid, nil, nil
+      tie.full, tie.sure, tie.guid, tie.rival, tie.said, tie.hg = short, true, m.guid, nil, nil, nil
       remute()
       return true
     end
     -- not the char on the list: a stranger; a provisional binding to him ends here
     if tie.full and tie.full:lower() == ls and not tie.sure then
       dropChar(tie.full)
-      tie.full, tie.rival, tie.said = tie.rival, nil, nil
+      tie.full, tie.rival, tie.said, tie.hg = tie.rival, nil, nil, nil
       remute()
     end
     impostor(x, short)
@@ -585,12 +708,21 @@ local function identity(x, tie, short, m, mate)
   -- hello to a friend, and its answers begin with that hello); no name comparison as proof any more
   if x.guid then
     if tie.sure and tie.guid == x.guid and tie.full and tie.full:lower() == ls then return true end
+    -- 1.2.1 fix: the bound name not proven yet waits quietly for his hello (it proves him or ends the binding)
+    if tie.full and tie.full:lower() == ls and not tie.guid then return false end
     -- never silent: a sender without the proof is named once in the status line
     impostor(x, short)
     return false
   end
-  if not tie.full then tie.full = short; return true end
-  if tie.full:lower() == ls then return tie.rival == nil end
+  -- 1.2.1 fix: the GUID his hello carries is noted with the binding (tie.hg): when the list gives the friend's GUID
+  -- later, the same GUID proves him and nothing of his goes
+  local hg = m.kind == "H" and m.guid or nil
+  if not tie.full then tie.full, tie.hg = short, hg; return true end
+  if tie.full:lower() == ls then
+    if tie.rival ~= nil then return false end
+    if hg then tie.hg = hg end
+    return true
+  end
   if tie.rival and tie.rival:lower() == ls then return false end
   -- a second full name: proven or chosen binding -> a stranger; else a conflict for the player
   if tie.sure then impostor(x, short); return false end
@@ -630,7 +762,7 @@ local function heard(x, text, short, full, channel)
   if not mate then notePeer(x, short, m.version) end
   if m.kind == "H" then answerLater(x, m.since); return end
   FCTX.helloAt = helloAt[x.name]
-  local z = m.kind == "Z" and helloAt[x.name] and GetTime() - helloAt[x.name] <= C.ANSWER_WINDOW
+  local z = m.kind == "Z" and Guild.AnswerWindow(FCTX, full) ~= nil
   B.apply(FCTX, m, short, full, t, not short:find(" ", 1, true) and surnameOf(x) or nil)
   -- 1.2.0: this char heard from this friend (since of the next hello) only once his ANSWER to the own hello
   -- came in full (it ends with Z); his hello alone does not count
@@ -704,7 +836,7 @@ function Friends.Loosen(listName, drop)
   local tie = fdb.ties[listName]
   if not tie or not (tie.full or tie.rival) then return false end
   if drop then dropChar(tie.full); dropChar(tie.rival); tie.heard = nil end
-  tie.full, tie.sure, tie.guid, tie.rival, tie.said = nil, nil, nil, nil, nil
+  tie.full, tie.sure, tie.guid, tie.rival, tie.said, tie.hg = nil, nil, nil, nil, nil, nil
   impostorSeen = {}
   remute()
   B.updated()
@@ -720,14 +852,23 @@ function Friends.Choose(listName, full)
   local lf = full:lower()
   if tie.rival and tie.rival:lower() == lf then
     dropChar(tie.full)
-    tie.full, tie.heard = tie.rival, nil
+    local r = rivalHello[listName]
+    tie.full, tie.heard, tie.hg = tie.rival, nil, r and r.n == lf and r.g or nil
   elseif not (tie.full and tie.full:lower() == lf) then
     return false
   else
     dropChar(tie.rival)
   end
   tie.sure, tie.rival, tie.said = true, nil, nil
+  rivalHello[listName] = nil
   impostorSeen = {}
+  -- 1.2.1: the friend list gives his GUID: a choice is no proof. The GUID of his hello proves it; else the choice
+  -- stays (nothing is deleted on a guess), nothing new is taken from him until his hello proves him, and he is
+  -- asked at once.
+  local x = byName[listName]
+  if x and x.listed and not x.surname and x.guid and tie.guid ~= x.guid then
+    if tie.hg == x.guid then tie.guid = x.guid elseif x.online then sendHelloTo(x, true) end
+  end
   remute()
   B.setHook()
   B.updated()
@@ -932,6 +1073,7 @@ function Friends.Purge()
   settleTies()
   local keep = keeper()
   local n = P.PurgeChars(fstore, fdb.hunts, keep)
+  if ns.Bounty and ns.Bounty.Purge then n = n + ns.Bounty.Purge(FCTX, keep) end   -- 1.2.1
   for name in pairs(fdb.members) do
     if not fdb.ties[name] then fdb.members[name] = nil; n = n + 1 end
   end
@@ -943,9 +1085,17 @@ local function rescan()
   scanPending = false
   if not fdb then return end
   countDay()
-  local ok, came = scan()
+  local ok, came, ask = scan()
   if not ok then return end
   if on then
+    -- 1.2.1: a friend whose binding the list's GUID did not prove yet is asked at once: his hello settles it
+    -- (the first at once, then every HELLO_GAP; fix: at most ASK_MAX per session and friend, his hello may never
+    -- come when he does not list the player; coming online asks him as usual)
+    for i = 1, ask and #ask or 0 do
+      local x = ask[i]
+      local n = tonumber(Friends.asked[x.name]) or 0
+      if x.online and n < FC.ASK_MAX and sendHelloTo(x, n == 0) then Friends.asked[x.name] = n + 1 end
+    end
     for i = 1, #came do
       local x = came[i]
       After(FC.ONLINE_MIN + math.random() * (FC.ONLINE_MAX - FC.ONLINE_MIN), function()
@@ -996,6 +1146,7 @@ function Friends.Clear()
   if type(fdb.huntCleared) ~= "table" then fdb.huntCleared = {} end
   FCTX.cleared = fdb.huntCleared
   P.ClearForeign(fdb.hunts, Guild.IsOwnChar, fdb.huntCleared)
+  if ns.Bounty and ns.Bounty.Purge then ns.Bounty.Purge(FCTX, Guild.IsOwnChar) end   -- 1.2.1: bounties of others
   backfill()
   B.setHook()
   B.updated()
@@ -1133,6 +1284,7 @@ local function sanitizeTies(t, d)
       if tie.sure ~= nil and (tie.sure ~= true or not tie.full) then tie.sure = nil end
       if tie.said ~= nil and tie.said ~= true then tie.said = nil end
       if tie.guid ~= nil and not P.ValidGUID(tie.guid) then tie.guid = nil end
+      if tie.hg ~= nil and (not P.ValidGUID(tie.hg) or not tie.full) then tie.hg = nil end
       if tie.bnTag ~= nil and not (type(tie.bnTag) == "string" and tie.bnTag:match("^%x%x%x%x%x%x%x%x$")) then tie.bnTag = nil end
       for _, k in ipairs({ "seenDay", "bnDay" }) do
         local v = tie[k]
@@ -1220,6 +1372,7 @@ function Friends.Init()
   roster, byName, order, known = {}, {}, {}, false
   peers, peerN, helloAt, helloLog, helloFrom, replies, flood, mateFrom = {}, 0, {}, {}, {}, {}, {}, {}
   helloRetry, suspended, failsOf, failedFriends, totalFails, impostorSeen, proven = {}, {}, {}, {}, 0, {}, {}
+  rivalHello = {}
   stats.impostor = nil
   blocked, scanPending, lastSync = false, false, nil
   loginAt = GetTime()

@@ -343,7 +343,7 @@ L.MANUAL_ALERT = "Kun tappaja ilmestyy nimikylttinä, kohteena tai hiiren alle, 
 L.MANUAL_ADD_HEAD = "KIRJAAMINEN"  -- [max 12]
 L.MANUAL_ADD = "Kirjoita nimi hakukenttään, Enter. Oikea klikkaus riviin: merkitse kosto, armahda, poista."
 L.MANUAL_GUILD_HEAD = "KILTA"  -- [max 12]
-L.MANUAL_GUILD = "Kiltalaiset ja kaverit, joilla on DeathNote, näkevät varmistetut kuolemasi ja käsin kirjatut nimet. Juliste tai /dn hunt Nimi: julista jahti."
+L.MANUAL_GUILD = "Kiltalaiset ja kaverit, joilla on DeathNote, näkevät varmistetut kuolemasi ja käsin kirjatut nimet. Juliste tai /dn hunt Nimi: julista jahti. Napsauta palkkiota: aseta oma, se on vain lupaus."
 L.MANUAL_SHARE_HEAD = "ETEENPÄIN"  -- [max 12]
 L.MANUAL_SHARE = "Talon tavat, Varmuuskopioi: kopioitava teksti kaikille, joilta DeathNote puuttuu."
 L.MANUAL_QUIET_HEAD = "HILJAA"  -- [max 12]
@@ -617,5 +617,32 @@ L.ACT_TIE_MINE = "Kaverini: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Irrota nimi"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "Irrotetaanko {name} kaverilistastasi?\nKaikki, mitä tämä nimi toi kaverikirjaan, poistetaan; seuraava viesti tällä etunimellä yhdistetään uudelleen."
 L.CHAT_FRIENDS_TIES = "Yhdistetyt koko nimet (* = ensimmäinen yhteys, ei vielä vahvistettu): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Nimi [Sukunimi]> <kulta>  aseta oma palkkio (ilman summaa: peru se)"
+L.CHAT_WHO_BOUNTY = "Kenestä? /dn bounty <Nimi> <kulta>"
+L.CHAT_BOUNTY_SET = "{name}: asetit {gold} kullan palkkion. Kiltalaiset ja kaverit, joilla on DeathNote, näkevät sen."
+L.CHAT_BOUNTY_OFF = "{name}: palkkiosi on peruttu."
+L.CHAT_BOUNTY_NONE = "Sinulla ei ole omaa palkkiota: {name}."
+L.CHAT_BOUNTY_BAD = "Palkkio: kokonaisluku kultaa 1:stä 99999:ään (0 peruu sen)."
+L.CHAT_BOUNTY_CAP = "Ei palkkiota: enintään {count} omaa."
+L.CHAT_BOUNTY_OURS = "Ei palkkiota itsestäsi eikä omistasi (kiltalaiset tai kaverit, joilla on DeathNote)."
+L.ACT_BOUNTY = "Aseta palkkio"  -- [max 24]
+L.ACT_UNDO = "Kumoa"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Vähennä yksi kosto"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, asettanut sinä"
+L.POSTER_BOUNTY_BY = "{gold}, asettanut {name}"
+L.POSTER_BOUNTY_MANY = "Palkkio {gold}: {names}"
+L.POSTER_AVENGED = "Kostajat: {names}"
+L.ROW_AVENGED = "kostettu {times}"
+L.BOUNTY_TIP_HEAD = "Oma palkkiosi kultana"
+L.BOUNTY_TIP_RULES = "Kokonaisluku 1:stä 99999:ään. Tyhjä tai 0: takaisin kirjan arvoon. Enter asettaa, Esc peruu."
+L.BOUNTY_TIP_PROMISE = "Kiltalaiset ja kaverit, joilla on DeathNote, näkevät sen. Vain lupaus: sovitte keskenänne."
+L.BOUNTY_TIP_CLICK = "Napsautus: aseta oma palkkio"
+L.CHAT_AVENGED = "{name} kaatoi puolestasi: {killer}."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: asetit {gold} kullan palkkion."
+L.CHAT_BOUNTY_UNKNOWN = "{name} ei ole missään kirjassasi. Palkkion voi asettaa vain kirjassa olevalle nimelle, niin kuin peli sen näyttää: etunimi ja sukunimi."
+L.CHAT_BOUNTY_LIST = "Omat palkkiosi ({count}/{max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Et ole asettanut palkkiota."
 -- <<< BOOK
 end)

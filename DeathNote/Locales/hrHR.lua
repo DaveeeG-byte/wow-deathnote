@@ -349,7 +349,7 @@ L.MANUAL_ALERT = "Kad se ubojica pojavi kao pločica, meta ili pod mišem, knjig
 L.MANUAL_ADD_HEAD = "UPIS"  -- [max 12]
 L.MANUAL_ADD = "Upiši ime u polje za pretragu, Enter. Desni klik na redak: zabilježi osvetu, pomiluj, precrtaj."
 L.MANUAL_GUILD_HEAD = "CEH"  -- [max 12]
-L.MANUAL_GUILD = "Članovi ceha i prijatelji koji imaju DeathNote vide tvoje potvrđene smrti i ručne upise. Tjeralica ili /dn hunt Ime: raspiši lov."
+L.MANUAL_GUILD = "Članovi ceha i prijatelji koji imaju DeathNote vide tvoje potvrđene smrti i ručne upise. Tjeralica ili /dn hunt Ime: raspiši lov. Klik na ucjenu: raspiši svoju, samo obećanje, namirujete se međusobno."
 L.MANUAL_SHARE_HEAD = "PROSLIJEDI"  -- [max 12]
 L.MANUAL_SHARE = "Kućni red, Spremi knjigu: tekst za kopiranje, za sve bez DeathNotea."
 L.MANUAL_QUIET_HEAD = "TIŠINA"  -- [max 12]
@@ -623,5 +623,32 @@ L.ACT_TIE_MINE = "Moj prijatelj: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Odvoji ime"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "Odvojiti {name} od popisa prijatelja?\nŠto je to ime unijelo u knjigu prijatelja, bit će obrisano; sljedeća poruka pod tim imenom ponovno povezuje."
 L.CHAT_FRIENDS_TIES = "Povezana puna imena (* = prvi kontakt, još nije potvrđeno): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Ime [Prezime]> <zlato>  raspiši vlastitu ucjenu (bez iznosa: povuci)"
+L.CHAT_WHO_BOUNTY = "Na koga? /dn bounty <Ime> <zlato>"
+L.CHAT_BOUNTY_SET = "{name}: tvoja ucjena od {gold}g je raspisana. Ceh i prijatelji s DeathNoteom je vide."
+L.CHAT_BOUNTY_OFF = "{name}: tvoja ucjena je povučena."
+L.CHAT_BOUNTY_NONE = "{name}: nemaš vlastitu ucjenu."
+L.CHAT_BOUNTY_BAD = "Ucjena: cijeli broj zlatnika, od 1 do 99999 (0 je povlači)."
+L.CHAT_BOUNTY_CAP = "Nema ucjene: najviše {count} vlastitih."
+L.CHAT_BOUNTY_OURS = "Nema ucjene na sebe ni na svoje (ceh ili prijatelji s DeathNoteom)."
+L.ACT_BOUNTY = "Raspiši ucjenu"  -- [max 24]
+L.ACT_UNDO = "Poništi"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Oduzmi jednu osvetu"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, tvoja ucjena"
+L.POSTER_BOUNTY_BY = "{gold}, raspisuje: {name}"
+L.POSTER_BOUNTY_MANY = "Ucjena {gold}: {names}"
+L.POSTER_AVENGED = "Osvetili: {names}"
+L.ROW_AVENGED = "osvećeno {times}"
+L.BOUNTY_TIP_HEAD = "Tvoja vlastita ucjena u zlatu"
+L.BOUNTY_TIP_RULES = "Cijeli broj od 1 do 99999. Prazno ili 0: natrag na vrijednost knjige. Enter postavlja, Esc odustaje."
+L.BOUNTY_TIP_PROMISE = "Ceh i prijatelji s DeathNoteom je vide. Samo obećanje: namirujete se međusobno."
+L.BOUNTY_TIP_CLICK = "Klik: raspiši vlastitu ucjenu"
+L.CHAT_AVENGED = "Osveta za tebe: {killer}, od {name}."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: tvoja ucjena od {gold}g je raspisana."
+L.CHAT_BOUNTY_UNKNOWN = "{name}: nema u tvojim knjigama. Ucjena samo na ime iz knjige, onako kako ga igra prikazuje: ime i prezime."
+L.CHAT_BOUNTY_LIST = "Tvoje ucjene ({count} od {max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Nemaš vlastitu ucjenu."
 -- <<< BOOK
 end)

@@ -8,7 +8,7 @@ package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local M = require("mock_wow")
 local test, eq, ok, no = M.test, M.eq, M.ok, M.no
 
-local FILES = { "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Probe.lua", "Sync.lua" }
+local FILES = { "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Probe.lua", "Sync.lua", "Friends.lua", "Bounty.lua" }
 
 local function escape(s) return (s:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%0")) end
 

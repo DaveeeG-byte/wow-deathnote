@@ -24,6 +24,7 @@ local ERLAUBT = {
   -- deutsche Unterbefehle (gelten fuer immer, neben den englischen) und interne Kennungen (Stempelart)
   ["gilde"] = true, ["freunde"] = true, ["jagd"] = true, ["abblasen"] = true, ["still"] = true, ["ruhe"] = true,
   ["hilfe"] = true, ["sprache"] = true, ["rache"] = true,
+  ["kopfgeld"] = true,   -- 1.2.1: /dn kopfgeld (neben /dn bounty)
 }
 -- technische Kennungen, die gespeichert werden (Sonde/Fehlersuche) und darum fest bleiben;
 -- sie erscheinen nur als Wert in /dn probe, nie als Satz

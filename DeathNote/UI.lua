@@ -51,7 +51,10 @@ local FOREIGN = { all = { foreign = true, source = "all" }, guild = { foreign = 
 -- von 200 lokalen Namen je Datei)
 local GF = { SOURCES = { { "all", "SRC_ALL" }, { "guild", "SRC_GUILD" }, { "friends", "SRC_FRIENDS" } },
              STAMP_W = 140, STAMP_H = 70, MENU_MAX = 6, CAND_MAX = 6, ASSIST_MAX = 4,
-             WHY_ROW = 24 }   -- Grund in der Zeile der Abschussliste hoechstens so viele Zeichen (dann "…")
+             WHY_ROW = 24,    -- Grund in der Zeile der Abschussliste hoechstens so viele Zeichen (dann "…")
+             -- 1.2.1: Muenze am Taeter mit Kopfgeld (Client-Textur, belegt in Details und Auctionator), Sekunden fuer
+             -- "Rueckgaengig" nach "Rache vermerken", Auslober bzw. Raecher je Zeile (dann "und n weitere")
+             COIN = "Interface\\MoneyFrame\\UI-GoldIcon", UNDO_SECONDS = 8, UNDO_LOCK = 0.5 }
 
 -- Gebrauchsanweisung ("?"): jeder Absatz beschreibt, was wirklich gebaut ist (Abnahmespiegel)
 UX.HELP = {
@@ -562,18 +565,54 @@ local function EnemySpec(e)
   elseif e.status == "pardoned" then
     return {
       { L.ACT_HUNT_AGAIN, function() S.SetStatus(key, "wanted") end },
-      { L.ACT_REVENGE, function() S.AddRevenge(key) end },
+      GF.RevengeAct(key),
     }
   end
   return {
-    { L.ACT_REVENGE, function() S.AddRevenge(key) end },
+    GF.RevengeAct(key),
     { L.ACT_PARDON, function() S.SetStatus(key, "pardoned") end },
   }
+end
+
+-- 1.2.1: "Rache vermerken"; gleich danach fuer einige Sekunden "Rueckgaengig" auf demselben Knopf (ein Timer, kein Ticker)
+function GF.RevengeAct(key)
+  local u = GF.undo
+  if u and u.key == key then return { L.ACT_UNDO, GF.UndoRevenge } end
+  return { L.ACT_REVENGE, function() GF.NoteRevenge(key) end }
+end
+function GF.NoteRevenge(key)
+  local S = Store()
+  local e = S.Get(key)
+  if not e then return end
+  -- 1.2.1 fix: ein zweiter Klick derselben Rache (Doppelklick, zweimal im selben Bild) zaehlt nicht noch einmal
+  if GF.undo and GF.undo.key == key then return end
+  local prev = e.lastRevenge
+  local u = { key = key, prev = prev, at = GetTime() }
+  GF.undo = u
+  if not S.AddRevenge(key, true) then GF.undo = nil; return end
+  C_Timer.After(GF.UNDO_SECONDS, function()
+    if GF.undo == u then GF.undo = nil; UI.Refresh() end
+  end)
+end
+function GF.UndoRevenge()
+  local u = GF.undo
+  -- 1.2.1 fix: "Rueckgaengig" nimmt erst nach einer kurzen Sperre an (der zweite Klick eines Doppelklicks trifft sonst)
+  if u and u.at and GetTime() - u.at < GF.UNDO_LOCK then return end
+  GF.undo = nil
+  local S = Store()
+  if u and S.UndoRevenge then S.UndoRevenge(u.key, u.prev) end
+  UI.Refresh()
 end
 
 local function MenuSpec(e)
   local spec = EnemySpec(e)
   local out = { spec[1], spec[2], { L.ACT_STRIKE, function() UI.ConfirmDelete(e.key) end } }
+  -- 1.2.1: von Hand vermerkte Rache wieder abziehen (die vom Buch erkannte bleibt)
+  local S = Store()
+  local u = GF.undo
+  if S.HandRevenge and (tonumber(S.HandRevenge(e)) or 0) > 0 and not (u and u.key == e.key) then
+    out[#out + 1] = { L.ACT_REVENGE_TAKE, function() S.UndoRevenge(e.key); UI.Refresh() end }
+  end
   return out
 end
 
@@ -715,7 +754,7 @@ local function SelectRow(row)
   ShowRight()
 end
 
-function UX.RowMenu(row)
+function UX.RowMenu(row, anchor)
   local item = row.item
   if not item or state.filter == "journal" or IsCase(item) then return end
   if item.wrap then
@@ -733,7 +772,11 @@ function UX.RowMenu(row)
   elseif state.filter == "guild" then spec = GF.MenuWithHunt(GuildSpec(item), item.key)
   elseif item.status == "wanted" then spec = GF.MenuWithHunt(MenuSpec(item), item.key)
   else spec = MenuSpec(item) end
-  OpenMenu(spec, row)
+  -- 1.2.1: Kopfgeld ausloben (eigene Gesuchte und Verdaechtige, Gilde, Freunde, Abschussliste; dieselbe Regel wie am Plakat)
+  if GF.MayBounty(item) then
+    spec[#spec + 1] = { L.ACT_BOUNTY, function() GF.EditBounty(item.key) end }
+  end
+  OpenMenu(spec, anchor or row)
 end
 
 local function RowClick(row, mouse)
@@ -804,6 +847,14 @@ function UX.MakeRow(parent, i)
   r.icon:SetSize(16, 16)
   r.icon:SetPoint("TOPRIGHT", -8, -3)
   MugIcon(r.icon)
+  -- 1.2.1: kleine Muenze links vom Klassensymbol, wenn auf den Taeter ein Kopfgeld ausgelobt ist (ruhig, entsaettigt)
+  r.coin = r:CreateTexture(nil, "ARTWORK")
+  r.coin:SetSize(11, 11)
+  r.coin:SetPoint("TOPRIGHT", -28, -6)
+  r.coin:SetTexture(GF.COIN)
+  r.coin:SetDesaturated(true)
+  r.coin:SetVertexColor(0.55, 0.45, 0.25, 0.9)
+  r.coin:Hide()
 
   -- Unterstrichen = gewaehlt, durchgestrichen = begnadigt
   r.under = r:CreateTexture(nil, "OVERLAY")
@@ -860,7 +911,7 @@ local function SetRowMode(r, mode)
   r.name:SetPoint("RIGHT", head and -112 or -40, 0)
   r.subX = child and 60 or 42
   r.subInset = nil
-  if head then r.icon:Hide(); r.strike:Hide(); r.skull:Hide(); r.rank:SetText("") end
+  if head then r.icon:Hide(); r.strike:Hide(); r.skull:Hide(); r.rank:SetText(""); r.coin:Hide() end
 end
 
 -- Toene einer Zeile: normal, rot (Rang 1, Taeter unklar), blass (begnadigt, nur von Hand, zaehlt nicht)
@@ -923,6 +974,7 @@ function UX.BindEnemyRow(r, e)
          (rank == 1 and "red") or (pardoned and "pale") or "normal")
   Look.ClassIcon(r.icon, e.class)
   r.icon:Show()
+  GF.Coin(r, e.key)
   r.under:SetShown((state.filter == "open" and state.osel or state.selected) == e.key)
   r.under:SetWidth(InkWidth(r.name))
   -- durchgestrichen nur, wer begnadigt ist; Rache steht rechts als Vermerk
@@ -935,7 +987,7 @@ function UX.BindCaseRow(r, d)
   SetRowMode(r, "normal")
   SetRank(r, nil)
   r.skull:Show()
-  r.icon:Hide()
+  r.icon:Hide(); r.coin:Hide()
   r.strike:Hide()
   local n = type(d.candidates) == "table" and #d.candidates or 0
   SetRow(r, L.ROW_KILLER_UNCLEAR, DeedWhere(d), n > 0 and Look.Count(n, L.MARK_CANDIDATES) or nil, "red")
@@ -947,7 +999,7 @@ function UX.BindDeathRow(r, d, index)
   SetRowMode(r, "normal")
   SetRank(r, nil)
   r.skull:Show()
-  r.icon:Hide()
+  r.icon:Hide(); r.coin:Hide()
   r.strike:Hide()
   local name, mark, tone, markInk = nil, nil, "normal", false
   if d.kind == "pvp" and d.killerKey then
@@ -982,12 +1034,16 @@ function UX.BindGuildRow(r, g, pos)
     local names = Look.ListedNames(g, listedNames)
     sub = #names > 0 and Fmt(L.ROW_LISTED_BY, { names = Look.NameList(names, 2) }) or L.TALLY_MANUAL
   else
+    -- 1.2.1: wie oft ihn Kollegen oder Freunde fuer andere erledigt haben (Gesamtzahl)
+    local av = tonumber(GCall("AvengedTotal", g.key)) or 0
     sub = Look.Join(Fmt(L.ROW_GKILLED, { kills = Look.GKills(g.kills) }), Look.Count(g.victimCount, L.ROW_VICTIMS),
+                    av > 0 and Fmt(L.ROW_AVENGED, { times = Look.Times(av) }),
                     type(g.lastVictim) == "string" and g.lastVictim ~= "" and Fmt(L.ROW_LAST, { text = Look.First(g.lastVictim) }))
   end
   -- kleines Zeichen: steht schon im eigenen Buch
   local mine = g.mine or Store().Get(g.key)
   SetRow(r, Look.Name(g), sub, mine and L.MARK_IN_BOOK or nil, (rank == 1 and "red") or (only and "pale") or "normal", true)
+  GF.Coin(r, g.key)
   r.under:SetShown(state.gselected == g.key)
   r.under:SetWidth(InkWidth(r.name))
 end
@@ -1051,6 +1107,7 @@ function UX.BindMemberChild(r, w)
     sub, tone = Look.Join(L.TALLY_MANUAL, row.listedAt and Look.Ago(row.listedAt)), "pale"
   end
   SetRow(r, e and Look.Name(e) or tostring(row.key or "?"), sub, Store().Get(row.key) and L.MARK_IN_BOOK or nil, tone, true)
+  GF.Coin(r, row.key)
   r.under:SetShown(state.gselected == row.key and (state.gmember == nil or state.gmember == w.m.name))
   r.under:SetWidth(InkWidth(r.name))
 end
@@ -1113,6 +1170,7 @@ function GF.BindHuntRow(r, h)
   local bag = tonumber(h.bagged) or 0
   local mark = bag > 0 and Fmt(L.MARK_TAKEN_DOWN, { times = Look.Times(bag) }) or nil
   SetRow(r, Look.Name(h), sub, mark, h.hidden and "pale" or "normal", false)
+  GF.Coin(r, h.key)
   r.tipFn = GF.HuntTip          -- Tooltip erst beim Zeigen bauen (Neuaufbau bleibt billig)
   r.under:SetShown(state.hselected == h.key)
   r.under:SetWidth(InkWidth(r.name))
@@ -1211,6 +1269,166 @@ function GF.ShowStamp(tex, on)
   if tex.label then tex.label:SetShown((on and tex.label.on) and true or false) end
 end
 
+------------------------------------------------------------------------
+-- Kopfgeld und "gerächt" (1.2.1): ausgelobt von wem, eigene Eingabe am Plakat, Raecher fuer andere
+------------------------------------------------------------------------
+function GF.CanBounty() return type(ns.Guild) == "table" and type(ns.Guild.SetBounty) == "function" end
+-- 1.2.1 fix: eine Regel fuer Menue und Plakat: nicht auf Begnadigte, ausser um das eigene zurueckzunehmen
+function GF.MayBounty(item)
+  if not GF.CanBounty() or type(item) ~= "table" or type(item.key) ~= "string" then return false end
+  return item.status ~= "pardoned" or GCall("OwnBounty", item.key) ~= nil
+end
+function GF.Coin(r, key) r.coin:SetShown(GCall("HasBounty", key) == true) end
+function GF.Gold(g) return Fmt(L.MONEY_GOLD, { count = UX.Thousands(g) }) end
+
+-- Zeilen { char, g, own, mine } und Summe in Gold
+function GF.BountyRows(key)
+  local rows, sum = GCall("Bounties", key)
+  if type(rows) ~= "table" then return {}, 0 end
+  return rows, tonumber(sum) or 0
+end
+
+-- der erste Name, bei mehreren "+n" (1.2.1 fix: kurz, die Zeile bleibt in 192 px; alle stehen im Tooltip)
+function GF.FirstPlus(first, n)
+  if n <= 1 then return first end
+  return Fmt(L.NAMES_PLUS, { name = first, count = n - 1 })
+end
+
+-- eine Zeile fuer den Steckbrief: "500g, ausgelobt von dir" / "... von Anna" / "Kopfgeld 700g: Anna +2"
+-- (cut: der gekuerzte erste Name, wenn die Zeile sonst zu breit ist)
+function GF.BountyLine(rows, sum, cut)
+  if #rows == 0 then return nil end
+  if #rows == 1 then
+    local r = rows[1]
+    if r.mine then return Fmt(L.POSTER_BOUNTY_MINE, { gold = GF.Gold(r.g) }) end
+    return Fmt(L.POSTER_BOUNTY_BY, { gold = GF.Gold(r.g), name = cut or Look.First(r.char) })
+  end
+  -- mehrere: die Summe, der groesste Auslober und wie viele noch (Betraege je Auslober im Tooltip der Zeile)
+  return Fmt(L.POSTER_BOUNTY_MANY, { gold = GF.Gold(sum), names = GF.FirstPlus(cut or Look.First(rows[1].char), #rows) })
+end
+
+-- 1.2.1 fix: eine Zeile, die breiter als ihre 192 px ist, kuerzt den ersten Namen ("Annabel… +3"); alle stehen im
+-- Tooltip der Zeile. make(cut) baut die Zeile mit dem gekuerzten Namen.
+function GF.Fit(fs, first, make)
+  if type(first) ~= "string" or TextWidth(fs, 0) <= 192 then return end
+  local chars = {}
+  for c in first:gmatch("[%z\1-\127\194-\244][\128-\191]*") do chars[#chars + 1] = c end
+  for n = #chars - 1, 2, -1 do
+    fs:SetText(make(table.concat(chars, "", 1, n) .. "…"))
+    if TextWidth(fs, 0) <= 192 then return end
+  end
+end
+
+-- Tooltip: jeder Auslober mit Betrag (hoechstens 20, dann "und n weitere"), darunter wie man setzt
+function GF.BountyTip(rows)
+  local t = { Spaced(L.POSTER_BOUNTY) }
+  for i = 1, math.min(#rows, 20) do t[#t + 1] = tostring(rows[i].char) .. ": " .. GF.Gold(rows[i].g) end
+  if #rows > 20 then t[#t + 1] = Fmt(L.MORE_LINE, { count = #rows - 20 }) end
+  if GF.CanBounty() then t[#t + 1] = L.BOUNTY_TIP_CLICK end
+  return t
+end
+
+-- "Gerächt von Anna 2×" / "Gerächt von Anna +2" (alle mit ihren Zahlen im Tooltip)
+function GF.AvengedText(rows, cut)
+  local first = cut or Look.First(rows[1].char)
+  if #rows == 1 then first = first .. " " .. Look.Times(rows[1].n) end
+  return Fmt(L.POSTER_AVENGED, { names = GF.FirstPlus(first, #rows) })
+end
+function GF.AvengedLine(key)
+  local rows = GCall("Avenged", key)
+  if type(rows) ~= "table" or #rows == 0 then return nil end
+  return GF.AvengedText(rows), rows
+end
+
+function GF.AvengedTip(rows)
+  -- (the head without its colon, also the full-width one of zhCN and zhTW)
+  local t = { (Fmt(L.POSTER_AVENGED, { names = "" }):gsub("[%s:]+$", ""):gsub("\239\188\154$", "")) }
+  for i = 1, math.min(#rows, 20) do t[#t + 1] = tostring(rows[i].char) .. " " .. Look.Times(rows[i].n) end
+  if #rows > 20 then t[#t + 1] = Fmt(L.MORE_LINE, { count = #rows - 20 }) end
+  return t
+end
+
+-- unsichtbare Flaeche ueber einer Zeile des Steckbriefs (Kopfgeld: Tooltip mit allen, Klick: eigenes festlegen;
+-- gerächt: Tooltip mit allen). Faellt die Zeile weg, zeigt der Tooltip ueber dem Steckbrief alles.
+function GF.PlaceLineHit(E, hit, idx, tip)
+  local shown = idx and E.shownOf and E.shownOf[idx]
+  if not shown then hit.tip = nil; hit:Hide(); return end
+  hit:ClearAllPoints()
+  hit:SetPoint("TOPLEFT", E.info[shown], "TOPLEFT", 0, 0)
+  hit.tip = tip
+  hit:SetFrameLevel(E.infoHit:GetFrameLevel() + 2)
+  hit:Show()
+end
+function GF.PlaceBountyLine(E, idx, rows, aidx, arows, sum)
+  GF.PlaceLineHit(E, E.bountyLineHit, idx, idx and GF.BountyTip(rows))
+  GF.PlaceLineHit(E, E.avengedHit, aidx, aidx and arows and GF.AvengedTip(arows))
+  local b = idx and E.shownOf and E.shownOf[idx]
+  if b and rows[1] and not (#rows == 1 and rows[1].mine) then
+    GF.Fit(E.info[b], Look.First(rows[1].char), function(cut) return GF.BountyLine(rows, sum, cut) end)
+  end
+  local a = aidx and E.shownOf and E.shownOf[aidx]
+  if a and arows and arows[1] then
+    GF.Fit(E.info[a], Look.First(arows[1].char), function(cut) return GF.AvengedText(arows, cut) end)
+  end
+end
+
+-- Eingabe am Platz des grossen Werts: Enter setzt, leer oder 0 nimmt zurueck, Esc oder Fokus weg bricht ab
+function GF.EditBounty(key)
+  local E = P and P.enemy
+  if not (E and GF.CanBounty() and type(key) == "string" and E.current and E.current.key == key and E:IsVisible()) then return end
+  if not GF.MayBounty(E.current) then return end
+  local ed = E.bountyEdit
+  ed.key = key
+  local g = GCall("OwnBounty", key)
+  ed:SetText(g and tostring(g) or "")
+  E.bounty:Hide()
+  E.bountyHit:Hide()     -- 1.2.1 fix: die Klickflaeche liegt sonst ueber dem Feld
+  ed:Show()
+  ed:SetFocus()
+  ed:HighlightText()
+  Tip(ed, { L.BOUNTY_TIP_HEAD, L.BOUNTY_TIP_RULES, L.BOUNTY_TIP_PROMISE })
+end
+
+function GF.EndBounty(ed, save)
+  local key = ed.key
+  if not key then return end
+  local text = tostring(ed:GetText() or ""):gsub("^%s+", ""):gsub("%s+$", "")
+  local gold
+  if save then
+    if text == "" then gold = 0 else gold = text:match("^%d+$") and tonumber(text) or nil end
+    if not gold or gold > 99999 then
+      if ns.Util and ns.Util.Print then ns.Util.Print(L.CHAT_BOUNTY_BAD) end
+      ed:HighlightText()
+      return
+    end
+  end
+  ed.key = nil
+  ed:ClearFocus()
+  ed:Hide()
+  if GameTooltip.IsOwned and GameTooltip:IsOwned(ed) then GameTooltip:Hide() end
+  local E = P.enemy
+  E.bounty:Show()
+  if save then
+    local had = GCall("OwnBounty", key)
+    if gold > 0 or had then
+      local ok, why = GCall("SetBounty", key, gold)
+      if ns.Util and ns.Util.BountyReport then
+        local x = GCall("Hunt", key, "all") or GCall("Get", key, "all") or Store().Get(key)
+        ns.Util.BountyReport(type(x) == "table" and Look.Name(x) or key, gold, ok, why)
+      end
+    end
+  end
+  UI.Refresh()
+end
+
+-- am Ende jedes Plakats: offene Eingabe nur fuer genau diesen Taeter (sonst abbrechen), Wert sonst sichtbar
+function GF.BountySlot(E, key)
+  local ed = E.bountyEdit
+  if ed:IsShown() and ed.key ~= key then ed.key = nil; ed:ClearFocus(); ed:Hide() end
+  E.bounty:SetShown(not ed:IsShown())
+  if ed:IsShown() then E.bountyHit:Hide() end
+end
+
 function UX.BuildPoster()
   P = CreateFrame("Frame", nil, RP)
   P:SetSize(352, 452)
@@ -1231,6 +1449,15 @@ function UX.BuildPoster()
   local E = CreateFrame("Frame", nil, P)
   E:SetAllPoints()
   P.enemy = E
+  -- 1.2.1: Rechtsklick aufs Plakat: dasselbe Menue wie an der Zeile (Rache abziehen, Kopfgeld ausloben ...)
+  E:EnableMouse(true)
+  E:SetScript("OnMouseUp", function(self, mouse)
+    if mouse == "RightButton" and type(self.current) == "table" and self.current.key then UX.RowMenu({ item = self.current }, self) end
+  end)
+  -- das Plakat nimmt die Maus: Ziehen mit links bewegt weiter das Buch (wie ueberall sonst)
+  E:RegisterForDrag("LeftButton")
+  E:SetScript("OnDragStart", function() local f = F and F:GetScript("OnDragStart"); if f then f(F) end end)
+  E:SetScript("OnDragStop", function() local f = F and F:GetScript("OnDragStop"); if f then f(F) end end)
   E.wanted = Look.Text(E, "hand", 46, Look.INK)
   E.wanted:SetPoint("TOP", 0, -12)
   E.wanted:SetText("WANTED")
@@ -1307,6 +1534,42 @@ function UX.BuildPoster()
   E.bountyLabel = Look.Text(E, "body", 10, Look.RED_INK)
   E.bounty = Look.Text(E, "hand", 22, Look.INK)
   E.bountySize = 22
+  -- 1.2.1: Klick aufs Kopfgeld (eigenes Plakat): eigenes Kopfgeld ausloben; Tooltip mit allen Auslobern
+  E.bountyHit = CreateFrame("Button", nil, E)
+  E.bountyHit:SetSize(150, 40)
+  E.bountyHit:SetPoint("TOP", E.bountyLabel, "TOP", 0, 2)
+  E.bountyHit:SetScript("OnEnter", CandEnter)
+  E.bountyHit:SetScript("OnLeave", CandLeave)
+  E.bountyHit:SetScript("OnClick", function(self) Look.Sound("click"); GF.EditBounty(self.key) end)
+  E.bountyHit:Hide()
+  E.bountyLineHit = CreateFrame("Button", nil, E)
+  E.bountyLineHit:SetSize(192, 13)
+  E.bountyLineHit:SetScript("OnEnter", CandEnter)
+  E.bountyLineHit:SetScript("OnLeave", CandLeave)
+  E.bountyLineHit:SetScript("OnClick", function() Look.Sound("click"); GF.EditBounty(E.current and E.current.key) end)
+  E.bountyLineHit:Hide()
+  E.avengedHit = CreateFrame("Button", nil, E)
+  E.avengedHit:SetSize(192, 13)
+  E.avengedHit:SetScript("OnEnter", CandEnter)
+  E.avengedHit:SetScript("OnLeave", CandLeave)
+  E.avengedHit:Hide()
+  local ed = CreateFrame("EditBox", nil, E)
+  ed:SetSize(110, 24)
+  ed:SetPoint("TOP", E.bountyLabel, "BOTTOM", 0, -1)
+  ed:SetAutoFocus(false)
+  ed:SetMaxLetters(5)
+  ed:SetJustifyH("CENTER")
+  Look.Font(ed, "hand", 19)
+  ed:SetTextColor(C(Look.RED_INK))
+  local edl = ed:CreateTexture(nil, "BACKGROUND")
+  edl:SetColorTexture(C(Look.INK, 0.35))
+  edl:SetHeight(1)
+  edl:SetPoint("BOTTOMLEFT", 0, 1); edl:SetPoint("BOTTOMRIGHT", 0, 1)
+  ed:SetScript("OnEnterPressed", function(self) GF.EndBounty(self, true) end)
+  ed:SetScript("OnEscapePressed", function(self) GF.EndBounty(self, false) end)
+  ed:SetScript("OnEditFocusLost", function(self) GF.EndBounty(self, false) end)
+  ed:Hide()
+  E.bountyEdit = ed
 
   E.fileLabel = Label(E, "")
   E.fileLabel:SetPoint("TOPLEFT", 20, -256)
@@ -1642,11 +1905,16 @@ local function SetInfo(E, info, optional)
   local twoLines = TextWidth(E.name, 0) > 192
   local room = twoLines and INFO_LINES - 1 or INFO_LINES
   local shown, dropped = 0, false
+  -- 1.2.1: welche Zeile des Steckbriefs (Index in info) auf welcher Linie steht
+  local at = E.shownOf or {}
+  E.shownOf = at
+  for k in pairs(at) do at[k] = nil end
   for i = 1, #info do
     -- 1.2.0: optionale Zeilen (Rasse, Gilde) weichen immer, wenn sonst eine spaetere Zeile keinen Platz haette
     if shown < room and not (optional[i] and #info - i + shown >= room) then
       shown = shown + 1
       E.info[shown]:SetText(info[i])
+      at[i] = shown
     else
       dropped = true
     end
@@ -1723,16 +1991,36 @@ local function FillEnemy(e)
   end
   if e.raceLoc or e.race then info[#info + 1] = e.raceLoc or e.race; opt[#info] = true end
   if e.guild and e.guild ~= "" then info[#info + 1] = Fmt(L.POSTER_GUILD, { guild = e.guild }); opt[#info] = true end
+  -- 1.2.1: ausgelobtes Kopfgeld und "gerächt von" als Zeilen. Weichen, wenn der Platz fehlt (zuerst Rasse, dann Gilde,
+  -- dann das Kopfgeld, dessen Summe gross daneben steht, dann "gerächt von"); "zuletzt gesehen" bleibt immer.
+  local brows, bsum = GF.BountyRows(e.key)
+  local bline = GF.BountyLine(brows, bsum)
+  local bidx, aidx
+  if bline then info[#info + 1] = bline; bidx = #info; opt[#info] = true end
+  local aline, arows = GF.AvengedLine(e.key)
+  if aline then info[#info + 1] = aline; aidx = #info; opt[#info] = true end
   local ls = e.lastSeen
   local ago = type(ls) == "table" and Look.Ago(ls.t)
   info[#info + 1] = ago and Fmt(L.POSTER_LAST_SEEN, { time = ago }) or L.POSTER_NOT_SEEN
   SetInfo(E, info, opt)
+  GF.PlaceBountyLine(E, bidx, brows, aidx, arows, bsum)
 
   local rv = tonumber(e.revenge) or 0
   E.bountyLabel:SetText(Spaced(L.POSTER_BOUNTY))
-  local bounty = tonumber(S.Bounty and S.Bounty(e)) or 0
-  SetBounty(E, GoldText(bounty), bounty >= 1000 * 10000)
+  -- 1.2.1: ausgelobt: gross die Summe in roter Tinte; sonst der Wert des Buchs wie bisher
+  if bsum > 0 then
+    SetBounty(E, GoldText(bsum * 10000), bsum >= 1000)
+    E.bounty:SetTextColor(C(Look.RED_INK))
+  else
+    local bounty = tonumber(S.Bounty and S.Bounty(e)) or 0
+    SetBounty(E, GoldText(bounty), bounty >= 1000 * 10000)
+    E.bounty:SetTextColor(C(Look.INK))
+  end
   PlaceBounty(E, rv > 0)
+  E.bountyHit.key = GF.MayBounty(e) and e.key or nil
+  E.bountyHit.tip = E.bountyHit.key and GF.BountyTip(brows) or nil
+  E.bountyHit:SetShown(E.bountyHit.key ~= nil)
+  GF.BountySlot(E, e.key)
 
   FillLines(E, e.deaths or {}, UX.DeathLine, UX.DeathTip,
             e.status == "suspect" and L.POSTER_ONLY_SUSPECT or L.POSTER_NO_DEEDS)
@@ -1765,7 +2053,7 @@ local function FillEnemy(e)
   E.strike:Show()
 
   -- Knoepfe (mit ihren Closures) nur neu, wenn sich Eintrag oder Status geaendert haben
-  local sig = "e\0" .. e.key .. "\0" .. tostring(e.status)
+  local sig = "e\0" .. e.key .. "\0" .. tostring(e.status) .. (GF.undo and GF.undo.key == e.key and "\0u" or "")
   if E.specSig ~= sig then
     E.specSig = sig
     ConfigButtons(E, EnemySpec(e))
@@ -1836,7 +2124,16 @@ local function FillGuild(g)
   if #names > 0 then
     info[#info + 1] = Fmt(L.POSTER_IN_BOOK_OF, { names = Look.NameList(names, 2) })
     listLine = #info
+    opt[#info] = true
   end
+  -- 1.2.1: ausgelobtes Kopfgeld und "gerächt von" als Zeilen (die Opferzahl behaelt ihren Platz); fehlt der Platz,
+  -- weichen "im Buch von", das Kopfgeld und "gerächt von" in dieser Folge, "zuletzt gesehen" bleibt
+  local brows, bsum = GF.BountyRows(g.key)
+  local bline = GF.BountyLine(brows, bsum)
+  local bidx, aidx
+  if bline then info[#info + 1] = bline; bidx = #info; opt[#info] = true end
+  local aline, arows = GF.AvengedLine(g.key)
+  if aline then info[#info + 1] = aline; aidx = #info; opt[#info] = true end
   local ls = type(g.lastSeen) == "table" and g.lastSeen or nil
   local ago = ls and Look.Ago(ls.t)
   if ago then
@@ -1845,11 +2142,13 @@ local function FillGuild(g)
     info[#info + 1] = L.POSTER_NOT_SEEN
   end
   SetInfo(E, info, opt)
+  GF.PlaceBountyLine(E, bidx, brows, aidx, arows, bsum)
   -- Tooltip mit allen Namen, wenn gekuerzt (mehr als zwei, Vornamen, oder zu breit)
-  if listLine and listLine <= INFO_LINES and (#names > 2 or Truncated(E.info[listLine]) or Look.First(names[1]) ~= names[1]) then
+  local listAt = listLine and E.shownOf[listLine]
+  if listAt and (#names > 2 or Truncated(E.info[listAt]) or Look.First(names[1]) ~= names[1]) then
     E.listHit.tip = { L.TIP_IN_BOOK_OF, table.concat(names, ", ") }
     E.listHit:ClearAllPoints()
-    E.listHit:SetPoint("TOPLEFT", E.info[listLine], "TOPLEFT", 0, 0)
+    E.listHit:SetPoint("TOPLEFT", E.info[listAt], "TOPLEFT", 0, 0)
     E.listHit:Show()
   else
     E.listHit.tip = nil
@@ -1864,7 +2163,11 @@ local function FillGuild(g)
     E.bountyLabel:SetText("")
     SetBounty(E, Look.Count(g.victimCount, L.ROW_VICTIMS), false)
   end
+  E.bounty:SetTextColor(C(Look.INK))
   PlaceBounty(E, false)
+  E.bountyHit.key, E.bountyHit.tip = nil, nil
+  E.bountyHit:Hide()
+  GF.BountySlot(E, g.key)
 
   if only then
     -- wer ihn wann eingetragen hat, aelteste zuerst
@@ -1966,6 +2269,13 @@ function GF.FillHunt(h)
   if type(h.why) == "string" and h.why ~= "" then info[#info + 1] = Fmt(L.HUNT_REASON, { reason = h.why }) end
   local names = type(h.names) == "table" and h.names or {}
   if #names > 0 then info[#info + 1] = Fmt(L.POSTER_RELEASED_BY, { names = Look.NameList(names, 2) }); opt[#info] = true end
+  -- 1.2.1: ausgelobtes Kopfgeld und "gerächt von" vor dem Gesehen; fehlt der Platz, weichen sie nach "freigegeben von"
+  local brows, bsum = GF.BountyRows(h.key)
+  local bline = GF.BountyLine(brows, bsum)
+  local bidx, aidx
+  if bline then info[#info + 1] = bline; bidx = #info; opt[#info] = true end
+  local aline, arows = GF.AvengedLine(h.key)
+  if aline then info[#info + 1] = aline; aidx = #info; opt[#info] = true end
   local ls = type(h.lastSeen) == "table" and h.lastSeen or nil
   local ago = ls and Look.Ago(ls.t)
   if ago then
@@ -1974,10 +2284,15 @@ function GF.FillHunt(h)
     info[#info + 1] = L.POSTER_NOT_SEEN
   end
   SetInfo(E, info, opt)
+  GF.PlaceBountyLine(E, bidx, brows, aidx, arows, bsum)
   local bag = tonumber(h.bagged) or 0
   E.bountyLabel:SetText(Spaced(L.POSTER_TAKEN_DOWN))
   SetBounty(E, bag > 0 and Look.Times(bag) or L.POSTER_NOT_YET, bag <= 0)
+  E.bounty:SetTextColor(C(Look.INK))
   PlaceBounty(E, false)
+  E.bountyHit.key, E.bountyHit.tip = nil, nil
+  E.bountyHit:Hide()
+  GF.BountySlot(E, h.key)
   E.fileLabel:SetText(Spaced(L.POSTER_CALLS))
   FillLines(E, type(h.releases) == "table" and h.releases or {}, UX.HuntLine, UX.HuntTip, L.POSTER_NOBODY_LEFT)
   E.noteLabel:SetText(Spaced(L.POSTER_LAST))

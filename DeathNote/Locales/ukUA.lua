@@ -349,7 +349,7 @@ L.MANUAL_ALERT = "Коли з'являється табличка вбивці �
 L.MANUAL_ADD_HEAD = "ЗАПИС"  -- [max 12]
 L.MANUAL_ADD = "Впиши ім'я в поле пошуку, Enter. Правий клік на рядку: позначити помсту, помилувати, викреслити."
 L.MANUAL_GUILD_HEAD = "ГІЛЬДІЯ"  -- [max 12]
-L.MANUAL_GUILD = "Гільдійці та друзі з DeathNote бачать твої підтверджені смерті й ручні записи. Плакат або /dn hunt Ім'я: оголосити полювання."
+L.MANUAL_GUILD = "Гільдійці та друзі з DeathNote бачать твої підтверджені смерті й ручні записи. Плакат або /dn hunt Ім'я: оголосити полювання. Клік по нагороді: призначити свою, лише обіцянка, розрахунок між собою."
 L.MANUAL_SHARE_HEAD = "ПЕРЕДАТИ"  -- [max 12]
 L.MANUAL_SHARE = "Розпорядок, «Зберегти книгу»: текст для копіювання, для всіх без DeathNote."
 L.MANUAL_QUIET_HEAD = "ТИША"  -- [max 12]
@@ -623,5 +623,32 @@ L.ACT_TIE_MINE = "Мій друг: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Відв'язати"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "Відв'язати {name} від твого списку друзів?\nУсе, що це ім'я принесло в книгу друзів, буде видалено; наступне повідомлення під цим ім'ям прив'яже наново."
 L.CHAT_FRIENDS_TIES = "Прив'язані повні імена (* = перший контакт, ще не підтверджено): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Ім'я [Прізвище]> <золото>  призначити свою нагороду (без суми: відкликати)"
+L.CHAT_WHO_BOUNTY = "За кого? /dn bounty <Ім'я> <золото>"
+L.CHAT_BOUNTY_SET = "{name}: твою нагороду {gold} з призначено. Гільдія та друзі з DeathNote її бачать."
+L.CHAT_BOUNTY_OFF = "{name}: твою нагороду відкликано."
+L.CHAT_BOUNTY_NONE = "{name}: твоєї нагороди немає."
+L.CHAT_BOUNTY_BAD = "Нагорода: ціле число золотих, від 1 до 99999 (0 відкликає)."
+L.CHAT_BOUNTY_CAP = "Нагороду не призначити: своїх щонайбільше {count}."
+L.CHAT_BOUNTY_OURS = "Не можна призначити нагороду за себе й своїх (гільдія або друзі з DeathNote)."
+L.ACT_BOUNTY = "Призначити нагороду"  -- [max 24]
+L.ACT_UNDO = "Скасувати"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Зняти одну помсту"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, твоя нагорода"
+L.POSTER_BOUNTY_BY = "{gold}, призначає: {name}"
+L.POSTER_BOUNTY_MANY = "Нагорода {gold}: {names}"
+L.POSTER_AVENGED = "Помстилися: {names}"
+L.ROW_AVENGED = "помщено {times}"
+L.BOUNTY_TIP_HEAD = "Твоя нагорода в золоті"
+L.BOUNTY_TIP_RULES = "Ціле число від 1 до 99999. Порожньо або 0: знову значення книги. Enter призначає, Esc скасовує."
+L.BOUNTY_TIP_PROMISE = "Гільдія та друзі з DeathNote її бачать. Це лише обіцянка: розрахунок між собою."
+L.BOUNTY_TIP_CLICK = "Клік: призначити свою нагороду"
+L.CHAT_AVENGED = "Помста за тебе: {killer}, від {name}."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: твою нагороду {gold} з призначено."
+L.CHAT_BOUNTY_UNKNOWN = "{name}: немає у твоїх книгах. Нагорода лише на ім'я з книги, як його показує гра: ім'я та прізвище."
+L.CHAT_BOUNTY_LIST = "Твої нагороди ({count} з {max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Твоїх нагород немає."
 -- <<< BOOK
 end)

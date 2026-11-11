@@ -342,7 +342,7 @@ L.MANUAL_ALERT = "Duikt een dader op als naamplaatje, doelwit of onder de muis, 
 L.MANUAL_ADD_HEAD = "TOEVOEGEN"  -- [max 12]
 L.MANUAL_ADD = "Typ een naam in het zoekveld, Enter. Rechtsklik op een regel: wraak noteren, begenadigen, schrappen."
 L.MANUAL_GUILD_HEAD = "GUILD"  -- [max 12]
-L.MANUAL_GUILD = "Guildgenoten en vrienden met DeathNote zien je bevestigde sterfgevallen en handmatige namen. Affiche of /dn hunt Naam: op de dodenlijst zetten."
+L.MANUAL_GUILD = "Guildgenoten en vrienden met DeathNote zien je bevestigde sterfgevallen en handmatige namen. Affiche of /dn hunt Naam: op de dodenlijst zetten. Klik op de premie: loof je eigen uit, een belofte die je onderling regelt."
 L.MANUAL_SHARE_HEAD = "DOORGEVEN"  -- [max 12]
 L.MANUAL_SHARE = "Huisregels, Boek bewaren: een tekst om te kopiëren, voor iedereen zonder DeathNote."
 L.MANUAL_QUIET_HEAD = "STILTE"  -- [max 12]
@@ -616,5 +616,32 @@ L.ACT_TIE_MINE = "Mijn vriend: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Loskoppelen"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "{name} loskoppelen van je vriendenlijst?\nWat deze naam in het vriendenboek heeft gebracht, wordt gewist; het volgende bericht onder deze voornaam koppelt opnieuw."
 L.CHAT_FRIENDS_TIES = "Gekoppelde volledige namen (* = eerste contact, nog niet bevestigd): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Naam [Achternaam]> <goud>  eigen premie uitloven (zonder goud: intrekken)"
+L.CHAT_WHO_BOUNTY = "Op wie? /dn bounty <Naam> <goud>"
+L.CHAT_BOUNTY_SET = "{name}: je hebt {gold} goud premie uitgeloofd. Guild en vrienden met DeathNote zien het."
+L.CHAT_BOUNTY_OFF = "{name}: je premie is ingetrokken."
+L.CHAT_BOUNTY_NONE = "Je hebt geen eigen premie op {name}."
+L.CHAT_BOUNTY_BAD = "Premie: een heel getal goud, 1 tot 99999 (0 trekt hem in)."
+L.CHAT_BOUNTY_CAP = "Geen premie: hoogstens {count} eigen."
+L.CHAT_BOUNTY_OURS = "Geen premie op jezelf of je eigen mensen (guild of vrienden met DeathNote)."
+L.ACT_BOUNTY = "Premie uitloven"  -- [max 24]
+L.ACT_UNDO = "Ongedaan maken"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Eén wraak aftrekken"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, uitgeloofd door jou"
+L.POSTER_BOUNTY_BY = "{gold}, uitgeloofd door {name}"
+L.POSTER_BOUNTY_MANY = "Premie {gold}: {names}"
+L.POSTER_AVENGED = "Gewroken door {names}"
+L.ROW_AVENGED = "gewroken {times}"
+L.BOUNTY_TIP_HEAD = "Je eigen premie in goud"
+L.BOUNTY_TIP_RULES = "Een heel getal, 1 tot 99999. Leeg of 0: terug naar de waarde van het boek. Enter zet, Esc breekt af."
+L.BOUNTY_TIP_PROMISE = "Guild en vrienden met DeathNote zien het. Alleen een belofte: jullie regelen het onderling."
+L.BOUNTY_TIP_CLICK = "Klik: eigen premie uitloven"
+L.CHAT_AVENGED = "{name} heeft {killer} voor je geveld."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: je hebt {gold} goud premie uitgeloofd."
+L.CHAT_BOUNTY_UNKNOWN = "{name} staat in geen van je boeken. Een premie alleen op een naam uit een boek, zoals het spel hem toont: voornaam en achternaam."
+L.CHAT_BOUNTY_LIST = "Je premies ({count} van {max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Je hebt geen premie uitgeloofd."
 -- <<< BOOK
 end)

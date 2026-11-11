@@ -351,7 +351,7 @@ L.MANUAL_ALERT = "Ha egy gyilkos felbukkan névtáblaként, célpontként vagy a
 L.MANUAL_ADD_HEAD = "BEÍRÁS"  -- [max 12]
 L.MANUAL_ADD = "Írj egy nevet a keresőbe, Enter. Jobb klikk egy soron: bosszú feljegyzése, kegyelem, kihúzás."
 L.MANUAL_GUILD_HEAD = "CÉH"  -- [max 12]
-L.MANUAL_GUILD = "A DeathNote-os céhtársaid és barátaid látják a tisztázott halálaidat és a kézi bejegyzéseidet. Plakát vagy /dn hunt Név: vadászat kiírása."
+L.MANUAL_GUILD = "A DeathNote-os céhtársaid és barátaid látják a tisztázott halálaidat és a kézi bejegyzéseidet. Plakát vagy /dn hunt Név: vadászat kiírása. Kattints a vérdíjra: tűzd ki a sajátod, csak ígéret."
 L.MANUAL_SHARE_HEAD = "TOVÁBBADÁS"  -- [max 12]
 L.MANUAL_SHARE = "Házirend, Könyv mentése: másolható szöveg mindenkinek, akinek nincs DeathNote-ja."
 L.MANUAL_QUIET_HEAD = "CSEND"  -- [max 12]
@@ -625,5 +625,32 @@ L.ACT_TIE_MINE = "A barátom: {name}"  -- [max 24]
 L.ACT_TIE_LOOSE = "Leválasztás"  -- [max 14]
 L.CONFIRM_TIE_LOOSE = "Leválasztod ezt a nevet a barátlistádról: {name}?\nAmit ez a név a baráti könyvbe hozott, törlődik; a következő üzenet ezen a keresztnéven újra összekapcsol."
 L.CHAT_FRIENDS_TIES = "Összekapcsolt teljes nevek (* = első kapcsolat, még nem igazolt): {list}"
+-- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
+L.HELP_BOUNTY = "/dn bounty <Név [Vezetéknév]> <arany>  saját vérdíj kitűzése (összeg nélkül: visszavonás)"
+L.CHAT_WHO_BOUNTY = "Kire? /dn bounty <Név> <arany>"
+L.CHAT_BOUNTY_SET = "{name}: {gold} arany vérdíjat tűztél ki. A DeathNote-os céhtársak és barátok látják."
+L.CHAT_BOUNTY_OFF = "{name}: a vérdíjadat visszavontad."
+L.CHAT_BOUNTY_NONE = "Nincs saját vérdíjad rá: {name}"
+L.CHAT_BOUNTY_BAD = "Vérdíj: egész szám aranyban, 1 és 99999 között (a 0 visszavonja)."
+L.CHAT_BOUNTY_CAP = "Nincs vérdíj: legfeljebb {count} sajátod lehet."
+L.CHAT_BOUNTY_OURS = "Magadra és a tieidre (DeathNote-os céhtárs vagy barát) nem tűzhetsz ki vérdíjat."
+L.ACT_BOUNTY = "Vérdíj kitűzése"  -- [max 24]
+L.ACT_UNDO = "Visszavonás"  -- [max 19]
+L.ACT_REVENGE_TAKE = "Egy bosszú levonása"  -- [max 24]
+L.POSTER_BOUNTY_MINE = "{gold}, te tűzted ki"
+L.POSTER_BOUNTY_BY = "{gold}, kitűzte: {name}"
+L.POSTER_BOUNTY_MANY = "Vérdíj {gold}: {names}"
+L.POSTER_AVENGED = "Megbosszulta: {names}"
+L.ROW_AVENGED = "megbosszulva {times}"
+L.BOUNTY_TIP_HEAD = "A saját vérdíjad aranyban"
+L.BOUNTY_TIP_RULES = "Egész szám 1 és 99999 között. Üres vagy 0: vissza a könyv értékére. Enter beállítja, Esc mégse."
+L.BOUNTY_TIP_PROMISE = "A DeathNote-os céhtársak és barátok látják. Csak ígéret: egymás között rendezitek."
+L.BOUNTY_TIP_CLICK = "Kattintás: saját vérdíj kitűzése"
+L.CHAT_AVENGED = "{name} megbosszult téged: {killer}."
+L.NAMES_PLUS = "{name} +{count}"
+L.CHAT_BOUNTY_SET_ALONE = "{name}: {gold} arany vérdíjat tűztél ki."
+L.CHAT_BOUNTY_UNKNOWN = "{name} egyik könyvedben sincs benne. Vérdíjat csak könyvben szereplő névre lehet kitűzni, ahogy a játék mutatja: keresztnév és vezetéknév."
+L.CHAT_BOUNTY_LIST = "Saját vérdíjaid ({count}/{max}): {list}"
+L.CHAT_BOUNTY_LIST_NONE = "Nem tűztél ki vérdíjat."
 -- <<< BOOK
 end)
