@@ -1,0 +1,13 @@
+package-as: DeathNote
+
+# Das Addon liegt im Unterordner DeathNote/, ins Zip kommt nur dieser Ordner.
+move-folders:
+  DeathNote/DeathNote: DeathNote
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
+ignore:
+  - tests
+  - README.md
