@@ -1,0 +1,5 @@
+# Lokales bleibt draußen
+dev/
+*.zip
+*.tar.gz
+zuordnung*.json

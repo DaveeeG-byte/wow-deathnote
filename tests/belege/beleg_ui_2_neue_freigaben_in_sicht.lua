@@ -1,0 +1,95 @@
+-- Beleg UI 2: "Neue Freigaben als Chatzeile, ausser das Ziel ist in Sicht: dann der Alarm" (Extras.lua, fix-3).
+-- Aufruf: nice -n 15 luajit beleg_ui_2_neue_freigaben_in_sicht.lua <Projektkopie>
+-- Teil 1 (Gegenprobe): ein neues Ziel in Sicht -> Alarm, keine Chatzeile; nicht in Sicht -> eine Chatzeile.
+-- Teil 2: drei neue Ziele kommen zusammen (Sammelmeldung), eines davon steht in Sicht -> erwartet: Alarm fuer
+--         dieses eine. (Die Sammelmeldung nennt nur das erste Ziel, die Sicht-Pruefung laeuft nur bei genau einem.)
+-- Teil 3: Schalter "Abschussliste melden" aus, "Bei Zielen der Abschussliste warnen" an, ein neues Ziel in Sicht
+--         -> erwartet: der Alarm kommt (er hat seinen eigenen Schalter), keine Chatzeile.
+-- Teil 4 (Gegenproben): Warnen aus -> Chatzeile statt Alarm; ausgeblendetes Ziel -> nichts; Ziel kommt kurz nach
+--         der Chatzeile in Sicht -> genau ein Alarm; Pipe-Zeichen in Name und Grund kommen nicht in den Chat.
+-- Alle Namen sind erfunden. Sprache egal (geprueft wird, ob Zeilen und Fenster kommen, nicht ihr Wortlaut).
+package.path = (arg[0]:match("^(.*)/[^/]+$") or ".") .. "/?.lua;" .. package.path
+local K = require("_kopf_ui")
+
+local function fresh()
+  local W = K.world("deDE")
+  W.whisper(W.P.EncodeHello(0, "1.2.0")); W.tick(2)
+  W.c0 = #W.AM.chat
+  function W.lines() local t = {} for i = W.c0 + 1, #W.AM.chat do t[#t + 1] = W.AM.chat[i] end return t end
+  function W.popup() local p = rawget(W.BM.G, "DeathNoteAlert"); return p and p:IsShown() and p or nil end
+  function W.hunt(key, disp, why, by, from)
+    W.gmsg(W.P.EncodeHunt({ key = key, display = disp, t = _G.time(), by = by or "Kollege Wurst", why = why or "x", level = 40, class = "MAGE" }), from)
+  end
+  function W.sicht(name, surname) W.AM.AddEnemy("mouseover", { name = name, surname = surname, guid = "Player-1-" .. name .. surname, level = 40 }) end
+  return W
+end
+local function sauber(W, name) local n, e = W.errs(); K.check(name .. ": keine Fehler", n == 0, e) end
+
+-- Teil 1
+do
+  local W = fresh()
+  W.sicht("Neu", "Eins"); W.hunt("Neu-Eins", "Neu Eins"); W.tick(10)
+  K.check("1 ein neues Ziel in Sicht: Alarm", W.ns.Alert.Shows("Neu-Eins") and W.popup() ~= nil)
+  K.check("1 ein neues Ziel in Sicht: keine Chatzeile", #W.lines() == 0, #W.lines())
+  sauber(W, "1")
+  W = fresh()
+  W.hunt("Neu-Eins", "Neu Eins"); W.tick(10)
+  K.check("1 nicht in Sicht: eine Chatzeile, kein Fenster", #W.lines() == 1 and W.popup() == nil, #W.lines())
+  sauber(W, "1b")
+end
+
+-- Teil 2
+for _, pos in ipairs({ 1, 2, 3 }) do
+  local W = fresh()
+  local names = { "Eins", "Zwei", "Drei" }
+  W.sicht("Neu", names[pos])
+  for i = 1, 3 do W.hunt("Neu-" .. names[i], "Neu " .. names[i]) end
+  W.tick(10)
+  K.info(("2 drei neue, das %d. in Sicht: Chatzeilen %d, Alarm %s"):format(pos, #W.lines(), tostring(W.ns.Alert.Shows("Neu-" .. names[pos]))))
+  K.check(("2 drei neue Ziele, das %d. steht in Sicht: Alarm fuer dieses Ziel"):format(pos), W.ns.Alert.Shows("Neu-" .. names[pos]))
+  sauber(W, "2." .. pos)
+end
+
+-- Teil 3
+do
+  local W = fresh()
+  W.ns.Store.Setting("guild.announceHunt", false)
+  K.check("3 Vorbedingung: Warnen bei Zielen der Abschussliste ist an", W.ns.Store.Setting("guild.alertHunt") == true)
+  W.sicht("Neu", "Eins"); W.hunt("Neu-Eins", "Neu Eins"); W.tick(10)
+  K.check("3 Melden aus: keine Chatzeile", #W.lines() == 0, #W.lines())
+  K.check("3 Melden aus, Warnen an, Ziel in Sicht: Alarm", W.ns.Alert.Shows("Neu-Eins"))
+  sauber(W, "3")
+end
+
+-- Teil 4
+do
+  local W = fresh()
+  W.ns.Store.Setting("guild.alertHunt", false)
+  W.sicht("Neu", "Eins"); W.hunt("Neu-Eins", "Neu Eins"); W.tick(10)
+  K.check("4 Warnen aus, in Sicht: Chatzeile statt Alarm", #W.lines() == 1 and not W.ns.Alert.Shows("Neu-Eins"))
+  sauber(W, "4a")
+  W = fresh()
+  W.hunt("Neu-Eins", "Neu Eins"); W.tick(10); W.ns.Guild.HideHunt("Neu-Eins", true); W.c0 = #W.AM.chat
+  W.sicht("Neu", "Eins"); W.hunt("Neu-Eins", "Neu Eins", "y", "Anna Blume", "Anna-Forever"); W.tick(10)
+  K.check("4 ausgeblendetes Ziel: weder Zeile noch Alarm", #W.lines() == 0 and W.popup() == nil)
+  sauber(W, "4b")
+  W = fresh()
+  W.hunt("Neu-Eins", "Neu Eins"); W.tick(10)
+  W.sicht("Neu", "Eins"); W.AM.FireEvent("UPDATE_MOUSEOVER_UNIT"); W.tick(1)
+  K.check("4 kommt nach der Chatzeile in Sicht: Alarm, weiter nur eine Zeile", W.ns.Alert.Shows("Neu-Eins") and #W.lines() == 1)
+  sauber(W, "4c")
+  W = fresh()
+  W.hunt("Neu-Eins", "|cffff0000Neu|r |TInterface\\Icons\\x:64|t Eins|", "ein |cffff0000roter|r Grund |Hunit:1|h[klick]|h |")
+  W.tick(10)
+  local l = W.lines()[1] or ""
+  local rest = l:gsub("^|c%x%x%x%x%x%x%x%x[^|]*|r", "")     -- der eigene farbige Vorspann der Chatzeile
+  K.check("4 Pipe-Zeichen aus Name und Grund kommen nicht in den Chat", #W.lines() == 1 and not rest:find("|", 1, true), rest)
+  sauber(W, "4d")
+  W = fresh()
+  W.BM.combat = true; W.AM.combat = true
+  W.sicht("Neu", "Eins"); W.hunt("Neu-Eins", "Neu Eins"); W.tick(10)
+  K.check("4 im Kampf, in Sicht: Alarm ohne Verstoss", W.ns.Alert.Shows("Neu-Eins"))
+  sauber(W, "4e")
+end
+
+K.done("beleg_ui_2 neue Freigaben in Sicht")
