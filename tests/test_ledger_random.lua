@@ -2,9 +2,10 @@
 -- member, honour line, secrets), his kills, revenge by hand and back, pardon, removal from book and rap sheet, duels
 -- to the death, group, instances, time jumps, relogs, broken data. After every step:
 --   accounts, own kills and the reported tier never sink; #log <= 60; victims <= 200;
---   per victim: n = own kills booked (OWN_KILL) + old cases from the check at start;
---   points: sum of the accounts = points of all booked kills + points of the old cases;
---   the standing is me = n + revenge by hand, him = his kills; no error, no secret in the data.
+--   per victim: n = own kills booked (OWN_KILL); the start books nothing (no count, no point);
+--   points: sum of the accounts = points of all booked kills;
+--   the standing: me >= the book's revenge (the bounty is never higher than in 1.2.x), me >= n + revenge by hand,
+--   me = max(n, recognised + pre) + by hand; him = his kills; no error, no secret in the data.
 -- Usage: luajit tests/test_ledger_random.lua [runs] [steps] [seed]
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local M = require("mock_wow")
@@ -45,18 +46,15 @@ for run = 1, RUNS do
   ns.Ledger.ResetRuntime()
   M.units.player.level = math.random(1, 70)
   local L, S = ns.Ledger, ns.Store
-  local booked, oldPts = {}, 0          -- per key: own kills booked; points of old cases
+  local booked = {}                     -- per GUID (or key): own kills booked
   local bookedPts = 0
-  local function absorbStart(before)
-    -- what the check at start added: old cases (n) and their points
+  local startFail                       -- what the start changed (it must not)
+  local function absorbStart(before, n0)
     local d = L.DB()
-    for k, v in pairs(d.victims) do
-      local id = v.guid or k
-      if v.n > (booked[id] or 0) then booked[id] = v.n end
-    end
-    oldPts = oldPts + (d.acc.r + d.acc.e + d.acc.j + d.acc.s) - before
+    if d.acc.r + d.acc.e + d.acc.j + d.acc.s ~= before then startFail = "the start changed the accounts" end
+    if d.n ~= n0 then startFail = "the start changed the own kills" end
   end
-  absorbStart(0)
+  absorbStart(0, 0)
   local unsure = false                   -- broken data was written: the books are re-read from scratch
   local prev = { r = 0, e = 0, j = 0, s = 0, n = L.DB().n, tier = L.DB().tier }
   for k in pairs(prev) do if L.DB().acc[k] then prev[k] = L.DB().acc[k] end end
@@ -111,9 +109,9 @@ for run = 1, RUNS do
       elseif x <= 85 then
         M.Advance(({ 1, 5, 11, 60, 700, 3000, 90000 })[math.random(7)])
       elseif x <= 89 then
-        local before = L.DB().acc.r + L.DB().acc.e + L.DB().acc.j + L.DB().acc.s
+        local before, n0 = L.DB().acc.r + L.DB().acc.e + L.DB().acc.j + L.DB().acc.s, L.DB().n
         S.Init()
-        absorbStart(before)
+        absorbStart(before, n0)
       elseif x <= 91 then
         -- broken data, then a relog
         local d = _G.DeathNoteDB.ledger
@@ -134,6 +132,7 @@ for run = 1, RUNS do
       end
     end)
     if not ok then fail(run, step, "error: " .. tostring(err)) end
+    if startFail then fail(run, step, startFail); startFail = nil end
     if #M.errors > 0 then fail(run, step, "addon error: " .. tostring(M.errors[1])); M.errors = {} end
     local d = L.DB()
     if not unsure then
@@ -145,7 +144,7 @@ for run = 1, RUNS do
       if d.tier < prev.tier then fail(run, step, "tier sank") end
       prev.n, prev.tier = d.n, d.tier
       local sum = d.acc.r + d.acc.e + d.acc.j + d.acc.s
-      if sum ~= bookedPts + oldPts then fail(run, step, ("points %d ~= booked %d + old %d"):format(sum, bookedPts, oldPts)) end
+      if sum ~= bookedPts then fail(run, step, ("points %d ~= booked %d"):format(sum, bookedPts)) end
       for k, v in pairs(d.victims) do
         local id = v.guid or k
         if v.n ~= (booked[id] or 0) then fail(run, step, ("%s: n %d, booked %d"):format(k, v.n, booked[id] or 0)) end
@@ -159,9 +158,11 @@ for run = 1, RUNS do
       for k, e in pairs(S.All()) do
         local mine, his = L.Standing(k)
         local v = d.victims[k]
-        if mine ~= (v and v.n or 0) + S.HandRevenge(e) or his ~= (e.kills or 0) then
-          fail(run, step, "standing of " .. k)
-        end
+        local n, hand = v and v.n or 0, S.HandRevenge(e)
+        local want = math.max(n, (e.revenge or 0) - hand + (v and v.pre or 0)) + hand
+        if mine ~= want or his ~= (e.kills or 0) then fail(run, step, "standing of " .. k) end
+        if mine < (e.revenge or 0) then fail(run, step, "me below the book's revenge: " .. k) end
+        if mine < n + hand then fail(run, step, "me below own kills + by hand: " .. k) end
       end
     end
     if M.ContainsSecret(_G.DeathNoteDB) then fail(run, step, "secret in the data") end

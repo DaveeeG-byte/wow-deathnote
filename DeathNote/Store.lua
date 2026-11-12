@@ -10,7 +10,7 @@ ns.Store = Store
 
 local DB_VERSION = 4      -- 2: combat log stage off by default (closed on Forever)
                           -- 3: every deed has a role (kill/assist/suspect), entries count assists
-                          -- 4: the rap sheet (DeathNoteDB.ledger, Ledger.lua) took over the recognised revenge
+                          -- 4: the rap sheet (DeathNoteDB.ledger, Ledger.lua), created empty
 local MAX_ENEMY_DEATHS = 30
 local MAX_JOURNAL = 100
 local HAND_TIMES = 10     -- 1.2.1: times of hand revenges kept per entry (revengeHandAt)
@@ -338,8 +338,8 @@ function Store.Init()
   rankCache = nil
   Store.TouchJournal()
   rebuildIndex()
-  -- 4: the rap sheet. Its check runs at every start (idempotent: a downgrade to 1.2.x that recognised more revenge
-  -- is caught up without a version compare); the version only marks that the book was converted once.
+  -- 4: the rap sheet (DeathNoteDB.ledger). The start only repairs it and keeps its keys in line with the book; it
+  -- books nothing, also after a downgrade to 1.2.x and back (Ledger.Init).
   if ns.Ledger and ns.Ledger.Init then
     local ok, err = pcall(ns.Ledger.Init, db)
     if not ok then ns.ReportError(err) end
@@ -565,8 +565,8 @@ end
 function Store.Bounty(e)
   if type(e) ~= "table" then return 0 end
   local kills, susp, rev = e.kills or 0, e.suspected or 0, e.revenge or 0
-  -- 1.3.0: the bounty sinks with "me" of the standing (own killing blows incl. those before he was listed, and the
-  -- revenge noted by hand); the same as revenge for every book converted from version 3
+  -- 1.3.0: the bounty sinks with "me" of the standing (Ledger.Mine: never below revenge, so never higher than in
+  -- 1.2.x; own killing blows before he was listed lower it further)
   local Lg = ns.Ledger
   local mine = Lg and Lg.Mine and type(e.key) == "string" and Lg.Mine(e.key, e) or nil
   if mine then rev = mine end

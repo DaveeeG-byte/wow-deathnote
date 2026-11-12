@@ -4,15 +4,21 @@
 -- the functions and the five bus events below. Nothing of this goes over the wire.
 --
 -- Data, account-wide and language-neutral (DeathNoteDB.ledger, DB version 4, see Store.Init):
---   victims[key] = { key, name, surname, guid, class, level, guild, faction, n, first, last, dn, dt, pts, old,
---                    zone, mapID }        n = my killing blows on him (the "me" of the standing)
+--   victims[key] = { key, name, surname, guid, class, level, guild, faction, n, pre, first, last, dn, dt, pts,
+--                    zone, mapID }        n = my killing blows on him, pre = those of them booked while he had no
+--                                         book entry (no revenge the book could have recognised)
 --   log          = newest kills first, at most LOG_MAX: { t, key, vl, ml, band, r, e, j, s, f, zone, mapID, x, y,
 --                    me, state }          f = flag letters (see FLAGS)
 --   acc, mood    = { r, e, j, s }       lifetime accounts (never sink) and the sliding values (path and needle)
 --   n, counted   = own kills, kills that earned points
 --   tier, path   = the rank and path last reported (REPUTE_RANK fires once per change)
---   bands, best, cur, awards, gone
--- The standing itself is never stored: Ledger.Standing reads victims[key].n and the book entry.
+--   bands, best, cur, awards
+-- The standing itself is never stored. "me" is read as
+--   max(n, recognised revenge of the book + pre) + revenge noted by hand
+-- so the book's bounty is never higher than in 1.2.x (its revenge count is the lower bound of "me") and nothing
+-- jumps at a reload. Revenge the book recognised without an own killing blow (the "pvpkills" and "honour" paths of
+-- Attribution.lua) counts for the standing through the max, but never earns repute: points come only from kills
+-- booked here. The start books nothing (DB version 4 only creates the empty structure; the repute starts at zero).
 --
 -- Detection (decision 7): PARTY_KILL with my GUID or my pet's as attacker is the source. The honour line
 -- (COMBATLOG_HONORGAIN of the client, made into a pattern) is the fallback when no PARTY_KILL came for that victim.
@@ -35,8 +41,7 @@ Ledger.WEAR = { 1, 0.8, 0.6, 0.4, 0.2 }   -- factor of the 1st..5th kill in the 
 Ledger.DECAY = 0.98          -- mood = mood * DECAY + points
 Ledger.PATH_FROM = 10        -- counted kills before a path is named
 Ledger.PATH_SWITCH = 1.15    -- another account must beat the current path by 15 % to take over
-Ledger.OLD_POINTS = 3        -- honour per old case from the migration (revenge, level unknown)
-Ledger.OLD_MAX = 10          -- old cases per enemy that earn points
+Ledger.COUNT_MAX = 9999      -- a count read for the standing never goes beyond this (broken or pasted data)
 Ledger.HONOR_WAIT = 2        -- seconds the honour line waits for a PARTY_KILL of the same kill
 Ledger.HONOR_FALLBACK = true -- the honour line books a kill when no PARTY_KILL came (decision 7; see the probe)
 Ledger.PROBE_MAX = 10        -- cases in DeathNoteDB.probe.kills.cases
@@ -231,6 +236,7 @@ local byGuid = {}    -- guid -> key (victims)
 local nVictims, nPlaceholders = 0, 0
 local standCache = {} -- book key -> code of the last standing seen (STANDING_CHANGED fires on a change)
 local reputeCache
+local quiet = false   -- true while Ledger.Init runs: no events at the start
 
 local function enabled()
   local S = ns.Store
@@ -267,8 +273,9 @@ local function sanitizeVictim(key, v)
   if v.surname ~= nil then v.surname = Util.CleanName(v.surname) end
   v.n = count(v.n)
   if v.n < 1 then return false end
-  v.old = math.min(count(v.old), v.n)
-  if v.old == 0 then v.old = nil end
+  v.old = nil   -- old cases of the 1.3.0 test builds: the start books nothing any more
+  v.pre = math.min(count(v.pre), v.n)
+  if v.pre == 0 then v.pre = nil end
   v.pts = count(v.pts)
   for _, f in ipairs({ "first", "last", "dt" }) do if v[f] ~= nil and not finite(v[f]) then v[f] = nil end end
   v.dn = count(v.dn)
@@ -332,8 +339,7 @@ local function sanitize(raw)
   d.cur.streak = count(d.cur.streak)
   if type(d.awards) ~= "table" then d.awards = {} end
   for k, v in pairs(d.awards) do if not AWARD_IDS[k] or not finite(v) then d.awards[k] = nil end end
-  if type(d.gone) ~= "table" then d.gone = {} end
-  for k, v in pairs(d.gone) do if type(k) ~= "string" or not finite(v) then d.gone[k] = nil end end
+  d.gone = nil   -- 1.3.0 test builds: marks of struck victims for the old check at start
   return d
 end
 
@@ -347,34 +353,62 @@ local function handRevenge(e)
   return (S and S.HandRevenge) and S.HandRevenge(e) or 0
 end
 
+-- revenge the book recognised (own killing blow, honour): revenge minus revenge noted by hand
+local function recognised(e)
+  if type(e) ~= "table" then return 0 end
+  return math.max(0, count(e.revenge) - handRevenge(e))
+end
+
+-- "me" of a book entry e (or nil) and a victim v (or nil); see the head of this file
+local function mineOf(e, v)
+  local n, pre = v and v.n or 0, v and v.pre or 0
+  local hand = e and handRevenge(e) or 0
+  return math.max(n, recognised(e) + pre) + hand
+end
+
+local function capped(x) return math.min(x, Ledger.COUNT_MAX) end
+
+-- me : him right before an own kill at time t. Attribution.lua handles the same PARTY_KILL first and may have
+-- counted it as revenge already (its dedupe lets one recognised revenge per enemy through within 10 s): that one
+-- belongs to this kill and is not part of the state before it.
+local function standingBefore(key, t)
+  local S = ns.Store
+  local e = S and S.Get(key)
+  local v = victims[key]
+  local rec = recognised(e)
+  local at = e and e.revengeAutoAt
+  if rec > 0 and finite(at) and t - at >= 0 and t - at <= Ledger.DEDUPE then rec = rec - 1 end
+  local mine = math.max(v and v.n or 0, rec + (v and v.pre or 0)) + (e and handRevenge(e) or 0)
+  local his = e and count(e.kills) or 0
+  return capped(mine), capped(his), Ledger.StateOf(mine, his, e and e.assists, e and e.status)
+end
+
 -- me : him for a key (book or rap sheet). nil while the rap sheet is switched off.
 function Ledger.Standing(key)
   if not enabled() or type(key) ~= "string" then return nil end
   local S = ns.Store
   local e = S and S.Get(key)
-  local v = victims[key]
-  local mine = (v and v.n or 0) + (e and handRevenge(e) or 0)
-  local his = e and count(e.kills) or 0
+  local mine = capped(mineOf(e, victims[key]))
+  local his = e and capped(count(e.kills)) or 0
   local state = Ledger.StateOf(mine, his, e and e.assists, e and e.status)
   if not state then return nil end
   return mine, his, state
 end
 
--- "me" alone (Store.Bounty, sorting); nil while switched off
+-- "me" alone for the book's bounty (Store.Bounty): never below the book's revenge count, so the bounty is never
+-- higher than in 1.2.x; nil while switched off
 function Ledger.Mine(key, e)
   if not enabled() or type(key) ~= "string" then return nil end
-  local v = victims[key]
   if e == nil and ns.Store then e = ns.Store.Get(key) end
-  return (v and v.n or 0) + (type(e) == "table" and handRevenge(e) or 0)
+  return mineOf(type(e) == "table" and e or nil, victims[key])
 end
 
 local STATUS_CODE = { wanted = 0, suspect = 1, pardoned = 2 }
 local function standCode(key)
   local S = ns.Store
   local e = S and S.Get(key)
-  local v = victims and victims[key]
-  local mine = (v and v.n or 0) + (e and handRevenge(e) or 0)
-  local his = e and count(e.kills) or 0
+  local mine = capped(mineOf(e, victims and victims[key]))
+  local his = e and capped(count(e.kills)) or 0
   local st = e and (STATUS_CODE[e.status] or 0) or 3
   return (mine * 1048576 + his) * 4 + st
 end
@@ -385,7 +419,7 @@ local function standingTouched(key)
   local code = standCode(key)
   if standCache[key] == code then return false end
   standCache[key] = code
-  if enabled() then ns:Fire("STANDING_CHANGED", key) end
+  if enabled() and not quiet then ns:Fire("STANDING_CHANGED", key) end
   return true
 end
 
@@ -467,7 +501,7 @@ function moveVictim(oldKey, newKey)
   dropVictim(oldKey)
   if into then
     into.n = into.n + v.n
-    into.old = ((into.old or 0) + (v.old or 0) > 0) and (into.old or 0) + (v.old or 0) or nil
+    into.pre = ((into.pre or 0) + (v.pre or 0) > 0) and (into.pre or 0) + (v.pre or 0) or nil
     into.pts = into.pts + v.pts
     if v.first and (not into.first or v.first < into.first) then into.first = v.first end
     if v.last and (not into.last or v.last > into.last) then into.last, into.zone, into.mapID = v.last, v.zone, v.mapID end
@@ -482,7 +516,6 @@ function moveVictim(oldKey, newKey)
     if v.guid then byGuid[v.guid] = newKey end
   end
   for i = 1, #db.log do if db.log[i].key == oldKey then db.log[i].key = newKey end end
-  if db.gone[oldKey] then db.gone[newKey] = math.max(db.gone[newKey] or 0, db.gone[oldKey]); db.gone[oldKey] = nil end
   standCache[oldKey] = nil
   reputeCache = nil
   standingTouched(newKey)
@@ -512,60 +545,27 @@ Ledger.Promote = promote
 ---------------------------------------------------------------------------
 -- Migration and the check at every start (DB version 4, repute concept 4.3)
 ---------------------------------------------------------------------------
--- revenge the old book recognised (own killing blow, honour): revenge minus revenge noted by hand
-local function autoRevenge(e)
-  if type(e) ~= "table" then return 0 end
-  return math.max(0, count(e.revenge) - handRevenge(e))
-end
-
--- every book entry whose recognised revenge exceeds the rap sheet gets the difference as old cases.
--- Idempotent: a second run finds nothing. Silent: no events, the reported rank follows without a banner.
+-- Keeps the keys consistent at every start, books nothing: a victim whose GUID the book knows under another key
+-- (the book entry moved while an older version played) follows it there. Silent, idempotent, and only while the
+-- rap sheet is switched on. Returns the number of victims moved.
 function Ledger.Reconcile()
-  if not db then return 0 end
+  if not db or not enabled() then return 0 end
   local S = ns.Store
-  if not S then return 0 end
-  local added = 0
-  for key, e in pairs(S.All()) do
-    local auto = autoRevenge(e)
-    if auto > 0 then
-      local v = victims[key]
-      local have = v and v.n or count(db.gone[key])
-      local diff = auto - have
-      if diff > 0 then
-        if not v then
-          v = addVictim(key, { name = e.name, surname = e.surname })
-          db.gone[key] = nil
-        end
-        applyInfo(v, { guid = e.guid, class = e.class, guild = e.guild, faction = e.faction })
-        if not v.level then v.level = level(e.level) end
-        local was = v.old or 0
-        v.n = v.n + diff
-        v.old = was + diff
-        local t = finite(e.revengeAutoAt) and e.revengeAutoAt or (finite(e.lastRevenge) and e.lastRevenge or nil)
-        if t then
-          if not v.last or t > v.last then v.last = t end
-          if not v.first or t < v.first then v.first = t end
-        end
-        local scored = math.min(v.old, Ledger.OLD_MAX) - math.min(was, Ledger.OLD_MAX)
-        if scored > 0 then
-          local p = scored * Ledger.OLD_POINTS
-          db.acc.e = db.acc.e + p
-          db.mood.e = db.mood.e + p
-          v.pts = v.pts + p
-          db.counted = db.counted + scored
-        end
-        db.n = db.n + diff
-        added = added + diff
-      end
+  if not (S and S.ByGUID) then return 0 end
+  local moves
+  for key, v in pairs(victims) do
+    local k2 = v.guid and S.ByGUID(v.guid)
+    local be = k2 and k2 ~= key and S.Get(k2)
+    -- never from a full name back to a first-name key
+    if be and not S.Get(key) and (be.surname ~= nil or v.surname == nil) then
+      moves = moves or {}
+      moves[#moves + 1] = { key, k2 }
     end
   end
-  if added > 0 then
-    db.tier = Ledger.Tier(total(db.acc))
-    db.path = Ledger.Path(db.mood, db.path, db.counted)
-    reputeCache = nil
-    capVictims()
-  end
-  return added
+  if not moves then return 0 end
+  table.sort(moves, function(a, b) return a[1] < b[1] end)
+  for _, m in ipairs(moves) do moveVictim(m[1], m[2]) end
+  return #moves
 end
 
 -- Store.Init calls this (login and tests): repairs the data, migrates, primes the standing cache
@@ -575,7 +575,10 @@ function Ledger.Init(saved)
   db = saved.ledger
   victims = db.victims
   indexVictims()
-  Ledger.Reconcile()
+  quiet = true
+  local ok, err = pcall(Ledger.Reconcile)
+  quiet = false
+  if not ok then error(err, 0) end
   capVictims()
   standCache = {}
   local S = ns.Store
@@ -656,10 +659,6 @@ end
 -- strikes a victim from the rap sheet: name and count go, the points earned stay
 function Ledger.RemoveVictim(key)
   if not db or type(key) ~= "string" or not victims[key] then return false end
-  local S = ns.Store
-  local e = S and S.Get(key)
-  -- the check at the next start must not bring him back from the book's revenge count
-  if e then db.gone[key] = autoRevenge(e) end
   dropVictim(key)
   reputeCache = nil
   standingTouched(key)
@@ -921,9 +920,7 @@ local function book(info, opts)
   local S = ns.Store
   local t, gt = nowT(), gtime()
   -- the state before: revenge = the standing was open
-  local _, _, state0 = Ledger.Standing(key)
-  local mine0, his0 = Ledger.Standing(key)
-  mine0, his0 = mine0 or 0, his0 or 0
+  local mine0, his0, state0 = standingBefore(key, t)
   local e = S and S.Get(key)
   local v = victims[key] or addVictim(key, info)
   applyInfo(v, info)
@@ -952,7 +949,8 @@ local function book(info, opts)
   v.zone, v.mapID = row.zone, mapID
   if vl then v.level = vl end
   v.pts = v.pts + r + ee + j + s
-  db.gone[key] = nil
+  -- no book entry: the book could not have counted this kill as revenge
+  if not e then v.pre = (v.pre or 0) + 1 end
   -- accounts
   Ledger.Accrue(db, r, ee, j, s)
   db.n = db.n + 1
