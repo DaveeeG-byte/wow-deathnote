@@ -136,4 +136,69 @@ test("A victim known with surname follows a later book entry of the same GUID un
   eq(ns.Store.ByGUID(g), "Anna-Ast"); eq(standing("Anna-Ast"), "1:1 even"); eq(ns.Ledger.VictimCount(), 1)
 end)
 
+---------------------------------------------------------------------------
+-- Namesakes are joined by GUID, never by the shared first-name key (finding 2)
+---------------------------------------------------------------------------
+local A, B = "Player-93-0000A1", "Player-93-0000B2"
+
+test("A kill on A is no 'me' against the namesake B who kills me; A's victim steps aside", function()
+  fresh(); firstNameOnly("Gerd", { [A] = true, [B] = true })
+  kill(A)                                              -- A never seen: victim Gerd-<realm> with GUID A
+  M.Advance(60); dieBy(B, "Gerd")                      -- B kills me unseen: the book lists Gerd-<realm> with GUID B
+  local e = ns.Store.Get("Gerd-Forever")
+  eq(e and e.guid, B)
+  eq(standing("Gerd-Forever"), "0:1 open")
+  local with = ns.Store.Bounty(e)
+  ns.Store.Setting("ledger.enabled", false)
+  eq(with, ns.Store.Bounty(e), "bounty on B as in 1.2.x")
+  ns.Store.Setting("ledger.enabled", true)
+  local v = ns.Ledger.Victim("Gerd-Forever#93-0000A1")
+  eq(v and v.guid, A, "A under a namesake key of his own")
+  eq(ns.Ledger.VictimCount(), 1)
+  _G.GetPlayerInfoByGUID = nil
+end)
+
+test("A's victim does not take B's surname when the book moves to B's full name", function()
+  fresh(); firstNameOnly("Gerd", { [A] = true, [B] = true })
+  kill(A); M.Advance(60); dieBy(B, "Gerd")
+  M.Advance(60); seen("Gerd", "Bolz", 40, { guid = B })
+  _G.GetPlayerInfoByGUID = nil
+  eq(ns.Store.ByGUID(B), "Gerd-Bolz")
+  eq(ns.Ledger.Victim("Gerd-Bolz"), nil)
+  eq(standing("Gerd-Bolz"), "0:1 open")
+  local v = ns.Ledger.Victim("Gerd-Forever#93-0000A1")
+  eq(v and v.surname, nil); eq(v and v.n, 1)
+end)
+
+test("Two namesakes in the rap sheet stay two when one of them comes into the book", function()
+  fresh(); firstNameOnly("Gerd", { [A] = true, [B] = true })
+  kill(A); M.Advance(60); kill(B)
+  eq(ns.Ledger.VictimCount(), 2)
+  M.Advance(60); dieBy(B, "Gerd")
+  _G.GetPlayerInfoByGUID = nil
+  eq(ns.Ledger.VictimCount(), 2)
+  local v = ns.Ledger.Victim("Gerd-Forever")
+  eq(v and v.guid, B); eq(v and v.n, 1)
+  eq(standing("Gerd-Forever"), "1:1 even")
+  eq(ns.Ledger.Victim("Gerd-Forever#93-0000A1").n, 1)
+end)
+
+test("A move never merges two GUIDs; the check at start lets a victim of another GUID step aside", function()
+  fresh(); firstNameOnly("Gerd", { [A] = true, [B] = true })
+  kill(A); M.Advance(60); kill(B)
+  _G.GetPlayerInfoByGUID = nil
+  ns.Ledger.MoveVictim("Gerd-Forever#93-0000B2", "Gerd-Forever")
+  eq(ns.Ledger.VictimCount(), 2, "two victims after a move onto a namesake")
+  eq(ns.Ledger.Victim("Gerd-Forever").guid, B)
+  eq(ns.Ledger.Victim("Gerd-Forever#93-0000A1").guid, A)
+  -- a saved state where the book lists another GUID under a victim's key (written by an older build)
+  local db = _G.DeathNoteDB
+  db.enemies["Gerd-Forever"] = { name = "Gerd", realm = "Forever", guid = A, kills = 1, assists = 0, suspected = 0,
+    revenge = 0, status = "wanted", manual = false, note = "", sightings = 0, deaths = {} }
+  reload()
+  eq(ns.Ledger.Victim("Gerd-Forever").guid, A, "A follows the book's key")
+  eq(ns.Ledger.Victim("Gerd-Forever#93-0000B2").guid, B, "B steps aside")
+  eq(standing("Gerd-Forever"), "1:1 even")
+end)
+
 M.done("ledger_fixes_e")

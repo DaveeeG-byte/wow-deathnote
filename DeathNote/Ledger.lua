@@ -399,8 +399,19 @@ local function recognised(e, own, hand)
   return x > 0 and x or 0
 end
 
+-- book entry e and victim v under one key belong together unless both carry a GUID and they differ (the GUID beats
+-- the key: a namesake's victim is never "me" against the book entry). Returns v or nil.
+local function joined(e, v)
+  if e and v and v.guid then
+    local eg = Str(e.guid)
+    if eg and eg ~= v.guid then return nil end
+  end
+  return v
+end
+
 -- "me" of a book entry e (or nil) and a victim v (or nil); see the head of this file
 local function mineOf(e, v, own)
+  v = joined(e, v)
   local n, pre = v and v.n or 0, v and v.pre or 0
   local hand = e and handRevenge(e) or 0
   local x = recognised(e, own, hand) + pre
@@ -415,7 +426,7 @@ local function capped(x) return math.min(x, Ledger.COUNT_MAX) end
 local function standingBefore(key, t)
   local S = ns.Store
   local e = S and S.Get(key)
-  local v = victims[key]
+  local v = joined(e, victims[key])
   local rec = recognised(e, true)
   local at = e and e.revengeAutoAt
   if rec > 0 and finite(at) and t - at >= 0 and t - at <= Ledger.DEDUPE then rec = rec - 1 end
@@ -564,12 +575,25 @@ local function applyInfo(v, info)
   if lv then v.level = lv end
 end
 
--- moves a victim to a new key (placeholder seen with surname, or the book entry moved); merges into an existing one.
+-- a victim with a GUID leaves a key that belongs to another player for a namesake key of its own
+local function stepAside(key)
+  local v = victims[key]
+  if not (v and v.guid) then return end
+  local nk = namesakeKey((key:gsub("#.*$", "")), v.guid)
+  if nk ~= key then moveVictim(key, nk) end
+end
+
+-- moves a victim to a new key (placeholder seen with surname, or the book entry moved); merges into an existing one
+-- of the same player only: a victim of another GUID at the new key steps aside first (two players never become one).
 -- surname: the surname the new key stands for (a placeholder stops being one)
 function moveVictim(oldKey, newKey, surname)
   local v = victims[oldKey]
   if not v or oldKey == newKey then return end
   local into = victims[newKey]
+  if into and into.guid and v.guid and into.guid ~= v.guid then
+    stepAside(newKey)
+    into = victims[newKey]
+  end
   dropVictim(oldKey)
   surname = Util.CleanName(Str(surname)) or v.surname
   if surname then surname = Util.CapFirst(surname) end
@@ -645,12 +669,17 @@ end
 
 -- the book learned a GUID (a kill, a sighting): a victim of that GUID under another key follows at once, so the
 -- start finds nothing to move and the standing never jumps at a reload
+-- A victim of another GUID under the book's key steps aside first (a namesake the book lists under the same
+-- first-name key).
 local function followBook(key)
   local S = ns.Store
   local e = S and S.Get(key)
-  local g = e and e.guid
-  -- stored GUIDs are plain strings (Store keeps no secrets); nothing to do in the common case
-  local k = type(g) == "string" and byGuid[g]
+  if not e then return end
+  local g = Str(e.guid)
+  local v = victims[key]
+  if v and v.guid and g and v.guid ~= g then stepAside(key); updateHook() end
+  -- nothing to do in the common case
+  local k = g and byGuid[g]
   if not k or k == key or not victims[k] then return end
   local k2, be = bookKeyOf(k, victims[k])
   if k2 == key then moveVictim(k, key, be.surname); updateHook() end
@@ -662,9 +691,16 @@ function Ledger.Reconcile()
   if not (S and S.ByGUID) then return 0 end
   local moves
   for key, v in pairs(victims) do
-    if bookKeyOf(key, v) then
+    local k2 = bookKeyOf(key, v)
+    local e = not k2 and v.guid and S.Get(key)
+    local eg = e and Str(e.guid)
+    if k2 then
       moves = moves or {}
-      moves[#moves + 1] = { key, (bookKeyOf(key, v)) }
+      moves[#moves + 1] = { key, k2 }
+    elseif eg and eg ~= v.guid then
+      -- the book lists another player under this key: the victim steps aside
+      moves = moves or {}
+      moves[#moves + 1] = { key, namesakeKey((key:gsub("#.*$", "")), v.guid) }
     end
   end
   if not moves then return 0 end
@@ -1514,10 +1550,15 @@ end)
 -- the book entry moved to a fuller key: the victim follows
 ns:On("ENEMY_REKEYED", function(oldKey, newKey)
   if not db then return end
-  if victims[oldKey] then
+  local v = victims[oldKey]
+  if v then
     local e = ns.Store and ns.Store.Get(newKey)
-    moveVictim(oldKey, newKey, e and e.surname)
-    updateHook()
+    local eg = e and Str(e.guid)
+    -- a victim of another GUID stays where it is: the book's entry is another player's
+    if not (v.guid and eg and eg ~= v.guid) then
+      moveVictim(oldKey, newKey, e and e.surname)
+      updateHook()
+    end
   end
   standCache[oldKey] = nil
 end)
