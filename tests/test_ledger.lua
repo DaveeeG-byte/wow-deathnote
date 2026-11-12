@@ -122,7 +122,7 @@ test("Duel to the death: the opponent's kill is no rap sheet kill, no revenge; a
   local o = seen("Olm", "Reet", 40)
   -- he is in the book (he killed me before)
   ns.Store.ApplyKill({ name = "Grimm", surname = "Bart", guid = g }, { t = time() - 100 }, true)
-  M.FireEvent("DUEL_TO_THE_DEATH_REQUESTED", "Grimm")
+  M.FireEvent("DUEL_TO_THE_DEATH_REQUESTED", "Grimm Bart")   -- full name, no GUID from the client
   M.Advance(20)
   kill(g)
   eq(L().Victim("Grimm-Bart"), nil, "no rap sheet kill")
@@ -138,7 +138,9 @@ end)
 test("Duel to the death: my death by the opponent is no deed; by a third player it is", function()
   load(40)
   local g = seen("Grimm", "Bart", 40)
+  _G.GetDuelerInfo = function() return g end                -- the GUID from the client, the event names him short
   M.FireEvent("DUEL_TO_THE_DEATH_REQUESTED", "Grimm")
+  _G.GetDuelerInfo = nil
   M.Advance(10)
   dieBy(g, "Grimm Bart")
   eq(ns.Store.Get("Grimm-Bart"), nil, "no book entry from the duel's death")
@@ -162,7 +164,7 @@ test("Duel to the death: the opponent on the hit list is not 'taken down' (Sync.
   M.units.grimm = { exists = true, isPlayer = true, name = "Grimm", surname = "Bart", guid = "Player-1-GRIMM",
     class = "MAGE", level = 40, enemy = true, canAttack = true, faction = "Alliance" }
   a.ns.Tracker.OnUnit("grimm", "target")
-  a.fire("DUEL_TO_THE_DEATH_REQUESTED", "Grimm")
+  a.fire("DUEL_TO_THE_DEATH_REQUESTED", "Grimm Bart")
   W.run(5)
   a.fire("PARTY_KILL", W.guidOf(a), "Player-1-GRIMM")
   W.run(5)

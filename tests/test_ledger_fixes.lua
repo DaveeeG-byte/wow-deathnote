@@ -225,4 +225,63 @@ test("A raid member kills a never seen enemy: the honour line books nothing", fu
   eq(ns.Ledger.Repute().n, 0)
 end)
 
+---------------------------------------------------------------------------
+-- Duel to the death: request expires, ends on finish, zone, death; GUID or full name only (finding 4)
+---------------------------------------------------------------------------
+test("A challenge to the death nobody answers is let go after 60 s: his kill on me 5 min later is in the book", function()
+  fresh()
+  local g = seen("Grimm", "Bart", 40)
+  _G.GetDuelerInfo = function() return g end
+  M.FireEvent("DUEL_TO_THE_DEATH_REQUESTED", "Grimm")
+  _G.GetDuelerInfo = nil
+  ok(ns.Attribution.DuelFoe(g), "held out right after the challenge")
+  M.Advance(300)                                    -- nothing asks in between: the death itself must let go
+  seen("Grimm", "Bart", 40, { guid = g })
+  dieBy(g, "Grimm Bart")
+  local e = ns.Store.Get("Grimm-Bart")
+  ok(e, "book entry after the death"); eq(e and e.kills, 1)
+end)
+
+test("Without a GUID only the full name is the opponent; a first name alone holds nobody out", function()
+  fresh()
+  M.FireEvent("DUEL_TO_THE_DEATH_REQUESTED", "Grimm")
+  local other = seen("Grimm", "Anders", 40, { guid = "Player-93-ANDERER" })
+  no(ns.Attribution.DuelFoe(other, "Grimm"), "a namesake")
+  no(ns.Attribution.DuelFoe(nil, "Grimm"), "the first name alone")
+  ok(ns.Ledger.OnPartyKill(ME, other), "my kill on the namesake counts")
+  M.Advance(70)
+  M.FireEvent("DUEL_TO_THE_DEATH_REQUESTED", "Grimm Bart")
+  local g = seen("Grimm", "Bart", 40)
+  ok(ns.Attribution.DuelFoe(g, "Grimm Bart"), "the full name")
+  ok(ns.Attribution.DuelFoe(g), "his GUID, the full name from the tracker")
+  no(ns.Attribution.DuelFoe(other, "Grimm Anders"), "the namesake with his full name")
+  no(ns.Attribution.DuelFoe(other), "the namesake by GUID")
+  M.Advance(59); ok(ns.Attribution.DuelFoe(g), "not started, 59 s: still held")
+  M.Advance(2); no(ns.Attribution.DuelFoe(g), "not started, 61 s: let go")
+end)
+
+test("An accepted duel holds for 15 min at most; DUEL_FINISHED, a loading screen and a death end it (30 s grace)", function()
+  fresh()
+  local g = seen("Grimm", "Bart", 40)
+  local function challenge()
+    _G.GetDuelerInfo = function() return g end
+    M.FireEvent("DUEL_TO_THE_DEATH_REQUESTED", "Grimm")
+    _G.GetDuelerInfo = nil
+  end
+  challenge(); M.FireEvent("DUEL_INBOUNDS")
+  M.Advance(120); ok(ns.Attribution.DuelFoe(g), "started: held beyond 60 s")
+  M.Advance(781); no(ns.Attribution.DuelFoe(g), "let go after 15 min")
+  for _, ending in ipairs({ "DUEL_FINISHED", "PLAYER_ENTERING_WORLD", "ZONE_CHANGED_NEW_AREA", "PLAYER_DEAD" }) do
+    challenge()
+    M.FireEvent(ending)
+    M.Advance(29); ok(ns.Attribution.DuelFoe(g), ending .. ": grace")
+    M.Advance(2); no(ns.Attribution.DuelFoe(g), ending .. ": ended")
+  end
+  challenge()
+  kill(g)                                           -- he dies: the duel's death, the duel is over
+  eq(ns.Ledger.Victim("Grimm-Bart"), nil, "no rap sheet kill")
+  M.Advance(31)
+  no(ns.Attribution.DuelFoe(g), "over after his death")
+end)
+
 M.done("ledger_fixes")
