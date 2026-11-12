@@ -926,7 +926,7 @@ local function SetRowMode(r, mode)
   r.name:SetPoint("RIGHT", head and -112 or -40, 0)
   r.subX = child and 60 or 42
   r.subInset = nil
-  if head then r.icon:Hide(); r.strike:Hide(); r.skull:Hide(); r.rank:SetText(""); r.coin:Hide() end
+  if head then r.icon:Hide(); r.strike:Hide(); r.skull:Hide(); Look.FitText(r.rank, "", GF.FIT_RANK); r.coin:Hide() end
 end
 
 -- tones of a row: normal, red (rank 1, killer unknown), pale (pardoned, manual only, does not count)

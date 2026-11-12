@@ -12,6 +12,8 @@
 --   CLAMP  a frame opened at the cursor is not clamped or opens towards the near screen edge
 --   PAGE   a scroll page: body inside its window, foot outside it, the wheel reaches the end and the start,
 --          the bar only when needed
+--   FIT    a text fitted by Look.FitText was written again past it (plain SetText keeps the size and wrap of
+--          the old text)
 -- Every message names file:line where the object was made, the language key of its text and the language.
 -- DeathNote/Libs (foreign code) is not looked at.
 local DIR = (arg[1] or "."):gsub("/+$", "")
@@ -151,6 +153,8 @@ local function run(code)
     local items = {}
     for _, f in ipairs(BM.frames) do
       if f._kind == "FontString" and type(f._text) == "string" and f._text ~= "" and under(f, panel) and visible(f) then
+        -- FIT
+        if rawget(f, "fitText") ~= nil and f._text ~= f.fitText then note("FIT", where, f, "written past Look.FitText") end
         -- CUT
         local cut = f.IsTruncated and f:IsTruncated()
         if cut then

@@ -443,12 +443,16 @@ end
 -- opts.lines lines in the smallest size; last an ellipsis by the client and fs.full = text for the tooltip
 -- (Look.TipIfCut). opts.must = true: never an ellipsis worth hiding (no tooltip possible there): smallest size and
 -- all lines. opts.kind/flags: font (default: what Look.Font set last). Returns true when the whole text shows.
--- Costs: one SetText per tried size; same text and width as last time: nothing.
+-- Costs: one SetText per tried size; same text, width and font as last time: nothing.
+-- State (1.2.2): every call starts from the same state (no wrap, opts.lines lines, the first size of the ladder) and
+-- ends in the state of the field: wrap on when opts.lines > 1, so nothing of a short text that fitted on one
+-- line sticks. Whoever writes a fitted field again goes through Look.FitText too, never plain SetText.
 function Look.FitText(fs, text, opts)
   opts = opts or {}
   text = text or ""
   local width = opts.width or (fs.GetWidth and fs:GetWidth()) or 0
-  if fs.fitText == text and fs.fitW == width and fs.fitOpts == opts and fs:GetText() == text then return not fs.cut end
+  if fs.fitText == text and fs.fitW == width and fs.fitOpts == opts and fs:GetText() == text
+     and fs.fontSize == fs.fitSize and fs.fontKind == fs.fitKind then return not fs.cut end
   fs.fitText, fs.fitW, fs.fitOpts = text, width, opts
   fs.fit, fs.full = true, text
   local kind, flags = opts.kind or fs.fontKind or "body", opts.flags or fs.fontFlags
@@ -491,27 +495,33 @@ function Look.FitText(fs, text, opts)
     end
     return c
   end
+  -- the end state: the size reached, wrap on for a field of more than one line (also when the text took one)
+  local function done(whole)
+    fs.cut = not whole
+    fs.fitSize, fs.fitKind = fs.fontSize, fs.fontKind
+    if lines > 1 and not wrapped then fs:SetWordWrap(true) end
+    return whole
+  end
   if fs.SetMaxLines then fs:SetMaxLines(lines) end
   fs:SetWordWrap(false)
   for i = 1, #sizes do
     size(sizes[i])
     fs:SetText(text)
-    if not cut() then fs.cut = false; return true end
+    if not cut() then return done(true) end
     -- opts.wrapFirst: running text wraps in this size before it gets smaller (a number: from that step of the ladder on)
     if lines > 1 and opts.wrapFirst and i >= (opts.wrapFirst == true and 1 or opts.wrapFirst) then
       fs:SetWordWrap(true); wrapped = true
       fs:SetText(text)
-      if not cut() then fs.cut = false; return true end
+      if not cut() then return done(true) end
       fs:SetWordWrap(false); wrapped = false
     end
   end
   if lines > 1 then
     fs:SetWordWrap(true); wrapped = true
     fs:SetText(text)
-    if not cut() then fs.cut = false; return true end
+    if not cut() then return done(true) end
   end
-  fs.cut = true
-  return false
+  return done(false)
 end
 
 -- tooltip with the whole text over owner, only while fs is cut (fs.full from Look.FitText, else its text)

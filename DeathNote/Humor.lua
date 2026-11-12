@@ -358,6 +358,7 @@ Humor.Mem = Mem
 -- Notice (Extras.lua): remark under the strip, surprise stamp
 ------------------------------------------------------------------------
 local FIT_QUIP = { sizes = { 11, 10 } }
+local FIT_STAMP = { sizes = { 13, 11, 9 }, lines = 2, wrapFirst = true }   -- as Extras.FIT_STAMP (fallback)
 local function QuipStrip(banner)
   if banner.dnQuip then return banner.dnQuip end
   local Look = ns.Look
@@ -393,20 +394,9 @@ local function Apply(banner, d)
     if banner.stampAnim then banner.stampAnim:Stop(); banner.stampAnim:Play() end
     local fs = banner.stampText
     if fs then
-      -- 13 pt; a word wider than the field, or a text over 1.6 field widths, takes 11 pt (rule of the notice)
-      local text = t.STAMP[d.stamp]
-      Look.Font(fs, "title", 13)
-      local long = ""
-      for w in text:gmatch("%S+") do if #w > #long then long = w end end
-      fs:SetText(long)
-      local ok1, w1 = pcall(fs.GetStringWidth, fs)
-      fs:SetText(text)
-      local ok2, w2 = pcall(fs.GetStringWidth, fs)
-      local fw = fs.GetWidth and fs:GetWidth() or 96
-      if (ok1 and finite(w1) and finite(fw) and w1 > fw) or (ok2 and finite(w2) and finite(fw) and w2 > fw * 1.6) then
-        Look.Font(fs, "title", 11)
-        fs:SetText(text)
-      end
+      -- 1.2.2: the same ladder as the regular stamp of the notice (13, 11, 9 pt on up to two lines), through
+      -- Look.FitText: the field was fitted for the regular stamp word just before, plain SetText kept that state
+      Look.FitText(fs, t.STAMP[d.stamp], ns.Extras and ns.Extras.FIT_STAMP or FIT_STAMP)
       fs:SetTextColor(f[3][1], f[3][2], f[3][3], 0.95)
       if fs.SetRotation then pcall(fs.SetRotation, fs, math.rad(-f[2])) end
       fs:Show()

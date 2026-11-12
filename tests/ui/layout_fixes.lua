@@ -125,5 +125,47 @@ do
     ("%.0f px at %s pt in 286 px"):format(BM.Unbounded(popup.name), tostring(popup.name._fontSize)))
 end
 
+------------------------------------------------------------------------
+-- B02: nothing of Look.FitText sticks. The Humor stamp goes through it after the regular stamp word fitted on
+-- one line ("REVENGE TAKEN"); a field of two lines keeps its wrap after a short text; a font changed from outside
+-- is not taken for the cached answer. Title font at the measured width of the picture tool (0.56 em, capitals 0.50).
+------------------------------------------------------------------------
+do
+  local ns = K.world("enUS", { before = function(_, BM)
+    BM.CAPS = 0.50
+    BM.WIDTH["Fonts\\SKURRI.TTF"], BM.WIDTH["Fonts\\SKURRI_CYR.TTF"] = 0.56, 0.56
+  end })
+  local BM, G, Look = K.BM, K.G, ns.Look
+  ns.Store.Setting("humor", true)
+  local t = _G.time()
+  local k = ns.Store.AddManual("Maximilianus", "Wunderkammer")
+  ns.Store.ApplyKill({ name = "Maximilianus", surname = "Wunderkammer", class = "MAGE", level = 60 }, { t = t - 100, zone = "Z" }, true)
+  K.tick(30); K.settle()
+  if ns.Humor then ns.Humor.QUIET = 0 end
+  ns.Store.AddRevenge(k); K.tick()
+  local banner = rawget(G, "DeathNoteBanner")
+  local fs = banner and banner.stampText
+  local want = ns.Humor and ns.Humor.TEXTS and ns.Humor.TEXTS.enUS and ns.Humor.TEXTS.enUS.STAMP.nr1
+  K.check("B02 banner with the Humor stamp came", banner and banner:IsShown() and fs and fs:IsVisible() and fs._text == want, fs and fs._text)
+  K.check("B02 Humor stamp text is not cut (two lines allowed)", fs and not fs:IsTruncated(),
+    fs and ("wrap=" .. tostring(fs._wrap) .. " size=" .. tostring(fs._fontSize) .. " width " .. math.floor(BM.Unbounded(fs)) .. " in " .. tostring(fs._w)))
+  K.check("B02 Humor stamp text went through Look.FitText", fs and fs.fitText == fs._text, fs and tostring(fs.fitText))
+  -- the building block on its own
+  local parent = G.CreateFrame("Frame", nil, G.UIParent)
+  parent:SetSize(400, 200); parent:SetPoint("CENTER")
+  local f2 = Look.Text(parent, "body", 11, Look.INK)
+  f2:SetPoint("TOPLEFT", 0, 0); f2:SetWidth(200)
+  local two = { sizes = { 11, 10 }, lines = 2 }
+  Look.FitText(f2, "short", two)
+  K.check("B02 a two-line field keeps its wrap after a text that took one line", f2._wrap == true and f2._maxl == 2,
+    ("wrap %s, lines %s"):format(tostring(f2._wrap), tostring(f2._maxl)))
+  Look.FitText(f2, "short", { sizes = { 11 } })
+  K.check("B02 a one-line field ends without wrap", f2._wrap == false and f2._maxl == 1, tostring(f2._wrap))
+  Look.FitText(f2, "short", two)
+  Look.Font(f2, "body", 9)
+  Look.FitText(f2, "short", two)
+  K.check("B02 a font changed from outside is fitted again (not the cached answer)", f2._fontSize == 11, f2._fontSize)
+end
+
 io.write(("Layout fixes 1.2.2 (hunt B): %d green, %d red\n"):format(K.ok, K.bad))
 os.exit(K.bad == 0 and 0 or 1)
