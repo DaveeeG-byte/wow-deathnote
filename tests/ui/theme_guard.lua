@@ -47,7 +47,7 @@ local function world(code, theme, db)
     }
   end })
   AM.FILES = saved
-  for _, f in ipairs({ "Alert.lua", "UI.lua", "Extras.lua", "Humor.lua" }) do BM.Load(ADDON .. "/" .. f, ns) end
+  for _, f in ipairs({ "Alert.lua", "UI.lua", "Start.lua", "Extras.lua", "Humor.lua" }) do BM.Load(ADDON .. "/" .. f, ns) end
   AM.FireEvent("PLAYER_LOGIN")
   AM.FireEvent("PLAYER_ENTERING_WORLD")
   return ns
@@ -123,17 +123,25 @@ local function views(ns)
   local j = { t = _G.time(), kind = "pvp", sure = true, counted = true, killerKey = k2, candidates = {} }
   ns.Store.RecordDeath(j)
   ns:Fire("DEATH_RECORDED", j, k2); tick(); settle()
+  -- 1.3.0: the first-start window in the colours of the active cover
+  if ns.Start and ns.Start.Show then ns.Start.Show("slash"); tick() end
 end
 
 -- the values of one tree: per object kind, colours, texture, font, text, file:line
 local COLS = { "_color", "_vc", "_tc", "_bdc", "_bdb", "_shadowc" }
 local function snapshot()
   local out = {}
+  -- 1.3.0: a cover tile of the first-start window shows ITS theme (one per registered theme) on purpose: not looked at
+  local function other(f)
+    while f do if rawget(f, "otherTheme") then return true end f = f._parent end
+    return false
+  end
   for i, f in ipairs(BM.frames) do
     local o = { kind = f._kind, src = f._src, tex = f._tex, font = f._font, text = f._text }
     for _, k in ipairs(COLS) do o[k] = f[k] end
     -- the backdrop's own colours live in _bd (bgFile, edgeFile)
     if type(f._bd) == "table" then o.bg, o.edge = f._bd.bgFile, f._bd.edgeFile end
+    if other(f) then o = { kind = f._kind } end
     out[i] = o
   end
   return out
@@ -147,6 +155,11 @@ for _, code in ipairs(CODES) do
   local ns = world(code, "notebook")
   check(code .. ": base theme active", ns.Theme.id == "notebook", ns.Theme.id)
   FIXED_TEX[ns.Look.TEX.icon], FIXED_TEX[ns.Look.TEX.white], FIXED_TEX[ns.Look.TEX.classes] = true, true, true
+  -- 1.3.0: the language grid of the first-start window shows every language in a font of its writing; Korean and
+  -- Chinese have one file for several kinds, so a swapped role may land on the same file there
+  for _, script in ipairs({ "korean", "hans", "hant" }) do
+    for _, list in pairs(ns.Locale.FONTS[script]) do for _, file in ipairs(list) do FIXED_TEX[file] = true end end
+  end
   FIXED_TEX["Interface\\Minimap\\MiniMap-TrackingBorder"], FIXED_TEX["Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight"] = true, true
   for _, c in pairs(_G.RAID_CLASS_COLORS or {}) do CLASS[rgbKey({ c.r, c.g, c.b })] = true end
   local base = ns.L

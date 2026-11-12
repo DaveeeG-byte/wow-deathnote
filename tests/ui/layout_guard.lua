@@ -47,7 +47,7 @@ local function world(code)
       ShowFriends = function() end,
     }
   end })
-  for _, f in ipairs({ "Alert.lua", "UI.lua", "Extras.lua", "Humor.lua" }) do
+  for _, f in ipairs({ "Alert.lua", "UI.lua", "Start.lua", "Extras.lua", "Humor.lua" }) do
     if io.open(ADDON .. "/" .. f) then BM.Load(ADDON .. "/" .. f, ns) end
   end
   AM.FireEvent("PLAYER_LOGIN")
@@ -364,6 +364,13 @@ local function run(code)
   ns:Fire("REVENGE", k1); tick()
   if banner and banner:IsShown() then scan("banner revenge", banner) end
   settle()
+  -- 1.3.0: the first-start window (language grid, one tile per cover), as /dn start shows it
+  if ns.Start and ns.Start.Show then
+    ns.Start.Show("slash"); tick()
+    local d = rawget(G, "DeathNoteStart")
+    if d and d:IsShown() then scan("first start", d); page("first start", d.page, false); d:Hide(); tick()
+    else note("PAGE", "first start", nil, "window did not come") end
+  end
   -- sizes only from the scale
   local SIZE_OK = {}
   for _, x in ipairs(ns.Look.SIZE) do SIZE_OK[x] = true end

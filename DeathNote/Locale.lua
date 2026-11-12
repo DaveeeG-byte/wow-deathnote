@@ -679,8 +679,10 @@ function Locale.Held() return Locale.held == true and registry ~= nil end
 
 -- true when something with a look or texts is built already (then only a /reload switches)
 function Locale.Built()
+  -- Start.lua sets Locale.FrameLookup from the drawing side (in the client the same _G; in tests the UI mock)
+  local look = Locale.FrameLookup or global
   for _, name in ipairs(Locale.BUILT_FRAMES) do
-    if global(name) ~= nil then return true end
+    if look(name) ~= nil then return true end
   end
   return false
 end

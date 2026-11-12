@@ -42,6 +42,8 @@ local state = { armed = nil, waitWorld = false, waitCombat = false, combatHidden
   guildAsk = false, going = false, hint = false }
 
 local function G(name) return ns.Locale and ns.Locale.Global and ns.Locale.Global(name) end
+-- the frames of the book, the alarm and the notice live where this file draws (Locale.Built asks here)
+if ns.Locale then ns.Locale.FrameLookup = function(name) return rawget(_G, name) end end
 local function Util() return ns.Util end
 local function InCombat()
   local fn = G("InCombatLockdown")
@@ -365,6 +367,7 @@ local function Tile(i)
   if t then return t end
   local B = frame.page.body
   t = CreateFrame("Button", nil, B)
+  t.otherTheme = true          -- shows its own theme, not the active one (the theme guard skips it)
   t.cover = t:CreateTexture(nil, "BACKGROUND")
   t.cover:SetPoint("TOPLEFT", 2, -2)
   t.cover:SetPoint("BOTTOMRIGHT", -2, 22)
