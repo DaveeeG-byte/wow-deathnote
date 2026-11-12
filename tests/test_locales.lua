@@ -620,6 +620,143 @@ test("Schriftwahl je Sprache: jede Art fuer jede Sprache, Schrift passt zur Schr
 end)
 
 ---------------------------------------------------------------------------
+-- 1.3.0 theme words (Locales/Themes/<id>.lua) and theme names (Themes/<id>.lua, nameKey)
+---------------------------------------------------------------------------
+local function listDir(rel, pattern)
+  local out = {}
+  local p = io.popen('ls "' .. DIR .. rel .. '" 2>/dev/null')
+  if p then for f in p:lines() do if f:match(pattern) then out[#out + 1] = f end end p:close() end
+  table.sort(out)
+  return out
+end
+local WORD_FILES = listDir("Locales/Themes", "^[a-z][a-z0-9_]*%.lua$")
+local THEME_FILES = listDir("Themes", "^[a-z][a-z0-9_]*%.lua$")
+-- reserved show keys whose base key comes later (record system): no limit in _limits.lua yet, so a stamp gets the
+-- limit of STAMP_REVENGE and the tab the one of TAB_WANTED
+local RESERVED_LIMIT = { STAMP_QUITT = 16, STAMP_OVERPAID = 16, TAB_RECORD = 16 }
+
+-- a stamp's words broken greedily into lines of at most 12 characters: at most two lines (concept 11.2)
+local function stampLines(v, code)
+  local lines, cur = {}, nil
+  for w in v:gmatch("%S+") do
+    if cur and Locale.Measure(cur .. " " .. w, code) <= 12 then cur = cur .. " " .. w
+    else if cur then lines[#lines + 1] = cur end; cur = w end
+  end
+  if cur then lines[#lines + 1] = cur end
+  local long = false
+  for _, l in ipairs(lines) do if Locale.Measure(l, code) > 12 then long = true end end
+  return #lines, long
+end
+
+test("Theme-Woerter: Dateien da, gueltiges UTF-8, ohne Geruest kein Bruch", function()
+  ok(#WORD_FILES >= 1, "keine Datei unter Locales/Themes")
+  for _, f in ipairs(WORD_FILES) do
+    local s = assert(readFile(DIR .. "Locales/Themes/" .. f), f)
+    ok(s:sub(1, 3) ~= "\239\187\191", "BOM in " .. f)
+    local good, at = validUtf8(s)
+    ok(good, f .. ": kein UTF-8 ab Byte " .. tostring(at))
+    local chunk = assert(loadfile(DIR .. "Locales/Themes/" .. f))
+    chunk("DeathNote", {})
+    chunk("DeathNote", nil)
+  end
+end)
+
+for _, f in ipairs(WORD_FILES) do
+  local id = f:gsub("%.lua$", "")
+  test("Theme-Woerter " .. id .. ": Schauwoerter, Grenzen des Grundschluessels, Stempel 2 x 12, deDE und enUS gleich", function()
+    local ns = newClient()
+    assert(loadfile(DIR .. "Locales/Themes/" .. f))("DeathNote", ns)
+    local L2 = ns.Locale
+    local bad, sets, absent, waiting = {}, {}, {}, {}
+    for _, code in ipairs(CODES) do
+      local t = L2.RawWords(id, code)
+      if not t then
+        if code == "enUS" or code == "deDE" then bad[#bad + 1] = code .. ": keine Woerter" end
+        if code ~= "enUS" and code ~= "deDE" then absent[#absent + 1] = code end
+      else
+        sets[code] = t
+        for k, v in pairs(t) do
+          if not L2.THEME_KEYS[k] then bad[#bad + 1] = code .. " " .. k .. ": kein Schauwort (Bedienwoerter wechseln nie)"
+          elseif EN[k] == nil and not RESERVED_LIMIT[k] then bad[#bad + 1] = code .. " " .. k .. ": ohne englischen Grundschluessel"
+          else
+            if EN[k] == nil then
+              if code == "enUS" then waiting[#waiting + 1] = k end
+              if type(v) ~= "string" or v == "" then bad[#bad + 1] = code .. " " .. k .. ": leer"
+              elseif Locale.Measure(v, code) > RESERVED_LIMIT[k] then
+                bad[#bad + 1] = ("%s %s: zu lang: %d > %d"):format(code, k, Locale.Measure(v, code), RESERVED_LIMIT[k])
+              end
+            else
+              for _, pr in ipairs(checkText(code, k, v)) do bad[#bad + 1] = code .. " " .. k .. ": " .. pr end
+            end
+            if k:find("^STAMP_") and type(v) == "string" then
+              local n, long = stampLines(v, code)
+              if n > 2 or long then bad[#bad + 1] = ("%s %s: Stempel '%s' passt nicht in 2 Zeilen zu 12 Zeichen"):format(code, k, v) end
+            end
+          end
+        end
+      end
+    end
+    if #absent > 0 then hint(("%s: %d Sprachen ohne Theme-Woerter (Grundwoerter der Sprache bleiben): %s"):format(id, #absent, table.concat(absent, " "))) end
+    table.sort(waiting)
+    if #waiting > 0 then hint(id .. ": wartet auf den Grundschluessel (Ruf-Paket), wirkt bis dahin nicht: " .. table.concat(waiting, " ")) end
+    -- German and English carry the same words (the texter writes both; the other 19 may leave words out)
+    if sets.enUS and sets.deDE then
+      for k in pairs(sets.enUS) do if sets.deDE[k] == nil then bad[#bad + 1] = "deDE fehlt " .. k end end
+      for k in pairs(sets.deDE) do if sets.enUS[k] == nil then bad[#bad + 1] = "enUS fehlt " .. k end end
+    end
+    table.sort(bad)
+    ok(#bad == 0, "\n    " .. table.concat(bad, "\n    "))
+  end)
+end
+
+test("Themes: Name in allen 21 Sprachen, Woerter-Datei und Theme-Datei in der TOC an der richtigen Stelle", function()
+  local toc = readFile(DIR .. "DeathNote.toc") or ""
+  local pos, n = {}, 0
+  for line in toc:gmatch("[^\r\n]+") do
+    if not line:match("^#") and line:match("%S") then n = n + 1; pos[(line:gsub("/", "\\"):gsub("%s+$", ""))] = n end
+  end
+  local bad = {}
+  local lastLang = 0
+  for _, c in ipairs(CODES) do lastLang = math.max(lastLang, pos["Locales\\" .. c .. ".lua"] or 0) end
+  local pTheme, pAlert = pos["Theme.lua"], pos["Alert.lua"]
+  for _, f in ipairs(WORD_FILES) do
+    local p = pos["Locales\\Themes\\" .. f]
+    if not p then bad[#bad + 1] = "TOC ohne Locales\\Themes\\" .. f
+    elseif p < lastLang or (pTheme and p > pTheme) then bad[#bad + 1] = "Locales\\Themes\\" .. f .. ": nach den Sprachen, vor Theme.lua" end
+  end
+  for _, f in ipairs(THEME_FILES) do
+    local p = pos["Themes\\" .. f]
+    if not p then bad[#bad + 1] = "TOC ohne Themes\\" .. f
+    elseif (pTheme and p < pTheme) or (pAlert and p > pAlert) then bad[#bad + 1] = "Themes\\" .. f .. ": nach Theme.lua, vor Alert.lua" end
+    local src = readFile(DIR .. "Themes/" .. f) or ""
+    local key = src:match('nameKey%s*=%s*"([%w_]+)"')
+    if not key then bad[#bad + 1] = f .. ": kein nameKey"
+    else
+      if EN[key] == nil then bad[#bad + 1] = f .. ": " .. key .. " fehlt in enUS" end
+      for _, c in ipairs(CODES) do
+        local t = Locale.Raw(c)
+        if c ~= "enUS" and not (t and type(t[key]) == "string" and t[key] ~= "") then
+          local s = c .. ": " .. key .. " fehlt"
+          if STRICT then bad[#bad + 1] = s else hint(s) end
+        end
+      end
+    end
+    -- a theme with words names a file that exists, and the other way round
+    local words = src:match('words%s*=%s*"([%w_]+)"')
+    if words and not readFile(DIR .. "Locales/Themes/" .. words .. ".lua") then bad[#bad + 1] = f .. ": Locales/Themes/" .. words .. ".lua fehlt" end
+  end
+  for _, f in ipairs(WORD_FILES) do
+    local found = false
+    for _, tf in ipairs(THEME_FILES) do
+      if (readFile(DIR .. "Themes/" .. tf) or ""):find('words%s*=%s*"' .. f:gsub("%.lua$", "") .. '"') then found = true end
+    end
+    if not found then bad[#bad + 1] = "Locales/Themes/" .. f .. ": kein Theme nennt diese Woerter" end
+  end
+  table.sort(bad)
+  ok(#bad == 0, "\n    " .. table.concat(bad, "\n    "))
+end)
+
+---------------------------------------------------------------------------
 -- TOC (B2 wires it; a hint until then, an error under STRICT)
 ---------------------------------------------------------------------------
 test("TOC nennt Locale.lua und alle Sprachdateien in der richtigen Reihenfolge", function()

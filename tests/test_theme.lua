@@ -110,7 +110,7 @@ end)
 -- Choice and silent fallback
 ---------------------------------------------------------------------------
 test("No choice, unknown, broken or missing theme: silently the black book", function()
-  for _, v in ipairs({ false, "harbor", "no such theme", 42, "", { "x" }, "NOTEBOOK" }) do
+  for _, v in ipairs({ false, "seas", "no such theme", 42, "", { "x" }, "NOTEBOOK" }) do
     local db = { settings = { ui = { theme = v ~= false and v or nil } } }
     local ns = M.Load({ db = db })
     eq(ns.Theme.id, "notebook", tostring(v))
@@ -229,7 +229,9 @@ ns.Locale.RegisterWords("tiny", "deDE", function(T) T.TAB_WANTED = "Kopfgelder";
   h:close()
   local saved2 = M.FILES
   M.FILES = files
-  table.insert(M.FILES, 6, rel)   -- after Themes/notebook.lua
+  local after = 1
+  for i, f in ipairs(M.FILES) do if f == "Themes/notebook.lua" then after = i + 1 end end
+  table.insert(M.FILES, after, rel)   -- after Themes/notebook.lua
   local ok2, ns = pcall(M.Load, { db = { settings = { ui = { theme = "tiny" } } } })
   M.FILES = saved2
   os.remove(tmp)
@@ -248,7 +250,7 @@ ns.Theme.Register("tiny", { words = "tiny" })
 ns.Locale.RegisterWords("tiny", "enUS", function(T) T.TAB_WANTED = "Bounties"; T.ACT_STRIKE = "X"; T.NO_SUCH_KEY = "Y"; T.HEAD_RULES = "" end)
 ]])
   h:close()
-  table.insert(M.FILES, 6, rel)
+  table.insert(M.FILES, after, rel)
   ok2, ns = pcall(M.Load, { db = { settings = { ui = { theme = "tiny" } } } })
   M.FILES = saved2
   os.remove(tmp)

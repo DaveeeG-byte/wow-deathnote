@@ -1,0 +1,78 @@
+-- DeathNote theme words "trade" (The Workshop): the show words of the theme, one block per language.
+-- Only show words (Locale.THEME_KEYS); every button and switch keeps its name. A word missing here keeps the
+-- base word of the same language. Length limits: those of the base key (tests/sprachen/_limits.lua); stamps at
+-- most two lines of 12 characters. The bounty of the book stays gold here (an invoice in gold).
+-- The other 19 languages fall back to their own base words until they are translated.
+local _, ns = ...
+local Locale = ns and ns.Locale
+if not (Locale and Locale.RegisterWords) then return end
+
+Locale.RegisterWords("trade", "enUS", function(T)
+  T.BOOK_TITLE          = "Job Book"
+  T.POSTER_HEAD         = "CLIENT"
+  T.POSTER_DOA          = "CASH OR ON ACCOUNT"
+  T.POSTER_BOUNTY       = "INVOICE"
+  T.TAB_WANTED          = "Customers"
+  T.TAB_DEATHLOG        = "Incident Log"
+  T.TAB_GUILD           = "Staff"
+  T.TAB_GUILD_FRIENDS   = "Staff & Friends"
+  T.TAB_RECORD          = "References"
+  T.HEAD_RULES          = "Shop Rules"
+  T.HEAD_HELP           = "Operating Manual"
+  T.STAMP_NR1           = "BEST CUSTOMER"
+  T.STAMP_GUILD_NR1     = "HOUSE ACCOUNT"
+  T.STAMP_REVENGE       = "JOB DONE"
+  T.STAMP_PARDONED      = "GOODWILL"
+  T.STAMP_HUNT          = "WORK ORDER"
+  T.STAMP_QUITT         = "PAID"
+  T.STAMP_OVERPAID      = "CREDIT NOTE"
+  T.POSTER_HUNTLIST     = "ORDER BOOK"
+  T.BANNER_HUNT         = "ORDER BOOK"
+  T.BANNER_NEW          = "NEW CUSTOMER"
+  T.BANNER_REVENGE      = "DELIVERED"
+  T.ALERT_SIGHTED       = "CUSTOMER ON SITE"
+  T.ALERT_SIGHTED_NR1   = "BEST CUSTOMER ON SITE"
+  T.ALERT_TITLE_GUILD   = "HOUSE ACCOUNT ON SITE"
+  T.ALERT_TITLE_FRIENDS = "FRIENDS' CUSTOMER ON SITE"
+  T.ALERT_TITLE_HUNT    = "WORK ORDER ON SITE"
+  T.WELCOME             = "Job book opened. Whoever kills you in the open world becomes a customer. Open it with /dn or the minimap button."
+  T.EMPTY_WANTED_HEAD   = "No customers yet."
+  T.EMPTY_WANTED_SUB    = "Cold calling is an option."
+  T.EMPTY_JOURNAL_HEAD  = "No incidents yet."
+  T.EMPTY_JOURNAL_SUB   = "Accident-free. Or unreported."
+end)
+
+Locale.RegisterWords("trade", "deDE", function(T)
+  T.BOOK_TITLE          = "Kundenbuch"
+  T.POSTER_HEAD         = "KUNDE"
+  T.POSTER_DOA          = "BAR ODER AUF RECHNUNG"
+  T.POSTER_BOUNTY       = "RECHNUNG"
+  T.TAB_WANTED          = "Kunden"
+  T.TAB_DEATHLOG        = "Schadensfälle"
+  T.TAB_GUILD           = "Belegschaft"
+  T.TAB_GUILD_FRIENDS   = "Belegschaft & Co."
+  T.TAB_RECORD          = "Referenzen"
+  T.HEAD_RULES          = "Betriebsordnung"
+  T.HEAD_HELP           = "Bedienungsanleitung"
+  T.STAMP_NR1           = "BESTER KUNDE"
+  T.STAMP_GUILD_NR1     = "KUNDE DES HAUSES"
+  T.STAMP_REVENGE       = "AUFTRAG ERLEDIGT"
+  T.STAMP_PARDONED      = "KULANZ"
+  T.STAMP_HUNT          = "AUFTRAG ERTEILT"
+  T.STAMP_QUITT         = "BEZAHLT"
+  T.STAMP_OVERPAID      = "GUTSCHRIFT"
+  T.POSTER_HUNTLIST     = "AUFTRAGSLAGE"
+  T.BANNER_HUNT         = "AUFTRAGSLAGE"
+  T.BANNER_NEW          = "NEUKUNDE"
+  T.BANNER_REVENGE      = "AUSGELIEFERT"
+  T.ALERT_SIGHTED       = "KUNDE IM LADEN"
+  T.ALERT_SIGHTED_NR1   = "BESTER KUNDE IM LADEN"
+  T.ALERT_TITLE_GUILD   = "KUNDE DES HAUSES IM LADEN"
+  T.ALERT_TITLE_FRIENDS = "KUNDE DER FREUNDE IM LADEN"
+  T.ALERT_TITLE_HUNT    = "AUFTRAG VOR ORT"
+  T.WELCOME             = "Kundenbuch angelegt. Wer dich in der offenen Welt tötet, wird Kunde. Aufschlagen mit /dn oder am Minimap-Knopf."
+  T.EMPTY_WANTED_HEAD   = "Noch keine Kundschaft."
+  T.EMPTY_WANTED_SUB    = "Kaltakquise wäre eine Option."
+  T.EMPTY_JOURNAL_HEAD  = "Noch kein Schadensfall."
+  T.EMPTY_JOURNAL_SUB   = "Unfallfrei. Oder nicht gemeldet."
+end)

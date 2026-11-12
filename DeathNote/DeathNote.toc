@@ -47,6 +47,9 @@ Locales\huHU.lua
 Locales\hrHR.lua
 Locales\ukUA.lua
 Locales\trTR.lua
+# 1.3.0: the show words of each theme (Locale.RegisterWords), before Theme.lua
+Locales\Themes\harbor.lua
+Locales\Themes\trade.lua
 
 # 1.3.0: the theme core, then one data file per theme (Theme.Register). Theme words: Locales\Themes\<id>.lua.
 Theme.lua
