@@ -552,4 +552,69 @@ test("Two namesakes with GUIDs killed 5 s apart count twice; the same GUID withi
   eq(ns.Ledger.Repute().n, 2, "the same GUID again within 10 s")
 end)
 
+---------------------------------------------------------------------------
+-- Interface for the book (Ledger.State, Repute shares and bar, sorts, names in the log, Clear)
+---------------------------------------------------------------------------
+test("Ledger.State, Repute: floor, next tier and its path, mood and shares; NextRankName", function()
+  fresh(40)
+  eq(ns.Ledger.State("Nie-Mand"), nil)
+  local g = seen("Grimm", "Bart", 40)
+  ns.Store.ApplyKill({ name = "Grimm", surname = "Bart", guid = g }, { t = time() - 100 }, true)
+  eq(ns.Ledger.State("Grimm-Bart"), "open")
+  for i = 1, 9 do kill(seen("Gelb" .. i, "Opfer", 40)); M.Advance(20) end
+  local r = ns.Ledger.Repute()
+  eq(r.total, 27); eq(r.tier, 3); eq(r.floor, 25); eq(r.next, 23); eq(r.nextTier, 4); eq(r.nextPath, "e")
+  eq(r.share.e, 1); eq(r.share.r, 0); ok(r.mood.e > 0)
+  eq(ns.Ledger.NextRankName("notebook", "enUS"), ns.Ranks.Name(4, "e", "notebook", "enUS"))
+  ok(ns.Ledger.NextRankName("notebook", "enUS"))
+end)
+
+test("Victims sorted by state, points, recent, first, count and name; the list follows every change", function()
+  fresh(40)
+  local a, b, c = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 46), seen("Carla", "Klee", 40)
+  ns.Store.ApplyKill({ name = "Carla", surname = "Klee", guid = c }, { t = time() - 100 }, true)
+  ns.Store.ApplyKill({ name = "Carla", surname = "Klee", guid = c }, { t = time() - 90 }, true)
+  kill(a); M.Advance(20); kill(b); M.Advance(20); kill(c); M.Advance(20)
+  local function keys(sort)
+    local out = {}
+    for _, v in ipairs(ns.Ledger.Victims(sort)) do out[#out + 1] = v.key end
+    return table.concat(out, " ")
+  end
+  eq(keys("state"), "Carla-Klee Bernd-Bolz Anna-Ast", "open debt first, then victims (newest first)")
+  eq(keys("points"), "Bernd-Bolz Carla-Klee Anna-Ast")
+  eq(keys("recent"), "Carla-Klee Bernd-Bolz Anna-Ast"); eq(keys(), keys("recent"))
+  eq(keys("first"), "Anna-Ast Bernd-Bolz Carla-Klee")
+  eq(keys("name"), "Anna-Ast Bernd-Bolz Carla-Klee")
+  ok(ns.Ledger.Victims("state") == ns.Ledger.Victims("state"), "kept while nothing changes")
+  ns.Store.AddRevenge("Carla-Klee", true)            -- 2 : 2 even now
+  eq(keys("state"), "Carla-Klee Bernd-Bolz Anna-Ast", "even before victims")
+  ns.Store.SetStatus("Carla-Klee", "pardoned")
+  eq(keys("state"), "Bernd-Bolz Anna-Ast Carla-Klee", "pardoned last")
+  M.Advance(700); seen("Anna", "Ast", 40, { guid = a }); kill(a)
+  eq(keys("recent"), "Anna-Ast Carla-Klee Bernd-Bolz", "a new kill reorders")
+  eq(keys("count"), "Anna-Ast Carla-Klee Bernd-Bolz")
+end)
+
+test("Log rows keep the victim's name when he is struck; Ledger.Clear empties the rap sheet with events", function()
+  fresh(40)
+  local g = seen("Grimm", "Bart", 40)
+  ns.Store.ApplyKill({ name = "Grimm", surname = "Bart", guid = g }, { t = time() - 100 }, true)
+  kill(g); M.Advance(20)
+  kill(seen("Anna", "Ast", 40))
+  eq(ns.Ledger.Log()[2].name, "Grimm Bart")
+  ok(ns.Ledger.RemoveVictim("Grimm-Bart"))
+  eq(ns.Ledger.Log()[2].name, "Grimm Bart", "name kept after striking")
+  local total, n = ns.Ledger.Repute().total, ns.Ledger.Repute().n
+  local cleared, changed = {}, {}
+  ns:On("LEDGER_CLEARED", function(x) cleared[#cleared + 1] = x end)
+  ns:On("STANDING_CHANGED", function(k) changed[#changed + 1] = k end)
+  eq(ns.Ledger.Clear(), 1)
+  eq(ns.Ledger.VictimCount(), 0); eq(#ns.Ledger.Log(), 0); eq(#ns.Ledger.Victims(), 0)
+  eq(cleared[1], 1); eq(table.concat(changed, ","), "Anna-Ast")
+  eq(ns.Ledger.Repute().total, total, "points stay"); eq(ns.Ledger.Repute().n, n, "own kills count stays")
+  eq(standing("Grimm-Bart"), "1:1 even", "the book's revenge still counts")
+  reload()
+  eq(ns.Ledger.VictimCount(), 0)
+end)
+
 M.done("ledger_fixes")

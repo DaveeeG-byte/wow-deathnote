@@ -1,17 +1,24 @@
 -- DeathNote - Ledger.lua (1.3.0)
 -- The rap sheet: own killing blows on players, the standing "me : him" per enemy, and the repute (four accounts,
 -- rank, path, needle). Data and rules only; the book (UI.lua, Extras.lua) and the alarm (Alert.lua) read it through
--- the functions and the five bus events below. Nothing of this goes over the wire.
+-- the functions and the bus events below. Nothing of this goes over the wire.
+--
+-- Events (ns:Fire), in this order for one kill: AWARD(id) for every new award, OWN_KILL(key, row),
+-- STANDING_CHANGED(key), REPUTE_RANK(tier, path, oldTier, oldPath) only when the tier changed (a banner shows it
+-- without a check of its own), REPUTE_PATH(path, oldPath, tier) only when the path changed (also with the tier).
+-- STANDING_CHANGED(key) also for his kills, hand revenge, status, removal, a move (new key only), Ledger.Clear;
+-- never at the start. LEDGER_CLEARED(count) after Ledger.Clear. VICTIM_SPOTTED(key, unit, how) while the victim
+-- alarm is on. Nothing fires at the start, by the migration or by the check at start.
 --
 -- Data, account-wide and language-neutral (DeathNoteDB.ledger, DB version 4, see Store.Init):
 --   victims[key] = { key, name, surname, guid, class, level, guild, faction, n, pre, first, last, dn, dt, pts,
 --                    zone, mapID }        n = my killing blows on him, pre = those of them booked while he had no
 --                                         book entry (no revenge the book could have recognised)
---   log          = newest kills first, at most LOG_MAX: { t, key, vl, ml, band, r, e, j, s, f, zone, mapID, x, y,
---                    me, state }          f = flag letters (see FLAGS)
+--   log          = newest kills first, at most LOG_MAX: { t, key, name, vl, ml, band, r, e, j, s, f, zone, mapID,
+--                    x, y, me, state }    f = flag letters (see FLAGS), name = the victim's name at the kill
 --   acc, mood    = { r, e, j, s }       lifetime accounts (never sink) and the sliding values (path and needle)
 --   n, counted   = own kills, kills that earned points
---   tier, path   = the rank and path last reported (REPUTE_RANK fires once per change)
+--   tier, path   = the rank and path last reported (REPUTE_RANK / REPUTE_PATH fire once per change)
 --   bands, best, cur, awards
 -- The standing itself is never stored. "me" is read as
 --   max(n, recognised revenge of the book + pre) + revenge noted by hand
@@ -247,6 +254,7 @@ local victims        -- db.victims
 local byGuid = {}    -- guid -> key (victims)
 local nVictims, nPlaceholders = 0, 0
 local standCache = {} -- book key -> code of the last standing seen (STANDING_CHANGED fires on a change)
+local listCache       -- sort -> sorted victim list (Ledger.Victims), emptied by every change
 local reputeCache
 local quiet = false   -- true while Ledger.Init runs: no events at the start
 
@@ -309,7 +317,7 @@ local function sanitizeRow(row)
   for _, f in ipairs(LOG_NUM) do if row[f] ~= nil and not finite(row[f]) then row[f] = nil end end
   for _, p in ipairs(PATHS) do row[p] = count(row[p]) end
   if type(row.f) ~= "string" or row.f:find("[^" .. Ledger.FLAGS .. "]") then row.f = "" end
-  row.zone, row.me = cleanStr(row.zone, 80), cleanStr(row.me, 64)
+  row.zone, row.me, row.name = cleanStr(row.zone, 80), cleanStr(row.me, 64), cleanStr(row.name, 64)
   if row.state ~= nil and type(row.state) ~= "string" then row.state = nil end
   return true
 end
@@ -433,6 +441,7 @@ end
 -- returns true when the standing changed
 local function standingTouched(key)
   if type(key) ~= "string" then return false end
+  listCache = {}
   local code = standCode(key)
   if standCache[key] == code then return false end
   standCache[key] = code
@@ -453,6 +462,7 @@ end
 local function dropVictim(key)
   local v = victims[key]
   if not v then return end
+  listCache = {}
   if v.guid and byGuid[v.guid] == key then byGuid[v.guid] = nil end
   if v.surname == nil then nPlaceholders = nPlaceholders - 1 end
   victims[key] = nil
@@ -507,6 +517,7 @@ local function addVictim(key, info)
   victims[key] = v
   nVictims = nVictims + 1
   if v.surname == nil then nPlaceholders = nPlaceholders + 1 end
+  listCache = {}
   return v
 end
 
@@ -560,7 +571,11 @@ function moveVictim(oldKey, newKey, surname)
     if v.surname == nil then nPlaceholders = nPlaceholders + 1 end
     if v.guid then byGuid[v.guid] = newKey end
   end
-  for i = 1, #db.log do if db.log[i].key == oldKey then db.log[i].key = newKey end end
+  local shown = victims[newKey] and Util.Display(victims[newKey]) or nil
+  for i = 1, #db.log do
+    local row = db.log[i]
+    if row.key == oldKey then row.key = newKey; row.name = shown or row.name end
+  end
   standCache[oldKey] = nil
   reputeCache = nil
   standingTouched(newKey)
@@ -625,7 +640,7 @@ function Ledger.Init(saved)
   quiet = false
   if not ok then error(err, 0) end
   capVictims()
-  standCache = {}
+  standCache, listCache = {}, {}
   local S = ns.Store
   for key in pairs(S and S.All() or {}) do standCache[key] = standCode(key) end
   reputeCache = nil
@@ -645,14 +660,31 @@ end
 
 function Ledger.VictimCount() return db and nVictims or 0 end
 
+-- the state of a key alone (Ledger.Standing's third value), nil while switched off or when there is nothing
+function Ledger.State(key)
+  local _, _, state = Ledger.Standing(key)
+  return state
+end
+
+-- order of the states in the victim list: debts first, then even, ahead, victims only, suspects, pardoned
+Ledger.STATE_ORDER = { open = 1, even = 2, ahead = 3, victim = 4, suspect = 5, pardoned = 6 }
+
+local function byRecent(a, b)
+  if (a.last or 0) ~= (b.last or 0) then return (a.last or 0) > (b.last or 0) end
+  return a.key < b.key
+end
 local VSORT = {
-  recent = function(a, b)
-    if (a.last or 0) ~= (b.last or 0) then return (a.last or 0) > (b.last or 0) end
-    return a.key < b.key
-  end,
+  recent = byRecent,
   count = function(a, b)
     if a.n ~= b.n then return a.n > b.n end
-    if (a.last or 0) ~= (b.last or 0) then return (a.last or 0) > (b.last or 0) end
+    return byRecent(a, b)
+  end,
+  points = function(a, b)
+    if (a.pts or 0) ~= (b.pts or 0) then return (a.pts or 0) > (b.pts or 0) end
+    return byRecent(a, b)
+  end,
+  first = function(a, b)
+    if (a.first or 0) ~= (b.first or 0) then return (a.first or 0) < (b.first or 0) end
     return a.key < b.key
   end,
   name = function(a, b)
@@ -662,30 +694,63 @@ local VSORT = {
   end,
 }
 
--- the victims as a list (the tables themselves, read only); sort "recent" (default), "count", "name"
+-- the victims as a list (the tables themselves, read only). sort: "recent" (default, newest last kill first),
+-- "state" (STATE_ORDER, then recent), "points", "count", "first" (oldest first kill first), "name". The list is
+-- kept until the rap sheet or the book changes.
 function Ledger.Victims(sort)
+  if not db then return {} end
+  sort = (VSORT[sort] or sort == "state") and sort or "recent"
+  if listCache[sort] then return listCache[sort] end
   local out = {}
-  if not db then return out end
   for _, v in pairs(victims) do out[#out + 1] = v end
-  table.sort(out, VSORT[sort] or VSORT.recent)
+  if sort == "state" then
+    local rank = {}
+    for i = 1, #out do rank[out[i]] = Ledger.STATE_ORDER[Ledger.State(out[i].key) or "victim"] or 9 end
+    table.sort(out, function(a, b)
+      if rank[a] ~= rank[b] then return rank[a] < rank[b] end
+      return byRecent(a, b)
+    end)
+  else
+    table.sort(out, VSORT[sort])
+  end
+  listCache[sort] = out
   return out
 end
 
--- the newest kills, newest first (read only)
+-- the newest kills, newest first (read only). row.name is the victim's name at the kill (kept when he is struck or
+-- falls out of the cap)
 function Ledger.Log() return db and db.log or {} end
 
--- { tier, path, total, next, needle, acc, n, counted, best, awards, bands }; one table, rebuilt after a change
--- (read only)
+-- { tier, path, total, next, floor, nextTier, nextPath, needle, acc, mood, share, n, counted, best, awards, bands };
+-- one table, rebuilt after a change (read only).
+--   next = points missing to the next tier (nil at the top); floor = the sum where this tier began (the rank bar runs
+--   from floor to total + next); nextTier/nextPath = the tier above and the path it would carry now (nil at the top);
+--   share = { r, e, j, s } shares of mood, 0..1 (the "Infamy (90 %)" of the rap sheet; 0 each without points)
 function Ledger.Repute()
-  if not db then return { tier = 1, total = 0, needle = 0, acc = newAcc(), n = 0, counted = 0, best = {}, awards = {},
-    bands = {} } end
+  if not db then return { tier = 1, total = 0, floor = 0, next = 10, nextTier = 2, needle = 0, acc = newAcc(),
+    mood = newAcc(), share = newAcc(), n = 0, counted = 0, best = {}, awards = {}, bands = {} } end
   if reputeCache then return reputeCache end
   local sum = total(db.acc)
   local tier, nxt = Ledger.Tier(sum)
-  reputeCache = { tier = tier, path = Ledger.Path(db.mood, db.path, db.counted, tier), total = sum, next = nxt,
-    needle = Ledger.Needle(db.mood), acc = db.acc, n = db.n, counted = db.counted, best = db.best, awards = db.awards,
-    bands = db.bands }
+  local th = ns.Ranks and ns.Ranks.THRESHOLDS or {}
+  local ms = total(db.mood)
+  local share = {}
+  for _, p in ipairs(PATHS) do share[p] = ms > 0 and db.mood[p] / ms or 0 end
+  local path = Ledger.Path(db.mood, db.path, db.counted, tier)
+  local nextTier = nxt and tier + 1 or nil
+  reputeCache = { tier = tier, path = path, total = sum, next = nxt, floor = th[tier] or 0, nextTier = nextTier,
+    nextPath = nextTier and Ledger.Path(db.mood, path, db.counted, nextTier) or nil,
+    needle = Ledger.Needle(db.mood), acc = db.acc, mood = db.mood, share = share, n = db.n, counted = db.counted,
+    best = db.best, awards = db.awards, bands = db.bands }
   return reputeCache
+end
+
+-- the name of the next rank in the active theme and language (or the given ones), nil at the top or where no
+-- name exists (other languages: Ranks.Title(nextTier, nextPath) gives the line)
+function Ledger.NextRankName(theme, lang)
+  local r = Ledger.Repute()
+  if not r.nextTier or not ns.Ranks then return nil end
+  return ns.Ranks.Name(r.nextTier, r.nextPath, theme, lang)
 end
 
 -- a table like a book entry, for the alarm popup of a victim
@@ -709,6 +774,24 @@ function Ledger.RemoveVictim(key)
   standingTouched(key)
   updateHook()
   return true
+end
+
+-- empties the rap sheet: every victim and the log go; the accounts, rank, path, own kills count, awards and best
+-- marks stay (they never sink). Fires LEDGER_CLEARED(count) and STANDING_CHANGED for every key whose standing
+-- changed. Returns the number of victims removed.
+function Ledger.Clear()
+  if not db then return 0 end
+  local keys, n = {}, 0
+  for key in pairs(victims) do keys[#keys + 1] = key; n = n + 1 end
+  table.sort(keys)
+  for k in pairs(victims) do victims[k] = nil end
+  for i = #db.log, 1, -1 do db.log[i] = nil end
+  byGuid, nVictims, nPlaceholders = {}, 0, 0
+  listCache, reputeCache = {}, nil
+  ns:Fire("LEDGER_CLEARED", n)
+  for _, key in ipairs(keys) do standingTouched(key) end
+  updateHook()
+  return n
 end
 
 ---------------------------------------------------------------------------
@@ -1008,8 +1091,8 @@ local function book(info, opts)
   }
   local r, ee, j, s = Ledger.Points(band, ctx)
   local zone, _, mapID, x, y = Util.Zone()
-  local row = { t = t, key = key, vl = vl, ml = myLevel, band = band, r = r, e = ee, j = j, s = s, f = flagsOf(ctx),
-    zone = Str(zone), mapID = mapID, x = x, y = y, me = Util.PlayerFullName() }
+  local row = { t = t, key = key, name = Util.Display(v), vl = vl, ml = myLevel, band = band, r = r, e = ee, j = j,
+    s = s, f = flagsOf(ctx), zone = Str(zone), mapID = mapID, x = x, y = y, me = Util.PlayerFullName() }
   table.insert(db.log, 1, row)
   while #db.log > Ledger.LOG_MAX do table.remove(db.log) end
   -- victim
@@ -1035,7 +1118,7 @@ local function book(info, opts)
   end
   remember(gt, Str(info.guid), key, firstOf(info.name))
   capVictims(key)
-  reputeCache = nil
+  reputeCache, listCache = nil, {}
   local mine1, his1, state1 = Ledger.Standing(key)
   row.state = state1
   if c then
