@@ -308,8 +308,9 @@ function M.Load(opts)
   if opts.db then _G.DeathNoteDB = opts.db end
   if opts.before then opts.before() end
   local ns = {}
-  for _, f in ipairs(M.Files()) do
-    local chunk = assert(loadfile(ADDON_DIR .. f))
+  -- opts.dir / opts.files (1.3.0): another addon folder in this Lua state (the differential run against 1.2.2)
+  for _, f in ipairs(opts.files or M.Files()) do
+    local chunk = assert(loadfile((opts.dir or ADDON_DIR) .. f))
     chunk("DeathNote", ns)
   end
   M.ns = ns
