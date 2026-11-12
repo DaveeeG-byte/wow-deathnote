@@ -459,6 +459,18 @@ local function inBook(key)
   return S and S.Get(key) ~= nil
 end
 
+-- does the victim or the book entry at key carry another GUID than g? (then key is another player's: the tracker
+-- may hand over a namesake's record with the surname of the one seen before)
+local function otherGuid(key, g)
+  if not (key and g) then return false end
+  local v = victims[key]
+  if v and v.guid and v.guid ~= g then return true end
+  local S = ns.Store
+  local e = S and S.Get(key)
+  local eg = e and Str(e.guid)
+  return eg ~= nil and eg ~= g
+end
+
 local function dropVictim(key)
   local v = victims[key]
   if not v then return end
@@ -591,7 +603,7 @@ local function promote(r)
   local v = k and victims[k]
   if not v or v.surname ~= nil then return end
   local full = Util.KeyFor(r.name, sn)
-  if not full then return end
+  if not full or otherGuid(full, g) then return end
   local cs = Util.CleanName(sn)
   if not cs then return end
   moveVictim(k, full, cs)
@@ -605,18 +617,37 @@ Ledger.Promote = promote
 -- Keeps the keys consistent at every start, books nothing: a victim whose GUID the book knows under another key
 -- (the book entry moved while an older version played) follows it there. Silent, idempotent, and only while the
 -- rap sheet is switched on. Returns the number of victims moved.
+-- the book's key for a victim (same GUID, another key), or nil: never from a full name back to a first-name key,
+-- never away from a key the book has itself
+local function bookKeyOf(key, v)
+  local S = ns.Store
+  local k2 = v.guid and S and S.ByGUID and S.ByGUID(v.guid)
+  local be = k2 and k2 ~= key and S.Get(k2)
+  if be and not S.Get(key) and (be.surname ~= nil or v.surname == nil) then return k2, be end
+  return nil
+end
+
+-- the book learned a GUID (a kill, a sighting): a victim of that GUID under another key follows at once, so the
+-- start finds nothing to move and the standing never jumps at a reload
+local function followBook(key)
+  local S = ns.Store
+  local e = S and S.Get(key)
+  local g = e and Str(e.guid)
+  local k = g and byGuid[g]
+  if not k or k == key or not victims[k] then return end
+  local k2, be = bookKeyOf(k, victims[k])
+  if k2 == key then moveVictim(k, key, be.surname); updateHook() end
+end
+
 function Ledger.Reconcile()
   if not db or not enabled() then return 0 end
   local S = ns.Store
   if not (S and S.ByGUID) then return 0 end
   local moves
   for key, v in pairs(victims) do
-    local k2 = v.guid and S.ByGUID(v.guid)
-    local be = k2 and k2 ~= key and S.Get(k2)
-    -- never from a full name back to a first-name key
-    if be and not S.Get(key) and (be.surname ~= nil or v.surname == nil) then
+    if bookKeyOf(key, v) then
       moves = moves or {}
-      moves[#moves + 1] = { key, k2 }
+      moves[#moves + 1] = { key, (bookKeyOf(key, v)) }
     end
   end
   if not moves then return 0 end
@@ -856,9 +887,14 @@ local function guidFits(known, guid) return known == nil or known == guid end
 local function keyOf(info)
   if info.key then return info.key end
   local sn = Str(info.surname)
-  if sn then return (Util.KeyFor(info.name, sn)) end
   local S = ns.Store
   local g = Str(info.guid)
+  if sn then
+    local full = Util.KeyFor(info.name, sn)
+    -- that full name belongs to another GUID: this one is known by his first name only
+    if not otherGuid(full, g) then return full end
+    info.surname = nil
+  end
   if g then
     local k = S and S.ByGUID(g)
     if k then return k end
@@ -868,10 +904,10 @@ local function keyOf(info)
   if not name then return nil end
   local found = S and S.Find(name)
   local fe = found and S.Get(found)
-  if fe and guidFits(fe.guid, g) then return found end
+  if fe and guidFits(fe.guid, g) and not otherGuid(found, g) then return found end
   local ln, hit, hits = name:lower(), nil, 0
   for k, v in pairs(victims) do
-    if v.name and v.name:lower() == ln and guidFits(v.guid, g) then hit, hits = k, hits + 1 end
+    if v.name and v.name:lower() == ln and guidFits(v.guid, g) and not otherGuid(k, g) then hit, hits = k, hits + 1 end
   end
   if hits == 1 then return hit end
   local plain = Util.KeyFor(name)
@@ -1416,12 +1452,15 @@ ns:RegisterEvent("PLAYER_PVP_KILLS_CHANGED", onKillsChanged)
 ns:On("READY", function() watchDied(); updateHook() end)
 ns:On("SETTINGS_CHANGED", function(path)
   if path == "debug" then watchDied() end
+  -- switched on again: what the book learned meanwhile (GUIDs, moves) is followed now, not at the next start
+  if path == "ledger.enabled" and enabled() then Ledger.Reconcile() end
   if path == "alert.victims" or path == "ledger.enabled" then updateHook() end
 end)
 
 -- his kills, hand revenge, status, a new or removed entry: the standing may have changed
 ns:On("ENEMY_UPDATED", function(key)
   if not db then return end
+  if enabled() then followBook(key) end
   if standingTouched(key) then checkArch(key) end
 end)
 ns:On("ENEMY_REMOVED", function(key)
