@@ -682,6 +682,7 @@ L.HELP_START = "/dn start  startfönstret igen (språk och pärm)"
 L.TAB_RECORD = "Straffregister"  -- [max 16]
 L.STAMP_QUITT = "KVITT"  -- [max 16]
 L.STAMP_OVERPAID = "ÖVERBETALT"  -- [max 16]
+L.STAMP_NR1_DOWN = "FIENDE NR 1 FÄLLD"  -- [max 24]
 L.STATE_OPEN = "öppen"  -- [max 16]
 L.STATE_EVEN = "kvitt"  -- [max 16]
 L.STATE_AHEAD = "överbetalt"  -- [max 16]

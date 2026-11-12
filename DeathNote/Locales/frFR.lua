@@ -676,6 +676,7 @@ L.HELP_START = "/dn start  rouvrir la fenêtre de démarrage (langue et couvertu
 L.TAB_RECORD = "Casier"  -- [max 16]
 L.STAMP_QUITT = "QUITTES"  -- [max 16]
 L.STAMP_OVERPAID = "AVEC INTÉRÊTS"  -- [max 16]
+L.STAMP_NR1_DOWN = "ENNEMI N° 1 ABATTU"  -- [max 24]
 L.STATE_OPEN = "ouvert"  -- [max 16]
 L.STATE_EVEN = "quittes"  -- [max 16]
 L.STATE_AHEAD = "avec intérêts"  -- [max 16]

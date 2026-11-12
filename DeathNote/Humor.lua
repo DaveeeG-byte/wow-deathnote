@@ -31,11 +31,15 @@ local TEXTS = {
   deDE = {
     OPT = "Trockene Bemerkungen",
     MANUAL = "Erprobt von der Gilde Die Fachkräfte. Das Buch hat Launen.",   -- one line at the foot of the manual
-    STAMP = { regular = "STAMMKUNDE", revenge1 = "ERSTE RACHE", nr1 = "STAATSFEIND ERLEDIGT", pro = "FACHGERECHT ERLEDIGT" },
+    -- the stamp of nr1 is the show word STAMP_NR1_DOWN of the cover (Locale.THEME_KEYS), it follows the top title
+    STAMP = { regular = "STAMMKUNDE", revenge1 = "ERSTE RACHE", pro = "FACHGERECHT ERLEDIGT" },
     MILESTONE = {
       regular  = "Zehnmal derselbe Name. Dafür gibt es jetzt einen Stempel.",
       revenge1 = "Die erste vergisst man nie. Das Buch schon gar nicht.",
       nr1      = "Staatsfeind Nr. 1 liegt. Die Stelle ist ab sofort neu zu besetzen.",
+      -- the same milestone in the other covers (their top title: Highest Bounty, Best Customer)
+      nr1_harbor = "Das höchste Kopfgeld ist kassiert. Der Steckbrief sucht ein neues Gesicht.",
+      nr1_trade  = "Der beste Kunde ist bedient. Die Kartei sucht einen neuen Stammgast.",
       d100     = "Hundert Tode. Das Buch gratuliert nicht, aber es hat mitgezählt.",
       clean30  = "30 Tage ohne Tod. Das Buch macht sich langsam Sorgen.",
     },
@@ -129,11 +133,13 @@ local TEXTS = {
   enUS = {
     OPT = "Dry remarks",
     MANUAL = "Field-tested by the guild Die Fachkräfte. The book has moods.",
-    STAMP = { regular = "LOYAL CUSTOMER", revenge1 = "FIRST PAYBACK", nr1 = "PUBLIC ENEMY DOWN", pro = "PROFESSIONALLY DONE" },
+    STAMP = { regular = "LOYAL CUSTOMER", revenge1 = "FIRST PAYBACK", pro = "PROFESSIONALLY DONE" },
     MILESTONE = {
       regular  = "Ten times, one name. That earns a stamp.",
       revenge1 = "You never forget your first. The book certainly won't.",
       nr1      = "Public Enemy No. 1 is down. The position is now open, applications welcome.",
+      nr1_harbor = "The highest bounty is claimed. The poster needs a new face.",
+      nr1_trade  = "Your best customer has been served. The file needs a new regular.",
       d100     = "One hundred deaths. The book won't congratulate you, but it did keep count.",
       clean30  = "30 days without dying. The book is starting to worry.",
     },
@@ -435,7 +441,8 @@ local function Apply(banner, d)
       -- 1.2.2: the same ladder as the regular stamp of the notice (Extras.FitStamp: 13, 11, 9 pt on up to two
       -- lines, then three at 9 pt), through Look.FitText: the field was fitted for the regular stamp word just
       -- before, plain SetText kept that state
-      if ns.Extras and ns.Extras.FitStamp then ns.Extras.FitStamp(fs, t.STAMP[d.stamp]) else Look.FitText(fs, t.STAMP[d.stamp], FIT_STAMP) end
+      local word = Humor.StampWord(d.stamp)
+      if ns.Extras and ns.Extras.FitStamp then ns.Extras.FitStamp(fs, word) else Look.FitText(fs, word, FIT_STAMP) end
       local ink = Look.STAMP_INK[1]
       fs:SetTextColor(ink[1], ink[2], ink[3], 0.95)
       if fs.SetRotation then pcall(fs.SetRotation, fs, math.rad(-f[2])) end
@@ -448,6 +455,20 @@ local function Apply(banner, d)
   end
   Humor.applied = d       -- for tests
   return true
+end
+
+-- 1.3.0: words that follow the cover. The stamp of nr1 is the show word STAMP_NR1_DOWN (the cover lays its own over
+-- it, in every language); the remark of a milestone takes "<id>_<cover>" where Humor has one (German and English)
+function Humor.StampWord(kind)
+  if kind == "nr1" then return ns.L and ns.L.STAMP_NR1_DOWN end
+  local t = T()
+  return t and t.STAMP[kind]
+end
+function Humor.Milestone(id)
+  local t = T()
+  if not t then return nil end
+  local cover = ns.Theme and ns.Theme.Id and ns.Theme.Id()
+  return cover and t.MILESTONE[id .. "_" .. cover] or t.MILESTONE[id]
 end
 
 -- Hook point in Extras.lua (end of Banner): every new notice clears the old remark; if a decision is
@@ -547,7 +568,7 @@ function Humor.OnRevenge(key)
   if (S.RankBefore and S.RankBefore(key) or S.Rank(key)) == 1 and not h.m.nr1 then
     h.m.nr1 = now()
     h.m.revenge1 = h.m.revenge1 or h.m.nr1     -- if it was the first revenge, no further "first" comes
-    d = { stamp = "nr1", quip = t.MILESTONE.nr1, milestone = true }
+    d = { stamp = "nr1", quip = Humor.Milestone("nr1"), milestone = true }
   elseif not h.m.revenge1 then
     h.m.revenge1 = now()
     d = { stamp = "revenge1", quip = t.MILESTONE.revenge1, milestone = true }

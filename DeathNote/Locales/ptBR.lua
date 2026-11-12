@@ -677,6 +677,7 @@ L.HELP_START = "/dn start  abrir de novo a janela inicial (idioma e capa)"
 L.TAB_RECORD = "Ficha criminal"  -- [max 16]
 L.STAMP_QUITT = "QUITES"  -- [max 16]
 L.STAMP_OVERPAID = "COM JUROS"  -- [max 16]
+L.STAMP_NR1_DOWN = "INIMIGO Nº 1 ABATIDO"  -- [max 24]
 L.STATE_OPEN = "aberto"  -- [max 16]
 L.STATE_EVEN = "quites"  -- [max 16]
 L.STATE_AHEAD = "com juros"  -- [max 16]

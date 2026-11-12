@@ -528,6 +528,7 @@ Locale.THEME_KEYS = {
   HEAD_RULES = true, HEAD_HELP = true,
   STAMP_NR1 = true, STAMP_GUILD_NR1 = true, STAMP_REVENGE = true, STAMP_PARDONED = true, STAMP_HUNT = true,
   STAMP_QUITT = true, STAMP_OVERPAID = true,
+  STAMP_NR1_DOWN = true,   -- 1.3.0: the stamp of the milestone "rank 1 paid back" (Humor.lua), after the top title
   POSTER_HUNTLIST = true, BANNER_HUNT = true, BANNER_NEW = true, BANNER_REVENGE = true,
   ALERT_SIGHTED = true, ALERT_SIGHTED_NR1 = true, ALERT_TITLE_GUILD = true, ALERT_TITLE_FRIENDS = true,
   ALERT_TITLE_HUNT = true, ALERT_TITLE_VICTIM = true,   -- 1.3.0: the head of the victim alarm (Alert.lua)

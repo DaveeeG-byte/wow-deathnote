@@ -285,6 +285,7 @@ return {
   TAB_RECORD = { max = 16, field = "tab 5 (appears with your first own kill): your own killing blows on players and your repute" },
   STAMP_QUITT = { max = 16, field = "stamp on the poster: the score is even (you killed them as often as they killed you)" },
   STAMP_OVERPAID = { max = 16, field = "stamp on the poster: you killed them more often than they killed you" },
+  STAMP_NR1_DOWN = { max = 24, field = "stamp on the notice when you pay back your rank 1 enemy; two lines of 12 characters at most" },
   STATE_OPEN = { max = 16, field = "state of the score: they killed you more often (or nothing settled yet)" },
   STATE_EVEN = { max = 16, field = "state of the score: both sides equal" },
   STATE_AHEAD = { max = 16, field = "state of the score: you lead" },

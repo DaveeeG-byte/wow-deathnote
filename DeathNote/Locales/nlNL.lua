@@ -682,6 +682,7 @@ L.HELP_START = "/dn start  het startvenster opnieuw (taal en kaft)"
 L.TAB_RECORD = "Strafblad"  -- [max 16]
 L.STAMP_QUITT = "QUITTE"  -- [max 16]
 L.STAMP_OVERPAID = "MET RENTE"  -- [max 16]
+L.STAMP_NR1_DOWN = "VIJAND NR. 1 GEVELD"  -- [max 24]
 L.STATE_OPEN = "open"  -- [max 16]
 L.STATE_EVEN = "quitte"  -- [max 16]
 L.STATE_AHEAD = "met rente"  -- [max 16]

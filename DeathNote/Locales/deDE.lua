@@ -677,6 +677,7 @@ L.HELP_START = "/dn start  das Startfenster noch einmal (Sprache und Einband)"
 L.TAB_RECORD = "Strafregister"  -- [max 16]
 L.STAMP_QUITT = "QUITT"  -- [max 16]
 L.STAMP_OVERPAID = "ÜBERZAHLT"  -- [max 16]
+L.STAMP_NR1_DOWN = "STAATSFEIND ERLEDIGT"  -- [max 24]
 L.STATE_OPEN = "offen"  -- [max 16]
 L.STATE_EVEN = "quitt"  -- [max 16]
 L.STATE_AHEAD = "überzahlt"  -- [max 16]

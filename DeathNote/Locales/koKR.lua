@@ -690,6 +690,7 @@ L.HELP_START = "/dn start  첫 실행 창 다시 열기 (언어와 표지)"
 L.TAB_RECORD = "전과 기록"  -- [max 16]
 L.STAMP_QUITT = "청산"  -- [max 16]
 L.STAMP_OVERPAID = "초과 상환"  -- [max 16]
+L.STAMP_NR1_DOWN = "공공의 적 처치"  -- [max 24]
 L.STATE_OPEN = "미청산"  -- [max 16]
 L.STATE_EVEN = "청산"  -- [max 16]
 L.STATE_AHEAD = "초과 상환"  -- [max 16]

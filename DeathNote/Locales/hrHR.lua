@@ -689,6 +689,7 @@ L.HELP_START = "/dn start  početni prozor još jednom (jezik i uvez)"
 L.TAB_RECORD = "Kartoteka"  -- [max 16]
 L.STAMP_QUITT = "KVIT"  -- [max 16]
 L.STAMP_OVERPAID = "PREPLAĆENO"  -- [max 16]
+L.STAMP_NR1_DOWN = "NEPRIJATELJ BR. 1 PAO"  -- [max 24]
 L.STATE_OPEN = "otvoreno"  -- [max 16]
 L.STATE_EVEN = "kvit"  -- [max 16]
 L.STATE_AHEAD = "preplaćeno"  -- [max 16]

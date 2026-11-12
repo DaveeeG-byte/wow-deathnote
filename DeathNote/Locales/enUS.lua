@@ -697,6 +697,7 @@ L.HELP_START = "/dn start  the first-start window again (language and cover)"  -
 L.TAB_RECORD = "Rap Sheet"  -- [max 16] tab 5 (appears with your first own kill): your own killing blows on players and your repute
 L.STAMP_QUITT = "EVEN"  -- [max 16] stamp on the poster: the score is even (you killed them as often as they killed you)
 L.STAMP_OVERPAID = "OVERPAID"  -- [max 16] stamp on the poster: you killed them more often than they killed you
+L.STAMP_NR1_DOWN = "PUBLIC ENEMY DOWN"  -- [max 24] stamp on the notice when you pay back your rank 1 enemy (dry remarks, German and English); two lines of 12 characters at most
 L.STATE_OPEN = "open"  -- [max 16] state of the score: they killed you more often (or nothing settled yet)
 L.STATE_EVEN = "even"  -- [max 16] state of the score: both sides equal
 L.STATE_AHEAD = "overpaid"  -- [max 16] state of the score: you lead

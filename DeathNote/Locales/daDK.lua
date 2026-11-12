@@ -682,6 +682,7 @@ L.HELP_START = "/dn start  startvinduet igen (sprog og bind)"
 L.TAB_RECORD = "Straffeattest"  -- [max 16]
 L.STAMP_QUITT = "KVIT"  -- [max 16]
 L.STAMP_OVERPAID = "OVERBETALT"  -- [max 16]
+L.STAMP_NR1_DOWN = "FJENDE NR. 1 FÆLDET"  -- [max 24]
 L.STATE_OPEN = "åben"  -- [max 16]
 L.STATE_EVEN = "kvit"  -- [max 16]
 L.STATE_AHEAD = "overbetalt"  -- [max 16]

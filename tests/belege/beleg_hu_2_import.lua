@@ -22,7 +22,7 @@ H.check("Vorbedingung: Einlesen klappt, Rache 2 und 9 Tode stehen im Buch", ok a
 H.check("Einlesen merkt vor: es gab schon Rache", db.humor.m.revenge1 ~= nil, "m.revenge1 = nil")
 ns.Store.AddRevenge(k); H.settle()
 local s = H.stampText()
-H.check("dritte Rache am eingelesenen Taeter: kein Stempel 'erste Rache'", s ~= T.STAMP.revenge1 and s ~= T.STAMP.nr1,
+H.check("dritte Rache am eingelesenen Taeter: kein Stempel 'erste Rache'", s ~= T.STAMP.revenge1 and s ~= ns.L.STAMP_NR1_DOWN,
   "revenge=" .. ns.Store.Get(k).revenge)
 H.away()
 H.kill(ns, "Viel", "Toeter")

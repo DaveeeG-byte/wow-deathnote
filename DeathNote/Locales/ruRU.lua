@@ -688,6 +688,7 @@ L.HELP_START = "/dn start  окно первого запуска ещё раз 
 L.TAB_RECORD = "Картотека"  -- [max 16]
 L.STAMP_QUITT = "КВИТЫ"  -- [max 16]
 L.STAMP_OVERPAID = "ПЕРЕПЛАЧЕНО"  -- [max 16]
+L.STAMP_NR1_DOWN = "ВРАГ № 1 ПОВЕРЖЕН"  -- [max 24]
 L.STATE_OPEN = "открыт"  -- [max 16]
 L.STATE_EVEN = "квиты"  -- [max 16]
 L.STATE_AHEAD = "переплачено"  -- [max 16]

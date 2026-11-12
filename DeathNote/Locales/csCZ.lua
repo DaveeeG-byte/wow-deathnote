@@ -689,6 +689,7 @@ L.HELP_START = "/dn start  úvodní okno ještě jednou (jazyk a vazba)"
 L.TAB_RECORD = "Rejstřík"  -- [max 16]
 L.STAMP_QUITT = "VYROVNÁNO"  -- [max 16]
 L.STAMP_OVERPAID = "PŘEPLACENO"  -- [max 16]
+L.STAMP_NR1_DOWN = "NEPŘÍTEL Č.1 PADL"  -- [max 24]
 L.STATE_OPEN = "otevřeno"  -- [max 16]
 L.STATE_EVEN = "vyrovnáno"  -- [max 16]
 L.STATE_AHEAD = "přeplaceno"  -- [max 16]

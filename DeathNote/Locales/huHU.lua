@@ -691,6 +691,7 @@ L.HELP_START = "/dn start  az indítóablak újra (nyelv és borító)"
 L.TAB_RECORD = "Priusz"  -- [max 16]
 L.STAMP_QUITT = "KVITT"  -- [max 16]
 L.STAMP_OVERPAID = "TÚLFIZETVE"  -- [max 16]
+L.STAMP_NR1_DOWN = "KÖZELLENSÉG LEGYŐZVE"  -- [max 24]
 L.STATE_OPEN = "nyitott"  -- [max 16]
 L.STATE_EVEN = "kvitt"  -- [max 16]
 L.STATE_AHEAD = "túlfizetve"  -- [max 16]

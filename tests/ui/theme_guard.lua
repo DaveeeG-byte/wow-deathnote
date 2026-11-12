@@ -170,7 +170,8 @@ local function snapshot()
     return false
   end
   for i, f in ipairs(BM.frames) do
-    local o = { kind = f._kind, src = f._src, tex = f._tex, font = f._font, text = f._text }
+    local o = { kind = f._kind, src = f._src, tex = f._tex, font = f._font, text = f._text,
+      vis = f.IsVisible and f:IsVisible() or false }
     for _, k in ipairs(COLS) do o[k] = f[k] end
     -- the backdrop's own colours live in _bd (bgFile, edgeFile)
     if type(f._bd) == "table" then o.bg, o.edge = f._bd.bgFile, f._bd.edgeFile end
@@ -353,7 +354,10 @@ for _, code in ipairs(CODES) do
     for k, w in pairs(words) do
       local onA, onB = false, false
       for i = 1, math.min(#A, #B) do
-        if A[i].text == w[1] then onA = true end
+        -- STAMP_NR1_DOWN (the milestone stamp of Humor.lua) is seen on screen only: in the black book the notice's
+        -- stamp field keeps it hidden afterwards (its German stamps are pictures), a cover writes its next stamp word
+        -- into the same field (tests/ui/humor_cover.lua checks the word itself)
+        if A[i].text == w[1] and (k ~= "STAMP_NR1_DOWN" or A[i].vis) then onA = true end
         if B[i].text == w[2] then onB = true end
       end
       if onA then check(code .. " " .. id .. ": the theme's word stands where the black book shows " .. k, onB, w[2]) end

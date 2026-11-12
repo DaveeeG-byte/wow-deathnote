@@ -682,6 +682,7 @@ L.HELP_START = "/dn start  startvinduet igjen (språk og perm)"
 L.TAB_RECORD = "Rulleblad"  -- [max 16]
 L.STAMP_QUITT = "SKULS"  -- [max 16]
 L.STAMP_OVERPAID = "OVERBETALT"  -- [max 16]
+L.STAMP_NR1_DOWN = "FIENDE NR. 1 FELT"  -- [max 24]
 L.STATE_OPEN = "åpen"  -- [max 16]
 L.STATE_EVEN = "skuls"  -- [max 16]
 L.STATE_AHEAD = "overbetalt"  -- [max 16]

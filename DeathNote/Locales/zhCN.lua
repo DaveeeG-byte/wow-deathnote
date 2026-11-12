@@ -690,6 +690,7 @@ L.HELP_START = "/dn start  再次打开首次启动窗口（语言和封面）"
 L.TAB_RECORD = "案底"  -- [max 16]
 L.STAMP_QUITT = "两清"  -- [max 16]
 L.STAMP_OVERPAID = "超额偿还"  -- [max 16]
+L.STAMP_NR1_DOWN = "头号公敌 已倒下"  -- [max 24]
 L.STATE_OPEN = "未清"  -- [max 16]
 L.STATE_EVEN = "两清"  -- [max 16]
 L.STATE_AHEAD = "超额"  -- [max 16]

@@ -677,6 +677,7 @@ L.HELP_START = "/dn start  volver a abrir la ventana de inicio (idioma y tapa)"
 L.TAB_RECORD = "Antecedentes"  -- [max 16]
 L.STAMP_QUITT = "EN PAZ"  -- [max 16]
 L.STAMP_OVERPAID = "CON INTERESES"  -- [max 16]
+L.STAMP_NR1_DOWN = "ENEMIGO Nº 1 ABATIDO"  -- [max 24]
 L.STATE_OPEN = "abierto"  -- [max 16]
 L.STATE_EVEN = "en paz"  -- [max 16]
 L.STATE_AHEAD = "con intereses"  -- [max 16]

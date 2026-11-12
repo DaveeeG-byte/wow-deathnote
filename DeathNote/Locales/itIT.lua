@@ -676,6 +676,7 @@ L.HELP_START = "/dn start  riapri la finestra iniziale (lingua e copertina)"
 L.TAB_RECORD = "Fedina penale"  -- [max 16]
 L.STAMP_QUITT = "PARI"  -- [max 16]
 L.STAMP_OVERPAID = "CON INTERESSI"  -- [max 16]
+L.STAMP_NR1_DOWN = "NEMICO N. 1 ABBATTUTO"  -- [max 24]
 L.STATE_OPEN = "aperto"  -- [max 16]
 L.STATE_EVEN = "pari"  -- [max 16]
 L.STATE_AHEAD = "con interessi"  -- [max 16]

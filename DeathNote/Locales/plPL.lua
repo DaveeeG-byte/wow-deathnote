@@ -689,6 +689,7 @@ L.HELP_START = "/dn start  okno pierwszego uruchomienia jeszcze raz (język i ok
 L.TAB_RECORD = "Kartoteka"  -- [max 16]
 L.STAMP_QUITT = "KWITA"  -- [max 16]
 L.STAMP_OVERPAID = "NADPŁACONE"  -- [max 16]
+L.STAMP_NR1_DOWN = "WRÓG NR 1 POWALONY"  -- [max 24]
 L.STATE_OPEN = "otwarte"  -- [max 16]
 L.STATE_EVEN = "kwita"  -- [max 16]
 L.STATE_AHEAD = "nadpłacone"  -- [max 16]

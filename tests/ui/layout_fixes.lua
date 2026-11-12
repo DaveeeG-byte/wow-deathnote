@@ -93,7 +93,7 @@ do
   ns.Store.AddRevenge(k); K.tick()
   local banner = rawget(G, "DeathNoteBanner")
   local fs = banner and banner.stampText
-  local want = ns.Humor and ns.Humor.TEXTS and ns.Humor.TEXTS.enUS and ns.Humor.TEXTS.enUS.STAMP.nr1
+  local want = ns.L.STAMP_NR1_DOWN   -- 1.3.0: the show word of the cover (Locale.THEME_KEYS)
   K.check("B02 banner with the Humor stamp came", banner and banner:IsShown() and fs and fs:IsVisible() and fs._text == want, fs and fs._text)
   K.check("B02 Humor stamp text is not cut (two lines allowed)", fs and not fs:IsTruncated(),
     fs and ("wrap=" .. tostring(fs._wrap) .. " size=" .. tostring(fs._fontSize) .. " width " .. math.floor(BM.Unbounded(fs)) .. " in " .. tostring(fs._w)))

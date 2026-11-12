@@ -683,6 +683,7 @@ L.HELP_START = "/dn start  aloitusikkuna uudelleen (kieli ja kansi)"
 L.TAB_RECORD = "Rikosrekisteri"  -- [max 16]
 L.STAMP_QUITT = "SUJUT"  -- [max 16]
 L.STAMP_OVERPAID = "YLIMAKSETTU"  -- [max 16]
+L.STAMP_NR1_DOWN = "VIHOLLINEN NRO 1 KAATUI"  -- [max 24]
 L.STATE_OPEN = "auki"  -- [max 16]
 L.STATE_EVEN = "sujut"  -- [max 16]
 L.STATE_AHEAD = "ylimaksettu"  -- [max 16]

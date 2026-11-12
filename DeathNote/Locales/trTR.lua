@@ -692,6 +692,7 @@ L.HELP_START = "/dn start  başlangıç penceresi yeniden (dil ve kapak)"
 L.TAB_RECORD = "Sabıka"  -- [max 16]
 L.STAMP_QUITT = "ÖDEŞİK"  -- [max 16]
 L.STAMP_OVERPAID = "FAZLA ÖDENDİ"  -- [max 16]
+L.STAMP_NR1_DOWN = "DÜŞMAN No. 1 DÜŞTÜ"  -- [max 24]
 L.STATE_OPEN = "açık"  -- [max 16]
 L.STATE_EVEN = "ödeşik"  -- [max 16]
 L.STATE_AHEAD = "fazla ödendi"  -- [max 16]
