@@ -1793,7 +1793,8 @@ local SAMPLE = {
 function Alert.Test()
   local e
   if ready and ns.Store and ns.Store.Ranked then
-    local list = ns.Store.Ranked("wanted", "rank")
+    -- 1.3.0: in the order of Wanted (open debt first while the rap sheet is on), so the test shows rank 1
+    local list = ns.Store.Ranked("wanted", ns.Store.RankOrder and ns.Store.RankOrder() or "rank")
     e = list and list[1]
   end
   if not e then
