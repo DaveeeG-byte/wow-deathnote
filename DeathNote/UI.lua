@@ -3049,6 +3049,11 @@ BuildSettings = function()
     y = y - OPT_H
     S.lang = Stepper(A, y, L.SET_LANGUAGE, function(d) GF.StepLanguage(d) end, 150)
     y = y - OPT_H
+    -- 1.3.0: the cover (theme), same kind of row, the same hint and button (takes effect after /reload)
+    if ns.Theme and ns.Theme.List then
+      S.theme = Stepper(A, y, L.SET_THEME, function(d) GF.StepTheme(d) end, 150)
+      y = y - OPT_H
+    end
     S.langHint = Look.Text(A, "type", 11, Look.INK)
     S.langHint:SetTextColor(C(Look.INK, TONE.hint))
     S.langHint:SetPoint("TOPLEFT", 34, y - 6)
@@ -3527,6 +3532,16 @@ function GF.StepLanguage(d)
   Lc.SetChoice(list[(idx - 1 + d) % #list + 1])
 end
 
+-- 1.3.0: cover choice, through the registered themes in their order
+function GF.StepTheme(d)
+  local T = ns.Theme
+  local list = T and T.List and T.List() or {}
+  if #list == 0 then return end
+  local cur, idx = T.Resolve(T.StoredChoice()), 1
+  for i, id in ipairs(list) do if id == cur then idx = i end end
+  T.SetChoice(list[(idx - 1 + d) % #list + 1])
+end
+
 function GF.FillLanguage(S)
   local Lc = ns.Locale
   if not (S.lang and Lc and Lc.CODES) then return end
@@ -3544,6 +3559,14 @@ function GF.FillLanguage(S)
   end
   S.lang:SetText(name)
   local pending = Lc.Pending and Lc.Pending() or false
+  -- 1.3.0: the cover row; one hint for both
+  local T = ns.Theme
+  if S.theme and T then
+    local id = T.Resolve(T.StoredChoice())
+    local d = T.Get(id)
+    S.theme:SetValue(d and type(d.nameKey) == "string" and L[d.nameKey] or id)
+    pending = pending or (T.Pending and T.Pending()) or false
+  end
   S.langHint:SetShown(pending)
   S.reload:SetShown(pending)
 end
