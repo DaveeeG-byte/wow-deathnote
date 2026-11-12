@@ -1327,18 +1327,15 @@ Look.FIT_TITLE, Look.FIT_TITLE_NR1 = { sizes = { 13, 11 } }, { sizes = { 16, 13,
 Look.FIT_NAME = { sizes = { 22, 19, 16, 13 } }
 Look.FIT_LINE = { sizes = { 11 }, lines = 2, must = true, wrapFirst = true }
 Look.FIT_LINE_LAST = { sizes = { 11, 10 }, lines = 2, must = true, wrapFirst = true }
-local function Fill(e, unit, how, guild)
-  local rank = (not guild and e.status == "wanted" and ns.Store.Rank) and ns.Store.Rank(e.key) or nil
-  local nr1 = rank == 1
-  -- 1.2.2: a long title in another language shrinks step by step instead of being cut (288 px)
-  popup.title:SetWidth(W - 86 - 10)
-  Look.FitText(popup.title, guild and GuildTitle(e, guild) or HeaderFor(e, rank), nr1 and Look.FIT_TITLE_NR1 or Look.FIT_TITLE)
+local SetName, SetLine
+-- The only ways to write popup.name and popup.line (1.2.2): every refresh (ENEMY_UPDATED, GUILD_UPDATED,
+-- ENEMY_REKEYED) goes through them, so the name keeps shrinking instead of being cut and the line keeps the
+-- level in front (from popup.levelText/levelWarn, set by Fill), the order of what gives way and the fitting.
+SetName = function(e)
   Look.FitText(popup.name, Look.Name(e), Look.FIT_NAME)
-  popup.name:SetTextColor(Look.ClassRGB(e.class))
-  -- Level at the front of the text line (1.2.2; before: right of the name, it took up to 132 px from it),
-  -- above your level in the warning colour with the gap ("Level 63 (+3)")
-  local lt, warn = Look.LevelLine(unit, e.level)
-  popup.levelText, popup.levelWarn = lt, warn or nil
+end
+SetLine = function(e, guild)
+  local lt, warn = popup.levelText, popup.levelWarn
   local lead = ""
   if lt then
     local c = warn and Look.WARN or Look.BONE
@@ -1350,6 +1347,20 @@ local function Fill(e, unit, how, guild)
     local s = (guild == "hunt" and HuntLineFor(e, drop)) or (guild and GuildLineFor(e)) or OwnLine(e, drop)
     if Look.FitText(popup.line, lead .. s, drop < 2 and Look.FIT_LINE or Look.FIT_LINE_LAST) or (guild and guild ~= "hunt") then break end
   end
+end
+local function Fill(e, unit, how, guild)
+  local rank = (not guild and e.status == "wanted" and ns.Store.Rank) and ns.Store.Rank(e.key) or nil
+  local nr1 = rank == 1
+  -- 1.2.2: a long title in another language shrinks step by step instead of being cut (288 px)
+  popup.title:SetWidth(W - 86 - 10)
+  Look.FitText(popup.title, guild and GuildTitle(e, guild) or HeaderFor(e, rank), nr1 and Look.FIT_TITLE_NR1 or Look.FIT_TITLE)
+  SetName(e)
+  popup.name:SetTextColor(Look.ClassRGB(e.class))
+  -- Level at the front of the text line (1.2.2; before: right of the name, it took up to 132 px from it),
+  -- above your level in the warning colour with the gap ("Level 63 (+3)")
+  local lt, warn = Look.LevelLine(unit, e.level)
+  popup.levelText, popup.levelWarn = lt, warn or nil
+  SetLine(e, guild)
   popup.how = how
   SetEdge(nr1)
 
@@ -1552,7 +1563,7 @@ ns:On("ENEMY_UPDATED", function(key)
   local e = ns.Store.Get(key)
   if not e then Dismiss(); return end
   currentEntry = e
-  popup.line:SetText(OwnLine(e))
+  SetLine(e, false)
 end)
 
 ns:On("GUILD_UPDATED", function()
@@ -1560,7 +1571,7 @@ ns:On("GUILD_UPDATED", function()
   local g = currentHunt and Look.GCall("Hunt", current, "all") or Look.GCall("Get", current, "all")
   if not g then Dismiss(); return end
   currentEntry = g
-  popup.line:SetText(currentHunt and HuntLineFor(g) or GuildLineFor(g))
+  SetLine(g, currentHunt and "hunt" or true)
 end)
 
 -- The store moves an entry to a new key (same GUID, fuller name):
