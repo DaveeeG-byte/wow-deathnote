@@ -7,7 +7,7 @@
 -- the test checks both agree.
 -- Placeholders: {name} etc. stay as they are, order is free. Plural: {count|form1|form2...} with
 -- exactly as many forms as your language's rule (file head of your language). Check: see
--- tests/sprachen/LIESMICH-uebersetzer.md.
+-- TRANSLATING.md.
 -- Words that never change: DeathNote, WANTED, the /dn commands. Class, race and zone names come from
 -- the game. Tone: dry, a little grim, a notebook full of enemies; speak to the player informally.
 --

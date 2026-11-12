@@ -1,6 +1,6 @@
 package-as: DeathNote
 
-# Das Addon liegt im Unterordner DeathNote/, ins Zip kommt nur dieser Ordner.
+# The addon lives in the subfolder DeathNote/; only that folder goes into the zip.
 move-folders:
   DeathNote/DeathNote: DeathNote
 
@@ -11,3 +11,4 @@ manual-changelog:
 ignore:
   - tests
   - README.md
+  - TRANSLATING.md
