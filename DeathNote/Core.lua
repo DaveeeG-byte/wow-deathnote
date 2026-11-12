@@ -369,6 +369,8 @@ function Util.NameplatesOn()
     v = Call(_G.GetCVarBool, "nameplateShowEnemies")
   end
   if IsSecret(v) then return nil end
+  -- Known gap: nil (CVar unknown to the client) counts as "off" here, unlike a secret. The CVar exists on the
+  -- clients we support, so this is left as it is; treating nil as unknown would need a decision first.
   return v == true
 end
 
