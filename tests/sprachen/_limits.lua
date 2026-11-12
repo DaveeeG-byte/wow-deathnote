@@ -260,4 +260,13 @@ return {
   ACT_UNDO = { max = 19, field = "poster button 104 px, Friz 10, no wrap (same place as ACT_REVENGE)" },
   ACT_REVENGE_TAKE = { max = 24, field = "menu button 148 px, Friz 10" },
   -- <<< BOOK
+  -- Repute (1.3.0, Ranks.lua): the rank line where no rank name exists, and the path words. The field comes with the
+  -- rap sheet's page (repute concept 9: the line under the rank bar, about 300 px); the words also stand alone
+  -- (share lines, tooltips). Until that page exists the limits are the concept's: a word as short as a stamp.
+  REPUTE_LINE = { max = 32, field = "rank line under the rank bar, ~300 px (rap sheet page, not built yet)" },
+  PATH_R = { max = 16, field = "path word: in REPUTE_LINE and alone (rap sheet page, not built yet)" },
+  PATH_E = { max = 16, field = "path word: in REPUTE_LINE and alone (rap sheet page, not built yet)" },
+  PATH_J = { max = 16, field = "path word: in REPUTE_LINE and alone (rap sheet page, not built yet)" },
+  PATH_S = { max = 16, field = "path word: in REPUTE_LINE and alone (rap sheet page, not built yet)" },
+  PATH_NONE = { max = 16, field = "path word: in REPUTE_LINE and alone (rap sheet page, not built yet)" },
 }
