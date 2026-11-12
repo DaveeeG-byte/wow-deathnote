@@ -15,7 +15,45 @@
 -- Events: sightings (namesakes, with and without surname), own, pet's and others' PARTY_KILL, honour lines, revenge
 -- without a killing blow, deaths, revenge by hand and back, status, removal, duels (normal), instances, group, export
 -- and import, relogs, time jumps. Usage: luajit tests/test_ledger_diff.lua [seeds] [steps] [first seed]
+-- A third, counted widening of that exception: revenge by PLAYER_PVP_KILLS_CHANGED counts only when exactly one listed
+-- enemy is engaged (Attribution.OnPvPKillsChanged, same code in both versions). When a left-out namesake is among
+-- the recent tracker records, his book entry or tracker record may differ, so the revenge of that step may go to,
+-- or away from, any engaged entry: the first names engaged in that step (the new target, records I targeted or
+-- that targeted me within 10 s) are left out from then on as well (seeds 13, 115 and 148 of 200 x 300 hit this).
+-- Determinism: this LuaJIT seeds its string hash per process (and table keys hash by address), so the order of
+-- pairs differs from run to run even for a fresh process, and 1.2.2 itself is not deterministic: Tracker.ScanAll
+-- walks the nameplates with pairs, and with two surnameless namesakes in sight the one read last owns the shared
+-- tracker record. To make every run the same, pairs is replaced below by an iteration in sorted key order (numbers,
+-- then strings, then booleans; other keys after them in raw order) before the mock and either version is loaded.
+-- Without a git checkout or without commit 374cf7f the test ends with "skipped: ..." and exit 0 (tests/git_base.lua).
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
+
+-- deterministic pairs (see the head); __pairs is honoured like Lua 5.2 would
+do
+  local rawnext, sort, rank = next, table.sort, { number = 1, string = 2, boolean = 3 }
+  local function less(a, b)
+    local ra, rb = rank[type(a)], rank[type(b)]
+    if ra ~= rb then return ra < rb end
+    if ra == 3 then return (not a) and b end
+    return a < b
+  end
+  _G.pairs = function(t)
+    local mt = getmetatable(t)
+    if type(mt) == "table" and mt.__pairs then return mt.__pairs(t) end
+    local keys, other = {}, nil
+    for k in rawnext, t do
+      if rank[type(k)] then keys[#keys + 1] = k else other = other or {}; other[#other + 1] = k end
+    end
+    sort(keys, less)
+    if other then for _, k in ipairs(other) do keys[#keys + 1] = k end end
+    local i = 0
+    return function()
+      i = i + 1
+      local k = keys[i]
+      if k ~= nil then return k, t[k] end
+    end, t, nil
+  end
+end
 local M = require("mock_wow")
 local ROOT = (arg[0]:match("^(.*)/tests/") or ".")
 
@@ -97,6 +135,24 @@ local function twoInSight(taint)
   end
 end
 
+-- revenge by PLAYER_PVP_KILLS_CHANGED next to a left-out namesake (see the head): read before the step on this version
+local cascadeMarks = 0
+local function pvpKillsCascade(ns, tok, taint)
+  local A, T = ns.Attribution, ns.Tracker
+  if not (A and T and T.Recent) then return end
+  local t, names, near = GetTime(), {}, false
+  local u = M.units[tok]
+  if u and u.exists and u.isPlayer and u.name then names[#names + 1] = u.name end
+  for _, r in ipairs(T.Recent(A.REVENGE_ENGAGE)) do
+    if r.name and ((r.iTargeted and t - r.iTargeted <= 10) or (r.targetedMe and t - r.targetedMe <= 10)) then
+      names[#names + 1] = r.name
+    end
+  end
+  for _, n in ipairs(names) do if taint[n] then near = true end end
+  if not near then return end
+  for _, n in ipairs(names) do if not taint[n] then taint[n] = true; cascadeMarks = cascadeMarks + 1 end end
+end
+
 local function namesakeStep(ns, x, att, name, guid, tok, withSur, taint)
   local function mark(n) if n and not taint[n] then taint[n] = true end end
   if x <= 60 then twoInSight(taint) end
@@ -117,6 +173,7 @@ local function namesakeStep(ns, x, att, name, guid, tok, withSur, taint)
   elseif x <= 45 then
     mark(namesakeUnit(ns, M.units[tok]))
     for k, u in pairs(M.units) do if k:find("^nameplate") then mark(namesakeUnit(ns, u)) end end
+    pvpKillsCascade(ns, tok, taint)
   elseif x <= 60 then
     local r = ns.Tracker.ByGUID(guid)
     if (not r or not r.surname) and otherListed(ns, name, guid) then mark(name) end
@@ -297,7 +354,8 @@ io.write(("%-18s %d seeds x %d steps, %d checkpoints (book same: %d), %d bountie
 io.write(("  per GUID: %d book entries checked, %d standings: me above booked + revenge + hand %d, two GUIDs under one key %d, "
   .. "one GUID under two keys %d\n"):format(G.join, G.obs, G.over, G.mixed, G.split))
 io.write(("  exception namesakes without surname: %d of %d seeds, %d of %d entry comparisons left out (%d of them differ), "
-  .. "%d of %d journal rows\n"):format(exSeeds, SEEDS, exEntries, allEntries, exDiffer, exRows, allRows))
+  .. "%d of %d journal rows; %d first names added by the pvpkills rule\n"):format(exSeeds, SEEDS, exEntries, allEntries, exDiffer,
+  exRows, allRows, cascadeMarks))
 if firstHigher then io.write("  ROT: bounty higher than 1.2.2: " .. firstHigher .. "\n") end
 if firstBook then io.write("  ROT: book differs from 1.2.2: " .. firstBook .. "\n") end
 if G.firstOver then io.write("  ROT: me above the count per GUID: " .. G.firstOver .. "\n") end
