@@ -66,6 +66,7 @@ ns.Theme.Register("notebook", {
     border  = "Interface\\Tooltips\\UI-Tooltip-Border",
     coin    = "Interface\\MoneyFrame\\UI-GoldIcon",    -- coin on a killer with a bounty
     gear    = "Interface\\Buttons\\UI-OptionsButton",  -- house rules button
+    slip    = "slip.tga",       -- 1.3.0: torn-out strip of a page under the on-screen notice (no tint: falls back to tint.paper)
   },
   tint = {},                    -- the black book's textures carry their own colours
   stamp = {
@@ -96,6 +97,7 @@ ns.Theme.Register("notebook", {
     white       = { 0.93, 0.90, 0.82, 1 },     -- inside of a check box
     classes     = { 0.3, 0.3, 0.3, 1 },
     icon        = { 0.5, 0.05, 0.05, 1 },
+    slip        = { 0.93, 0.90, 0.82, 0.96 },  -- notice slip (style "slip")
   },
   -- role -> kind in Locale.FONTS: title Skurri, head and hand Morpheus, body Friz Quadrata, type Nimrod
   font = { title = "title", head = "hand", hand = "hand", body = "body", type = "type" },

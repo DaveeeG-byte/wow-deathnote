@@ -168,6 +168,26 @@ magick -size 64x32 xc:white -fill black \
 magick -size 64x32 xc:'#f0e6c3' "$TMP/tape_a.png" -alpha off -compose copy_opacity -composite -compose over "$TMP/tape.png"
 tga "$TMP/tape.png" "$OUT/tape.tga"
 
+# 1.3.0) Notice slip 256x64: a strip torn out of the notebook page (bone white, grain, slightly darker rim),
+#    ragged short ends that also fade out, top and bottom edge a little uneven. Shown stretched to 352x64 by
+#    Extras.lua (on-screen notice, style "slip"); themes tint it like the paper.
+magick -seed 91 -size 256x64 plasma:fractal -blur 0x4 -colorspace gray -auto-level +level 90%,100% \
+  -seed 92 -attenuate 0.25 +noise Gaussian -colorspace gray -blur 0x0.4 -colorspace sRGB \
+  \( -size 256x64 xc:'#f2ebdb' \) -compose multiply -composite \
+  \( -size 256x64 xc:white -fill none -stroke '#b8ab92' -strokewidth 6 -draw 'rectangle 0,0 255,63' -blur 0x4 \) \
+  -compose multiply -composite -alpha off "$TMP/slip_rgb.png"
+magick -size 256x64 xc:black -fill white -draw "polygon \
+  20,2 40,3 60,2 80,1 100,1 120,2 140,1 160,1 180,2 200,1 220,1 245,1 246,3 246,5 243,7 242,9 239,11 \
+  237,13 239,15 245,17 243,19 244,21 245,23 242,25 241,27 240,29 239,31 243,33 243,35 242,37 243,39 \
+  244,41 243,43 242,45 237,47 241,49 243,51 242,53 246,55 245,57 242,59 242,61 242,63 240,62 220,61 \
+  200,61 180,62 160,60 140,62 120,60 100,62 80,61 60,61 40,60 20,62 13,63 14,61 18,59 16,57 13,55 \
+  16,53 12,51 10,49 8,47 10,45 14,43 16,41 14,39 15,37 18,35 15,33 13,31 9,29 11,27 8,25 9,23 14,21 \
+  13,19 18,17 14,15 13,13 13,11 10,9 13,7 10,5 10,3 12,1" -blur 0x0.8 \
+  \( -size 64x256 gradient:black-white -rotate 90 -fx 'min(1,min(u*256/40,(1-u)*256/40))' \) \
+  -compose multiply -composite -colorspace gray "$TMP/slip_a.png"
+magick "$TMP/slip_rgb.png" "$TMP/slip_a.png" -alpha off -compose copy_opacity -composite -compose over "$TMP/slip.png"
+tga "$TMP/slip.png" "$OUT/slip.tga"
+
 for f in "$OUT"/*.tga; do magick identify -format '%f %wx%h %[channels] depth=%z compress=%C\n' "$f"; done
 # 1.1.0) Triangle 32x32 for the sections of the "By guildmate" view: white (tinted in the game), points right;
 #    when expanded the UI turns it 90 degrees to point down. Slightly irregular, as if drawn with a quill.

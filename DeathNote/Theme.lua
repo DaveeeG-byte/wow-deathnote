@@ -79,7 +79,7 @@ Theme.LOOK_NAMES = { ink = "INK", accent = "RED", accentSmall = "RED_INK", accen
   onCover = "BONE", faded = "FADED", black = "BLACK", tabOff = "TAB_OFF", warn = "WARN" }
 -- textures of the theme; value: file in Media\ ("paper.tga") or a client path ("Interface\\...")
 Theme.TEXTURES = { "paper", "page", "cover", "ink", "mugshot", "edge", "check", "pin", "skull", "tape", "tri",
-  "border", "coin", "gear" }
+  "border", "coin", "gear", "slip" }
 -- tints (SetVertexColor after the texture): every texture key plus "stamp" (all stamp pictures); absent = none
 Theme.TINTS = { "stamp" }
 for _, k in ipairs(Theme.TEXTURES) do Theme.TINTS[#Theme.TINTS + 1] = k end
@@ -87,7 +87,7 @@ for _, k in ipairs(Theme.TEXTURES) do Theme.TINTS[#Theme.TINTS + 1] = k end
 Theme.STAMPS = { "nr1", "rache", "pardon", "suspect", "guild", "hunt" }
 -- fallback colours: shown instead of a texture whose file is missing (name = texture key or a variant)
 Theme.FALLBACKS = { "paper", "page", "cover", "coverDark", "ink", "inkRed", "mugshot", "mugshotDark", "edge",
-  "check", "pin", "skull", "tape", "tri", "gear", "stamp", "stampNotice", "white", "classes", "icon" }
+  "check", "pin", "skull", "tape", "tri", "gear", "stamp", "stampNotice", "white", "classes", "icon", "slip" }
 -- font roles -> kind in Locale.FONTS (title, hand, body, type)
 Theme.FONTS = { "title", "head", "hand", "body", "type" }
 Theme.FONT_KINDS = { title = true, hand = true, body = true, type = true }
