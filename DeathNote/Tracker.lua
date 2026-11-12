@@ -14,6 +14,10 @@ Tracker.MAX = 40            -- hard cap of the buffer
 Tracker.WRITE_EVERY = 5     -- seconds between lastSeen writes per listed enemy
 Tracker.ENCOUNTER_GAP = 60  -- seconds without sighting that start a new "sighting"
 Tracker.INFO_REFRESH = 10   -- seconds before identity fields of a record are read again
+-- 1.3.0: a record that leaves the buffer stays findable by its GUID for a while (level, class, guild of a victim
+-- killed by a DoT minutes after the last sighting). The record moves over as it is, nothing is copied.
+Tracker.RECALL_TTL = 900    -- seconds a record stays in the recall
+Tracker.RECALL_MAX = 50     -- hard cap of the recall
 
 local buffer, count = {}, 0   -- key -> record
 local byGUID = {}             -- guid -> key (buffer only)
@@ -21,16 +25,43 @@ local plates = {}             -- active nameplate tokens
 local lastWrite = {}          -- key -> GetTime of last Store write
 local lastFire = {}           -- key -> GetTime of last ENEMY_SPOTTED (same-frame dedupe)
 local lastPrune = 0
+local recall, recallN = {}, 0  -- guid -> record that left the buffer
 Tracker.active = true
 
 local function now() return GetTime() end
+
+local function keep(r)
+  local g = r.guid
+  if type(g) ~= "string" then return end
+  if not recall[g] then
+    if recallN >= Tracker.RECALL_MAX then
+      local t, oldG, oldT = now(), nil, nil
+      for k, x in pairs(recall) do
+        if t - x.t > Tracker.RECALL_TTL then recall[k] = nil; recallN = recallN - 1
+        elseif not oldT or x.t < oldT then oldG, oldT = k, x.t end
+      end
+      if recallN >= Tracker.RECALL_MAX and oldG then recall[oldG] = nil; recallN = recallN - 1 end
+    end
+    recallN = recallN + 1
+  end
+  recall[g] = r
+end
 
 local function remove(key)
   local r = buffer[key]
   if not r then return end
   if r.guid and byGUID[r.guid] == key then byGUID[r.guid] = nil end
+  keep(r)
   buffer[key] = nil
   count = count - 1
+end
+
+-- a record by GUID from the buffer's recent past (the buffer itself first: Tracker.ByGUID)
+function Tracker.Recall(guid)
+  if IsSecret(guid) or type(guid) ~= "string" then return nil end
+  local r = recall[guid]
+  if r and now() - r.t <= Tracker.RECALL_TTL then return r end
+  return nil
 end
 
 function Tracker.Prune(force)
@@ -52,6 +83,7 @@ end
 
 function Tracker.Reset()
   buffer, count, byGUID, plates, lastWrite, lastFire, lastPrune = {}, 0, {}, {}, {}, {}, 0
+  recall, recallN = {}, 0
 end
 
 function Tracker.Count() return count end
@@ -105,7 +137,8 @@ local function readInfo(unit, r)
   local raceLoc, race = Call(UnitRace, unit)
   r.raceLoc, r.race = Str(raceLoc) or r.raceLoc, Str(race) or r.race
   local level = Util.Num(Call(UnitLevel, unit))
-  if level and level > 0 then r.level = level end
+  -- 1.3.0: "??" (a level below 1) marks a skull; the last known level stays
+  if level and level > 0 then r.level = level; r.skull = nil elseif level and level < 0 then r.skull = true end
   local sex = Util.Num(Call(UnitSex, unit))
   if sex then r.sex = sex end
   local guild = Str(Call(GetGuildInfo, unit))
@@ -175,10 +208,16 @@ function Tracker.OnUnit(unit, how)
   if not r.infoAt or t - r.infoAt > Tracker.INFO_REFRESH then
     readInfo(unit, r)
     if r.guid then byGUID[r.guid] = key end
+    -- 1.3.0 (Ledger.lua): a victim known by first name only takes the full name; set only while there are such
+    local lh = Tracker.ledgerHook
+    if lh then lh(r) end
   end
   if targetsMe(unit) then r.targetedMe = t end
   if unit == "target" then r.iTargeted = t end
   if listed then spotted(key, unit, how or "other", r) end
+  -- 1.3.0 (Ledger.lua): an own victim in sight; set only while the victim alarm is on and there are victims
+  local vh = Tracker.victimHook
+  if vh then vh(key, unit, how or "other") end
   return r
 end
 
