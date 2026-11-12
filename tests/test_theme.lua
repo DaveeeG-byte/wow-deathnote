@@ -309,4 +309,29 @@ test("harbor and trade in a language without theme words (frFR, ruRU, plPL): onl
   M.locale = saved
 end)
 
+-- 1.3.0: every show word stands in one place, the table Locale.THEME_KEYS; no file adds one from outside
+test("Show words only in Locale.THEME_KEYS (no file registers one from outside)", function()
+  local dirs, files = { "", "Locales/", "Locales/Themes/", "Themes/" }, {}
+  for _, d in ipairs(dirs) do
+    local q = io.popen('ls "' .. DIR .. d .. '" 2>/dev/null')
+    for f in q:lines() do if f:match("%.lua$") then files[#files + 1] = d .. f end end
+    q:close()
+  end
+  local bad = {}
+  for _, f in ipairs(files) do
+    local h = io.open(DIR .. f)
+    local src = h and h:read("*a") or ""
+    if h then h:close() end
+    for line in src:gmatch("[^\n]+") do
+      local code = line:gsub("%-%-.*$", "")
+      if code:find("THEME_KEYS%s*%.%s*[%w_]+%s*=[^=]") or code:find("THEME_KEYS%s*%b[]%s*=[^=]")
+        or (code:find("THEME_KEYS%s*=[^=]") and f ~= "Locale.lua") then
+        bad[#bad + 1] = f .. ": " .. line
+      end
+    end
+  end
+  eq(#files > 20, true)
+  eq(table.concat(bad, " | "), "")
+end)
+
 M.done("test_theme")
