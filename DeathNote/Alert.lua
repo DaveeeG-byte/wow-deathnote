@@ -574,6 +574,13 @@ function Look.TipIfCut(owner, fs)
   return owner
 end
 
+-- the own tooltip of owner shows fs whole (list rows, deeds, victims): the same mark as Look.TipIfCut sets
+-- (fs.tipOwner), without a hook; the layout guard hovers owner and checks it
+function Look.TipShows(owner, fs)
+  fs.tipOwner = owner
+  return owner
+end
+
 -- frame opened at the cursor: clamped to the screen and opening away from the nearer edges
 -- (cursor right of the middle: grows to the left; in the lower half: grows upwards)
 function Look.KeepOnScreen(frame, x, y)

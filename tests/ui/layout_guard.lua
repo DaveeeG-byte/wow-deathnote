@@ -136,15 +136,34 @@ local function run(code)
     if t - b <= 1 then return nil end
     return l, b, r, t
   end
+  -- a way to read a cut text whole: only the mark Look.TipIfCut (or Look.TipShows) sets on the text, fs.tipOwner,
+  -- not any OnEnter of an ancestor (that may only tint a border or show something else). The mark is checked:
+  -- hovering the owner must give a tooltip with every word of the whole text (fs.full, else the text).
+  local GT = G.GameTooltip
+  local function tipText(owner)
+    local lines = {}
+    local keepO, keepT, keepA, keepD = GT.SetOwner, GT.SetText, GT.AddLine, GT.AddDoubleLine
+    GT.SetOwner = function() lines = {} end
+    GT.SetText = function(_, t) lines = { tostring(t) } end
+    GT.AddLine = function(_, t) lines[#lines + 1] = tostring(t) end
+    GT.AddDoubleLine = function(_, a, b) lines[#lines + 1] = tostring(a) .. " " .. tostring(b) end
+    local enter, leave = owner._scripts.OnEnter, owner._scripts.OnLeave
+    if enter then pcall(enter, owner) end
+    if leave then pcall(leave, owner) end
+    GT.SetOwner, GT.SetText, GT.AddLine, GT.AddDoubleLine = keepO, keepT, keepA, keepD
+    return table.concat(lines, "\n")
+  end
+  local function plain(t) return (tostring(t):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
   local function hasTipWay(fs)
-    if fs.tipOwner and fs.tipOwner:IsVisible() then return true end
-    local o = fs._parent
-    for _ = 1, 3 do
-      if not o then break end
-      if o._scripts and (o._scripts.OnEnter) then return true end
-      o = o._parent
+    local o = fs.tipOwner
+    if not (o and o:IsVisible()) then return false end
+    local tip = plain(tipText(o))
+    for word in plain(fs.full or fs._text):gmatch("%S+") do
+      -- "Anna," in the text, "Anna" on its own line in the tooltip (ASCII punctuation, the middle dot, the ellipsis)
+      word = word:gsub("…$", ""):gsub("^·", ""):gsub("^%p+", ""):gsub("%p+$", "")
+      if word ~= "" and not tip:find(word, 1, true) then return false, word end
     end
-    return false
+    return true
   end
 
   local function scan(where, panel, opts)
@@ -159,7 +178,10 @@ local function run(code)
         local cut = f.IsTruncated and f:IsTruncated()
         if cut then
           if under(f, rawget(G, "DeathNoteAlert") or {}) then note("CUT", where, f, "cut in the alarm popup (no tooltip possible)")
-          elseif not hasTipWay(f) then note("CUT", where, f, "cut without tooltip") end
+          else
+            local okTip, word = hasTipWay(f)
+            if not okTip then note("CUT", where, f, word and ("cut, its tooltip lacks '" .. word .. "'") or "cut without tooltip") end
+          end
         end
         -- FLOW
         if f._wrap ~= false and not (f._maxl and f._maxl > 0) and BM.EffWidth(f) and BM.Lines(f) > 1 and not scrollClip(f) then

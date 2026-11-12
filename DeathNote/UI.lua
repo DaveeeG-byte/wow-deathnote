@@ -851,6 +851,8 @@ function UX.MakeRow(parent, i)
   r.sub:SetPoint("RIGHT", -12, 0)
   r.sub:SetJustifyH("LEFT")
   r.sub:SetWordWrap(false)
+  Look.TipShows(r, r.name)   -- RowEnter shows a cut name and sub line whole
+  Look.TipShows(r, r.sub)
 
   r.mark = Look.Text(r, "body", 10, Look.RED_INK)
   r.mark:SetPoint("BOTTOMRIGHT", -6, -1)
@@ -1161,7 +1163,8 @@ function GF.HuntTip(h)
   if who ~= "" then tip[#tip + 1] = who end
   if n > 0 then tip[#tip + 1] = Fmt(L.HUNT_ROW_CALLS, { count = n, names = table.concat(names, ", ") }) end
   if type(h.why) == "string" and h.why ~= "" then tip[#tip + 1] = Fmt(L.HUNT_REASON, { reason = h.why }) end
-  if type(h.since) == "number" then tip[#tip + 1] = Fmt(L.TIP_RELEASED_AT, { time = Look.When(h.since) }) end
+  -- 1.2.2: with the age the row shows ("1 day ago"), so a cut row line is whole in its tooltip
+  if type(h.since) == "number" then tip[#tip + 1] = Look.Join(Fmt(L.TIP_RELEASED_AT, { time = Look.When(h.since) }), Look.Ago(h.since)) end
   local ls = type(h.lastSeen) == "table" and h.lastSeen or nil
   local seen = ls and Look.Ago(ls.t)
   tip[#tip + 1] = seen and Fmt(L.ROW_SEEN, { time = seen }) or L.ROW_NOT_SEEN
@@ -1629,6 +1632,7 @@ function UX.BuildPoster()
     b.tagged = false
     b:SetScript("OnEnter", DeedEnter)
     b:SetScript("OnLeave", GameTooltip_Hide)
+    Look.TipShows(b, b.text)
     E.lines[i] = b
   end
 
@@ -1689,7 +1693,7 @@ function UX.BuildPoster()
   E.victimsHit:SetScript("OnEnter", CandEnter)
   E.victimsHit:SetScript("OnLeave", CandLeave)
   E.victimsHit:Hide()
-  E.victims.tipOwner = E.victimsHit
+  Look.TipShows(E.victimsHit, E.victims)
 
   -- Stamps (pre-rotated textures). No. 1 / Pardoned / Suspect on the lower half of the photo,
   -- revenge next to the bounty: no stamp lies on text.
@@ -2413,7 +2417,8 @@ function GF.FillHunt(h)
   E.victims:Show()
   -- 1.2.2: the whole sentence with full name and time always in the tooltip (truncated with long first names and the
   -- wide label in ruRU/ukUA; with two anchors only the client knows whether it is truncated)
-  E.victimsHit.tip = { lb and Fmt(L.POSTER_TAKEN_BY, { name = tostring(lb.by), time = Look.When(lb.t) }) or taken }
+  -- (the shown sentence with the full name, then the exact time)
+  E.victimsHit.tip = lb and { Fmt(L.POSTER_TAKEN_BY, { name = tostring(lb.by), time = Look.Ago(lb.t) }), Look.When(lb.t) } or { taken }
   E.victimsHit:Show()
   GF.ShowStamp(E.stampNr1, false)
   GF.Stamp(E.stampOther, "hunt")
