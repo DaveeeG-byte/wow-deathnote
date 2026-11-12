@@ -1378,7 +1378,8 @@ end
 -- 1.3.0: text key of the standing in the line of the book, per state (suspects keep the line of 1.2.2)
 local SCORE_LINE = { open = "ALERT_LINE_STANDING", even = "ALERT_LINE_STANDING_EVEN", ahead = "ALERT_LINE_STANDING_AHEAD" }
 
--- drop (1.2.2): what gives way first when the line does not fit in two lines: 1 = the zone, 2 = also "last ..."
+-- drop (1.2.2): what gives way first when the line does not fit in two lines: 1 = the zone, 2 = also "last ...",
+-- 3 (1.3.0) = also the word for an even or overpaid standing (the score itself stays)
 local function LineFor(e, drop)
   drop = drop or 0
   local place = drop < 1 and Look.LastPlace(e)
@@ -1403,7 +1404,7 @@ local function LineFor(e, drop)
   -- a suspect, the line of 1.2.2
   local score, mine, _, state = Look.Score(e.key)
   if score and SCORE_LINE[state] then
-    if mine > 0 then s = Fmt(L[SCORE_LINE[state]], { text = s, score = score }) end
+    if mine > 0 then s = Fmt(L[drop < 3 and SCORE_LINE[state] or SCORE_LINE.open], { text = s, score = score }) end
   elseif (e.revenge or 0) > 0 then
     s = Fmt(L.ALERT_LINE_REVENGE, { text = s, times = Look.Times(e.revenge) })
   end
@@ -1518,10 +1519,12 @@ SetLine = function(e, guild)
   -- Text line in two lines at most; if it does not fit, first the place gives way, then "last" (own book)
   -- or the long reason, then the second name (hit list); last of all 10 pt
   -- (the guild line has nothing that gives way: it takes the last step, 10 pt and below, at once)
-  for drop = 0, 2 do
+  -- 1.3.0: the line of the own book has a fourth step (drop 3), the others end at 2
+  local top = guild and 2 or 3
+  for drop = 0, top do
     local s = (guild == "victim" and VictimLineFor(e)) or (guild == "hunt" and HuntLineFor(e, drop))
       or (guild and GuildLineFor(e)) or OwnLine(e, drop)
-    local last = drop == 2 or (guild and guild ~= "hunt")
+    local last = drop == top or (guild and guild ~= "hunt")
     if Look.FitText(popup.line, lead .. s, last and Look.FIT_LINE_LAST or Look.FIT_LINE) or last then break end
   end
 end
