@@ -283,7 +283,7 @@ ns:RegisterEvent("NAME_PLATE_UNIT_ADDED", function(_, unit)
   if Util.platesOn ~= true then
     local was = Util.platesOn
     Util.CheckPlates("NAME_PLATE_UNIT_ADDED")
-    if Util.platesOn ~= was then Util.LogPlateEvent("NAME_PLATE_UNIT_ADDED").switched = true end
+    if was ~= nil and Util.platesOn ~= was then Util.LogPlateEvent("NAME_PLATE_UNIT_ADDED").switched = true end
   end
   if Tracker.active then Tracker.OnUnit(unit, "nameplate") end
 end)

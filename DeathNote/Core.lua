@@ -781,9 +781,10 @@ end)
 -- glue name on others, so the name is not trusted: every CVAR_UPDATE compares the value (one CVar read; the
 -- event is rare outside the login). Arguments that look like a nameplate CVar are kept for /dn probe.
 ns:RegisterEvent("CVAR_UPDATE", function(_, a1, a2)
-  local changed = Util.platesOn
+  local was = Util.platesOn
   Util.CheckPlates("CVAR_UPDATE")
-  changed = changed ~= Util.platesOn
+  -- the first read after loading (unknown -> known) is no switch
+  local changed = was ~= nil and was ~= Util.platesOn
   local named = not IsSecret(a1) and type(a1) == "string" and a1:lower():find("plate", 1, true) ~= nil
   if changed or named then
     local e = Util.LogPlateEvent("CVAR_UPDATE", a1, a2)
