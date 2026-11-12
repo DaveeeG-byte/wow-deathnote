@@ -621,6 +621,7 @@ function Locale.OnActivate(fn)
   if Locale.code then
     local ok, err = pcall(fn, Locale.code)
     if not ok then report(err) end
+    if Locale.held then listeners[#listeners + 1] = fn end   -- 1.3.0: runs again on Locale.Reactivate
     return
   end
   listeners[#listeners + 1] = fn
@@ -644,14 +645,89 @@ function Locale.Activate(choice)
   Locale.choice = Locale.Normalize(choice)        -- nil: automatic (the client's language)
   Locale.own, Locale.total, Locale.extra = own, total, extra
   Locale.fallback = own < total      -- some texts are English
-  registry = nil                     -- the other builders (and their strings) go to the GC
-  words = nil                        -- likewise the words of the themes
+  -- 1.3.0: a new installation keeps the builders until the first-start dialog has asked (Start.lua); everybody
+  -- else drops them here as before (one function call more at ADDON_LOADED, nothing kept)
+  local Start = ns.Start
+  local hold = false
+  if Start and Start.Fresh then
+    local ok, v = pcall(Start.Fresh)
+    hold = ok and v == true
+  end
+  Locale.held = hold
+  if not hold then
+    registry = nil                   -- the other builders (and their strings) go to the GC
+    words = nil                      -- likewise the words of the themes
+  end
   for i = 1, #listeners do
     local ok, err = pcall(listeners[i], code)
     if not ok then report(err) end
   end
-  listeners = {}
+  if not hold then listeners = {} end
   return code
+end
+
+---------------------------------------------------------------------------
+-- 1.3.0: the first start. Only while the builders are held (a new installation, until the dialog has asked):
+-- the dialog reads the texts of any language (Locale.Text) and may switch the language and the theme once
+-- without a /reload (Locale.Reactivate), as long as nothing of the book, the alarm or the notice is built yet.
+-- Locale.Release drops the builders, the words of the themes and the listeners (as Activate does for everyone else).
+---------------------------------------------------------------------------
+-- frames whose look and texts are set when they are built: once one of them exists, a switch needs a /reload
+Locale.BUILT_FRAMES = { "DeathNoteFrame", "DeathNoteAlert", "DeathNoteBanner", "DeathNoteFlash" }
+
+function Locale.Held() return Locale.held == true and registry ~= nil end
+
+-- true when something with a look or texts is built already (then only a /reload switches)
+function Locale.Built()
+  for _, name in ipairs(Locale.BUILT_FRAMES) do
+    if global(name) ~= nil then return true end
+  end
+  return false
+end
+
+-- A full text table of `code` (English below it, plus the words of `theme`, an id of Theme.Words), or nil when the
+-- builders are gone. A new table each call; Locale.themeWords stays the one of the active language.
+function Locale.Text(code, theme)
+  if not Locale.Held() then return nil end
+  code = Locale.Normalize(code) or Locale.DEFAULT
+  if not registry[code] then code = Locale.DEFAULT end
+  local keep = Locale.themeWords
+  local t = Locale.Build(code, {}, theme)
+  Locale.themeWords = keep
+  return t, code
+end
+
+-- Builds the language `choice` (a code or nil = automatic) with the theme `theme` (an id or nil = the stored one)
+-- into ns.L again and runs the activation listeners once more. Only while held and while nothing is built.
+-- Returns the code, or nil and the reason ("released" or "built").
+function Locale.Reactivate(choice, theme)
+  if not (Locale.code and Locale.Held()) then return nil, "released" end
+  if Locale.Built() then return nil, "built" end
+  local code = Locale.Resolve(choice)
+  if not registry[code] then code = Locale.DEFAULT end
+  local Theme, words = ns.Theme, nil
+  if Theme and Theme.Reactivate then
+    local ok, id = pcall(Theme.Reactivate, theme)
+    if ok then words = Theme.Words and Theme.Words(id) or nil else report(id) end
+  end
+  local _, own, total, extra = Locale.Build(code, L, words)
+  Locale.code = code
+  Locale.choice = Locale.Normalize(choice)
+  Locale.own, Locale.total, Locale.extra = own, total, extra
+  Locale.fallback = own < total
+  for i = 1, #listeners do
+    local ok, err = pcall(listeners[i], code)
+    if not ok then report(err) end
+  end
+  return code
+end
+
+-- The dialog has asked: from now on as for everybody (the builders go to the GC, a switch takes a /reload)
+function Locale.Release()
+  Locale.held = false
+  registry = nil
+  words = nil
+  listeners = {}
 end
 
 -- ADDON_LOADED of this addon: the SavedVariables are there. Own small frame, because Core.lua

@@ -342,6 +342,13 @@ function Theme.Activate(choice)
   return id
 end
 
+-- 1.3.0 first start: activates `choice` once more and fills ns.Look again in place. Only through
+-- Locale.Reactivate (which guards it: a new installation, nothing built yet). Returns the id.
+function Theme.Reactivate(choice)
+  Theme.active = nil
+  return Theme.Activate(choice)
+end
+
 -- The words of the active theme: the id of its overlay in Locales\Themes\<id>.lua, or nil
 function Theme.Words(id)
   id = id or current()
