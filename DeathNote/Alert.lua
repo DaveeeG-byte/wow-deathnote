@@ -484,6 +484,11 @@ function Look.FitText(fs, text, opts)
       else c = w > width + 0.5 end
     end
     if not c and wrapped then c = wordTooWide() end
+    -- 1.5 px margin on one line: the client rounds glyphs to pixels, a text that just fits may still get "…"
+    if not c and not wrapped then
+      local w = Look.TextW(fs)
+      if w and width > 0 and w > width - 1.5 then c = true end
+    end
     return c
   end
   if fs.SetMaxLines then fs:SetMaxLines(lines) end

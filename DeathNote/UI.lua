@@ -2379,14 +2379,10 @@ function GF.FillHunt(h)
   local taken = lb and Fmt(L.POSTER_TAKEN_BY, { name = Look.First(lb.by), time = Look.Ago(lb.t) }) or L.POSTER_TAKEN_NOBODY
   E.victims:SetText(taken)
   E.victims:Show()
-  -- 1.2.2: gekuerzt (lange Vornamen, Etikett in ruRU/ukUA): ganzer Satz mit vollem Namen und Zeit im Tooltip
-  if Truncated(E.victims) then
-    E.victimsHit.tip = { lb and Fmt(L.POSTER_TAKEN_BY, { name = tostring(lb.by), time = Look.When(lb.t) }) or taken }
-    E.victimsHit:Show()
-  else
-    E.victimsHit.tip = nil
-    E.victimsHit:Hide()
-  end
+  -- 1.2.2: der ganze Satz mit vollem Namen und Zeitpunkt immer im Tooltip (gekuerzt bei langen Vornamen und dem
+  -- breiten Etikett in ruRU/ukUA; ob gekuerzt, weiss bei zwei Ankern nur der Client)
+  E.victimsHit.tip = { lb and Fmt(L.POSTER_TAKEN_BY, { name = tostring(lb.by), time = Look.When(lb.t) }) or taken }
+  E.victimsHit:Show()
   GF.ShowStamp(E.stampNr1, false)
   GF.Stamp(E.stampOther, "hunt")
   GF.ShowStamp(E.stampOther, true)
