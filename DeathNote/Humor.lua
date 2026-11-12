@@ -219,6 +219,7 @@ Humor.STAMP_FRAME = STAMP_FRAME
 local GLOBALS = {
   date = function() return date end, time = function() return time end, GetTime = function() return GetTime end,
   GetGuildInfo = function() return GetGuildInfo end, UnitName = function() return UnitName end,
+  IsInGuild = function() return IsInGuild end,
   C_Timer = function() return C_Timer end,
 }
 local function global(name)
@@ -565,6 +566,19 @@ function Humor.CheckGuild()
   return member
 end
 
+-- 1.3.0 (first-start dialog, Start.lua): member of the guild, in every language. true / false, or nil while the
+-- client cannot say yet (in a guild, but its name is not there yet; or a secret)
+function Humor.GuildMember()
+  local g = Util.Call(global("GetGuildInfo"), "player")
+  if Util.IsSecret(g) then return nil end
+  g = Util.Str(g)
+  if g then return g == GUILD_NAME end
+  local inGuild = Util.Call(global("IsInGuild"))
+  if Util.IsSecret(inGuild) or inGuild == nil then return nil end
+  if inGuild == true then return nil end
+  return false
+end
+
 function Humor.OnReady()
   Humor.CheckGuild()
   if not On() then return end
@@ -714,7 +728,11 @@ if ns.Locale and ns.Locale.OnActivate then
     -- Memory: only the texts of the active language stay (none in the 19 other languages); the language
     -- changes only with /reload, then the file is loaded anew
     local code = ns.Locale.code
-    for c in pairs(TEXTS) do if c ~= code then TEXTS[c] = nil end end
+    -- 1.3.0: while the first-start dialog may still switch the language (Locale.Held), both stay
+    local held = ns.Locale.Held and ns.Locale.Held()
+    if not held then
+      for c in pairs(TEXTS) do if c ~= code then TEXTS[c] = nil end end
+    end
     local t = T()
     if t and ns.UI then ns.UI.HELP_FOOT = t.MANUAL end
   end)

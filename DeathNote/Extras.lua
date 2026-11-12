@@ -608,7 +608,11 @@ end
 ns:On("READY", function()
   ready = true
   HookTooltip()
-  -- 1.3.0: build the notice now, hidden, so its first appearance equals every later one
+  -- 1.3.0: build the notice now, hidden, so its first appearance equals every later one. On a new installation
+  -- the first-start dialog may still switch language and cover: then Start.lua builds it once it has asked
+  -- (a notice before that builds it on its own, Banner)
+  local Start = ns.Start
+  if Start and Start.Holding and Start.Holding() then return end
   if not banner then BuildBanner() end
 end)
 ns:On("DEATH_RECORDED", OnDeath)

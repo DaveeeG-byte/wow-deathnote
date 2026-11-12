@@ -438,7 +438,7 @@ end
 -- 1.2.0: the lines come from the language table (HELP_*), in the active language; ns.HELP is built
 -- at activation. The German subcommands stay valid forever, the English ones work in every language.
 local HELP_KEYS = { "HELP_TOGGLE", "HELP_ADD", "HELP_DEL", "HELP_QUIET", "HELP_TEST", "HELP_GUILD", "HELP_FRIENDS",
-  "HELP_SYNC", "HELP_HUNT", "HELP_CALLOFF", "HELP_BOUNTY", "HELP_LANG", "HELP_THEME", "HELP_PROBE", "HELP_PROBE_COMBATLOG", "HELP_DEBUG",
+  "HELP_SYNC", "HELP_HUNT", "HELP_CALLOFF", "HELP_BOUNTY", "HELP_LANG", "HELP_THEME", "HELP_START", "HELP_PROBE", "HELP_PROBE_COMBATLOG", "HELP_DEBUG",
   "HELP_HELP", "HELP_SILENT_ZONES" }
 ns.HELP_KEYS = HELP_KEYS
 local HELP = {}
@@ -723,6 +723,9 @@ function ns.HandleSlash(msg)
     slashLang(rest)
   elseif cmd == "theme" or cmd == "einband" or cmd == "cover" then
     slashTheme(rest)
+  elseif cmd == "start" then
+    -- 1.3.0: the first-start dialog again (language and cover), any time out of combat (Start.lua)
+    if ns.Start and ns.Start.Show then ns.Start.Show("slash") end
   elseif cmd == "hilfe" or cmd == "help" or cmd == "?" then
     if #HELP == 0 then buildHelp() end
     for i = 1, #HELP do Util.Print(HELP[i]) end
@@ -800,6 +803,9 @@ local function startWelcome()
   welcomeArmed = false
   local Store = ns.Store
   if not Store or Store.Setting("welcomed") ~= false then return end
+  -- 1.3.0: on a new installation the first-start dialog greets instead (Start.lua: the dialog says what the first
+  -- two lines said, the lines about the plates and about sharing follow it)
+  if ns.Start and ns.Start.Holding and ns.Start.Holding() then return end
   local After = _G.C_Timer and _G.C_Timer.After
   if After then After(ns.WELCOME_DELAY, ns.Welcome) else ns.Welcome() end
 end
