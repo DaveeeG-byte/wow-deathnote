@@ -348,7 +348,7 @@ end
 local function Tip(owner, lines, anchor)
   if type(lines) ~= "table" or not lines[1] then return end
   GameTooltip:SetOwner(owner, anchor or "ANCHOR_RIGHT")
-  GameTooltip:SetText(lines[1], Look.BONE[1], Look.BONE[2], Look.BONE[3])
+  GameTooltip:SetText(lines[1], Look.BONE[1], Look.BONE[2], Look.BONE[3], 1, true)   -- 1.2.2: lange erste Zeile bricht um
   for i = 2, #lines do GameTooltip:AddLine(lines[i], 0.82, 0.80, 0.75, true) end
   GameTooltip:Show()
 end
@@ -1666,6 +1666,17 @@ function UX.BuildPoster()
     self:ClearFocus()
   end)
   E.note = note
+  -- 1.2.2: laengere Notiz als das Feld zeigt: ganz im Tooltip (gemessen beim Zeigen mit einer unsichtbaren Schrift)
+  note.measure = Look.Text(E, "hand", 13, Look.INK)
+  note.measure:Hide()
+  note:SetScript("OnEnter", function(self)
+    local t = self:GetText()
+    if type(t) ~= "string" or t == "" or Look.Secret(t) then return end
+    self.measure:SetText(t)
+    local w, fw = Look.TextW(self.measure), self:GetWidth()
+    if w and type(fw) == "number" and not Look.Secret(fw) and w > fw - 2 then Tip(self, { t }); self.tipped = true end
+  end)
+  note:SetScript("OnLeave", function(self) if self.tipped then self.tipped = nil; GameTooltip:Hide() end end)
   -- Gildenplakat: statt der Notiz die Opfer
   E.victims = Look.Text(E, "hand", 13, Look.INK)
   E.victims:SetPoint("TOPLEFT", E.noteLabel, "TOPRIGHT", 8, 2)
@@ -2763,6 +2774,7 @@ GF.MORE_WARN = {
 }
 local SHEETS = { "SHEET_BOOK", "SHEET_ALERT", "SHEET_GUILD" }   -- Schluessel
 GF.SHEET_TOP = 76     -- 1.2.2: Kopf und Blatt-Reiter stehen, darunter rollt das Blatt
+GF.TIP_NAMES = 12    -- 1.2.2: hoechstens so viele Namen je Liste im Tooltip der Statuszeile (vorher 20 + 20)
 GF.SYNC_MIN, GF.SYNC_MAX = 84, 150   -- Abgleichen-Knopf: waechst mit dem Text (1.2.0)
 GF.COOLDOWNS = { 30, 60, 90, 120, 180, 300, 600 }
 local ROW_Y0, OPT_H = -84, 24
@@ -2886,18 +2898,22 @@ MembersTip = function(owner)
   else
     GameTooltip:SetText(name and Fmt(L.TIP_GUILD_NAME, { guild = name }) or L.HEALTH_SHORT_NOGUILD, Look.BONE[1], Look.BONE[2], Look.BONE[3])
   end
-  -- 1.2.0: der Stand steht schon in der Zeile darunter; der Tooltip wiederholt ihn nicht
+  -- 1.2.0: der Stand steht schon in der Zeile darunter; der Tooltip wiederholt ihn nicht.
+  -- 1.2.2: ausser die Zeile ist gekuerzt (zwei lange Namen): dann der ganze Satz zuerst
+  if LP and owner == LP.statusHit and Truncated(LP.status) then
+    GameTooltip:AddLine(LP.status:GetText() or "", 1, 1, 1, true)
+  end
   local src = GF.Src()
   local function list(members, head, none)
     if type(members) == "table" and #members > 0 then
       GameTooltip:AddLine(head, 0.82, 0.80, 0.75)
-      for i = 1, math.min(#members, 20) do
+      for i = 1, math.min(#members, GF.TIP_NAMES) do
         local m = members[i]
         local ago = m.lastHeard and Look.Ago(m.lastHeard) or ""
         GameTooltip:AddDoubleLine(tostring(m.name or "?") .. (m.version and ("  " .. tostring(m.version)) or ""), ago,
                                   1, 1, 1, 0.7, 0.7, 0.7)
       end
-      if #members > 20 then GameTooltip:AddLine(Fmt(L.MORE_LINE, { count = #members - 20 }), 0.7, 0.7, 0.7) end
+      if #members > GF.TIP_NAMES then GameTooltip:AddLine(Fmt(L.MORE_LINE, { count = #members - GF.TIP_NAMES }), 0.7, 0.7, 0.7) end
     else
       GameTooltip:AddLine(none, 0.82, 0.80, 0.75)
     end
@@ -3689,6 +3705,10 @@ function UX.UpdateTabs()
     t.text:SetTextColor(C(on and Look.BONE or Look.TAB_OFF))
     t.mark:SetShown(on)
   end
+  -- 1.2.2: eine vierstellige Zahl passt nicht in den Platz fuer "  123": Reiter neu verteilen
+  for _, t in ipairs(F.tabs) do
+    if (Look.TextW(t.text) or 0) > (t.text:GetWidth() or 999) + 0.5 then GF.LayoutTabs(true); break end
+  end
   -- Gilde mit "Nach Kollege": oben der Umschalter (Suchfeld kuerzer); Sortierung unten rechts
   -- 1.2.0: Ansichten nur, wenn es mehr als eine sinnvolle gibt (niemand zum Teilen: keine; die
   -- Abschussliste nur mit Freigaben); Quellen nur, wenn es beide wirklich gibt. Im Normalfall eine Reihe.
@@ -3733,9 +3753,11 @@ function UX.UpdateTabs()
   LP.sort.text:SetText(SORT_LABEL[sortKey] and L[SORT_LABEL[sortKey]] or "")
   LP.sort:SetWidth(math.max(90, math.min(120, TextWidth(LP.sort.text, 60) + 16)))
   LP.sort:SetShown(state.filter == "wanted" or (state.filter == "guild" and not member and not GF.HuntView()))
-  LP.search.ph:SetText((state.filter == "guild" and ((views or GF.HuntView()) and L.SEARCH_SHORT or L.SEARCH_KILLER))
+  -- 1.2.2: der Platzhalter bleibt im Feld (kleiner, dann gekuerzt)
+  LP.search.ph:SetWidth(sw - 4)
+  Look.FitText(LP.search.ph, (state.filter == "guild" and ((views or GF.HuntView()) and L.SEARCH_SHORT or L.SEARCH_KILLER))
                        or (state.filter == "journal" and L.SEARCH_JOURNAL)
-                       or (state.filter == "open" and L.SEARCH_SHORT) or L.SEARCH_ADD)
+                       or (state.filter == "open" and L.SEARCH_SHORT) or L.SEARCH_ADD, GF.FIT_PH)
 end
 
 function UX.UpdateStatus()
@@ -4327,12 +4349,17 @@ end
 -- hoechstens 150 px; die Reihe beginnt bei x = 184 und endet vor dem "?" (x = 704). Reicht der Platz nicht,
 -- werden alle gleichmaessig schmaler (Text wird dann gekuerzt, nie ueberlappt).
 GF.TAB_X0, GF.TAB_X1, GF.TAB_GAP, GF.TAB_MAX, GF.TAB_ROOM = 184, 704, 4, 150, 34
-function GF.LayoutTabs()
+GF.FIT_PH = { sizes = { 16, 13, 11 } }
+-- withCount (1.2.2): Breite auch aus dem gezeigten Text samt Zahl (vierstellig), der Text bleibt stehen
+function GF.LayoutTabs(withCount)
   local ws, total = {}, 0
   for i, t in ipairs(F.tabs) do
+    local cur = withCount and t.text:GetText()
+    local cw = cur and math.floor((Look.TextW(t.text) or 0) + 8 + 0.5) or 0
     t.text:SetText(t.label)
-    ws[i] = math.min(GF.TAB_MAX, math.max(t.base, math.floor(TextWidth(t.text, 60) + GF.TAB_ROOM + 0.5)))
+    ws[i] = math.min(GF.TAB_MAX, math.max(t.base, cw, math.floor(TextWidth(t.text, 60) + GF.TAB_ROOM + 0.5)))
     total = total + ws[i] + (i > 1 and GF.TAB_GAP or 0)
+    if cur then t.text:SetText(cur) end
   end
   local room = GF.TAB_X1 - GF.TAB_X0
   if total > room then
@@ -4391,6 +4418,10 @@ local function Build()
     if LP and LP.search:HasFocus() then LP.search:ClearFocus() end
   end)
   tinsert(UISpecialFrames, "DeathNoteFrame")
+  -- 1.2.2: andere Aufloesung oder UI-Skalierung im Spiel: die groesste Stufe neu pruefen (das Buch bleibt im Schirm)
+  F:RegisterEvent("UI_SCALE_CHANGED")
+  F:RegisterEvent("DISPLAY_SIZE_CHANGED")
+  F:SetScript("OnEvent", function() ApplyScale() end)
 
   -- Einband
   F:SetBackdrop({ edgeFile = Look.TEX.border, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
