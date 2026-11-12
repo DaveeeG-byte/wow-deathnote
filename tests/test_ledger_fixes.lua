@@ -284,4 +284,51 @@ test("An accepted duel holds for 15 min at most; DUEL_FINISHED, a loading screen
   no(ns.Attribution.DuelFoe(g), "over after his death")
 end)
 
+---------------------------------------------------------------------------
+-- Placeholders per GUID, a complete move (findings 5 and 14)
+---------------------------------------------------------------------------
+test("Two GUIDs, one first name, both never seen: two victims; each moves to his own full name", function()
+  fresh()
+  M.units.x1 = { exists = false, guid = "Player-93-G1", name = "Grimm", class = "ROGUE", classLoc = "Schurke" }
+  M.units.x2 = { exists = false, guid = "Player-93-G2", name = "Grimm", class = "MAGE", classLoc = "Magier" }
+  ok(ns.Ledger.OnPartyKill(ME, "Player-93-G1")); M.Advance(60)
+  ok(ns.Ledger.OnPartyKill(ME, "Player-93-G2")); M.Advance(60)
+  eq(ns.Ledger.VictimCount(), 2, "two placeholders")
+  ok(ns.Ledger.OnPartyKill(ME, "Player-93-G2"), "the second again: his own placeholder")
+  M.units.x1, M.units.x2 = nil, nil
+  seen("Grimm", "Eins", 40, { guid = "Player-93-G1" }); M.Advance(20)
+  local v = ns.Ledger.Victim("Grimm-Eins")
+  ok(v, "Grimm Eins under his full name"); eq(v.n, 1); eq(v.class, "ROGUE")
+  seen("Grimm", "Zwei", 40, { guid = "Player-93-G2" }); M.Advance(20)
+  local w = ns.Ledger.Victim("Grimm-Zwei")
+  ok(w, "Grimm Zwei under his full name"); eq(w.n, 2); eq(w.class, "MAGE"); eq(w.realm, "Zwei")
+  eq(ns.Ledger.VictimCount(), 2)
+  eq(ns.Tracker.ledgerHook, nil, "no placeholder left")
+end)
+
+test("A book placeholder with another GUID does not take a namesake's kill", function()
+  fresh()
+  M.units.x1 = { exists = false, guid = "Player-93-G1", name = "Grimm", class = "ROGUE" }
+  ns.Store.ApplyKill({ name = "Grimm", guid = "Player-93-G0" }, { t = time() - 100 }, true)
+  local bookKey = next(ns.Store.All())
+  ok(ns.Ledger.OnPartyKill(ME, "Player-93-G1"))
+  eq(ns.Ledger.Victim(bookKey), nil, "not under the book's placeholder of another GUID")
+  eq(standing(bookKey), "0:1 open")
+end)
+
+test("The book's placeholder moves: the victim takes the surname, stops being a placeholder, the hook is free", function()
+  -- a victim without GUID under the book's placeholder without GUID (an honour line naming the first name only)
+  local db = { version = 4, settings = {}, deaths = {}, enemies = { ["Grimm-Forever"] = entry("Grimm", nil, 1, 0) },
+    ledger = { victims = { ["Grimm-Forever"] = { name = "Grimm", n = 1, last = 1700000000 } } } }
+  load(db)
+  ok(ns.Ledger.Victim("Grimm-Forever"), "victim under the book's placeholder")
+  ok(ns.Tracker.ledgerHook, "hook set while a placeholder is there")
+  M.Advance(20)
+  seen("Grimm", "Bart", 40)
+  ok(ns.Store.Get("Grimm-Bart"), "the book moved the entry")
+  local v = ns.Ledger.Victim("Grimm-Bart")
+  ok(v, "the victim moved along"); eq(v.surname, "Bart"); eq(ns.Util.Display(v), "Grimm Bart")
+  eq(ns.Tracker.ledgerHook, nil, "no placeholder left")
+end)
+
 M.done("ledger_fixes")

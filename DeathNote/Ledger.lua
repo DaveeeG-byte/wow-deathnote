@@ -467,9 +467,17 @@ local function capVictims()
   end
 end
 
+-- name and realm (or surname) of a victim key; "Name-Realm#GUID" is the placeholder of a second player with the
+-- same first name (keyOf)
+local function splitVictimKey(key)
+  local n, s = Util.SplitKey(key)
+  if s then s = s:gsub("#.*$", "") end
+  return n, s
+end
+
 local function addVictim(key, info)
   local v = { key = key, n = 0, pts = 0, dn = 0 }
-  local n, s = Util.SplitKey(key)
+  local n, s = splitVictimKey(key)
   v.name = Util.CleanName(info and info.name) or n
   v.realm = s
   local sn = info and Util.CleanName(info.surname)
@@ -488,7 +496,7 @@ local function applyInfo(v, info)
   -- a placeholder (first name only) with this GUID belongs to this full name: it moves in here
   local other = g and byGuid[g]
   if other and other ~= v.key and v.surname ~= nil and victims[other] and victims[other].surname == nil then
-    moveVictim(other, v.key)
+    moveVictim(other, v.key, v.surname)
   end
   if g and (v.guid == nil or v.surname ~= nil) then
     if v.guid and byGuid[v.guid] == v.key then byGuid[v.guid] = nil end
@@ -503,13 +511,17 @@ local function applyInfo(v, info)
   if lv then v.level = lv end
 end
 
--- moves a victim to a new key (placeholder seen with surname, or the book entry moved); merges into an existing one
-function moveVictim(oldKey, newKey)
+-- moves a victim to a new key (placeholder seen with surname, or the book entry moved); merges into an existing one.
+-- surname: the surname the new key stands for (a placeholder stops being one)
+function moveVictim(oldKey, newKey, surname)
   local v = victims[oldKey]
   if not v or oldKey == newKey then return end
   local into = victims[newKey]
   dropVictim(oldKey)
+  surname = Util.CleanName(Str(surname))
+  if surname then surname = Util.CapFirst(surname) end
   if into then
+    if into.surname == nil and surname then into.surname = surname; nPlaceholders = nPlaceholders - 1 end
     into.n = into.n + v.n
     into.pre = ((into.pre or 0) + (v.pre or 0) > 0) and (into.pre or 0) + (v.pre or 0) or nil
     into.pts = into.pts + v.pts
@@ -518,8 +530,9 @@ function moveVictim(oldKey, newKey)
     if not into.guid and v.guid then into.guid = v.guid; byGuid[v.guid] = newKey end
   else
     v.key = newKey
-    local n, s = Util.SplitKey(newKey)
+    local n, s = splitVictimKey(newKey)
     v.name, v.realm = n, s
+    if surname then v.surname = surname end
     victims[newKey] = v
     nVictims = nVictims + 1
     if v.surname == nil then nPlaceholders = nPlaceholders + 1 end
@@ -544,10 +557,7 @@ local function promote(r)
   if not full then return end
   local cs = Util.CleanName(sn)
   if not cs then return end
-  -- first: the victim stops counting as placeholder
-  nPlaceholders = nPlaceholders - 1
-  v.surname = Util.CapFirst(cs)
-  moveVictim(k, full)
+  moveVictim(k, full, cs)
   updateHook()
 end
 Ledger.Promote = promote
@@ -574,7 +584,10 @@ function Ledger.Reconcile()
   end
   if not moves then return 0 end
   table.sort(moves, function(a, b) return a[1] < b[1] end)
-  for _, m in ipairs(moves) do moveVictim(m[1], m[2]) end
+  for _, m in ipairs(moves) do
+    local e = S.Get(m[2])
+    moveVictim(m[1], m[2], e and e.surname)
+  end
   return #moves
 end
 
@@ -756,7 +769,17 @@ local function keyOf(info)
     if v.name and v.name:lower() == ln and guidFits(v.guid, g) then hit, hits = k, hits + 1 end
   end
   if hits == 1 then return hit end
-  return (Util.KeyFor(name))
+  local plain = Util.KeyFor(name)
+  if not plain then return nil end
+  -- the placeholder key is taken by another player with the same first name (another GUID in the rap sheet or the
+  -- book): this one gets a placeholder of his own
+  if g then
+    local pv, pe = victims[plain], S and S.Get(plain)
+    if (pv and pv.guid and pv.guid ~= g) or (pe and type(pe.guid) == "string" and pe.guid ~= g) then
+      return plain .. "#" .. (g:match("([^%-]+)$") or g)
+    end
+  end
+  return plain
 end
 
 -- is this player in the guild or friends' book for killing someone else than my own chars? (Bounty.lua: the same
@@ -1286,7 +1309,11 @@ end)
 -- the book entry moved to a fuller key: the victim follows
 ns:On("ENEMY_REKEYED", function(oldKey, newKey)
   if not db then return end
-  if victims[oldKey] then moveVictim(oldKey, newKey) end
+  if victims[oldKey] then
+    local e = ns.Store and ns.Store.Get(newKey)
+    moveVictim(oldKey, newKey, e and e.surname)
+    updateHook()
+  end
   standCache[oldKey] = nil
 end)
 -- an own death by a player ends the streak
