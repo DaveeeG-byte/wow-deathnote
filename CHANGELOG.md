@@ -1,5 +1,48 @@
 # Changelog
 
+## 1.3.0 (2026-11-12)
+
+### Added
+- Rap sheet: the book now also keeps your own killing blows on players (yours or your pet's), in the open world only. Players of your own faction, the opponent of a duel to the death and the same player twice within 10 seconds are not booked. Each kill gets a line in the chat ("Rap sheet: Name, Level 34 (yellow). +3 Honour."), which can be switched off.
+- Score "you : them" for every killer in the book: open (they lead, or nothing settled yet), settled (even) or overpaid (you lead). It shows in the list, on the poster (stamps SETTLED and OVERPAID), in the game tooltip, in the alarm line and in the revenge notice.
+- Fifth tab "Rap Sheet", from your first own kill on: your file with rank, path, rank bar, needle (ruthless to honourable), kills, awards and bests; your latest 60 kills; a sheet per victim with your kills, the points they earned and the scene (zone and time). Victims can be struck one by one; "Clear rap sheet" removes victims and the kill list but keeps rank, points and awards. The game tooltip over a player you killed shows "RAP SHEET: killed by you 3×, last …".
+- Repute with four accounts: Infamy (greys and greens), Honour (about your level, payback), Hunt (higher levels, hit list targets, bounties posted by others) and Protection (players who killed guildmates or friends). The level colour of the victim sets the base points; payback, protection, hit list and bounty add to them; group kills give half honour and hunt; a second kill of the same player within 10 minutes gives no honour, hunt or protection; the same player gives less with every kill within 24 hours and nothing from the sixth. Ten ranks, a path from rank 3 or 10 counted kills, and rank names per path and cover (German and English; the other languages show "Rank 6 · Path: Honour"). Notices for a new rank and for an award come after combat; a new path without a new rank is one chat line.
+- Six awards (two of them hidden until earned; names and conditions in German and English) and three bests: the biggest level gap, the longest streak without dying, the fastest payback.
+- Victim alarm, off by default: when a player you killed more often than they killed you shows up within 14 days of your last kill, a quiet popup ("HOLDS A GRUDGE?") with the score and a soft sound, at most once per 10 minutes per player and never in front of the book's own alarm.
+- "Alarm when the score is settled": as usual, quiet (soft sound, no flashing edge) or never, for killers whose score is settled or overpaid. Open cases always alarm as before.
+- Every switch of the rap sheet is on the new fourth sheet "Rap Sheet" of the House Rules: keep a rap sheet, report own kills in the chat, the victim alarm, the alarm for settled scores, clear rap sheet. With "Keep a rap sheet" off nothing is booked, tab and score disappear and the book ranks as in 1.2.2; the data stays.
+- Covers: The Black Book (as before, the default), Privateer's Ledger and The Workshop. A cover changes colours, textures, stamps, the book title, tabs, page heads, alarm titles and the top title (PUBLIC ENEMY No. 1, HIGHEST BOUNTY, BEST CUSTOMER), never a button or a switch. Choose it in the House Rules (sheet Book, row "Cover" under "Language") or with `/dn theme <name>` (also `/dn cover`, `/dn einband`); without a name it lists the covers. Takes effect after `/reload`.
+- First start of a new installation: one small window asks for the language and the cover, 3 seconds after you enter the open world, never in combat or in an instance. The choice works at once, without `/reload`; Esc or the cross keeps the game's language and The Black Book. `/dn start` shows it again.
+- All new texts in all 21 languages, also the words of the covers; rank names and awards in German and English only.
+
+### Changed
+- Wanted is ranked by open debt (their kills minus yours), the biggest first. Settled and overpaid killers stand faded at the end without a rank number. Rank 1 and the top title are always an open case; when every score is settled, nobody is No. 1, also not in the alarm.
+- Players who had the book before get no window, only one chat line: the book now comes in other covers, where to change it.
+- The notice in the middle of the screen is a smaller slip torn from the book instead of the black strip.
+- Poster: "Last seen: zone, 2 hrs ago" (without the zone when it does not fit; then the whole line is in the tooltip).
+- The book's own bounty counts your own killing blows on a killer like revenge, so it can sink further; it is never higher than in 1.2.2.
+- Revenge that came in by "Import book" no longer counts as yours in the score and the alarm line (the book's bounty reads it as before).
+- How it works has a ninth paragraph, RAP SHEET; `/dn help` lists `/dn theme` and `/dn start`.
+
+### Fixed
+- A duel to the death no longer counts as a death, a revenge, a kill or a "taken down" (only the opponent; anyone else in the fight still counts).
+- A player seen without surname who shares a first name with a listed killer no longer sets off that killer's alarm, overwrites his last sighting, level or class, or has his kills booked on that killer; the GUID decides.
+- Hungarian: the "pardoned" stamp says "pardoned" again (it said "mercy").
+
+### Internal
+- Theme core (`Theme.lua`): the look of the book is data, one file per cover in `Themes/`, its words in `Locales/Themes/`; the textures come from `tests/ui/make_media.sh`. New files `Ledger.lua` (kills, score, repute), `Ranks.lua` (rank thresholds and names) and `Start.lua` (first-start window).
+- DB version 4 adds the empty rap sheet (`DeathNoteDB.ledger`) and books nothing from old data. Going back to 1.2.2 and up again is safe.
+- `/dn debug` writes what the client sends at your own kills to `DeathNoteDB.probe.kills` (no names), for the check in the game.
+- Tests: rap sheet formula, detection, score, migration, random runs and a differential run against 1.2.2 (the book stays the same, the bounty is never higher), ranks and debt order, themes against their schema, the theme guard (a test theme replaces every value; nothing of the black book may show through), contrast for every cover, the first-start window, the victim alarm, the rap sheet tab with the sheet switched on and off, the notice slip.
+- The release pipeline no longer fails its zip check on a branch push whose commit already carries the release tag.
+
+### Known open
+- Kill detection is not yet checked in the game. Kills by totems, guardians or traps are probably not booked: the honour line that could catch them is switched off until the probe has shown that it comes only for your own killing blow.
+- Repute starts at zero. Revenge from before 1.3.0 counts in the score, but earns no points.
+- The translations of 1.3.0 are made by machine and not yet read by native speakers. Rank names and awards exist in German and English only.
+- Text widths for Morpheus, Skurri, Nimrod, Cyrillic handwriting and Chinese/Korean are estimated in the tests, not measured with the game's fonts.
+- Not yet checked in the game: the first own kill (chat line, the fifth tab, notices after combat), the notice slip in the real world, the first-start window on a fresh installation, the covers after `/reload`, the sound of the victim alarm, "quiet" and "never" for settled scores, a duel to the death from both sides.
+
 ## 1.2.2 (2026-11-12)
 
 ### Changed
