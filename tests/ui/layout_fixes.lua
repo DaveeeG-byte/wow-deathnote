@@ -400,5 +400,31 @@ for _, code in ipairs({ "enUS", "deDE", "frFR", "esES", "itIT", "ptBR", "ruRU", 
   ns:Fire("GUILD_ENEMY_SPOTTED", "Fremd-Langer", nil, "other", nil); K.tick(); look("guild")
 end
 
+------------------------------------------------------------------------
+-- B09 (Nr. 24): the head of a sheet is no wider than the rule under it (320 px), measured against the rule itself.
+-- Handwriting at the wide end of the picture tool (0.68 em: REL_HEAD ukUA 333 px at 26 pt).
+------------------------------------------------------------------------
+do
+  local ns = K.world("ukUA", { before = function(_, BM) BM.WIDTH["Fonts\\MORPHEUS.TTF"], BM.WIDTH["Fonts\\MORPHEUS_CYR.TTF"] = 0.68, 0.68 end })
+  local BM = K.BM
+  local k = ns.Store.AddManual("Zweiter", "Rang")
+  K.tick(30); K.settle()
+  ns:Fire("TOGGLE_UI"); K.tick(); K.settle()
+  ns.UI.OpenRelease(k); K.tick()
+  local head = K.find(function(f) return f._kind == "FontString" and f._text == ns.L.REL_HEAD and f:IsVisible() end)
+  -- the rule: a 1 px texture of the same parent below the head
+  local rule = K.find(function(f) return f._kind == "Texture" and head and f._parent == head._parent and f._h == 1 and #f._points == 2 end)
+  local rl, rr, hl, hr, ink
+  if rule then rl, _, rr = BM.RectUI(rule) end
+  if head then hl, _, hr = BM.RectUI(head); ink = BM.Unbounded(head) end
+  K.check("B09 sheet head and its rule found", head ~= nil and rl ~= nil)
+  if head and rl then
+    local c = (hl + hr) / 2
+    K.check("B09 the ink of the sheet head stays within its rule", not head:IsTruncated() and c - ink / 2 >= rl - 0.5 and c + ink / 2 <= rr + 0.5,
+      ("ink %.0f px at %s pt, rule %.0f px, field %.0f px"):format(ink, tostring(head._fontSize), rr - rl, hr - hl))
+    K.check("B09 the field of the sheet head is no wider than its rule", hr - hl <= rr - rl + 0.5, ("%.0f / %.0f"):format(hr - hl, rr - rl))
+  end
+end
+
 io.write(("Layout fixes 1.2.2 (hunt B): %d green, %d red\n"):format(K.ok, K.bad))
 os.exit(K.bad == 0 and 0 or 1)

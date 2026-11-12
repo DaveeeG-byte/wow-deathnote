@@ -2830,7 +2830,7 @@ end
 local function SheetHead(parent, text)
   local head = Look.Text(parent, "hand", 26, Look.INK)
   head:SetPoint("TOP", 0, -16)
-  head:SetWidth(PAGE_W - 40)
+  head:SetWidth(PAGE_W - 60)                -- 1.2.2: no wider than the rule under it (x = 30 to PAGE_W - 30)
   Look.FitText(head, text, GF.FIT_NAME26)   -- 1.2.2: 26, 22, 19 pt (REL_HEAD ukUA was wider than the rule)
   Rule(parent, -50, 30, 30, 0.6)
   return head
