@@ -44,10 +44,26 @@ jobs:
           args: -d
 
       - name: Check zip
+        id: zip
         run: |
           # Every refusal is an explicit "exit 1": a command negated with "!" never stops a script under set -e.
           set -eo pipefail
-          zip=$(ls .release/*.zip | head -1)
+          zip=$(find .release -maxdepth 1 -name '*.zip' 2>/dev/null | sort | head -1) || zip=""
+          if [ -z "$zip" ]; then
+            # The packager deliberately builds nothing on a branch push whose HEAD already carries a tag
+            # ("Found future tag ..., not packaging."): the tag run packages that commit. Same test as the packager.
+            future_tag=""
+            if [ "$GITHUB_EVENT_NAME" = "push" ] && [[ "$GITHUB_REF" == refs/heads/* ]]; then
+              future_tag=$(git tag --points-at HEAD 2>/dev/null | paste -sd ' ') || future_tag=""
+            fi
+            if [ -n "$future_tag" ]; then
+              echo "No zip on purpose: HEAD carries the tag(s) ${future_tag}; the run for the tag packages and checks it."
+              echo "built=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "No zip in .release (ref $GITHUB_REF): the packager built nothing"; exit 1
+          fi
+          echo "built=true" >> "$GITHUB_OUTPUT"
           echo "Zip: $zip"
           unzip -l "$zip" | tail -n +4 | awk '{print $4}' > contents.txt
           for need in DeathNote/DeathNote.toc DeathNote/Core.lua DeathNote/Libs/embeds.xml \
@@ -63,6 +79,7 @@ jobs:
           echo "Files: $(grep -c '^DeathNote/' contents.txt)"
 
       - uses: actions/upload-artifact@v4
+        if: steps.zip.outputs.built == 'true'
         with:
           name: DeathNote-zip
           path: .release/*.zip
