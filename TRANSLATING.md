@@ -19,8 +19,8 @@
    short and to the point than cut off.
 7. Not allowed: control characters, `|` (except colour codes that are already in the English), empty texts, keys that
    do not exist in the English. `\n` is allowed where the English has it. `TIME_FMT_*` are date formats
-   (`%d %m %Y %y %H %M`): only reorder them; any other characters make the test fall back to the English format. Save
-   the file as UTF-8 without BOM.
+   (`%d %m %Y %y %H %M`, plus `%%`): only reorder them; with any other `%` code the test turns red and the game
+   falls back to the English format. Save the file as UTF-8 without BOM.
 8. Whatever you do not translate, leave out: it then shows in English. Never enter an empty text.
 9. Client languages (deDE, enUS, frFR, esES, itIT, ptBR, ruRU, koKR, zhCN, zhTW): fill the `-- TOC-Notes:` line in the
    head with the sentence from `enUS.lua` in your language; it also appears as `## Notes-xxXX` in `DeathNote.toc`.
