@@ -189,6 +189,8 @@ L.CHAT_THEME_BAD = "Unbekannter Einband: {name}"
 L.CHAT_THEME_SET = "Einband: {theme}."
 L.CHAT_THEME_RELOAD = "Einband: {theme}. Gilt nach /reload."
 L.THEME_NOTEBOOK = "Das schwarze Buch"
+L.THEME_HARBOR = "Kaperbuch"
+L.THEME_TRADE = "Fachbetrieb"
 
 -- First contact -----------------------------------------------------------------------------------
 L.WELCOME = "Das Buch liegt bereit. Wer dich in der offenen Welt tötet, steht danach drin. Aufschlagen mit /dn oder am Minimap-Knopf."

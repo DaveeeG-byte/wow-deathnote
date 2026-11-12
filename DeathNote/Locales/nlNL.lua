@@ -193,6 +193,8 @@ L.CHAT_THEME_BAD = "Onbekende kaft: {name}"
 L.CHAT_THEME_SET = "Kaft: {theme}."
 L.CHAT_THEME_RELOAD = "Kaft: {theme}. Werkt na /reload."
 L.THEME_NOTEBOOK = "Het zwarte boek"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Het boek ligt klaar. Wie je in de open wereld doodt, staat er daarna in. Open het met /dn of de minimapknop."

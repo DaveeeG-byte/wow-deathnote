@@ -197,6 +197,8 @@ L.CHAT_THEME_BAD = "Ismeretlen borító: {name}"
 L.CHAT_THEME_SET = "Borító: {theme}."
 L.CHAT_THEME_RELOAD = "Borító: {theme}. /reload után lép életbe."
 L.THEME_NOTEBOOK = "A fekete könyv"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "A könyv készen áll. Aki megöl a nyílt világban, utána benne lesz. Kinyitás: /dn vagy a minitérkép-gomb."

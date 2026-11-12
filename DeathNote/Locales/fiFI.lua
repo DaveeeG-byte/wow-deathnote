@@ -194,6 +194,8 @@ L.CHAT_THEME_BAD = "Tuntematon kansi: {name}"
 L.CHAT_THEME_SET = "Kansi: {theme}."
 L.CHAT_THEME_RELOAD = "Kansi: {theme}. Voimaan /reload-komennon jälkeen."
 L.THEME_NOTEBOOK = "Musta kirja"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Kirja on valmiina. Jokainen, joka tappaa sinut avoimessa maailmassa, päätyy siihen. Avaa se komennolla /dn tai minikartan napista."

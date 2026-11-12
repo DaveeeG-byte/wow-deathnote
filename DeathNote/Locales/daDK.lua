@@ -193,6 +193,8 @@ L.CHAT_THEME_BAD = "Ukendt bind: {name}"
 L.CHAT_THEME_SET = "Bind: {theme}."
 L.CHAT_THEME_RELOAD = "Bind: {theme}. Gælder efter /reload."
 L.THEME_NOTEBOOK = "Den sorte bog"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Bogen ligger klar. Den, der dræber dig i den åbne verden, ender i den. Åbn den med /dn eller minimap-knappen."

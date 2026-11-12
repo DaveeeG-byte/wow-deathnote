@@ -194,6 +194,8 @@ L.CHAT_THEME_BAD = "Неизвестная обложка: {name}"
 L.CHAT_THEME_SET = "Обложка: {theme}."
 L.CHAT_THEME_RELOAD = "Обложка: {theme}. Вступит в силу после /reload."
 L.THEME_NOTEBOOK = "Чёрная книга"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Книга готова. Кто убьёт тебя в открытом мире, окажется в ней. Открыть: /dn или кнопка у миникарты."

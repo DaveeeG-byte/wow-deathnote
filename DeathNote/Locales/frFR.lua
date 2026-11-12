@@ -188,6 +188,8 @@ L.CHAT_THEME_BAD = "Couverture inconnue : {name}"
 L.CHAT_THEME_SET = "Couverture : {theme}."
 L.CHAT_THEME_RELOAD = "Couverture : {theme}. Effective après /reload."
 L.THEME_NOTEBOOK = "Le Carnet noir"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Le carnet est prêt. Qui te tue en monde ouvert y figure ensuite. Ouvre-le avec /dn ou le bouton de la minicarte."

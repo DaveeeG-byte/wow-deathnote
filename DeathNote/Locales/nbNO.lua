@@ -193,6 +193,8 @@ L.CHAT_THEME_BAD = "Ukjent perm: {name}"
 L.CHAT_THEME_SET = "Perm: {theme}."
 L.CHAT_THEME_RELOAD = "Perm: {theme}. Gjelder etter /reload."
 L.THEME_NOTEBOOK = "Den svarte boken"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Boken ligger klar. Den som dreper deg i den åpne verdenen, havner i den. Åpne den med /dn eller minimap-knappen."

@@ -203,6 +203,8 @@ L.CHAT_THEME_BAD = "Unknown cover: {name}"  -- 1.3.0: /dn theme with an unknown 
 L.CHAT_THEME_SET = "Cover: {theme}."  -- 1.3.0: /dn theme <id>, already active
 L.CHAT_THEME_RELOAD = "Cover: {theme}. Takes effect after /reload."  -- 1.3.0: /dn theme <id>, active after /reload (as CHAT_LANG_RELOAD)
 L.THEME_NOTEBOOK = "The Black Book"  -- 1.3.0: name of the first cover (theme "notebook", the black book as it always was)
+L.THEME_HARBOR = "Privateer's Ledger"  -- 1.3.0: name of the cover "harbor" (a privateer's log book: sea blue, brass, oxblood)
+L.THEME_TRADE = "The Workshop"  -- 1.3.0: name of the cover "trade" (the customer file of a trade business: clipboard, carbon paper)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "The book is ready. Whoever kills you in the open world is in it afterwards. Open it with /dn or the minimap button."

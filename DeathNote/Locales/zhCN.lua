@@ -196,6 +196,8 @@ L.CHAT_THEME_BAD = "未知封面：{name}"
 L.CHAT_THEME_SET = "封面：{theme}。"
 L.CHAT_THEME_RELOAD = "封面：{theme}。/reload后生效。"
 L.THEME_NOTEBOOK = "黑色记仇本"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "记仇本已准备好。在野外杀死你的人，之后都会记在上面。用/dn或小地图按钮打开。"

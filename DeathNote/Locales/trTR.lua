@@ -198,6 +198,8 @@ L.CHAT_THEME_BAD = "Bilinmeyen kapak: {name}"
 L.CHAT_THEME_SET = "Kapak: {theme}."
 L.CHAT_THEME_RELOAD = "Kapak: {theme}. /reload sonrası geçerli."
 L.THEME_NOTEBOOK = "Kara Defter"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Defter hazır. Açık dünyada seni öldüren herkes sonra burada yazılı olur. /dn ya da mini harita düğmesiyle aç."

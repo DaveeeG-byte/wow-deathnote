@@ -195,6 +195,8 @@ L.CHAT_THEME_BAD = "Nieznana okładka: {name}"
 L.CHAT_THEME_SET = "Okładka: {theme}."
 L.CHAT_THEME_RELOAD = "Okładka: {theme}. Zadziała po /reload."
 L.THEME_NOTEBOOK = "Czarna księga"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Księga gotowa. Kto zabije cię w otwartym świecie, trafi do niej. Otwórz ją przez /dn albo przycisk przy minimapie."

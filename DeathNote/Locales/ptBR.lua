@@ -189,6 +189,8 @@ L.CHAT_THEME_BAD = "Capa desconhecida: {name}"
 L.CHAT_THEME_SET = "Capa: {theme}."
 L.CHAT_THEME_RELOAD = "Capa: {theme}. Vale depois de /reload."
 L.THEME_NOTEBOOK = "O Livro Negro"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "O livro está pronto. Quem matar você no mundo aberto vai parar nele. Abra com /dn ou no botão do minimapa."

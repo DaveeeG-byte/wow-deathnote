@@ -193,6 +193,8 @@ L.CHAT_THEME_BAD = "Okänd pärm: {name}"
 L.CHAT_THEME_SET = "Pärm: {theme}."
 L.CHAT_THEME_RELOAD = "Pärm: {theme}. Gäller efter /reload."
 L.THEME_NOTEBOOK = "Den svarta boken"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Boken är redo. Den som dödar dig i öppna världen hamnar i den. Öppna den med /dn eller minimap-knappen."

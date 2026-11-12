@@ -195,6 +195,8 @@ L.CHAT_THEME_BAD = "Nepoznat uvez: {name}"
 L.CHAT_THEME_SET = "Uvez: {theme}."
 L.CHAT_THEME_RELOAD = "Uvez: {theme}. Vrijedi nakon /reload."
 L.THEME_NOTEBOOK = "Crna knjiga"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Knjiga je spremna. Tko te ubije u otvorenom svijetu, bit će u njoj. Otvori je s /dn ili gumbom uz minikartu."

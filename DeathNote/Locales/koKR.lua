@@ -196,6 +196,8 @@ L.CHAT_THEME_BAD = "알 수 없는 표지: {name}"
 L.CHAT_THEME_SET = "표지: {theme}."
 L.CHAT_THEME_RELOAD = "표지: {theme}. /reload 후 적용."
 L.THEME_NOTEBOOK = "검은 수첩"
+L.THEME_HARBOR = "Privateer's Ledger"  -- TODO translate (English placeholder)
+L.THEME_TRADE = "The Workshop"  -- TODO translate (English placeholder)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "수첩이 준비됐다. 필드에서 너를 죽인 자는 그 뒤로 여기에 적힌다. /dn이나 미니맵 버튼으로 연다."
