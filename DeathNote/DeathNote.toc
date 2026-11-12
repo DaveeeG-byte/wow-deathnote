@@ -12,7 +12,7 @@
 ## Notes-zhCN: 野外PvP记仇本：记住谁杀了你，并在他们靠近时提醒你。
 ## Notes-zhTW: 野外PvP記仇本：記住誰殺了你，並在他們靠近時提醒你。
 ## Author: DaveeeG
-## Version: 1.2.1
+## Version: 1.2.2
 ## X-Curse-Project-ID: 1797508
 ## SavedVariables: DeathNoteDB
 ## IconTexture: Interface\AddOns\DeathNote\Media\icon.tga
