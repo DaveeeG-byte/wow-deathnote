@@ -288,6 +288,8 @@ test("harbor and trade: stored choice activates the theme, its files, tints and 
   M.locale = saved
 end)
 
+-- every language has theme words since the translations of 1.3.0: the gap is made here, by loading without
+-- the two word files (a later language, or a theme somebody adds, starts exactly like this)
 test("harbor and trade in a language without theme words (frFR, ruRU, plPL): only that language's own words", function()
   local saved = M.locale
   for _, code in ipairs({ "frFR", "ruRU", "plPL" }) do
@@ -295,8 +297,10 @@ test("harbor and trade in a language without theme words (frFR, ruRU, plPL): onl
     local base = M.Load({ db = { settings = { ui = { theme = "notebook" } } } })
     local words = {}
     for k in pairs(base.Locale.THEME_KEYS) do words[k] = rawget(base.L, k) end
+    local bare = {}
+    for _, f in ipairs(M.Files()) do if not f:find("^Locales/Themes/") then bare[#bare + 1] = f end end
     for _, id in ipairs({ "harbor", "trade" }) do
-      local ns = M.Load({ db = { settings = { ui = { theme = id } } } })
+      local ns = M.Load({ db = { settings = { ui = { theme = id } } }, files = bare })
       eq(ns.Theme.id, id, code)
       for k, w in pairs(words) do eq(rawget(ns.L, k), w, code .. " " .. id .. " " .. k) end
       eq(ns.Locale.themeWords, 0, code .. " " .. id)

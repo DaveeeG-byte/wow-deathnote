@@ -417,8 +417,12 @@ do
   end
   K.check("B10 huHU stamp 'pardoned' on the poster shows", fs ~= nil)
   if fs then
-    K.check("B10 huHU stamp 'pardoned' fits its frame (104 px)", not fs:IsTruncated() and BM.Unbounded(fs) <= 104.5,
-      ("%.0f px at %s pt"):format(BM.Unbounded(fs), tostring(fs._fontSize)))
+    -- two words since 1.3.0 ("KEGYELMET KAPOTT"): the stamp wraps, so the longest word has to fit the frame
+    local text, longest = fs._text or "", 0
+    for w in text:gmatch("%S+") do longest = math.max(longest, #w) end
+    local wordPx = BM.Unbounded(fs) * longest / math.max(1, #text)
+    K.check("B10 huHU stamp 'pardoned' fits its frame (104 px)", not fs:IsTruncated() and wordPx <= 104.5,
+      ("longest word %.0f px at %s pt"):format(wordPx, tostring(fs._fontSize)))
   end
 end
 
