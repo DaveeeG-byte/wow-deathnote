@@ -471,7 +471,7 @@ test("Protection, hit list, foreign bounty from the guild book and the bounties"
   load(40)
   local g = seen("Grimm", "Bart", 40)
   ns.Guild.Get = function(key) if key == "Grimm-Bart" then return { deeds = { { victim = "Kollegin Klar" } } } end end
-  ns.Guild.Hunt = function(key) if key == "Grimm-Bart" then return { key = key } end end
+  ns.Guild.Hunt = function(key) if key == "Grimm-Bart" then return { key = key, releases = { { char = "Kollegin Klar" } } } end end
   ns.Bounty.Has = function() return true end
   ns.Bounty.Rows = function() return { { char = "Kollegin Klar", g = 50, own = false } } end
   kill(g)

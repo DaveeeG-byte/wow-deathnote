@@ -459,4 +459,48 @@ test("Simulate: from tier 3 on there is always a path (any mix of bands, 2000 ra
   end
 end)
 
+---------------------------------------------------------------------------
+-- Bonuses against the real guild book, hit list and bounties (finding 13)
+---------------------------------------------------------------------------
+local function grimmWorld()
+  M.Reset()
+  local W = M.NewWorld()
+  local a = W.client("Anton", "Wurst", "Die Testgilde")
+  local b = W.client("Berta", "Senf", "Die Testgilde")
+  a.login(); b.login(); W.run(90)
+  M.units.grimm = { exists = true, isPlayer = true, name = "Grimm", surname = "Bart", guid = "Player-1-GRIMM",
+    class = "MAGE", level = 43, enemy = true, canAttack = true, faction = "Alliance" }
+  return W, a, b
+end
+local function grimmKills(c, W)
+  c.ns.Tracker.OnUnit("grimm", "target")
+  M.recap = { id = math.random(1, 1e6), events = { { sourceGUID = "Player-1-GRIMM", sourceName = "Grimm Bart",
+    amount = 900, overkill = 100, timestamp = time() - 1, spellName = "Hieb" } } }
+  c.fire("PLAYER_DEAD"); W.run(10)
+end
+
+test("Real guild book, hit list and bounty of a guildmate: protection, hit list and bounty (flags s, h, b)", function()
+  local W, a, b = grimmWorld()
+  grimmKills(b, W)                                   -- he killed my guildmate: a deed in the guild book
+  ok(b.ns.Guild.SetBounty("Grimm-Bart", 300)); ok(b.ns.Guild.Release("Grimm-Bart")); W.run(10)
+  a.ns.Tracker.OnUnit("grimm", "target")
+  a.fire("PARTY_KILL", W.guidOf(a), "Player-1-GRIMM"); W.run(5)
+  local row = a.ns.Ledger.Log()[1]
+  eq(row.band, "orange"); eq(row.f, "shb"); eq(row.s, 4); eq(row.j, 3 + 3 + 5); eq(row.r, 0)
+  eq(#M.errors, 0, M.errors[1])
+end)
+
+test("Own release, own bounty and my own death by him: no hit list, no bounty, no protection", function()
+  local W, a = grimmWorld()
+  grimmKills(a, W)                                   -- he killed me: revenge, but no protection
+  ok(a.ns.Guild.SetBounty("Grimm-Bart", 300)); ok(a.ns.Guild.Release("Grimm-Bart")); W.run(10)
+  ok(a.ns.Guild.Hunt("Grimm-Bart", "all"), "my release stands on the list")
+  W.run(30)
+  a.ns.Tracker.OnUnit("grimm", "target")
+  a.fire("PARTY_KILL", W.guidOf(a), "Player-1-GRIMM"); W.run(5)
+  local row = a.ns.Ledger.Log()[1]
+  eq(row.band, "orange"); eq(row.f, "v", "revenge only"); eq(row.j, 3); eq(row.s, 0); eq(row.e, 2 + 2)
+  eq(#M.errors, 0, M.errors[1])
+end)
+
 M.done("ledger_fixes")

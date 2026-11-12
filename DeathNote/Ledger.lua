@@ -820,11 +820,20 @@ local function protects(key)
   return false
 end
 
+-- on the hit list by someone else than me and my own chars (an own release alone earns nothing: one click before
+-- the kill would be +3 hunt)
 local function onHitList(key)
   local G = ns.Guild
   if not (G and G.Hunt) then return false end
   local ok, h = pcall(G.Hunt, key, "all")
-  return ok and h ~= nil
+  if not ok or type(h) ~= "table" or type(h.releases) ~= "table" then return false end
+  local me = Util.PlayerFullName()
+  for i = 1, #h.releases do
+    local x = h.releases[i]
+    local who = type(x) == "table" and x.char or nil
+    if type(who) == "string" and who ~= me and not (G.IsOwnChar and G.IsOwnChar(who)) then return true end
+  end
+  return false
 end
 
 local function foreignBounty(key)
