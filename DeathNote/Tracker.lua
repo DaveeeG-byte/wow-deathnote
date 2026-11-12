@@ -219,13 +219,12 @@ function Tracker.OnUnit(unit, how)
       if lg and lg ~= g then
         listed, key = nil, namesakeKey(key, g)
       elseif listed then
-        -- the listed one takes the plain key back from a namesake buffered there before
+        -- the listed one takes the plain key back: a namesake's record there is dropped (1.2.x overwrote it), his
+        -- GUID stops pointing at it (he may have a fresher record under his full name); seen again, he gets his own
         if r0 and r0.guid and r0.guid ~= g then
-          local nk = namesakeKey(key, r0.guid)
-          if buffer[nk] then remove(nk) end
-          buffer[key], buffer[nk] = nil, r0
-          r0.key = nk
-          byGUID[r0.guid] = nk
+          if byGUID[r0.guid] == key then byGUID[r0.guid] = nil end
+          buffer[key] = nil
+          count = count - 1
         end
       elseif r0 and r0.guid and r0.guid ~= g then
         key = namesakeKey(key, g)

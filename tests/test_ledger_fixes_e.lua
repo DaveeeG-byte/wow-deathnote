@@ -488,8 +488,13 @@ test("The listed one seen later takes the tracker's plain key from the namesake"
   M.Advance(2)
   M.AddEnemy("nameplate1", { name = "Gerd", level = 34, guid = G1 })
   M.FireEvent("NAME_PLATE_UNIT_ADDED", "nameplate1")
-  eq(ns.Tracker.ByGUID(G1) and ns.Tracker.ByGUID(G1).key, "Gerd-Forever")
+  local r1 = ns.Tracker.ByGUID(G1)
+  eq(r1 and r1.key, "Gerd-Forever"); eq(r1 and r1.level, 34)
+  eq(ns.Tracker.ByGUID(G2), nil, "the namesake's record under the plain key is dropped, not handed to the listed one")
+  eq(ns.Tracker.Count(), 1)
+  M.FireEvent("NAME_PLATE_UNIT_ADDED", "nameplate2")    -- seen again: a record of his own
   eq(ns.Tracker.ByGUID(G2) and ns.Tracker.ByGUID(G2).key, "Gerd-Forever#93-G2")
+  eq(ns.Tracker.ByGUID(G1).key, "Gerd-Forever")
 end)
 
 test("My kill on a namesake the tracker holds under the listed one's plain key is no revenge", function()
