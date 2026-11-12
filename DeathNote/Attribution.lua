@@ -571,10 +571,14 @@ local function inDuel() return duelAt ~= nil and GetTime() - duelAt < A.DUEL_WIN
 -- Event, GetDuelerInfo, AcceptDuel and the third StartDuel argument are read this way by an addon on the same
 -- client; unmeasured here (/dn probe: probe.kills.deathDuel).
 -- The opponent is known by GUID, else by his full name (first name and surname); a first name alone never holds
--- anybody out, and with neither nothing is held out. A request that does not start within DEATH_DUEL_REQUEST
--- seconds is let go; the start is AcceptDuel or a duel boundary event. DUEL_FINISHED, a loading screen or zone
--- change, and the death of either of us end it (DEATH_DUEL_AFTER seconds of grace for the death that ends it).
-local deathDuel   -- { full = "first surname" (lower), guid, at, started, ended } (GetTime)
+-- anybody out, and with neither nothing is held out. A request to me that does not start within DEATH_DUEL_REQUEST
+-- seconds is let go; its start is AcceptDuel or a duel boundary event. My own challenge has no start signal of its
+-- own in the client's API as far as the code shows (AcceptDuel is the other side's call, the boundary events come
+-- only when one leaves the field): it counts as under way from the request on and is held until it ends, at most
+-- DEATH_DUEL_MAX. DUEL_FINISHED (also sent for a declined challenge, unmeasured here), a loading screen and the
+-- death of either of us end it (DEATH_DUEL_AFTER seconds of grace for the death that ends it); a zone change ends
+-- only a request to me that has not started (a duel field may lie across a zone border).
+local deathDuel   -- { full = "first surname" (lower), guid, at, started, ended, own } (GetTime)
 
 -- "first surname" in lower case from "Name Surname", "Name-Surname" or (name, surname); nil without a surname
 local function fullName(name, surname)
@@ -625,7 +629,11 @@ function A.OnStartDuel(target, _, toTheDeath)
     guid = Str(Call(_G.UnitGUID, unit))
     name, surname = Call(_G.UnitName, unit)
   end
-  A.OnDeathDuel(Str(name) or Str(target), guid, Str(surname))
+  if A.OnDeathDuel(Str(name) or Str(target), guid, Str(surname)) and deathDuel then
+    -- my own challenge: under way from here on (see above)
+    deathDuel.own = true
+    deathDuel.started = deathDuel.started or deathDuel.at
+  end
 end
 
 local deathDuelLive
@@ -640,6 +648,12 @@ end
 function A.OnDeathDuelEnded()
   local d = deathDuelLive()
   if d and not d.ended then d.ended = GetTime() end
+end
+
+-- a zone change: ends a request that has not started; a duel under way goes on (its field may cross a zone border)
+function A.OnDeathDuelZone()
+  local d = deathDuelLive()
+  if d and not d.ended and not d.started then d.ended = GetTime() end
 end
 
 function deathDuelLive()
@@ -1035,7 +1049,7 @@ if type(_G.hooksecurefunc) == "function" and type(_G.AcceptDuel) == "function" t
   pcall(_G.hooksecurefunc, "AcceptDuel", function() pcall(A.OnDeathDuelStarted) end)
 end
 ns:RegisterEvent("PLAYER_ENTERING_WORLD", function() A.OnDeathDuelEnded() end)
-ns:RegisterEvent("ZONE_CHANGED_NEW_AREA", function() A.OnDeathDuelEnded() end)
+ns:RegisterEvent("ZONE_CHANGED_NEW_AREA", function() A.OnDeathDuelZone() end)
 ns:RegisterEvent("DUEL_FINISHED", function()
   A.OnDeathDuelEnded()
   if _G.C_Timer and _G.C_Timer.After then _G.C_Timer.After(1, function() duelAt = nil end) else duelAt = nil end

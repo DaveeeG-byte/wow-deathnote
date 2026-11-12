@@ -201,4 +201,52 @@ test("A move never merges two GUIDs; the check at start lets a victim of another
   eq(standing("Gerd-Forever"), "1:1 even")
 end)
 
+---------------------------------------------------------------------------
+-- Duel to the death: my own challenge, a zone change (finding 3)
+---------------------------------------------------------------------------
+test("My own challenge to the death: held until DUEL_FINISHED (30 s grace), at most 15 min", function()
+  fresh()
+  local g = seen("Grimm", "Bart", 40)
+  M.units.target = M.units["nameplate" .. plate]
+  ns.Attribution.OnStartDuel("target", nil, true)
+  M.Advance(70); ok(ns.Attribution.DuelFoe(g), "70 s after my challenge: still the opponent")
+  kill(g)
+  eq(ns.Ledger.Victim("Grimm-Bart"), nil, "his death in the duel is no rap sheet kill")
+  -- declined (or over): DUEL_FINISHED ends it
+  M.Advance(60)
+  ns.Attribution.OnStartDuel("target", nil, true)
+  M.FireEvent("DUEL_FINISHED")
+  M.Advance(29); ok(ns.Attribution.DuelFoe(g), "grace")
+  M.Advance(2); no(ns.Attribution.DuelFoe(g), "over")
+  -- nothing ever ends it: let go after 15 min
+  ns.Attribution.OnStartDuel("target", nil, true)
+  M.Advance(899); ok(ns.Attribution.DuelFoe(g), "held up to 15 min")
+  M.Advance(2); no(ns.Attribution.DuelFoe(g), "let go after 15 min")
+end)
+
+test("A zone change ends a request that has not started, never a duel under way", function()
+  fresh()
+  local g = seen("Grimm", "Bart", 40)
+  local function challenge()
+    _G.GetDuelerInfo = function() return g end
+    M.FireEvent("DUEL_TO_THE_DEATH_REQUESTED", "Grimm")
+    _G.GetDuelerInfo = nil
+  end
+  challenge(); M.FireEvent("DUEL_INBOUNDS")
+  M.Advance(20); M.FireEvent("ZONE_CHANGED_NEW_AREA")
+  M.Advance(31); ok(ns.Attribution.DuelFoe(g), "under way across the zone border")
+  kill(g)
+  eq(ns.Ledger.Victim("Grimm-Bart"), nil, "his death in the duel is no rap sheet kill")
+  M.Advance(31)
+  M.units.target = M.units["nameplate" .. plate]
+  ns.Attribution.OnStartDuel("target", nil, true)
+  M.Advance(20); M.FireEvent("ZONE_CHANGED_NEW_AREA")
+  M.Advance(31); ok(ns.Attribution.DuelFoe(g), "my own challenge counts as under way")
+  M.FireEvent("PLAYER_ENTERING_WORLD"); M.Advance(31)
+  no(ns.Attribution.DuelFoe(g), "a loading screen ends it")
+  challenge()
+  M.Advance(20); M.FireEvent("ZONE_CHANGED_NEW_AREA")
+  M.Advance(31); no(ns.Attribution.DuelFoe(g), "a request to me that never started ends at the zone change")
+end)
+
 M.done("ledger_fixes_e")
