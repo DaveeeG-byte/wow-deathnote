@@ -45,7 +45,9 @@ local function world(code)
       ShowFriends = function() end,
     }
   end })
-  for _, f in ipairs({ "Alert.lua", "UI.lua", "Extras.lua" }) do BM.Load(ADDON .. "/" .. f, ns) end
+  for _, f in ipairs({ "Alert.lua", "UI.lua", "Extras.lua", "Humor.lua" }) do
+    if io.open(ADDON .. "/" .. f) then BM.Load(ADDON .. "/" .. f, ns) end
+  end
   AM.FireEvent("PLAYER_LOGIN")
   AM.FireEvent("PLAYER_ENTERING_WORLD")
   return ns
