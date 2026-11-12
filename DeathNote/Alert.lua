@@ -462,10 +462,15 @@ function Look.FitText(fs, text, opts)
     if fs.fontSize ~= s or fs.fontKind ~= kind then Look.Font(fs, kind, s, flags) end
   end
   local wrapped = false
-  -- the longest word (by characters) on its own: wider than the line means cut even when the client wraps
+  -- the longest word (by characters) on its own: wider than the line means cut even when the client wraps.
+  -- Chinese and Japanese have no spaces and the client breaks between any two of their characters (U+3000 to
+  -- U+9FFF: punctuation, kana, ideographs; U+FF00 to U+FFEF: full-width forms): each of them ends a word, only
+  -- runs of other characters (a Latin name in a Chinese line) count. By character, not by language: the reason
+  -- is free text and names are Latin in every language. Hangul stays a word (Korean separates words by spaces).
   local function wordTooWide()
     local long, n = nil, 0
-    for word in text:gmatch("%S+") do
+    local words = text:gsub("[\227-\233][\128-\191][\128-\191]", " "):gsub("\239[\188-\191][\128-\191]", " ")
+    for word in words:gmatch("%S+") do
       local c = #word:gsub("[\128-\191]", "")
       if c > n then long, n = word, c end
     end

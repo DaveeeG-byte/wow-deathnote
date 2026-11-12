@@ -167,5 +167,44 @@ do
   K.check("B02 a font changed from outside is fitted again (not the cached answer)", f2._fontSize == 11, f2._fontSize)
 end
 
+------------------------------------------------------------------------
+-- B03: a Chinese text without spaces that fits its lines is not "a word too wide" (the client breaks between
+-- CJK characters); one that needs more lines still counts as cut, and so does a Latin word too wide in it
+------------------------------------------------------------------------
+for _, code in ipairs({ "zhCN", "zhTW" }) do
+  local ns = K.world(code)
+  local AM, BM, G, Look = K.AM, K.BM, K.G, ns.Look
+  local parent = G.CreateFrame("Frame", nil, G.UIParent)
+  parent:SetSize(400, 200); parent:SetPoint("CENTER")
+  local fs = Look.Text(parent, "body", 11, Look.INK)
+  fs:SetPoint("TOPLEFT", 0, 0); fs:SetWidth(286)
+  local text = "他在荆棘谷的路上一次又一次地偷袭我们公会的低级成员整整一个晚上"   -- 31 characters: two lines of 286 px
+  local opts = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
+  local ret = Look.FitText(fs, text, opts)
+  K.check(code .. " B03 FitText keeps 11 pt for a CJK text that fits two lines", ret == true and fs.cut == false and fs._fontSize == 11,
+    ("ret=%s cut=%s size=%s"):format(tostring(ret), tostring(fs.cut), tostring(fs._fontSize)))
+  ret = Look.FitText(fs, text .. text .. text, opts)
+  K.check(code .. " B03 a CJK text of six lines is still cut", ret == false and fs.cut == true, tostring(ret))
+  ret = Look.FitText(fs, "他在" .. ("W"):rep(40) .. "的路上", opts)
+  K.check(code .. " B03 a Latin word wider than the line inside CJK is still cut", ret == false, tostring(ret))
+  -- the real path: alarm for a target of the hit list, two releasers, a reason of 20 characters
+  local P = ns.Guild.Proto
+  K.tick(30); K.settle(); AM.Advance(120)
+  local why = "他在荆棘谷的路上一次又一次地偷袭我们公会的"
+  K.gmsg(P.EncodeHunt({ key = "Ziel-Eins", display = "Ziel Eins", class = "ROGUE", level = 55, t = _G.time(), by = "Kollege Langername", why = why }))
+  K.gmsg(P.EncodeHunt({ key = "Ziel-Eins", display = "Ziel Eins", class = "ROGUE", level = 55, t = _G.time(), by = "Zweiter Kollegenname", why = why }), "Zweiter-Forever")
+  K.tick(10); K.settle()
+  BM.levels.player = 40
+  ns:Fire("GUILD_ENEMY_SPOTTED", "Ziel-Eins", nil, "other", "hunt"); K.tick()
+  local popup = rawget(G, "DeathNoteAlert")
+  local line = popup and popup:IsShown() and popup.line
+  K.check(code .. " B03 alarm came", line ~= nil)
+  if line then
+    K.check(code .. " B03 alarm line names both releasers at 11 pt (it fits two lines)",
+      line._fontSize == 11 and K.plain(line._text):find("Zweiter", 1, true) ~= nil and line.cut ~= true,
+      ("size %s, cut %s, text %s"):format(tostring(line._fontSize), tostring(line.cut), K.plain(line._text)))
+  end
+end
+
 io.write(("Layout fixes 1.2.2 (hunt B): %d green, %d red\n"):format(K.ok, K.bad))
 os.exit(K.bad == 0 and 0 or 1)
