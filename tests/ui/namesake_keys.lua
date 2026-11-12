@@ -43,6 +43,23 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   check(code .. " guild, friends' and hit lists got the plain key only", #hooked > 0 and hash == 0, table.concat(hooked, ","))
   check(code .. " ... namely Name-Realm", hooked[#hooked] == "Rolf-Forever", hooked[#hooked])
 
+  -- his victim sheet on the rap sheet: no link to A's book entry, his own state (a victim, not A's open case)
+  ns:Fire("TOGGLE_UI"); K.tick(); K.settle()
+  local tabBtn
+  for _, f in ipairs(K.BM.frames) do if f.id == "record" and f.mark and f._scripts and f._scripts.OnClick then tabBtn = f end end
+  if tabBtn then tabBtn._scripts.OnClick(tabBtn, "LeftButton"); K.tick() end
+  local P, rowB
+  for _, f in ipairs(K.BM.frames) do if f.enemy and f.death then P = f end end
+  for _, f in ipairs(K.BM.frames) do if f.item and f.under and f:IsVisible() and f.item.key == vkey then rowB = f end end
+  check(code .. " B's row on the rap sheet", rowB ~= nil)
+  if rowB and P then
+    rowB._scripts.OnClick(rowB, "LeftButton"); K.tick()
+    local V = P.record.vic
+    check(code .. " B's victim sheet: no link to A's book entry", V.headHit.key == nil, V.headHit.key)
+    check(code .. " B's victim sheet: a victim, not A's case", (V.state._text or ""):gsub(" ", "") == L.STATE_VICTIM:gsub(" ", ""), V.state._text)
+  end
+  ns:Fire("TOGGLE_UI"); K.tick()
+
   local tipB = tipOver("mouseover", { name = "Rolf", level = 57, guid = B, class = "MAGE" })
   check(code .. " tooltip over B: not A's book entry", not tipB:find(L.TIP_IN_BOOK, 1, true), tipB)
   check(code .. " tooltip over B: his rap sheet line", tipB:find(L.TIP_IN_RECORD, 1, true) ~= nil, tipB)

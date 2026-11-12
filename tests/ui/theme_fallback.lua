@@ -18,7 +18,15 @@ local function world(code, theme, fails)
   BM.mediaDir = DIR .. "/DeathNote/Media"
   BM.textureFails = fails
   AM.locale = code
+  local files = {}
+  for _, f in ipairs(AM.FILES) do
+    files[#files + 1] = f
+    if f == "Themes/harbor.lua" then files[#files + 1] = "../tests/ui/theme_noslip.lua" end
+  end
+  local saved = AM.FILES
+  AM.FILES = files
   local ns = AM.Load({ noLogin = true, db = { settings = { ui = { theme = theme } } } })
+  AM.FILES = saved
   for _, f in ipairs({ "Alert.lua", "UI.lua", "Start.lua", "Extras.lua", "Humor.lua" }) do BM.Load(DIR .. "/DeathNote/" .. f, ns) end
   AM.FireEvent("PLAYER_LOGIN")
   AM.FireEvent("PLAYER_ENTERING_WORLD")
@@ -65,6 +73,18 @@ for _, theme in ipairs({ "harbor", "trade" }) do
     end
     check(n .. "no errors", #W.AM.errors == 0 and #W.BM.violations == 0, W.AM.errors[1] or W.BM.violations[1])
   end
+end
+
+-- a cover without its own slip tint colours the notice slip like its paper
+do
+  local W = world("deDE", "noslip", false)
+  local ns = W.ns
+  check("noslip: theme active", ns.Theme.id == "noslip", ns.Theme.id)
+  W.tick(30); W.settle()
+  local b = rawget(W.BM.G, "DeathNoteBanner")
+  local paper = ns.Look.TINT.paper
+  local v = b and b.bg and b.bg._vc
+  check("noslip: the slip carries the paper's tint", v and paper and hex(v) == hex(paper), v and hex(v))
 end
 
 io.write(("Theme fallback colours: %d green, %d red\n"):format(okN, badN))
