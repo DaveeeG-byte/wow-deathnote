@@ -928,11 +928,14 @@ local function firstOf(name)
   return (name:match("^([^%s%-]+)") or name):lower()
 end
 
+-- the same kill twice: same GUID or key within DEDUPE seconds; the first name decides only where a GUID is missing
+-- on either side (the honour line names no GUID), so two namesakes killed close together count twice
 local function isDup(gt, guid, key, first)
   for i = #recent, 1, -1 do
     local x = recent[i]
     if gt - x.gt < Ledger.DEDUPE then
-      if (guid and x.guid == guid) or (key and x.key == key) or (first and x.first == first) then return true end
+      if (guid and x.guid == guid) or (key and x.key == key) then return true end
+      if first and x.first == first and not (guid and x.guid) then return true end
     end
   end
   return false

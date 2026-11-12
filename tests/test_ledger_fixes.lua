@@ -539,4 +539,17 @@ test("Honour line with positions: the victim is the first argument (fallback on)
   eq(ns.Store.Get("Grimm-Bart").revenge, 1, "revenge on the right name")
 end)
 
+---------------------------------------------------------------------------
+-- Dedupe by GUID where there is one (E10)
+---------------------------------------------------------------------------
+test("Two namesakes with GUIDs killed 5 s apart count twice; the same GUID within 10 s once", function()
+  fresh()
+  local a = seen("Grimm", "Eins", 40)
+  local b = seen("Grimm", "Zwei", 40)
+  kill(a); M.Advance(5); kill(b)
+  eq(ns.Ledger.Repute().n, 2, "two players"); eq(ns.Ledger.VictimCount(), 2)
+  M.Advance(3); kill(b)
+  eq(ns.Ledger.Repute().n, 2, "the same GUID again within 10 s")
+end)
+
 M.done("ledger_fixes")
