@@ -333,5 +333,72 @@ do
   K.check("B05 a cut tally still shows whole in its tooltip", tip ~= "" and tip == E.tally.full, tip)
 end
 
+------------------------------------------------------------------------
+-- B08: opts.must works: past the ladder the text goes down to the smallest size of the scale (wrapped in its
+-- lines; the popup cannot grow, a secure button lies over it and a third line would lie on the hint). Together
+-- with the order in SetLine the alarm line stays whole for the heaviest data in all 21 languages: own book
+-- (12 kills, 12 revenges, long place, level far above, on the hit list), hit list (two long names, a reason of 60
+-- characters), guild (9 kills, long first name of the victim), each also after a refresh of the line
+------------------------------------------------------------------------
+do
+  local ns = K.world("deDE")
+  local G, Look = K.G, ns.Look
+  local parent = G.CreateFrame("Frame", nil, G.UIParent)
+  parent:SetSize(400, 200); parent:SetPoint("CENTER")
+  local fs = Look.Text(parent, "body", 11, Look.INK)
+  fs:SetPoint("TOPLEFT", 0, 0); fs:SetWidth(100)
+  local text = "eins zwei drei vier fünf sechs sieben"   -- two lines of 100 px only at 9 pt
+  local plain = Look.FitText(fs, text, { sizes = { 11, 10 }, lines = 2, wrapFirst = true })
+  K.check("B08 control: without must the text is cut after two lines at 10 pt", plain == false and fs._fontSize == 10)
+  local must = Look.FitText(fs, text, { sizes = { 11, 10 }, lines = 2, wrapFirst = true, must = true })
+  K.check("B08 with must the text goes down to the smallest size of the scale and shows whole", must == true
+    and not fs:IsTruncated() and fs._fontSize == Look.SIZE[1] and fs._maxl == 2,
+    ("%s pt, %s lines, whole %s"):format(tostring(fs._fontSize), tostring(fs._maxl), tostring(must)))
+  local long = Look.FitText(fs, text .. " " .. text, { sizes = { 11, 10 }, lines = 2, wrapFirst = true, must = true })
+  K.check("B08 more than fits at the smallest size: false (the caller lets content give way), no third line",
+    long == false and fs._maxl == 2, tostring(long))
+  K.check("B08 the last step of the alarm line has must", Look.FIT_LINE_LAST.must == true)
+end
+for _, code in ipairs({ "enUS", "deDE", "frFR", "esES", "itIT", "ptBR", "ruRU", "koKR", "zhCN", "zhTW", "svSE", "nbNO",
+  "daDK", "fiFI", "nlNL", "plPL", "csCZ", "huHU", "hrHR", "ukUA", "trTR" }) do
+  local ns = K.world(code)
+  local AM, BM, G = K.AM, K.BM, K.G
+  local P = ns.Guild.Proto
+  K.tick(30); K.settle(); AM.Advance(120)
+  local t = _G.time()
+  local why = code:find("^zh") and "他在荆棘谷的路上一次又一次地偷袭我们公会的低级成员整整一个晚上都没有停手真的太过分了必须有人管管他才行啊啊"
+    or "Camps the road in Stranglethorn all night long, again and xx"
+  local k = ns.Store.AddManual("Maximilianus", "Wunderkammer")
+  for i = 1, 12 do
+    ns.Store.ApplyKill({ name = "Maximilianus", surname = "Wunderkammer", class = "MAGE", level = 60 },
+      { t = t - 100 * i, zone = "Schlingendorntal", subzone = "Die Verwuestete Schlucht Langname" }, true)
+  end
+  for _ = 1, 12 do ns.Store.AddRevenge(k) end
+  K.gmsg(P.EncodeHunt({ key = "Maximilianus-Wunderkammer", display = "Maximilianus Wunderkammer", class = "MAGE", level = 60, t = t - 5,
+    by = "Wwwwwwwwwwww Wwwwwwwwwwww", why = why }), "Wwwwwwwwwwww-Forever")
+  K.gmsg(P.EncodeHunt({ key = "Ziel-Eins", display = "Ziel Eins", class = "ROGUE", level = 60, t = t - 5, by = "Wwwwwwwwwwww Wwwwwwwwwwww", why = why }), "Wwwwwwwwwwww-Forever")
+  K.gmsg(P.EncodeHunt({ key = "Ziel-Eins", display = "Ziel Eins", class = "ROGUE", level = 60, t = t - 5, by = "Mmmmmmmmmmmm Mmmmmmmmmmmm", why = why }), "Mmmmmmmmmmmm-Forever")
+  for i = 1, 9 do
+    K.gmsg(P.EncodeKill({ key = "Fremd-Langer", display = "Fremd Langer", class = "MAGE", level = 60, zone = "Z", t = t - 30 - i, victim = "Wwwwwwwwwwww" }, "K" .. i), "Wwwwwwwwwwww-Forever")
+  end
+  K.tick(10); for _ = 1, 4 do K.settle() end
+  for _ = 1, 10 do K.tick(20) end   -- past the cooldown the notices of the revenges set
+  BM.levels.player, BM.levels.mouseover = 1, 60
+  local function look(what)
+    local popup = rawget(G, "DeathNoteAlert")
+    K.check(code .. " B08 alarm " .. what .. " came", popup and popup:IsShown())
+    if popup and popup:IsShown() then
+      ns:Fire(what == "own" and "ENEMY_UPDATED" or "GUILD_UPDATED", what == "own" and k or nil); K.tick()
+      K.check(code .. " B08 alarm " .. what .. ": line, name and title whole (also after a refresh)", not popup.line:IsTruncated()
+        and not popup.name:IsTruncated() and not popup.title:IsTruncated(), ("%s pt: %s"):format(tostring(popup.line._fontSize), K.plain(popup.line._text)))
+    end
+    K.settle()
+  end
+  AM.AddEnemy("mouseover", { name = "Maximilianus", surname = "Wunderkammer", guid = "Player-1-MW", level = 60, class = "MAGE" })
+  AM.FireEvent("UPDATE_MOUSEOVER_UNIT"); K.tick(); look("own")
+  ns:Fire("GUILD_ENEMY_SPOTTED", "Ziel-Eins", nil, "other", "hunt"); K.tick(); look("hit list")
+  ns:Fire("GUILD_ENEMY_SPOTTED", "Fremd-Langer", nil, "other", nil); K.tick(); look("guild")
+end
+
 io.write(("Layout fixes 1.2.2 (hunt B): %d green, %d red\n"):format(K.ok, K.bad))
 os.exit(K.bad == 0 and 0 or 1)

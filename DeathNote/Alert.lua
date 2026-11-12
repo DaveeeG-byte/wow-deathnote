@@ -441,8 +441,11 @@ end
 -- Look.FitText(fs, text, opts): set text so that it is never cut silently. Order of round 1.2.2:
 -- it fits: done; else the next smaller size of opts.sizes (default: the current one only); then wrap up to
 -- opts.lines lines in the smallest size; last an ellipsis by the client and fs.full = text for the tooltip
--- (Look.TipIfCut). opts.must = true: never an ellipsis worth hiding (no tooltip possible there): smallest size and
--- all lines. opts.kind/flags: font (default: what Look.Font set last). Returns true when the whole text shows.
+-- (Look.TipIfCut). opts.must = true (no tooltip possible there, the alarm popup): before the ellipsis the text
+-- goes on down the scale (Look.SIZE) to its smallest size, wrapped in opts.lines lines; more lines are not
+-- allowed (the popup has a fixed height under a secure button, a third line would lie on the hint), so the
+-- caller lets content give way when even that returns false (SetLine). opts.kind/flags: font (default: what
+-- Look.Font set last). Returns true when the whole text shows.
 -- Costs: one SetText per tried size; same text, width and font as last time: nothing.
 -- State (1.2.2): every call starts from the same state (no wrap, opts.lines lines, the first size of the ladder) and
 -- ends in the state of the field: wrap on when opts.lines > 1, so nothing of a short text that fitted on one
@@ -525,6 +528,16 @@ function Look.FitText(fs, text, opts)
     fs:SetWordWrap(true); wrapped = true
     fs:SetText(text)
     if not cut() then return done(true) end
+  end
+  if opts.must then
+    for i = #Look.SIZE, 1, -1 do
+      local s = Look.SIZE[i]
+      if s < sizes[#sizes] then
+        size(s)
+        fs:SetText(text)
+        if not cut() then return done(true) end
+      end
+    end
   end
   return done(false)
 end
@@ -1346,8 +1359,8 @@ end
 
 Look.FIT_TITLE, Look.FIT_TITLE_NR1 = { sizes = { 13, 11 } }, { sizes = { 16, 13, 11 } }
 Look.FIT_NAME = { sizes = { 22, 19, 16, 13 } }
-Look.FIT_LINE = { sizes = { 11 }, lines = 2, must = true, wrapFirst = true }
-Look.FIT_LINE_LAST = { sizes = { 11, 10 }, lines = 2, must = true, wrapFirst = true }
+Look.FIT_LINE = { sizes = { 11 }, lines = 2, wrapFirst = true }
+Look.FIT_LINE_LAST = { sizes = { 11, 10 }, lines = 2, wrapFirst = true, must = true }
 local SetName, SetLine
 -- The only ways to write popup.name and popup.line (1.2.2): every refresh (ENEMY_UPDATED, GUILD_UPDATED,
 -- ENEMY_REKEYED) goes through them, so the name keeps shrinking instead of being cut and the line keeps the
@@ -1364,9 +1377,11 @@ SetLine = function(e, guild)
   end
   -- Text line in two lines at most; if it does not fit, first the place gives way, then "last" (own book)
   -- or the long reason, then the second name (hit list); last of all 10 pt
+  -- (the guild line has nothing that gives way: it takes the last step, 10 pt and below, at once)
   for drop = 0, 2 do
     local s = (guild == "hunt" and HuntLineFor(e, drop)) or (guild and GuildLineFor(e)) or OwnLine(e, drop)
-    if Look.FitText(popup.line, lead .. s, drop < 2 and Look.FIT_LINE or Look.FIT_LINE_LAST) or (guild and guild ~= "hunt") then break end
+    local last = drop == 2 or (guild and guild ~= "hunt")
+    if Look.FitText(popup.line, lead .. s, last and Look.FIT_LINE_LAST or Look.FIT_LINE) or last then break end
   end
 end
 local function Fill(e, unit, how, guild)
