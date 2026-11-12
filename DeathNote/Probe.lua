@@ -70,7 +70,7 @@ Probe.EVENTS = {
   "CHAT_MSG_COMBAT_HONOR_GAIN", "PLAYER_PVP_KILLS_CHANGED", "NAME_PLATE_UNIT_ADDED", "UNIT_TARGET",
   "PLAYER_FOCUS_CHANGED", "UPDATE_MOUSEOVER_UNIT", "DUEL_REQUESTED", "DUEL_FINISHED",
   "CHAT_MSG_ADDON", "PLAYER_GUILD_UPDATE", "ADDON_RESTRICTION_STATE_CHANGED",
-  "FRIENDLIST_UPDATE", "BN_CHAT_MSG_ADDON",
+  "FRIENDLIST_UPDATE", "BN_CHAT_MSG_ADDON", "CVAR_UPDATE",
 }
 
 local scratch
@@ -141,6 +141,11 @@ function Probe.Run(verbose, opts)
   out.openWorld = Util.IsOpenWorld()
   out.inCombat = S(Call(InCombatLockdown))
   out.nameplatesOn = Util.NameplatesOn()
+  -- 1.2.2: which event noticed the last switch of the enemy plates, and the last CVAR_UPDATE arguments
+  out.plates = { known = Util.platesOn, by = Util.platesSource, events = {} }
+  for i, e in ipairs(Util.plateLog or {}) do
+    out.plates.events[i] = { t = e.t, event = e.event, a1 = e.a1, a2 = e.a2, switched = e.switched }
+  end
   out.player = { name = describeUnit("player").name, key = Util.KeyOfUnit("player"), realm = Util.OwnRealm() }
   if Util.True(Call(UnitExists, "target")) then out.target = describeUnit("target") end
   -- current recap / meter as seen now
@@ -220,6 +225,17 @@ function Probe.Run(verbose, opts)
       clog = out.combatlog and (out.combatlog.dead and L.PROBE_DEAD or (out.combatlog.on and L.WORD_ON or L.WORD_OFF)) or "?" }))
     Util.Print(Fmt(L.PROBE_PLATES, { plates = out.nameplatesOn and L.WORD_ON or L.PROBE_PLATES_OFF,
       open = yn(out.openWorld) }))
+    -- technical line (event names and raw arguments, no translation): newest first, * = this one switched them
+    do
+      local parts = {}
+      local nowT = Util.Num(Call(GetTime)) or 0
+      for _, e in ipairs(out.plates.events) do
+        local args = e.event == "CVAR_UPDATE" and ("(" .. e.a1 .. ", " .. e.a2 .. ")") or ""
+        parts[#parts + 1] = e.event .. args .. (e.switched and "*" or "") .. " -" .. math.floor(nowT - (e.t or 0) + 0.5) .. "s"
+      end
+      Util.Print("nameplateShowEnemies: " .. tostring(out.plates.known) .. " (" .. tostring(out.plates.by) .. ") · "
+        .. (#parts > 0 and table.concat(parts, " · ") or "CVAR_UPDATE -"))
+    end
     if out.target then
       Util.Print(Fmt(L.PROBE_TARGET, { name = tostring(out.target.name), guid = tostring(out.target.guid),
         class = tostring(out.target.class), enemy = tostring(out.target.enemy), me = tostring(out.target.targetsMe) }))

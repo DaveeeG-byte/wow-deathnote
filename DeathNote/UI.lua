@@ -3589,6 +3589,28 @@ function UX.UpdateStatus()
   end
 end
 
+-- 1.2.2: the line "enemy nameplates are off" follows the plates at once. Events (CVAR_UPDATE, a nameplate
+-- appearing) reach Util.CheckPlates in Core/Tracker; the V key may change the CVar without any event, so while
+-- the book is open a cheap poll compares the CVar every PLATE_POLL seconds. The poll is a C_Timer chain that is
+-- started by the book's OnShow and cancelled by its OnHide: with the book closed nothing runs.
+UX.PLATE_POLL = 0.5
+local platePoll          -- C_Timer handle while the book is open, nil otherwise
+local function PlatePollTick()
+  platePoll = nil
+  if not F or not F:IsShown() then return end
+  local U = ns.Util
+  if U and U.CheckPlates then U.CheckPlates("poll") end
+  if F:IsShown() then platePoll = C_Timer.NewTimer(UX.PLATE_POLL, PlatePollTick) end
+end
+function UX.StartPlatePoll()
+  if platePoll then platePoll:Cancel(); platePoll = nil end
+  PlatePollTick()
+end
+function UX.StopPlatePoll()
+  if platePoll then platePoll:Cancel(); platePoll = nil end
+end
+function UI.PlatePollActive() return platePoll ~= nil end
+
 -- Suche: Teilstring im angezeigten Namen (Journal und Faelle: Taeter, Kandidat oder Ort)
 local function Matches(text, q)
   return type(text) == "string" and text:lower():find(q, 1, true) ~= nil
@@ -4183,9 +4205,11 @@ local function Build()
   end)
   F:SetScript("OnShow", function()
     Look.Sound("open")
+    UX.StartPlatePoll()
     if dirty then Refresh() end
   end)
   F:SetScript("OnHide", function()
+    UX.StopPlatePoll()
     HideMenu()
     if P and P.enemy and P.enemy.note:HasFocus() then P.enemy.note:ClearFocus() end
     if LP and LP.search:HasFocus() then LP.search:ClearFocus() end
@@ -4503,6 +4527,14 @@ ns:On("READY", function()
   UI.UpdateMinimap()
 end)
 ns:On("TOGGLE_UI", function() UI.Toggle() end)
+-- 1.2.2: enemy plates switched: the status line at once (only the non-guild sheets show the plates line)
+ns:On("PLATES_CHANGED", function()
+  if F and F:IsShown() and LP then
+    if state.filter ~= "guild" then UX.UpdateStatus() end
+  else
+    dirty = true
+  end
+end)
 ns:On("ENEMY_UPDATED", RequestRefresh)
 ns:On("DEATH_RECORDED", RequestRefresh)
 ns:On("REVENGE", RequestRefresh)

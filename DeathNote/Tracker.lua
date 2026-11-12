@@ -278,6 +278,13 @@ ns:RegisterEvent("ZONE_CHANGED_NEW_AREA", updateActive)
 ns:RegisterEvent("NAME_PLATE_UNIT_ADDED", function(_, unit)
   if IsSecret(unit) or type(unit) ~= "string" then return end
   plates[unit] = true
+  -- 1.2.2: a plate appeared while the enemy plates count as off (or unknown): read the CVar once more.
+  -- Hot path: one compare when they are on. (Friendly plates fire this too, hence no blind "on".)
+  if Util.platesOn ~= true then
+    local was = Util.platesOn
+    Util.CheckPlates("NAME_PLATE_UNIT_ADDED")
+    if Util.platesOn ~= was then Util.LogPlateEvent("NAME_PLATE_UNIT_ADDED").switched = true end
+  end
   if Tracker.active then Tracker.OnUnit(unit, "nameplate") end
 end)
 ns:RegisterEvent("NAME_PLATE_UNIT_REMOVED", function(_, unit)

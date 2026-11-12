@@ -372,6 +372,41 @@ function Util.NameplatesOn()
   return v == true
 end
 
+-- 1.2.2: the last known state of the enemy plates (nil = not read yet or unreadable). Every hint that they may
+-- have changed (CVAR_UPDATE, a nameplate appearing, the book's poll while it is open) calls Util.CheckPlates;
+-- only a real change fires PLATES_CHANGED, so the book's status line follows at once.
+-- Util.platesSource names what noticed the last change; Util.plateLog keeps the last CVAR_UPDATE arguments
+-- for /dn probe (which event the client really sends when the plates are switched).
+Util.platesOn = nil
+Util.platesSource = nil
+Util.plateLog = {}
+local PLATE_LOG_MAX = 6
+function Util.CheckPlates(source)
+  local on = Util.NameplatesOn()
+  if on == nil or on == Util.platesOn then return on end
+  Util.platesOn = on
+  Util.platesSource = source
+  ns:Fire("PLATES_CHANGED", on, source)
+  return on
+end
+
+-- one marker per CVAR_UPDATE argument: plain strings/numbers/booleans as they are, secrets as "<secret>"
+local function plateArg(v)
+  if IsSecret(v) then return "<secret>" end
+  if v == nil then return "nil" end
+  local t = type(v)
+  if t == "string" then return #v > 40 and v:sub(1, 40) or v end
+  if t == "number" or t == "boolean" then return tostring(v) end
+  return "<" .. t .. ">"
+end
+function Util.LogPlateEvent(event, a1, a2)
+  local log = Util.plateLog
+  local e = { t = _G.GetTime and Util.Num(Call(_G.GetTime)) or 0, event = event, a1 = plateArg(a1), a2 = plateArg(a2) }
+  table.insert(log, 1, e)
+  while #log > PLATE_LOG_MAX do table.remove(log) end
+  return e
+end
+
 local PREFIX = "|cffc41e3aDeathNote|r: "
 -- Note of an own entry as shown (1.2.0): the stored free text; an entry taken over from the guild
 -- book keeps only a mark (fromGuild, fromGuildKills) and gets its sentence in the active language here.
@@ -726,11 +761,34 @@ function ns.Welcome()
   return true
 end
 
-ns:On("READY", function()
+-- 1.2.2: the delay starts at the first PLAYER_ENTERING_WORLD after READY, not at PLAYER_LOGIN: the line about
+-- the enemy plates reads their CVar, and the world (with the character's CVars) is surely there by then.
+local welcomeArmed = false
+local function startWelcome()
+  welcomeArmed = false
   local Store = ns.Store
   if not Store or Store.Setting("welcomed") ~= false then return end
   local After = _G.C_Timer and _G.C_Timer.After
   if After then After(ns.WELCOME_DELAY, ns.Welcome) else ns.Welcome() end
+end
+ns:On("READY", function() welcomeArmed = true end)
+ns:RegisterEvent("PLAYER_ENTERING_WORLD", function()
+  if welcomeArmed then startWelcome() end
+  Util.CheckPlates("login")
+end)
+
+-- 1.2.2: enemy plates switched on or off. The event's first argument is the CVar name on some clients and a
+-- glue name on others, so the name is not trusted: every CVAR_UPDATE compares the value (one CVar read; the
+-- event is rare outside the login). Arguments that look like a nameplate CVar are kept for /dn probe.
+ns:RegisterEvent("CVAR_UPDATE", function(_, a1, a2)
+  local changed = Util.platesOn
+  Util.CheckPlates("CVAR_UPDATE")
+  changed = changed ~= Util.platesOn
+  local named = not IsSecret(a1) and type(a1) == "string" and a1:lower():find("plate", 1, true) ~= nil
+  if changed or named then
+    local e = Util.LogPlateEvent("CVAR_UPDATE", a1, a2)
+    e.switched = changed or nil
+  end
 end)
 
 -- cheap: one boolean test per end of combat
