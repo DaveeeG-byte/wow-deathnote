@@ -749,6 +749,13 @@ end
 
 function Ledger.VictimCount() return db and nVictims or 0 end
 
+-- the rap sheet's key of a GUID (also a namesake's "Name-Realm#..."), nil when no victim has it
+function Ledger.KeyOfGUID(guid)
+  if not db or type(guid) ~= "string" then return nil end
+  local k = byGuid[guid]
+  return k and victims[k] and k or nil
+end
+
 -- the state of a key alone (Ledger.Standing's third value), nil while switched off or when there is nothing
 function Ledger.State(key)
   local _, _, state = Ledger.Standing(key)

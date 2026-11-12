@@ -232,6 +232,14 @@ function Util.KeyOfUnit(unit)
   return (Util.KeyFor(name, second))
 end
 
+-- GUID of a unit token (1.3.0, tooltip: the GUID beats the first name), nil for a secret or none.
+function Util.GUIDOfUnit(unit)
+  if IsSecret(unit) or type(unit) ~= "string" then return nil end
+  local g = Call(_G.UnitGUID, unit)
+  if IsSecret(g) or type(g) ~= "string" or g == "" then return nil end
+  return g
+end
+
 -- How the player is called in the game ("Name Surname").
 function Util.Display(entry)
   if type(entry) ~= "table" then return "?" end

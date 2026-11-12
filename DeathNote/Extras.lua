@@ -86,12 +86,20 @@ local function OnTooltipUnit(tt, data)
   if not unit then return end
   local key = ns.Util.KeyOfUnit(unit)   -- nil for a secret or a non-player
   if not key then return end
+  -- 1.3.0: the GUID beats the first name. A namesake of another GUID (first name only on his plate) is not the book's
+  -- entry under "Name-Realm"; the book or the rap sheet may know him by his GUID under another key
+  local guid = ns.Util.GUIDOfUnit and ns.Util.GUIDOfUnit(unit)
   -- Hit list target (1.2.0): a line of its own, also when he is in the own book
   local h = Look.HasGuild() and Look.GCall("Hunt", key, "all")
   if type(h) == "table" and type(h.names) == "table" and #h.names > 0 then
     tt:AddLine(Look.HEX.tipLabel .. L.TIP_HUNT .. "|r " .. Look.HEX.tipText .. Fmt(L.HUNT_LINE_BY, { names = Look.NameList(h.names, 2) }) .. "|r")
   end
   local e = ns.Store.Get(key)
+  local eg = e and type(e.guid) == "string" and e.guid or nil
+  if guid and eg and eg ~= guid then
+    local bk = ns.Store.ByGUID and ns.Store.ByGUID(guid)
+    e = bk and ns.Store.Get(bk) or nil
+  end
   if not e then
     -- Guild enemy (1.2.0: or a killer from the friends' book) who is not (yet) in the own book
     local g = Look.HasGuild() and Look.GCall("Get", key, "all")
@@ -105,7 +113,10 @@ local function OnTooltipUnit(tt, data)
     end
     -- 1.3.0: a victim of the rap sheet (not in the own book): "RAP SHEET: killed by you 3×, last yesterday"
     local Lg = ns.Ledger
-    local v = Lg and Lg.Enabled and Lg.Enabled() and Lg.Victim and Lg.Victim(key)
+    local on = Lg and Lg.Enabled and Lg.Enabled() and Lg.Victim
+    local vk = on and guid and Lg.KeyOfGUID and Lg.KeyOfGUID(guid) or key
+    local v = on and Lg.Victim(vk)
+    if type(v) == "table" and guid and type(v.guid) == "string" and v.guid ~= guid then v = nil end
     if type(v) == "table" then
       tt:AddLine(Look.HEX.tipLabel .. L.TIP_IN_RECORD .. "|r " .. Look.HEX.tipText
         .. Fmt(L.TIP_RECORD_LINE, { times = Look.Times(v.n), time = Look.Ago(v.last) or "?" }) .. "|r")

@@ -210,6 +210,8 @@ function Tracker.OnUnit(unit, how)
   if hostile == false then return nil end
   local Store = ns.Store
   local listed = Store and Store.Get(key)
+  -- the guild's, friends' and hit lists know a player by name only: they keep the plain key, never "Name-Realm#..."
+  local plainKey, namesake = key, false
   if not second then
     -- first name only: the GUID decides who this is (see fitsListed)
     local g = Str(Call(UnitGUID, unit))
@@ -217,7 +219,7 @@ function Tracker.OnUnit(unit, how)
       local lg = listed and Str(listed.guid)
       local r0 = buffer[key]
       if lg and lg ~= g then
-        listed, key = nil, namesakeKey(key, g)
+        listed, key, namesake = nil, namesakeKey(key, g), true
       elseif listed then
         -- the listed one takes the plain key back: a namesake's record there is dropped (1.2.x overwrote it), his
         -- GUID stops pointing at it (he may have a fresher record under his full name); seen again, he gets his own
@@ -227,7 +229,7 @@ function Tracker.OnUnit(unit, how)
           count = count - 1
         end
       elseif r0 and r0.guid and r0.guid ~= g then
-        key = namesakeKey(key, g)
+        key, namesake = namesakeKey(key, g), true
       end
     end
   end
@@ -239,7 +241,7 @@ function Tracker.OnUnit(unit, how)
   end
   -- additive: guild list (Sync.lua sets the hook only while that list has entries)
   local guildHook = Tracker.guildHook
-  if guildHook and (hostile or listed) then guildHook(key, unit, how or "other", listed) end
+  if guildHook and (hostile or listed) then guildHook(namesake and plainKey or key, unit, how or "other", listed) end
   if hostile == nil and not listed then return nil end
   local t = now()
   local r = buffer[key]
