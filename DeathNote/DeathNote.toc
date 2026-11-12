@@ -48,6 +48,10 @@ Locales\hrHR.lua
 Locales\ukUA.lua
 Locales\trTR.lua
 
+# 1.3.0: the theme core, then one data file per theme (Theme.Register). Theme words: Locales\Themes\<id>.lua.
+Theme.lua
+Themes\notebook.lua
+
 Core.lua
 Store.lua
 Tracker.lua

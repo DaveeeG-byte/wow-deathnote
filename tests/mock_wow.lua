@@ -15,7 +15,7 @@ M.ADDON_DIR = ADDON_DIR
 -- (env DN_LANG, default deDE, the existing tests read German texts) is activated and stored as settings.lang.
 -- opts.lang = false (M.Load / W.client) leaves the language unchosen like a fresh install.
 -- GetLocale() returns M.client or M.locale (the client's language: the default without an own choice).
-M.FILES = { "Locale.lua", "Locales/enUS.lua", "Locales/deDE.lua",
+M.FILES = { "Locale.lua", "Locales/enUS.lua", "Locales/deDE.lua", "Theme.lua", "Themes/notebook.lua",
   "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Probe.lua", "Sync.lua", "Friends.lua", "Bounty.lua" }
 M.locale = os.getenv("DN_LANG") or "deDE"
 

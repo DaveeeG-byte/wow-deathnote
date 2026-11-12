@@ -2,7 +2,7 @@
 # Runs syntax checks and all logic tests with luajit. Exit code != 0 if anything is red.
 cd "$(dirname "$0")/.." || exit 2
 status=0
-for f in DeathNote/*.lua tests/mock_wow.lua tests/test_*.lua tests/belege/*.lua; do
+for f in DeathNote/*.lua DeathNote/Themes/*.lua tests/mock_wow.lua tests/test_*.lua tests/belege/*.lua; do
   [ -f "$f" ] || continue
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
 done

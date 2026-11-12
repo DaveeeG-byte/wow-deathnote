@@ -786,9 +786,30 @@ function M.FinishAnims()
   end
 end
 
+-- 1.3.0: Alert.lua needs the theme core (ns.Theme) as the client loads it before; a test that loads only the UI
+-- files gets the theme files of the same folder in TOC order first (an old folder without Theme.lua stays as it is)
+local function loadThemes(dir, ns)
+  local f = io.open(dir .. "/DeathNote.toc", "r")
+  local list = {}
+  if f then
+    for line in f:lines() do
+      line = line:gsub("\r", ""):gsub("%s+$", "")
+      if line:find("^Theme") then list[#list + 1] = (line:gsub("\\", "/")) end
+    end
+    f:close()
+  end
+  for _, file in ipairs(list) do
+    local chunk, err = loadfile(dir .. "/" .. file)
+    if not chunk then error(err) end
+    setfenv(chunk, G)
+    chunk(M.addon, ns)
+  end
+end
+
 function M.Load(path, ns)
   local chunk, err = loadfile(path)
   if not chunk then error(err) end
+  if type(ns) == "table" and ns.Theme == nil and path:find("Alert%.lua$") then loadThemes(path:match("^(.*)/[^/]+$") or ".", ns) end
   setfenv(chunk, G)
   chunk(M.addon, ns)
 end
