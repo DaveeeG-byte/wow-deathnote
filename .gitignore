@@ -1,4 +1,4 @@
-# Lokales bleibt draußen
+# Local files stay out
 dev/
 *.zip
 *.tar.gz

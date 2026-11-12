@@ -1,7 +1,7 @@
-name: Paket
+name: Package
 
-# Push auf main: nur packen und prüfen, nichts hochladen.
-# Tag v*: packen, prüfen, zu CurseForge hochladen und GitHub-Release anlegen.
+# Push to main: package and check only, upload nothing.
+# Tag v*: package, check, upload to CurseForge and create a GitHub release.
 on:
   push:
     branches: [main]
@@ -12,22 +12,22 @@ permissions:
   contents: write
 
 jobs:
-  paket:
+  package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Leck-Prüfung
+      - name: Leak check
         run: |
-          # Keine Mitautor-Zeilen, keine Schlüssel, keine Rechnerpfade, keine fremden Mail-Adressen im Repo.
-          rot=0
-          muster='co-authored-by|generated with|-----BEGIN [A-Z ]*PRIVATE KEY|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|/home/[A-Za-z]|C:\\Users\\'
-          if git grep -I -i -n -E -e "$muster" -- . ':!.github/workflows/release.yml'; then rot=1; fi
-          if git log --format='%an <%ae>%n%cn <%ce>' | sort -u | grep -v -x 'DaveeeG <DaveeeG-byte@users.noreply.github.com>'; then rot=1; fi
-          if git log --format='%B' | grep -i -E 'co-authored-by|generated with'; then rot=1; fi
-          exit $rot
+          # No co-author lines, no keys, no local machine paths, no foreign mail addresses in the repo.
+          red=0
+          pattern='co-authored-by|generated with|-----BEGIN [A-Z ]*PRIVATE KEY|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|/home/[A-Za-z]|C:\\Users\\'
+          if git grep -I -i -n -E -e "$pattern" -- . ':!.github/workflows/release.yml'; then red=1; fi
+          if git log --format='%an <%ae>%n%cn <%ce>' | sort -u | grep -v -x 'DaveeeG <DaveeeG-byte@users.noreply.github.com>'; then red=1; fi
+          if git log --format='%B' | grep -i -E 'co-authored-by|generated with'; then red=1; fi
+          exit $red
 
       - name: Tests
         run: |
@@ -35,22 +35,22 @@ jobs:
           bash tests/run.sh
           STRICT=1 luajit tests/test_locales.lua
 
-      - name: Packen (ohne Upload)
+      - name: Package (no upload)
         uses: BigWigsMods/packager@v2
         with:
           args: -d
 
-      - name: Zip prüfen
+      - name: Check zip
         run: |
           set -e
           zip=$(ls .release/*.zip | head -1)
           echo "Zip: $zip"
-          unzip -l "$zip" | tail -n +4 | awk '{print $4}' > inhalt.txt
-          grep -qx 'DeathNote/DeathNote.toc' inhalt.txt
-          grep -qx 'DeathNote/Core.lua' inhalt.txt
-          ! grep -q -E '(^|/)tests/|^DeathNote/DeathNote/|\.github|\.pkgmeta' inhalt.txt
-          ! grep -v -E '^DeathNote/|^$|^-+$|^Name$' inhalt.txt | grep -q .
-          echo "Dateien: $(grep -c '^DeathNote/' inhalt.txt)"
+          unzip -l "$zip" | tail -n +4 | awk '{print $4}' > contents.txt
+          grep -qx 'DeathNote/DeathNote.toc' contents.txt
+          grep -qx 'DeathNote/Core.lua' contents.txt
+          ! grep -q -E '(^|/)tests/|^DeathNote/DeathNote/|\.github|\.pkgmeta|(^|/)TRANSLATING\.md$' contents.txt
+          ! grep -v -E '^DeathNote/|^$|^-+$|^Name$' contents.txt | grep -q .
+          echo "Files: $(grep -c '^DeathNote/' contents.txt)"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -58,7 +58,7 @@ jobs:
           path: .release/*.zip
           include-hidden-files: true
 
-      - name: Hochladen zu CurseForge
+      - name: Upload to CurseForge
         if: startsWith(github.ref, 'refs/tags/v')
         uses: BigWigsMods/packager@v2
         env:
