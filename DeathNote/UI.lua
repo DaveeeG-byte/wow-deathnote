@@ -134,7 +134,8 @@ local AnyCollapsed, SetAllMembers -- forward declaration (guild by guildmate)
 -- 1.3.0 standing "me : him" (Ledger.Standing): one place for row, poster, tooltip (Extras), alarm line (Alert),
 -- notice. Everything returns nil while the rap sheet is off or missing: then the book looks as in 1.2.2.
 ------------------------------------------------------------------------
-Look.STATE_WORD = { open = "STATE_OPEN", even = "STATE_EVEN", ahead = "STATE_AHEAD", victim = "STATE_VICTIM" }   -- locale key
+Look.STATE_WORD = { open = "STATE_OPEN", even = "STATE_EVEN", ahead = "STATE_AHEAD", victim = "STATE_VICTIM",
+  pardoned = "TIP_PARDONED" }   -- locale key
 -- mine, his and the score text of a book entry (or a key) through Look.Score (Alert.lua: one notation for alarm and
 -- book), nil while the rap sheet is off
 function Look.Stand(e)
@@ -144,8 +145,10 @@ function Look.Stand(e)
   if not ok or type(text) ~= "string" or type(m) ~= "number" or type(h) ~= "number" then return nil end
   return m, h, text
 end
--- the state of the numbers alone, whatever the status (the poster of a pardoned one shows its second stamp too)
-function Look.ScoreState(m, h)
+-- the state of the numbers alone (the poster of a pardoned one shows its second stamp too); 1.3.0: with the status of
+-- the book entry, a pardoned one is "pardoned", never an open case (as Ledger.State: the rap sheet's row and sheet)
+function Look.ScoreState(m, h, status)
+  if status == "pardoned" then return "pardoned" end
   if h > m or m == 0 then return "open" end
   return h == m and "even" or "ahead"
 end
@@ -2777,7 +2780,8 @@ function RS.BindRow(r, v)
   r.icon:Show()
   local m, h, score = Look.Stand(v.key)
   local full, short = RS.Sub(v)
-  local lead = m and Look.ScoreState(m, h) == "open" and RS.Book(v) ~= nil
+  local e = RS.Book(v)
+  local lead = m and e ~= nil and Look.ScoreState(m, h, e.status) == "open"
   local sub = r.rsSub or {}
   r.rsSub = sub
   sub[1], sub[2] = full, short
@@ -3224,7 +3228,7 @@ function RS.FillVictim(v)
   V.headHit.key = e and v.key or nil
   Look.FitText(V.head, RS.Name(v), GF.FIT_NAME26)
   local m, h, score = Look.Stand(v.key)
-  local st = (e and m) and Look.ScoreState(m, h) or "victim"
+  local st = (e and m) and Look.ScoreState(m, h, e.status) or "victim"
   Look.FitText(V.score, score or "", RS.FIT_SCORE)
   V.score:SetTextColor(C(st == "open" and Look.RED or Look.INK))
   V.scoreHit.tip = m and { Fmt(L.STAND_LINE, { score = score }), Fmt(L.STAND_TIP, { mine = m, his = h }) } or nil
