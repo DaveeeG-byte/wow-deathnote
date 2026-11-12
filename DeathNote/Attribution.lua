@@ -54,7 +54,7 @@ function A.Classify(src, ctx)
       info.guid = info.guid or guid
       if not info.class and src.class then info.class = src.class end
       -- The GUID lookup may know the first name only (GetPlayerInfoByGUID on Forever), while the
-      -- recap names the source in full ("Vorname Nachname", seen live 11.11.2026): take the surname from there.
+      -- recap names the source in full ("Name Surname", seen live 11.11.2026): take the surname from there.
       if not info.surname and name then
         local n, s = Util.SplitFull(name)
         if s and n == info.name then info.surname = s end
