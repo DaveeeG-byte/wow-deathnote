@@ -682,7 +682,7 @@ L.PATH_NONE = "unwritten"  -- [max 16] path word: below tier 3 and fewer than 10
 L.ALERT_TITLE_VICTIM = "HOLDS A GRUDGE?"  -- [max 30] title of the victim alarm: someone you killed (and who has a reason for revenge) is near; a question, not a warning
 L.ALERT_LINE_VICTIM = "score {score} · killed by you, last {time}"  -- [max 56] line of the victim alarm; {score} = "3 : 0" (you : him), {time} = "2 days ago" (your last kill on him)
 L.ALERT_LINE_STANDING = "{text} · score {score}"  -- alarm line of a wanted player you have killed back, still open; {text} = the line so far, {score} = "1 : 2" (you : him). Replaces ALERT_LINE_REVENGE while the rap sheet is kept
-L.ALERT_LINE_STANDING_EVEN = "{text} · score {score}, even"  -- like ALERT_LINE_STANDING, the score is level ("2 : 2"): the debt is settled
+L.ALERT_LINE_STANDING_EVEN = "{text} · score {score}, settled"  -- like ALERT_LINE_STANDING, the score is level ("2 : 2"): the debt is settled
 L.ALERT_LINE_STANDING_AHEAD = "{text} · score {score}, overpaid"  -- like ALERT_LINE_STANDING, you lead ("3 : 2"): you have taken more than he took
 -- <<< ALARM
 -- >>> START (Start.lua, House Rules row, 1.3.0) -----------------------------------------------------------------
@@ -695,11 +695,11 @@ L.HELP_START = "/dn start  the first-start window again (language and cover)"  -
 -- <<< START
 -- >>> RECORD (UI.lua, Extras.lua: the rap sheet in the book, 1.3.0) ---------------------------------------------------
 L.TAB_RECORD = "Rap Sheet"  -- [max 16] tab 5 (appears with your first own kill): your own killing blows on players and your repute
-L.STAMP_QUITT = "EVEN"  -- [max 16] stamp on the poster: the score is even (you killed them as often as they killed you)
+L.STAMP_QUITT = "SETTLED"  -- [max 16] stamp on the poster: the score is settled (you killed them as often as they killed you)
 L.STAMP_OVERPAID = "OVERPAID"  -- [max 16] stamp on the poster: you killed them more often than they killed you
 L.STAMP_NR1_DOWN = "PUBLIC ENEMY DOWN"  -- [max 24] stamp on the notice when you pay back your rank 1 enemy (dry remarks, German and English); two lines of 12 characters at most
 L.STATE_OPEN = "open"  -- [max 16] state of the score: they killed you more often (or nothing settled yet)
-L.STATE_EVEN = "even"  -- [max 16] state of the score: both sides equal
+L.STATE_EVEN = "settled"  -- [max 16] state of the score: both sides equal
 L.STATE_AHEAD = "overpaid"  -- [max 16] state of the score: you lead
 L.STATE_VICTIM = "not in the book"  -- [max 24] victim sheet: a victim of yours who never killed you
 L.STAND_LINE = "Score {score}"  -- poster, tooltip, notice; {score} = '1 : 2' (you : them, the same notation as the alarm)
@@ -768,7 +768,7 @@ L.SET_SETTLED_ALWAYS = "as usual"  -- [max 10] stepper value: alarm as for every
 L.SET_SETTLED_QUIET = "quiet"  -- [max 10] stepper value: the popup without sound
 L.SET_SETTLED_OFF = "never"  -- [max 10] stepper value: no alarm
 L.MANUAL_RECORD_HEAD = "RAP SHEET"  -- [max 14] keyword of the help paragraph
-L.MANUAL_RECORD = "Your own killing blows on players. Poster and list show the score 'you : them': open, even or overpaid. Rank 1 is always open. Kills earn points for your rank."  -- help paragraph, 232 px wide, wraps
+L.MANUAL_RECORD = "Your own killing blows on players. Poster and list show the score 'you : them': open, settled or overpaid. Rank 1 is always open. Kills earn points for your rank."  -- help paragraph, 232 px wide, wraps
 L.POSTER_LAST_SEEN_IN = "Last seen: {zone}, {time}"  -- fact line; {zone} = zone from the game, {time} = '2 hrs ago' (shorter POSTER_LAST_SEEN when it does not fit)
 L.SHEET_RECORD = "Rap Sheet"  -- [max 14] fourth sheet of the House Rules: the rap sheet's switches
 -- <<< RECORD
