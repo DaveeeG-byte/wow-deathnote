@@ -1,17 +1,16 @@
 -- DeathNote - Humor.lua (1.2.0)
--- Trockene Bemerkungen, Meilensteine, versteckte Befehle und ein paar Ueberraschungen.
+-- Dry remarks, milestones, hidden commands and a few surprises.
 --
--- Nur Deutsch und Englisch (1.2.0): in jeder anderen Sprache tut diese Datei nichts, kein
--- Spruch, kein Stempel, kein Schalter, kein englischer Rueckfall. Die Texte stehen darum nicht in der
--- Sprachtabelle (keine Pflicht fuer die 19 Uebersetzungen), sondern hier im markierten Block HUMOR-TEXTE;
--- der Waechter gegen fest verdrahtete Texte (tests/test_locale_waechter.lua) nimmt genau diesen Block
--- aus und prueft den Rest der Datei wie jede andere.
+-- German and English only (1.2.0): in every other language this file does nothing, no remark, no
+-- stamp, no switch, no English fallback. That is why the texts are not in the language table (no duty
+-- for the 19 translations) but here in the marked block HUMOR-TEXTE; the guard against hard-wired texts
+-- (tests/test_locale_waechter.lua) skips exactly this block and checks the rest of the file like any other.
 --
--- Regeln: alles nur auf dem eigenen Bildschirm (Meldung, Chatzeile), nichts geht ueber die Leitung,
--- in DeathNoteDB stehen nur Zaehler und Merker (db.humor, sprachneutral). Kein OnUpdate, kein Ticker,
--- nichts im heissen Pfad: gerechnet wird nur bei Tod, Rache, Begnadigung, Erlegt, Login, Gildenwechsel,
--- beim Aufbau des leeren Buchs und bei eigenen Klicks. Zufall nur beim Ereignis (Humor.random).
--- Einhaengepunkte in anderen Dateien sind mit "-- Humor" markiert (Core.lua, Extras.lua, UI.lua).
+-- Rules: everything only on the own screen (notice, chat line), nothing goes over the wire, DeathNoteDB
+-- holds only counters and markers (db.humor, language neutral). No OnUpdate, no ticker, nothing in the
+-- hot path: work happens only on death, revenge, pardon, taken down, login, guild change, when the
+-- empty book is built and on own clicks. Randomness only at the event (Humor.random).
+-- Hook points in other files are marked with "-- Humor" (Core.lua, Extras.lua, UI.lua).
 
 local _, ns = ...
 local Humor = {}
@@ -19,9 +18,9 @@ ns.Humor = Humor
 local Util = ns.Util
 local Fmt = ns.F
 
--- >>> HUMOR-TEXTE (nur deDE und enUS; vom Waechter fest verdrahteter Texte ausgenommen, siehe Kopf)
+-- >>> HUMOR-TEXTE (deDE and enUS only; exempt from the guard against hard-wired texts, see the head)
 local GUILD_NAME = "Die Fachkräfte"
--- versteckte Befehle: Wort -> Art (nicht in /dn hilfe; die Gebrauchsanweisung sagt nur "Das Buch hat Launen.")
+-- hidden commands: word -> kind (not in /dn help; the manual only says "The book has moods.")
 local COMMANDS = {
   fachkraft = "guild", ["fachkräfte"] = "guild", fachkraefte = "guild",
   ["42"] = "answer",
@@ -31,7 +30,7 @@ local COMMANDS = {
 local TEXTS = {
   deDE = {
     OPT = "Trockene Bemerkungen",
-    MANUAL = "Erprobt von der Gilde Die Fachkräfte. Das Buch hat Launen.",   -- eine Zeile am Fuß der Gebrauchsanweisung
+    MANUAL = "Erprobt von der Gilde Die Fachkräfte. Das Buch hat Launen.",   -- one line at the foot of the manual
     STAMP = { regular = "STAMMKUNDE", revenge1 = "ERSTE RACHE", nr1 = "STAATSFEIND ERLEDIGT", pro = "FACHGERECHT ERLEDIGT" },
     MILESTONE = {
       regular  = "Zehnmal derselbe Name. Dafür gibt es jetzt einen Stempel.",
@@ -88,7 +87,7 @@ local TEXTS = {
         "Genieß es. Das bleibt nicht so.",
       },
     },
-    -- nur fuer Mitglieder der Gilde Die Fachkraefte: zusaetzliche Varianten
+    -- only for members of the guild GUILD_NAME: extra variants
     MEMBER = {
       revenge = { "Gelernt ist gelernt.", "Saubere Arbeit. Fachkräfte-Standard." },
       bagged  = { "Fachkräfte am Werk. Bitte nicht stören.", "Ausgeführt von Fachkräften. Mangel herrscht keiner." },
@@ -196,26 +195,26 @@ Humor.TEXTS = TEXTS
 Humor.GUILD_NAME = GUILD_NAME
 Humor.COMMANDS = COMMANDS
 
--- Wie oft (0..1). Feste Anlaesse (Meilensteine, 5./10./20./50./100. Tod durch denselben) kommen immer.
--- 1.2.0: seltener (vorher Rache 0,5, Stufe 0,6, Nacht 0,4, Erlegt 0,5, Begnadigen 0,5, leeres Buch 0,5) und
--- hoechstens ein Zufallsspruch je QUIET Sekunden ueber alle Anlaesse; der 3. Tod ist kein Anlass mehr
+-- How often (0..1). Fixed occasions (milestones, 5th/10th/20th/50th/100th death by the same one) always come.
+-- 1.2.0: rarer (before: revenge 0.5, level 0.6, night 0.4, taken down 0.5, pardon 0.5, empty book 0.5) and
+-- at most one random remark per QUIET seconds across all occasions; the 3rd death is no occasion any more
 Humor.CHANCE = { revenge = 0.2, lowbie = 0.2, night = 0.15, pve = 0.25, bagged = 0.15, pardon = 0.2, empty = 0.2 }
 Humor.QUIET = 600
 local REGULAR_AT = { [5] = true, [10] = true, [20] = true, [50] = true, [100] = true }
-local LOWBIE_GAP = 10              -- Taeter mindestens so viele Stufen unter dir
+local LOWBIE_GAP = 10              -- killer at least this many levels below you
 local CLEAN_DAYS = 30
-local EMPTY_HOLD = 30              -- Sekunden: der Spruch des leeren Buchs bleibt, solange man hinsieht
-local PENDING_MAX_AGE = 120        -- Sekunden: wartende Meldung (Erlegt in der Warteschlange)
--- Stempel: leerer Rahmen (Media/stamp_<frame>_blank.tga), Winkel wie das Bild, Tinte
+local EMPTY_HOLD = 30              -- seconds: the remark of the empty book stays while you look at it
+local PENDING_MAX_AGE = 120        -- seconds: waiting notice (taken down, in the queue)
+-- Stamp: empty frame (Media/stamp_<frame>_blank.tga), angle as in the image, ink
 local STAMP_FRAME = {
-  regular  = { "rache",   7,   { 0.69, 0.04, 0.04 } },   -- 1.2.0: rot wie die anderen (dunkel war auf Schwarz unsichtbar)
+  regular  = { "rache",   7,   { 0.69, 0.04, 0.04 } },   -- 1.2.0: red like the others (dark was invisible on black)
   revenge1 = { "rache",   9,   { 0.69, 0.04, 0.04 } },
   nr1      = { "nr1",     -11, { 0.69, 0.04, 0.04 } },
   pro      = { "hunt",    8,   { 0.69, 0.04, 0.04 } },
 }
 Humor.STAMP_FRAME = STAMP_FRAME
 
--- Globals nur ueber diese Tuer: im Client normal, in einer strengen Umgebung ohne den Namen nil
+-- Globals only through this door: normal in the client, nil in a strict environment without the name
 local GLOBALS = {
   date = function() return date end, time = function() return time end, GetTime = function() return GetTime end,
   GetGuildInfo = function() return GetGuildInfo end, UnitName = function() return UnitName end,
@@ -226,9 +225,9 @@ local function global(name)
   if ok then return v end
 end
 
--- Zufall (Tests setzen einen festen Startwert oder ersetzen die Funktion)
+-- Randomness (tests set a fixed seed or replace the function)
 Humor.random = math.random
--- Uhr (Tests ersetzen sie): Tabelle wie date("*t") oder nil
+-- Clock (tests replace it): table as from date("*t") or nil
 function Humor.Clock()
   local d = global("date")
   if type(d) ~= "function" then return nil end
@@ -237,12 +236,12 @@ function Humor.Clock()
 end
 
 ------------------------------------------------------------------------
--- Zustand
+-- State
 ------------------------------------------------------------------------
-local member = false     -- Gildenname ist genau "Die Fachkraefte" (einmal bei Login und Gildenwechsel)
-local last = {}          -- Topf -> zuletzt gezogener Index (nie zweimal dieselbe hintereinander)
-local cur                -- welche Meldung gerade steht: { kind, key, banner }
-local pending = {}       -- kind .. key -> { d = Entscheidung, at = GetTime() }
+local member = false     -- guild name is exactly GUILD_NAME (checked once at login and on guild change)
+local last = {}          -- pot -> index drawn last (never the same one twice in a row)
+local cur                -- which notice is up right now: { kind, key, banner }
+local pending = {}       -- kind .. key -> { d = decision, at = GetTime() }
 local emptyPick          -- { text, at }
 
 local function T()
@@ -250,13 +249,13 @@ local function T()
   return code and TEXTS[code] or nil
 end
 
--- nur Deutsch und Englisch
+-- German and English only
 function Humor.Active() return T() ~= nil end
 local Active = Humor.Active
 
 local function Store() return ns.Store end
 
--- Schalter "Trockene Bemerkungen" (Hausordnung, Blatt Buch), Standard an
+-- Switch "Dry remarks" (house rules, sheet Book), on by default
 function Humor.On()
   if not Active() then return false end
   local S = Store()
@@ -272,8 +271,8 @@ local function clock() return Util.Num(Util.Call(global("GetTime"))) or 0 end
 
 local function finite(v) return type(v) == "number" and v == v and v > -math.huge and v < math.huge end
 local Mem
--- Sperre: hoechstens ein Zufallsspruch je QUIET Sekunden. Gesetzt erst, wenn ein Spruch wirklich gezeigt wird;
--- die Zeit steht in db.humor.quietAt (Weltzeit) und haelt ueber /reload.
+-- Lock: at most one random remark per QUIET seconds. Set only when a remark is really shown;
+-- the time is in db.humor.quietAt (world time) and survives /reload.
 local quietUntil = 0
 local function Quiet()
   if clock() < quietUntil then return true end
@@ -295,7 +294,7 @@ local function Roll(kind)
   return p >= 1 or Humor.random() < p
 end
 
--- eine Zeile aus dem Topf (Mitglieder: plus eigene Varianten), nie zweimal dieselbe hintereinander
+-- one line from the pot (members: plus their own variants), never the same one twice in a row
 local function Pick(pool)
   local t = T()
   if not t then return nil end
@@ -319,13 +318,13 @@ Humor.Pick = Pick
 local function Say(text)
   if type(text) ~= "string" or text == "" then return end
   if Util and Util.Print then Util.Print("|cffa89878" .. text .. "|r") end
-  Humor.said = text      -- fuer Tests: die letzte Zeile
+  Humor.said = text      -- for tests: the last line
 end
 
--- Merker in DeathNoteDB.humor: Meilensteine (Zeitpunkt), Tode gesamt, letzter Tod. Bei jedem Aufruf mit dem Buch
--- abgeglichen (Zaehler db.tally und Journal): nach einer Zeit in einer anderen Sprache, unter 1.1.0 oder nach dem
--- Einlesen eines Buchs stimmen sie so wieder; kaputte Werte werden ersetzt. Beim ersten Mal vorbelegt, damit ein
--- Buch aus 1.1.0 keine "erste Rache" feiert, die laengst war.
+-- Markers in DeathNoteDB.humor: milestones (time), total deaths, last death. Matched with the book on every
+-- call (counter db.tally and journal): after a time in another language, under 1.1.0 or after importing a
+-- book they are right again; broken values are replaced. Filled in on the first run, so that a book from
+-- 1.1.0 does not celebrate a "first revenge" that happened long ago.
 Mem = function(ignoreNewest)
   local S = Store()
   local db = S and S.DB and S.DB()
@@ -337,7 +336,7 @@ Mem = function(ignoreNewest)
   local deaths = type(db.deaths) == "table" and db.deaths or {}
   local tl = S.Tally and S.Tally()
   local n = tl and finite(tl.n) and tl.n or #deaths
-  if ignoreNewest then n = n - 1 end      -- der Tod, der gerade gezaehlt wird
+  if ignoreNewest then n = n - 1 end      -- the death being counted right now
   if not finite(h.deaths) or h.deaths < n then h.deaths = n end
   h.deaths = math.floor(h.deaths)
   local newest = deaths[1]
@@ -356,7 +355,7 @@ end
 Humor.Mem = Mem
 
 ------------------------------------------------------------------------
--- Meldung (Extras.lua): Spruch unter dem Streifen, Ueberraschungs-Stempel
+-- Notice (Extras.lua): remark under the strip, surprise stamp
 ------------------------------------------------------------------------
 local FIT_QUIP = { sizes = { 11, 10 } }
 local function QuipStrip(banner)
@@ -394,7 +393,7 @@ local function Apply(banner, d)
     if banner.stampAnim then banner.stampAnim:Stop(); banner.stampAnim:Play() end
     local fs = banner.stampText
     if fs then
-      -- 13 pt; ein Wort, das breiter ist als das Feld, oder ein Text ueber zwei Zeilen nimmt 11 pt (Regel der Meldung)
+      -- 13 pt; a word wider than the field, or a text over 1.6 field widths, takes 11 pt (rule of the notice)
       local text = t.STAMP[d.stamp]
       Look.Font(fs, "title", 13)
       local long = ""
@@ -415,13 +414,13 @@ local function Apply(banner, d)
     end
     if banner.name then banner.name:ClearAllPoints(); banner.name:SetPoint("TOP", -24, -26) end
   end
-  Humor.applied = d       -- fuer Tests
+  Humor.applied = d       -- for tests
   return true
 end
 
--- Einhaengepunkt in Extras.lua (Ende von Banner): jede neue Meldung loescht den alten Spruch; wartet fuer
--- genau diese Meldung schon eine Entscheidung (Erlegt aus der Warteschlange), kommt sie jetzt dran.
--- stamp: Art der Meldung ("rache", "hunt", "nr1" oder nil), guild: Meldung ueber andere
+-- Hook point in Extras.lua (end of Banner): every new notice clears the old remark; if a decision is
+-- already waiting for exactly this notice (taken down, from the queue), it comes now.
+-- stamp: kind of notice ("rache", "hunt", "nr1" or nil), guild: notice about others
 function Humor.OnBanner(banner, stamp, key, guild)
   if not banner then return end
   if banner.dnQuip then banner.dnQuip:Hide() end
@@ -437,8 +436,8 @@ function Humor.OnBanner(banner, stamp, key, guild)
   end
 end
 
--- Entscheidung zustellen: steht die passende Meldung, sofort; Erlegt kann in der Warteschlange
--- stecken (wartet); ein Meilenstein ohne Meldung (Meldungen aus) kommt als Chatzeile
+-- Deliver a decision: if the matching notice is up, at once; taken down may be stuck in the queue
+-- (waits); a milestone without a notice (notices off) comes as a chat line
 local function Deliver(kind, key, d)
   local b = cur and cur.banner
   if cur and cur.kind == kind and cur.key == key and b and b:IsShown() then
@@ -451,7 +450,7 @@ local function Deliver(kind, key, d)
 end
 
 ------------------------------------------------------------------------
--- Anlaesse
+-- Occasions
 ------------------------------------------------------------------------
 local function DeathQuip(e, death, h)
   local k = tonumber(e.kills) or 0
@@ -473,7 +472,7 @@ end
 function Humor.OnDeath(death, key)
   if not Active() or type(death) ~= "table" then return end
   local S0 = Store()
-  -- der Tod steht schon in db.tally (Store.RecordDeath): abgleichen ohne ihn, dann zaehlen
+  -- the death is already in db.tally (Store.RecordDeath): match without it, then count
   local h = Mem(S0 and S0.Tally ~= nil)
   if not h then return end
   h.deaths = h.deaths + 1
@@ -502,7 +501,7 @@ function Humor.OnRevenge(key)
   local e = h and S.Get(key)
   if not e then return end
   local t, d = T(), nil
-  -- Rache, die schon im Buch stand (anderer Rechner, andere Sprache, eingelesen): keine "erste" mehr
+  -- revenge that was already in the book (other computer, other language, imported): no "first" any more
   if not h.m.revenge1 then
     local earlier = (tonumber(e.revenge) or 0) > 1
     if not earlier then
@@ -514,7 +513,7 @@ function Humor.OnRevenge(key)
   end
   if S.Rank(key) == 1 and not h.m.nr1 then
     h.m.nr1 = now()
-    h.m.revenge1 = h.m.revenge1 or h.m.nr1     -- war es die erste Rache, kommt keine "erste" mehr nach
+    h.m.revenge1 = h.m.revenge1 or h.m.nr1     -- if it was the first revenge, no further "first" comes
     d = { stamp = "nr1", quip = t.MILESTONE.nr1, milestone = true }
   elseif not h.m.revenge1 then
     h.m.revenge1 = now()
@@ -534,8 +533,8 @@ function Humor.OnBagged(key, char, t, src)
   if not On() or type(key) ~= "string" or Util.IsSecret(key) then return end
   local Look, X = ns.Look, ns.Extras
   if Look and Look.GuildSetting and Look.GuildSetting("announceHunt") == false then return end
-  -- eigener Abschuss: steht schon die RACHE-Meldung desselben Spielers, bleibt sie ohne Zusatz; die eigene
-  -- Erlegt-Meldung bekommt Stempel und Spruch wie die eines Kollegen
+  -- own kill: if the REVENGE notice for the same player is up, it stays without an extra; the own
+  -- taken-down notice gets stamp and remark like a guildmate's
   if src == "self" and X and X.BannerShows and X.BannerShows(key) and not (cur and cur.kind == "bagged" and cur.key == key) then
     return
   end
@@ -545,8 +544,8 @@ function Humor.OnBagged(key, char, t, src)
   if d.stamp or d.quip then Deliver("bagged", key, d) end
 end
 
--- Nach dem Einlesen eines Buchs (Store.Import): Meilensteine, die das eingelesene Buch schon erreicht hat oder mit dem
--- naechsten Tod erreichen wuerde, gelten als erreicht und feuern nicht mehr
+-- After importing a book (Store.Import): milestones that the imported book has reached already or would
+-- reach with the next death count as reached and do not fire any more
 function Humor.OnImport()
   if not Active() then return end
   local h, S = Mem(), Store()
@@ -560,10 +559,10 @@ function Humor.OnImport()
   if h.deaths >= 99 then h.m.d100 = h.m.d100 or 0 end
 end
 
--- Gilde: einmal beim Login und bei jedem Gildenwechsel; Secret oder keine Gilde = kein Mitglied
+-- Guild: once at login and on every guild change; a secret or no guild = no member
 function Humor.CheckGuild()
   if not Active() then member = false; return false end
-  local g = Util.Str(Util.Call(global("GetGuildInfo"), "player"))   -- Str prueft zuerst auf Secret
+  local g = Util.Str(Util.Call(global("GetGuildInfo"), "player"))   -- Str checks for a secret first
   member = g ~= nil and g == GUILD_NAME
   return member
 end
@@ -575,7 +574,7 @@ function Humor.OnReady()
   if not (h and h.lastDeath) or h.m.clean30 then return end
   if now() - h.lastDeath < CLEAN_DAYS * 86400 then return end
   local line = T().MILESTONE.clean30
-  -- der Merker kommt erst mit der Zeile (ein /reload davor laesst den Meilenstein nicht verschwinden)
+  -- the marker comes only with the line (a /reload before it does not make the milestone vanish)
   local function show()
     local h2 = Mem()
     if not h2 or h2.m.clean30 then return end
@@ -588,11 +587,11 @@ function Humor.OnReady()
 end
 
 ------------------------------------------------------------------------
--- Versteckte Befehle (Einhaengepunkt Core.lua, nur fuer sonst unbekannte Befehle; aendert keine Daten)
+-- Hidden commands (hook point Core.lua, only for otherwise unknown commands; changes no data)
 ------------------------------------------------------------------------
 function Humor.Slash(cmd)
   if not Active() or type(cmd) ~= "string" or Util.IsSecret(cmd) then return false end
-  -- string.lower kennt nur ASCII: grosse Umlaute von Hand
+  -- string.lower knows ASCII only: upper-case umlauts by hand
   local c = cmd:lower():gsub("\195\132", "\195\164"):gsub("\195\150", "\195\182"):gsub("\195\156", "\195\188")
   local what = COMMANDS[c]
   if not what then return false end
@@ -618,9 +617,9 @@ function Humor.Slash(cmd)
 end
 
 ------------------------------------------------------------------------
--- Buch (UI.lua): Schalter, leeres Buch, 1. April, Reisszwecke
+-- Book (UI.lua): switch, empty book, 1 April, thumbtack
 ------------------------------------------------------------------------
--- Hausordnung, Blatt Buch: der Schalter haengt nur in Deutsch und Englisch an
+-- House rules, sheet Book: the switch is added in German and English only
 function Humor.BookOptions(list)
   local t = T()
   if not t then return list end
@@ -636,8 +635,8 @@ local function April1()
 end
 Humor.April1 = April1
 
--- leere Seite "Gesucht" (X = RP.empty mit big, small, tiny): am 1. April das eigene Plakat, sonst
--- manchmal ein anderer Satz; er bleibt stehen, solange man hinsieht (Neuaufbau alle paar Sekunden)
+-- empty page "Wanted" (X = RP.empty with big, small, tiny): on 1 April the own poster, else sometimes
+-- another sentence; it stays while you look at it (the page is rebuilt every few seconds)
 function Humor.EmptyWanted(X)
   if not (X and On()) then return end
   local t = T()
@@ -659,8 +658,8 @@ function Humor.EmptyWanted(X)
   if emptyPick.text then X.small:SetText(emptyPick.text) end
 end
 
--- Plakat: fuenfmal auf die Reisszwecke, dann faellt sie und steckt sich wieder fest (Animationen wie
--- in ForeverAuras/BlizzardAuraDisplay.lua:1825-1828 belegt; nur eigene Klicks, kein OnUpdate)
+-- Poster: click the thumbtack five times, then it falls and pins itself back (animations as shown in
+-- ForeverAuras/BlizzardAuraDisplay.lua:1825-1828; own clicks only, no OnUpdate)
 local function Anim(group, kind, order, dur, set)
   local a = group:CreateAnimation(kind)
   if set then set(a) end
@@ -687,13 +686,13 @@ function Humor.Pin(P, pin)
   Anim(fall, "Translation", 1, 0.5, function(a) if a.SetOffset then a:SetOffset(14, -70) end end)
   local fade = Anim(fall, "Alpha", 1, 0.5, function(a) a:SetFromAlpha(1); a:SetToAlpha(0) end)
   fade:SetStartDelay(0)
-  -- haengt sich wieder auf: nach einer Pause mit einem Rumms zurueck
+  -- hangs itself back up: after a pause, back with a thud
   local back = Anim(fall, "Alpha", 2, 0.08, function(a) a:SetFromAlpha(0); a:SetToAlpha(1) end)
   back:SetStartDelay(1.2)
   if ns.Look and ns.Look.ScaleAnim then ns.Look.ScaleAnim(fall, 1.8, 1, 0.12, 2) end
   b.wobble, b.fall, b.clicks, b.at = wobble, fall, 0, 0
   b:SetScript("OnClick", function(self)
-    if self.fall:IsPlaying() or not pin:IsShown() then return end   -- Klicks waehrend des Falls zaehlen nicht
+    if self.fall:IsPlaying() or not pin:IsShown() then return end   -- clicks during the fall do not count
     local tnow = clock()
     if tnow - self.at > 2 then self.clicks = 0 end
     self.at = tnow
@@ -710,12 +709,12 @@ function Humor.Pin(P, pin)
 end
 
 ------------------------------------------------------------------------
--- Gebrauchsanweisung: eine Zeile am Fuss (Fachkraefte, "Das Buch hat Launen."), nur de/en (1.2.0: vorher ein Absatz)
+-- Manual: one line at the foot (GUILD_NAME, "The book has moods."), de/en only (1.2.0: a paragraph before)
 ------------------------------------------------------------------------
 if ns.Locale and ns.Locale.OnActivate then
   ns.Locale.OnActivate(function()
-    -- Speicher: nur die Texte der aktiven Sprache bleiben (in den 19 anderen Sprachen keine); die Sprache
-    -- wechselt erst mit /reload, dann wird die Datei neu geladen
+    -- Memory: only the texts of the active language stay (none in the 19 other languages); the language
+    -- changes only with /reload, then the file is loaded anew
     local code = ns.Locale.code
     for c in pairs(TEXTS) do if c ~= code then TEXTS[c] = nil end end
     local t = T()
