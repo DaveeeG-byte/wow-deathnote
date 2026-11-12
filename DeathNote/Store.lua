@@ -2,7 +2,7 @@
 -- SavedVariables, data model, ranking, export/import.
 
 local ADDON, ns = ...
--- Texte (1.2.0): nur die Meldungen des Einlesens; gespeichert wird nie Uebersetztes
+-- Texts (1.2.0): only the messages of the import; nothing translated is ever stored
 local L, Fmt = ns.L, ns.F
 local Util = ns.Util
 local Store = {}
@@ -925,7 +925,7 @@ function Store.DismissSuspect(key)
   return true
 end
 
--- byHand (1.2.1): noted by the player ("Rache vermerken"), counted apart in e.revengeHand (additive) so that
+-- byHand (1.2.1): noted by the player ("Note revenge"), counted apart in e.revengeHand (additive) so that
 -- only such a revenge can be taken back; revenge the addon recognised (own killing blow, honor) stays. Books of
 -- 1.2.0 and older carry no mark: their revenge counts as recognised.
 function Store.AddRevenge(key, byHand)
