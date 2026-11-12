@@ -24,13 +24,10 @@ local STEPS = tonumber(arg[2]) or 200
 local FIRST = tonumber(arg[3]) or 1
 local BASE = "374cf7f"
 
--- 1.2.2 into a temporary folder
-local OLD = os.tmpname()
-os.remove(OLD)
-assert(os.execute('mkdir -p "' .. OLD .. '" && git -C "' .. ROOT .. '" archive ' .. BASE .. ' DeathNote | tar -x -C "' .. OLD
-  .. '" 2>/dev/null') == 0 or true)
-OLD = OLD .. "/DeathNote/"
-assert(io.open(OLD .. "Store.lua"), "git archive " .. BASE .. " (needs the repository)")
+-- 1.2.2 into a temporary folder (without the repository: skipped, see tests/git_base.lua)
+local GitBase = dofile(ROOT .. "/tests/git_base.lua")
+local OLD, why = GitBase.Archive(ROOT, BASE, "Store.lua")
+if not OLD then GitBase.Clean(); GitBase.Skip("ledger_diff", why); os.exit(0) end
 local OLDFILES = {}
 -- only the files 1.2.2 has (it knows neither the rap sheet nor the theme core)
 for _, f in ipairs(M.FILES) do
@@ -291,7 +288,7 @@ for seed = FIRST, FIRST + SEEDS - 1 do
     end
   end
 end
-os.execute('rm -rf "' .. OLD:gsub("/DeathNote/$", "") .. '"')
+GitBase.Clean()
 
 local guidRed = G.mixed > 0 or G.over > 0 or G.split > 0
 local red = higher > 0 or bookDiff > 0 or errors > 0 or guidRed

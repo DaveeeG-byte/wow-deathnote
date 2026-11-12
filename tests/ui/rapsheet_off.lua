@@ -10,11 +10,10 @@ local BASE = "135c24b"
 package.path = DIR .. "/tests/ui/?.lua;" .. DIR .. "/tests/?.lua;" .. package.path
 arg[0] = DIR .. "/tests/ui/rapsheet_off.lua"
 
-local OLD = os.tmpname()
-os.remove(OLD)
-os.execute('mkdir -p "' .. OLD .. '" && git -C "' .. DIR .. '" archive ' .. BASE .. ' DeathNote | tar -x -C "' .. OLD .. '" 2>/dev/null')
-OLD = OLD .. "/DeathNote/"
-assert(io.open(OLD .. "UI.lua"), "git archive " .. BASE .. " (needs the repository)")
+-- without the repository: skipped (tests/git_base.lua)
+local GitBase = dofile(DIR .. "/tests/git_base.lua")
+local OLD, why = GitBase.Archive(DIR, BASE, "UI.lua")
+if not OLD then GitBase.Clean(); GitBase.Skip("rapsheet_off", why); os.exit(0) end
 
 local ok, bad = 0, 0
 local function check(name, cond, info)
@@ -124,5 +123,6 @@ for _, code in ipairs({ "deDE", "enUS", "ruRU" }) do
     check(("%s: %s as before (%d elements)"):format(code, v, #a), diff == nil, diff)
   end
 end
+GitBase.Clean()
 io.write(("rap sheet off = book as before: %d green, %d red\n"):format(ok, bad))
 os.exit(bad == 0 and 0 or 1)

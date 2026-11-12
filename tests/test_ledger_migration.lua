@@ -131,15 +131,16 @@ end)
 local LOGIC = { "Locale.lua", "Locales/enUS.lua", "Locales/deDE.lua", "Core.lua", "Store.lua", "Tracker.lua",
   "Attribution.lua", "Probe.lua", "Sync.lua", "Friends.lua", "Bounty.lua" }
 
--- the logic files of the tag v1.2.1, read with git into a temporary folder
+-- the logic files of the tag v1.2.1, read with git into a temporary folder; nil and a reason without the repository
+-- or its tags (that step is skipped then, see tests/git_base.lua)
+local GitBase = dofile(ROOT .. "/tests/git_base.lua")
 local function tag121()
-  local dir = os.tmpname()
-  os.remove(dir)
-  assert(os.execute('mkdir -p "' .. dir .. '/Locales"') == 0 or true)
+  if not GitBase.Has(ROOT, "v1.2.1") then return nil, "needs the git repository with the tag v1.2.1" end
+  local dir = GitBase.TempDir()
+  os.execute('mkdir -p "' .. dir .. '/Locales"')
   for _, f in ipairs(LOGIC) do
-    local p = io.popen('git -C "' .. ROOT .. '" show v1.2.1:DeathNote/' .. f .. ' 2>/dev/null')
-    local src = p:read("*a"); p:close()
-    assert(src and #src > 100, "git show v1.2.1:" .. f .. " (needs the repository with its tags)")
+    local src, why = GitBase.Show(ROOT, "v1.2.1", "DeathNote/" .. f)
+    if not src or #src <= 100 then return nil, why or ("git show v1.2.1:" .. f) end
     local h = assert(io.open(dir .. "/" .. f, "wb")); h:write(src); h:close()
   end
   return dir .. "/"
@@ -173,12 +174,16 @@ local function out(W, c)
 end
 local function partyKill(W, c, guid) c.fire("PARTY_KILL", W.guidOf(c), guid) end
 
+local DIR121, WHY121 = tag121()
 for _, old in ipairs({ { "1.2.0", V120, FILES120 }, { "1.2.1", "tag", nil }, { "1.2.2", nil, FILES122, patch122 } }) do
+  if old[2] == "tag" and not DIR121 then
+    GitBase.Skip("ledger_migration", "up and back with 1.2.1 (" .. tostring(WHY121) .. ")")
+  else
   test("Up to 1.3.0, back to " .. old[1] .. ", up again: no error, nothing lost, nothing booked, standing as before",
     function()
     M.Reset()
     local W = M.NewWorld()
-    local dir = old[2] == "tag" and tag121() or old[2]
+    local dir = old[2] == "tag" and DIR121 or old[2]
     local files = old[3] or LOGIC
     -- 1.3.0: a converted book and two own kills
     local c = run(W, "1.3.0", v3book())
@@ -215,6 +220,8 @@ for _, old in ipairs({ { "1.2.0", V120, FILES120 }, { "1.2.1", "tag", nil }, { "
     eq(same(snap, c.env.DeathNoteDB.ledger), nil, "idempotent after the way back")
     eq(#M.errors, 0, M.errors[1])
   end)
+  end
 end
 
+GitBase.Clean()
 M.done("ledger_migration")
