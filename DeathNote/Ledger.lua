@@ -976,13 +976,15 @@ local function book(info, opts)
   local vl, skull = level(Num(info.level)), info.skull == true
   local band = Ledger.Band(myLevel, vl, skull)
   local size = groupSize()
-  -- the wear window per victim
-  if not v.dt or t - v.dt >= Ledger.WINDOW or t < v.dt then v.dt, v.dn = t, 0 end
+  -- the wear window per victim, on a clock that never runs back per victim (tv): a clock set back counts as no
+  -- time passed (kicking, the window goes on), never as a fresh start
+  local tv = (v.last and t < v.last) and v.last or t
+  if not v.dt or tv - v.dt >= Ledger.WINDOW then v.dt, v.dn = tv, 0 end
   v.dn = v.dn + 1
   local ctx = {
     -- revenge: a real debt (he leads); an open 0 : 0 (entered by hand, assists only) is none
     revenge = state0 == "open" and his0 > mine0, protect = protects(key), hunt = onHitList(key), bounty = foreignBounty(key),
-    group = size > 1, kick = v.last ~= nil and t - v.last >= 0 and t - v.last < Ledger.KICK, nthToday = v.dn,
+    group = size > 1, kick = v.last ~= nil and tv - v.last < Ledger.KICK, nthToday = v.dn,
     pet = opts.pet, unknown = band == "unbekannt", honor = opts.honor,
   }
   local r, ee, j, s = Ledger.Points(band, ctx)
@@ -994,7 +996,7 @@ local function book(info, opts)
   -- victim
   v.n = v.n + 1
   v.first = v.first or t
-  v.last = t
+  v.last = tv
   v.zone, v.mapID = row.zone, mapID
   if vl then v.level = vl end
   v.pts = v.pts + r + ee + j + s

@@ -396,4 +396,23 @@ test("A broken file with 5000 victims is cut to the 200 newest in one pass", fun
   ok(ns.Ledger.Victim("N5000-Alt")); ok(ns.Ledger.Victim("N4801-Alt")); eq(ns.Ledger.Victim("N4800-Alt"), nil)
 end)
 
+---------------------------------------------------------------------------
+-- A clock set back gives no fresh points (finding 11)
+---------------------------------------------------------------------------
+test("Six kills on the same enemy, the clock set back a day before each: no fresh honour, the window goes on", function()
+  fresh()
+  local c = seen("Freund", "Feind", 40)
+  for _ = 1, 6 do
+    kill(c)
+    M.epoch = M.epoch - 100000; M.Advance(15); seen("Freund", "Feind", 40, { guid = c })
+  end
+  local v = ns.Ledger.Victim("Freund-Feind")
+  eq(v.n, 6, "all six count for the standing")
+  eq(ns.Ledger.Repute().acc.e, 3, "only the first earns honour"); eq(v.dn, 6, "one window")
+  ok(v.last >= v.first, "last kill never before the first")
+  M.epoch = M.epoch + 700000                         -- the clock is right again, a day after the first kill
+  seen("Freund", "Feind", 40, { guid = c }); kill(c)
+  eq(ns.Ledger.Log()[1].e, 3, "a new day: full honour again"); eq(v.dn, 1)
+end)
+
 M.done("ledger_fixes")
