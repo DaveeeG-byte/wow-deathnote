@@ -1,9 +1,11 @@
-# DeathNote 1.2.2
+# DeathNote 1.3.0
 
 An addon for WoW Forever (Interface 16001). In open-world PvP it writes down who killed you, shows your killers as a
 book and warns you when one of them is in sight again. Confirmed kills are shared silently with your guildmates (the
 guild book) and with friends from your friend list (the friends' book); together you can put killers on a hit list and
-post your own bounties. Changes per version: `CHANGELOG.md`.
+post your own bounties. Since 1.3.0 it also keeps your own killing blows on players (the rap sheet: the score
+"you : them" per killer and a repute with ranks), and the book comes in three covers. Changes per version:
+`CHANGELOG.md`.
 
 ## Folders
 - `DeathNote/` the addon (copy it as is to `_forever_/Interface/AddOns/DeathNote/`)
@@ -13,9 +15,16 @@ post your own bounties. Changes per version: `CHANGELOG.md`.
   `tests/fixtures/` holds real SavedVariables from 1.0.1 as a migration case, and `addon-1.1.0/` and `addon-1.2.0/` as
   old clients for the mixed-version tests
 - `DeathNote/Libs/` embedded libraries (see below)
+- `DeathNote/Themes/` one data file per cover, `DeathNote/Locales/Themes/` the words of each cover (1.3.0, see Covers)
 - `tests/ui/layout_guard.lua` checks every view in all 21 languages for overlapping or cut text (1.2.2);
   `tests/test_plates_libs.lua` and `tests/ui/minimap_real_libs.lua` (loader `tests/ui/real_libs.lua`) check the
   nameplate status and the minimap button with the real embedded libraries (1.2.2)
+- `tests/test_ledger*.lua` and `tests/test_rank_debt.lua` check the rap sheet (formula, detection, score, migration,
+  random runs, a differential run against 1.2.2, ranks, the order by open debt); `tests/test_theme.lua`,
+  `tests/ui/theme_guard.lua` (with the test theme `tests/ui/theme_probe.lua`) and the contrast guard in
+  `tests/ui/gesamtschau.lua` check the covers; `tests/ui/rapsheet.lua`, `rapsheet_off.lua`, `victim_alarm.lua`,
+  `first_start.lua` and `notice_first.lua` check the rap sheet tab, the victim alarm, the first-start window and the
+  notice (1.3.0)
 - `tests/ui/make_media.sh` rebuilds the textures (ImageMagick), `tests/ui/make_sounds.sh` the sounds
 - `TRANSLATING.md` how to translate the addon
 
@@ -25,18 +34,23 @@ post your own bounties. Changes per version: `CHANGELOG.md`.
 `/dn sync` sync guild and friends now · `/dn hunt <Name [Surname]>` put on the hit list (no name: show the hit list) ·
 `/dn calloff <Name [Surname]>` call off your own hunt · `/dn bounty <Name [Surname]> <gold>` post your own bounty (no
 gold or 0: take it back; nothing at all: list your own) · `/dn lang <code|auto>` language of the book (after `/reload`)
-· `/dn probe` troubleshooting (`/dn probe combatlog` also tries the combat log) · `/dn debug` detailed log of every
-death · `/dn help`. Same thing: `/deathnote`, `/todesliste`, `/deathlist`. The English subcommands work in every
-language (`help quiet guild friends test sync add del hunt calloff bounty lang`, plus the aliases `?`, `mute`, `rm`,
-`delete` and `language`); the German ones (`hilfe still ruhe gilde freunde jagd abblasen kopfgeld sprache`) keep
-working too. On the first login (once per account) a greeting line shows in chat 5 s later, never in combat.
+· `/dn theme <name>` cover of the book (name or id; nothing: show the current cover and the list; after `/reload`;
+also `/dn cover`, `/dn einband`) · `/dn start` the first-start window again (language and cover) · `/dn probe`
+troubleshooting (`/dn probe combatlog` also tries the combat log) · `/dn debug` detailed log of every death and of
+your own kills (`probe.kills`) · `/dn help`. Same thing: `/deathnote`, `/todesliste`, `/deathlist`. The English
+subcommands work in every language (`help quiet guild friends test sync add del hunt calloff bounty lang theme cover
+start`, plus the aliases `?`, `mute`, `rm`, `delete` and `language`); the German ones (`hilfe still ruhe gilde freunde
+jagd abblasen kopfgeld sprache einband`) keep working too. On the first login (once per account) a greeting line
+shows in chat 5 s later, never in combat; on a new installation the first-start window comes first and the rest of
+the greeting follows it.
 
 ## Languages (1.2.0)
 21 languages. The default is the client's language (`enGB` counts as English, `esMX` as Spanish, `ptPT` as
 Portuguese); if the addon does not have it, English. Change it in the House Rules (sheet Book: first entry
 "Automatic", then the 21 languages, each in its own spelling) or with `/dn lang <code>`, back with `/dn lang auto`;
-the change takes effect after `/reload`. There is no dialog on first start; the greeting ends with the language and how
-to change it. Coming from 1.1.0 you keep the client's language; a stored choice stays. Each language file in `Locales/`
+the change takes effect after `/reload`. A new installation asks once in the first-start window (see First start);
+everybody else keeps the client's language or the stored choice, and the greeting ends with the language and how to
+change it. Each language file in `Locales/`
 builds its table only when it is the chosen one (`Locale.lua`), English fills the gaps. Nothing translated is ever
 stored, sent or exported. Translating: `TRANSLATING.md`, check with `luajit tests/test_locales.lua`.
 
@@ -47,9 +61,15 @@ Every deed of a killer has a role:
 - `suspect` only the heuristic (had you targeted shortly before) or not proven.
 
 Anyone with at least one kill or assist is wanted; anyone with only suspicions waits under "Unsolved".
-Rank: kills, then assists, then the most recent kill, then the name. The alarm threshold counts kills plus assists.
-Confirm turns a suspicion or an assist into a kill, Dismiss only removes suspicions.
-DB version 3 converts older books once on the first login (co-attackers from the recap become assists).
+Rank (1.3.0, rap sheet on, the default): the open debt first (their kills minus yours, biggest first), then open
+cases without debt; ties keep the order of 1.2.x (kills, then assists, then the most recent kill, then the name).
+A killer whose score is settled or overpaid has no rank and stands faded at the end, so rank 1 and the top title are
+always an open case; with every score settled there is no rank 1. With the rap sheet off: the order of 1.2.x.
+The alarm threshold counts kills plus assists. Confirm turns a suspicion or an assist into a kill, Dismiss only
+removes suspicions.
+DB version 3 converted older books once on the first login (co-attackers from the recap became assists). DB version
+4 (1.3.0) adds the empty rap sheet `DeathNoteDB.ledger`; it books nothing from old data (the repute starts at zero),
+and 1.2.2 keeps working on a version 4 file.
 
 ## Friends' book (1.2.0)
 The same silent messages as in the guild (protocol version 1), but as whispers to character friends on the friend
@@ -135,7 +155,8 @@ as there are revenges noted by hand. Revenge the book detected itself (own killi
 separately (`revengeHand` on the entry, additive; plus the times `revengeHandAt` and `revengeAutoAt`, so that "last
 revenge" shows the newest one left after taking one back). Revenge from books of 1.2.0 and older counts as detected.
 Stamp, counter, the book's bounty and rank follow the counter; a milestone already shown ("first revenge") does not come
-back.
+back. (1.3.0) With the rap sheet on, list, poster and tooltip show the score "you : them" in place of
+the revenge count, and the rank follows the open debt (see Rap sheet and repute).
 
 Avenged for you: when someone with DeathNote kills, with their own killing blow, a killer who stands in the guild or
 friends' book for killing others, that goes to the guild, or only to the friends that killer killed. Anyone whom this
@@ -146,6 +167,115 @@ also a hit list target, there is only the taken-down message; both counters coun
 arrive, "for you" shows once). Only the one actually killed counts: if the tracker or your own book knows them by full
 name, the same first name of another killer does not count (this also applies to "taken down"). The stamp REVENGE TAKEN
 stays reserved for your own revenge. Switch: "Report hit list news: new, taken down".
+
+## Rap sheet and repute (1.3.0)
+Your own killing blows on players, kept account-wide in `DeathNoteDB.ledger` (`Ledger.lua`, rank data in
+`Ranks.lua`). Nothing of it is shared (see below).
+
+**Detection.** `PARTY_KILL` with your GUID or your pet's as the attacker. Not booked: non-players, your own faction,
+the opponent of a duel to the death, anything inside an instance (dungeon, raid, battleground, arena), the same
+victim again within 10 s. The honour line of the client (`COMBATLOG_HONORGAIN`, made into a pattern) is a fallback
+for kills without `PARTY_KILL`; it books nothing while `Ledger.HONOR_FALLBACK` is false (the default, until the probe
+has measured it in the game). `/dn debug` writes each case without names to `DeathNoteDB.probe.kills`.
+
+**Score.** "you : them" per player: you = your killing blows on them, at least the revenge the book recognised
+(plus kills before they were in the book), plus revenge noted by hand; them = their kills in your book. States: open
+(they lead, or 0 : 0 in the book), settled (equal), overpaid (you lead), victim (only in the rap sheet), pardoned,
+suspect. Revenge read in by "Import book" (`revengeForeign` on the entry) is foreign data and does not count for you.
+The book's own bounty reads "you" as its revenge count, so it is never higher than in 1.2.x.
+
+**Points per kill** (four accounts: r Infamy, e Honour, j Hunt, s Protection). The level colour is the game's, seen
+from your level at the kill (grey after the classic formula):
+
+| Level colour of the victim | Infamy | Honour | Hunt | Protection |
+|---|---|---|---|---|
+| grey | 4 | | | |
+| green | 2 | | | |
+| yellow (−2 to +2) | | 3 | | |
+| orange (+3, +4) | | 2 | 3 | |
+| red (+5 to +9) | | 1 | 6 | |
+| skull (+10 or "??") | | | 10 | |
+| unknown | | 1 | | |
+
+Then, in this order: payback (they led before the kill): Infamy 0, Honour +2; protection (they killed someone else in
+the guild or friends' book): Infamy 0, Protection +4; on the hit list by someone else: Hunt +3; a bounty posted by
+someone else: Hunt +5 (no Hunt for greys); in a group: Honour and Hunt halved; the same player again within 10
+minutes: Honour, Hunt and Protection 0, Infamy at least 2. Wear per victim over 24 hours: the 1st to 5th kill count
+100, 80, 60, 40, 20 %, from the 6th on nothing. Each value is rounded and stays at least 1 where it was above 0.
+
+**Ranks.** The sum of the four accounts gives the rank (`Ranks.THRESHOLDS`):
+
+| Rank | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Points from | 0 | 10 | 25 | 50 | 100 | 175 | 300 | 500 | 800 | 1250 |
+
+The path is the biggest account of a sliding value (each kill: value × 0.98 + points), named from 10 counted kills or
+rank 3; another account takes over only when it is 15 % bigger. Ranks 1 and 2 have one name for all paths, ranks 3 to
+10 one per path and per cover, in German and English (`Ranks.NAMES`); other languages show "Rank 6 · Path: Honour".
+The needle runs from −100 (ruthless) to +100 (honourable): 100 × (Honour + Protection − Infamy) / sum of the sliding
+values; Hunt does not move it.
+
+**Awards and bests.** Six awards (two hidden until earned; names and conditions in `Humor.lua`, German and English)
+and three bests: the biggest level gap of a kill, the longest streak of kills without dying, the fastest payback.
+
+**In the book.** Fifth tab "Rap Sheet" from the first own kill on: your file, the latest 60 kills, a sheet per victim
+with the scene (zone and time), up to 200 victims (the oldest one not in the book goes first). A chat line after each
+own kill, a notice for a new rank or an award (after combat), the score in list, poster, tooltip, alarm line and
+revenge notice, the game tooltip "RAP SHEET:" over a victim. Clearing the rap sheet removes victims and kill list;
+rank, points and awards stay. Switched off ("Keep a rap sheet"), nothing is booked, tab and score disappear and the
+book ranks as in 1.2.x; the data stays.
+
+**Victim alarm** (`alert.victims`, off by default): a player you killed more often than they killed you, your last
+kill on them at most 14 days ago, not pardoned, shows up: a quiet popup with the score and a soft sound, once per 10
+minutes per player, never in front of the book's own alarm. **Settled scores** (`alert.settled`): `always` (as for
+everybody), `quiet` (soft sound, no flashing edge) or `off` for killers whose score is settled or overpaid; open cases
+are never touched.
+
+## Covers (themes, 1.3.0)
+Three covers: The Black Book (`notebook`, the look of 1.2.2 and the base of every other cover), Privateer's Ledger
+(`harbor`) and The Workshop (`trade`). A cover sets colours, textures, stamps, fonts per role (only the client's
+fonts) and its show words: book title, tabs, page heads, stamps, alarm titles, the currency of the book's bounty, the
+welcome and the empty pages, and the top title (PUBLIC ENEMY No. 1, HIGHEST BOUNTY, BEST CUSTOMER). Buttons, menus
+and switches keep their names in every cover. Choice: House Rules, sheet Book, row "Cover", `/dn theme <name>` or the
+first-start window; stored as `ui.theme` (an id), active after `/reload`. An unknown or missing id falls back to The
+Black Book without a word. Nothing of a cover is stored except its id.
+
+How a cover is built:
+1. `DeathNote/Themes/<id>.lua` (id: lower case letters, digits, `_`) calls `ns.Theme.Register("<id>", { ... })` with
+   pure data, nothing else. Fields (schema in `Theme.lua`): `order` (place in lists), `nameKey` (language key of the
+   name), `color` (roles in `Theme.COLORS`, `{ r, g, b [, a] }` or `"#rrggbb[aa]"`), `tex` (`Theme.TEXTURES`, a file
+   in `Media/` or a client path), `tint` (a colour laid over a texture), `stamp = { blank = ..., baked = ... }`
+   (`Theme.STAMPS`: frames without text, optional pictures with burnt-in text), `fallback` (colours when a texture
+   file is missing), `font` (role → `title`, `hand`, `body` or `type`), `tone` (opacity of ink per role), `words`
+   (id of the words file). Anything left out comes from `notebook`; `Themes/trade.lua` is a short example.
+2. Words: `DeathNote/Locales/Themes/<id>.lua`, one `Locale.RegisterWords("<id>", "<code>", function(T) ... end)` per
+   language, only keys of `Locale.THEME_KEYS` (see `TRANSLATING.md`). German and English carry the same keys. The name
+   (`nameKey`) goes into all 21 language files.
+3. Media: textures as TGA from `tests/ui/make_media.sh` (ImageMagick, fixed seeds; `bash tests/ui/make_media.sh <part>`
+   with the parts `all`, `base`, `kit`, `harbor`, `trade`). Files of a cover are named `<id>_*.tga`; the grey kit
+   `g_*.tga` is shared and tinted. Edges a power of two, 32-bit, uncompressed (checked by the UI suite).
+4. TOC: the words file after the 21 languages and before `Theme.lua`, the theme file after `Theme.lua` and before
+   `Alert.lua`; the same files in `M.FILES` of `tests/mock_wow.lua`. Rank names per cover: `Ranks.NAMES` (optional,
+   else those of `notebook`).
+5. Tests a new cover must pass: `tests/test_theme.lua` (schema, files exist, every `<id>_*.tga` named by its cover),
+   `luajit tests/test_locales.lua` (also `STRICT=1`: words, length limits, name in 21 languages, TOC order), the
+   contrast guard in `tests/ui/gesamtschau.lua` (every cover is measured), `tests/ui/theme_guard.lua` and
+   `tests/ui/layout_guard.lua` with the cover as the stored choice, then `bash tests/run.sh` and
+   `bash tests/ui/run.sh`.
+
+## First start (1.3.0)
+Only on a new installation (no saved data before this login): 3 s after the first entering of the open world, never
+in combat (it closes when a fight starts and comes back after it) or in an instance, one window asks for the language
+and the cover. "Go" takes both at once, without `/reload`; Esc or the cross keeps the client's language and the
+default cover. Members of the guild known to `Humor.lua` find The Workshop picked in advance. `/dn start` shows the
+window again. Players with data from before get one chat line instead (the book now comes in other covers), once.
+Marker: `firstRun` in the settings (`"new"` = the window is due, `"done"` = asked or told; absent = data from before
+1.3.0).
+
+## Notice (1.3.0)
+The notice in the middle of the screen (death, revenge, guild deaths, hit list, rank, award) is a slip torn from a page
+of the book (texture `slip`, tinted per cover), 352 × 64, ink on paper, the stamp at its right end. It is built
+hidden when the addon is ready, so its first appearance equals every later one.
 
 ## Instances (1.2.1)
 In dungeons and raids the book sends outside of combat just as it does outdoors. If the client refuses there, only that
@@ -177,13 +307,18 @@ taken-down targets, plus one line at the foot of "How it works". The other 19 la
 and times are stored (`DeathNoteDB.humor`).
 
 ## House Rules
-Sheets Book, Alert, Guild. Sheet Alert: sound (No sound, Raid warning, Bell, Gong, Heartbeat, Quill, Siren; the
+Sheets Book, Alert, Guild, Rap Sheet (1.3.0). Sheet Book: language and, under it, the cover (both after `/reload`,
+one hint line and one reload button). Sheet Alert: sound (No sound, Raid warning, Bell, Gong, Heartbeat, Quill, Siren; the
 addon's own sounds are in `Media/Sounds/`), volume 1 to 5, channel (Master, Effects, Dialog), cooldown per killer,
 threshold "Alarm at this many deaths by them" (counts kills plus assists), alarm size, test alarm.
 Sheet Guild: two groups, SHARING (with the guild, with friends, sightings) and ALERTS (killers from guild and friends,
 hit list targets); everything rarely used sits behind "More" at the bottom right (sharing entries added by hand,
 receiving the guild book, "Calls last", warning about entries added by hand, messages, threshold, status, emptying the
-books). The state of "More" is remembered. Quick off: `/dn quiet`.
+books). The state of "More" is remembered. Sheet Rap Sheet: keep a rap sheet, report own kills in the chat, the
+victim alarm, the alarm for settled scores (as usual, quiet, never), clear rap sheet. Quick off: `/dn quiet`.
+
+Settings added in 1.3.0 (`DeathNoteDB.settings`): `ledger.enabled` (true), `ledger.chat` (true), `alert.victims`
+(false), `alert.settled` (`always` | `quiet` | `off`), `ui.theme` (`notebook`), `firstRun` (see First start).
 
 ## Layout
 | File | Job |
@@ -195,13 +330,19 @@ books). The state of "More" is remembered. Quick off: `/dn quiet`.
 | `Tracker.lua` | enemy players in sight (nameplate, target, mouseover, focus, group targets) |
 | `Attribution.lua` | death → killer: Death Recap, otherwise exactly one player targeting you in the last 6 s (suspect only); revenge |
 | `Probe.lua` | diagnostic probe, writes to `DeathNoteDB.probe` |
+| `Theme.lua` | theme core: schema, registry, choice, fills `ns.Look` with the active cover (1.3.0) |
+| `Themes/<id>.lua` | one cover as data: `notebook`, `harbor`, `trade` (1.3.0) |
+| `Locales/Themes/<id>.lua` | the show words of a cover per language (1.3.0) |
+| `Ranks.lua` | rank thresholds, paths, rank names per cover and language (1.3.0) |
+| `Ledger.lua` | rap sheet: own kills, score, repute, awards, victim hook, `probe.kills` (1.3.0) |
+| `Start.lua` | first-start window (language and cover), `/dn start` (1.3.0) |
 | `Sync.lua` | guild book via addon messages on the GUILD channel, send queue for both channels, hit list |
 | `Friends.lua` | friends' book: friend list, trust, hello to friends, whispers (1.2.0) |
 | `Bounty.lua` | own bounties and "avenged for you": sending, receiving, snapshot, expiry (1.2.1) |
-| `Alert.lua` | alarm popup with a target button, shared styling helpers |
-| `UI.lua` | the book: Wanted, Unsolved, Death Log, Guild, House Rules, How it works |
+| `Alert.lua` | alarm popup with a target button, victim alarm, shared styling helpers |
+| `UI.lua` | the book: Wanted, Unsolved, Death Log, Guild, Rap Sheet, House Rules, How it works |
 | `Extras.lua` | tooltip line, messages after a death, revenge and guild deaths, new hit list targets |
-| `Humor.lua` | dry remarks, milestones, hidden commands (German and English only) |
+| `Humor.lua` | dry remarks, milestones, hidden commands, names of the awards (German and English only) |
 | `Libs/` | embedded LibStub, CallbackHandler, LibDataBroker and LibDBIcon for the minimap button (1.2.2) |
 
 ## Embedded libraries (1.2.2)
@@ -293,6 +434,8 @@ Details: `DeathNote/Libs/README.txt`. The release zip contains the folder with i
 20. (1.2.1) 1.2.0 and 1.1.0 drop `B`, `Y` and `V` as an unknown kind without changing their data; `E` stays as it was
     (1.2.0 keeps counting "taken down" exactly once). Answers contain one more `Y`; answers to friends wait for room for
     up to 103 messages (queue 140).
+21. (1.3.0) No new message and no new field. Nothing of the rap sheet goes over the wire or into "Back up book": no own
+    kill, score, rank, award or cover. The opponent of a duel to the death gives no `E` and no `V`.
 
 ## Client limits
 No combat log for addons, no detection of stealthed players, no distance or direction. Only players visible as a
