@@ -89,9 +89,15 @@ local function suspicious(s)
 end
 
 local found = {}
-local p = io.popen('ls "' .. DIR .. '"')
-for f in p:lines() do
-  if f:match("%.lua$") and not SKIP_FILES[f] then
+-- 1.3.0: the theme data files (Themes/<id>.lua) count as code too: a theme's words live in Locales/Themes/
+local files = {}
+for _, sub in ipairs({ "", "Themes/" }) do
+  local p = io.popen('ls "' .. DIR .. sub .. '" 2>/dev/null')
+  for f in p:lines() do if f:match("%.lua$") then files[#files + 1] = sub .. f end end
+  p:close()
+end
+for _, f in ipairs(files) do
+  if not SKIP_FILES[f] then
     local h = assert(io.open(DIR .. f, "rb")); local src = h:read("*a"); h:close()
     -- Humor.lua (1.2.0, author): the humor texts exist only in German and English, they are not
     -- keys of the locale table and so live in the marked HUMOR-TEXTE block of the file itself;
@@ -106,7 +112,6 @@ for f in p:lines() do
     end
   end
 end
-p:close()
 -- every key read in the code (L.KEY) is in enUS.lua; if it were missing, the game would show the key
 do
   local h = assert(io.open(DIR .. "Locales/enUS.lua", "rb")); local en = h:read("*a"); h:close()
