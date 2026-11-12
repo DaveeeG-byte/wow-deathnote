@@ -1225,6 +1225,7 @@ GF.STAMPS = { nr1 = { "STAMP_NR1", -11, 1 }, guild = { "STAMP_GUILD_NR1", -9, 1 
               pardon = { "STAMP_PARDONED", -6, 2 }, suspect = { "STAMP_SUSPECT", 7, 3 }, hunt = { "STAMP_HUNT", 8, 1 } }
 GF.STAMP_INK = { { 0.69, 0.04, 0.04 }, { 0.12, 0.106, 0.098 }, { 0.18, 0.165, 0.153 } }   -- #b00a0a #1e1b19 #2e2a27
 GF.STAMP_TEXT_W = 104       -- Innenrahmen des Stempels bei 140x70 px
+GF.FIT_STAMP = { sizes = { 16, 13, 11, 9 }, lines = 2, wrapFirst = 2 }
 
 function GF.StampLabel(layer, tex)
   local fs = Look.Text(layer, "title", 16, GF.STAMP_INK[1])
@@ -1251,11 +1252,9 @@ function GF.Stamp(tex, id)
   local text = L[s[1]]
   if fs.text ~= text then
     fs.text = text
-    -- eine Zeile in 16 pt, sonst zwei Zeilen in 13 pt, sonst 11 pt
-    Look.Font(fs, "title", 16)
-    fs:SetText(text)
-    local w = TextWidth(fs, GF.STAMP_TEXT_W)
-    if w > GF.STAMP_TEXT_W then Look.Font(fs, "title", w > GF.STAMP_TEXT_W * 1.6 and 11 or 13); fs:SetText(text) end
+    -- eine Zeile in 16 pt, sonst eine oder zwei Zeilen in 13, 11, 9 pt (1.2.2: auch ein einzelnes zu breites Wort
+    -- und eine dritte Zeile werden kleiner statt abgeschnitten)
+    Look.FitText(fs, text, GF.FIT_STAMP)
   end
   local c = GF.STAMP_INK[s[3]]
   fs:SetTextColor(c[1], c[2], c[3], 0.92)
@@ -1429,6 +1428,7 @@ function GF.BountySlot(E, key)
   if ed:IsShown() then E.bountyHit:Hide() end
 end
 
+GF.FIT_STRIKE = { sizes = { 13, 11 } }
 function UX.BuildPoster()
   P = CreateFrame("Frame", nil, RP)
   P:SetSize(352, 452)
@@ -1525,7 +1525,7 @@ function UX.BuildPoster()
   E.listHit:Hide()
   E.infoHit = CreateFrame("Button", nil, E)
   E.infoHit:SetPoint("TOPLEFT", E.info[1], "TOPLEFT", 0, 0)
-  E.infoHit:SetSize(200, 30)
+  E.infoHit:SetSize(200, 60)    -- 1.2.2: ueber alle vier Zeilen (vorher 30 px, die unteren Zeilen hatten keinen Tooltip)
   E.infoHit:SetScript("OnEnter", CandEnter)
   E.infoHit:SetScript("OnLeave", CandLeave)
   E.infoHit:Hide()
@@ -1676,15 +1676,21 @@ function UX.BuildPoster()
   E.racheCount:SetPoint("LEFT", E.stampRache, "RIGHT", -6, -8)
   if E.racheCount.SetRotation then pcall(E.racheCount.SetRotation, E.racheCount, 0.16) end
 
+  -- Fussreihe des Plakats (1.2.2): zwei Knoepfe links, "Streichen" rechts; die Breiten werden verteilt (Wort zuerst,
+  -- 64 bis 120 px, die Knoepfe teilen sich den Rest bis 108 px), kein Wort waechst in den Nachbarknopf
+  E.strike = WordButton(E, L.ACT_STRIKE, "hand", 13)
+  E.strike:SetPoint("BOTTOMRIGHT", -20, 11)
+  local sw = math.max(64, math.min(120, math.ceil((Look.TextW(E.strike.text) or 60) + 4)))
+  E.strike:SetSize(sw, 20)
+  E.strike.text:SetWidth(sw)
+  Look.FitText(E.strike.text, L.ACT_STRIKE, GF.FIT_STRIKE)
+  Look.TipIfCut(E.strike, E.strike.text)
+  local bw = math.min(108, math.floor((352 - 40 - sw - 16) / 2))
   E.buttons = {}
   for i = 1, 2 do
-    E.buttons[i] = InkButton(E, "", 108, 22)
-    E.buttons[i]:SetPoint("BOTTOMLEFT", 20 + (i - 1) * 116, 10)
+    E.buttons[i] = InkButton(E, "", bw, 22)
+    E.buttons[i]:SetPoint("BOTTOMLEFT", 20 + (i - 1) * (bw + 8), 10)
   end
-  -- Streichen: kein Knopf, ein kleines Wort unten rechts (Hover rot); fragt immer nach
-  E.strike = WordButton(E, L.ACT_STRIKE, "hand", 13)
-  E.strike:SetPoint("BOTTOMRIGHT", -38, 11)
-  E.strike:SetSize(math.max(64, math.min(96, TextWidth(E.strike.text, 60) + 4)), 20)
   E.strike:SetScript("OnClick", function(self) Look.Sound("click"); if self.key then UI.ConfirmDelete(self.key) end end)
   -- 1.2.0: "Zur Jagd freigeben" / "Jagd abblasen" als Wort unter dem Foto (eigene Gesuchte, Gilde, Freunde)
   E.hunt = WordButton(E, "", "hand", 13)
@@ -1927,6 +1933,8 @@ local function SetInfo(E, info, optional)
     end
   end
   for i = shown + 1, INFO_LINES do E.info[i]:SetText("") end
+  -- 1.2.2: auch eine gekuerzte Zeile (Ellipse) zeigt den ganzen Steckbrief im Tooltip
+  for i = 1, shown do if not dropped and Truncated(E.info[i]) then dropped = true end end
   if dropped then
     local t = wipe(scratchTip)
     t[1] = Look.Name(P.enemy.current)
@@ -1940,13 +1948,11 @@ local function SetInfo(E, info, optional)
 end
 
 -- Kopfgeld ab vier Stellen ("2.875 GOLD") einen Grad kleiner, sonst stoesst es an den Rache-Stempel
+-- 1.2.2: Kopfgeld in der Stufenleiter 22, 19, 16 (ab vier Stellen ab 19) nach der gemessenen Breite; mit
+-- Rache-Stempel bis zum Stempelrahmen (124 px), sonst die Plakatbreite
+GF.FIT_BOUNTY, GF.FIT_BOUNTY_BIG = { sizes = { 22, 19, 16 } }, { sizes = { 19, 16, 13 } }
 local function SetBounty(E, text, big)
-  local size = big and 19 or 22
-  if E.bountySize ~= size then
-    E.bountySize = size
-    Look.Font(E.bounty, "hand", size)
-  end
-  E.bounty:SetText(text)
+  E.bountyText, E.bountyFit = text, big and GF.FIT_BOUNTY_BIG or GF.FIT_BOUNTY
 end
 
 -- Kopfgeld-Block; mit Rache-Stempel rueckt er nach links, der Stempel steht daneben
@@ -1956,6 +1962,9 @@ local function PlaceBounty(E, shifted)
   E.bountyLabel:SetPoint("TOP", x, -212)
   E.bounty:ClearAllPoints()
   E.bounty:SetPoint("TOP", x, -225)
+  E.bounty:SetWidth(shifted and 124 or 300)
+  Look.FitText(E.bounty, E.bountyText or "", E.bountyFit)
+  E.bountySize = E.bounty.fontSize
 end
 
 ClassName = function(e)
@@ -1994,7 +2003,8 @@ local function FillEnemy(e)
     local h = GF.HasHunts() and GCall("Hunt", e.key, "all")
     if type(h) == "table" then
       local names = type(h.names) == "table" and h.names or {}
-      info[#info + 1] = Fmt(L.POSTER_ON_HUNTLIST, { names = Look.NameList(names, 2) })
+      -- 1.2.2: "Anna +2" wie beim Kopfgeld (die Zeile passt in 192 px; alle Namen zeigt die Abschussliste)
+      info[#info + 1] = Fmt(L.POSTER_ON_HUNTLIST, { names = #names > 0 and GF.FirstPlus(Look.First(names[1]), #names) or Look.NameList(names, 2) })
     end
   end
   if e.raceLoc or e.race then info[#info + 1] = e.raceLoc or e.race; opt[#info] = true end
@@ -2087,8 +2097,11 @@ function GF.SetHuntWord(E, key)
   if key and (E.stampNr1:IsShown() or E.stampOther:IsShown()) then key = nil end
   if not key or not GF.HasHunts() then E.hunt.key = nil; E.hunt:Hide(); return end
   E.hunt.key = key
-  E.hunt.text:SetText(GF.Released(key) and L.ACT_CALLOFF or L.ACT_RELEASE)
-  E.hunt:SetWidth(math.max(120, math.min(200, TextWidth(E.hunt.text, 116) + 4)))
+  -- 1.2.2: hoechstens bis vor den Steckbrief (x = 136), sonst kleiner, dann Tooltip
+  E.hunt:SetWidth(116)
+  E.hunt.text:SetWidth(116)
+  Look.FitText(E.hunt.text, GF.Released(key) and L.ACT_CALLOFF or L.ACT_RELEASE, GF.FIT_STRIKE)
+  Look.TipIfCut(E.hunt, E.hunt.text)
   E.hunt:Show()
 end
 
@@ -2125,7 +2138,8 @@ local function FillGuild(g)
   if rank == 1 then
     local h = GF.HasHunts() and GCall("Hunt", g.key, "all")
     if type(h) == "table" then
-      info[#info + 1] = Fmt(L.POSTER_ON_HUNTLIST, { names = Look.NameList(type(h.names) == "table" and h.names or {}, 2) })
+      local hn = type(h.names) == "table" and h.names or {}
+      info[#info + 1] = Fmt(L.POSTER_ON_HUNTLIST, { names = #hn > 0 and GF.FirstPlus(Look.First(hn[1]), #hn) or Look.NameList(hn, 2) })
     end
   end
   local listLine
@@ -2308,10 +2322,17 @@ function GF.FillHunt(h)
   E.note.key = nil
   E.note:Hide()
   local lb = type(h.lastBagged) == "table" and h.lastBagged or nil
-  E.victims:SetText(lb and Fmt(L.POSTER_TAKEN_BY, { name = Look.First(lb.by), time = Look.Ago(lb.t) }) or L.POSTER_TAKEN_NOBODY)
+  local taken = lb and Fmt(L.POSTER_TAKEN_BY, { name = Look.First(lb.by), time = Look.Ago(lb.t) }) or L.POSTER_TAKEN_NOBODY
+  E.victims:SetText(taken)
   E.victims:Show()
-  E.victimsHit.tip = nil
-  E.victimsHit:Hide()
+  -- 1.2.2: gekuerzt (lange Vornamen, Etikett in ruRU/ukUA): ganzer Satz mit vollem Namen und Zeit im Tooltip
+  if Truncated(E.victims) then
+    E.victimsHit.tip = { lb and Fmt(L.POSTER_TAKEN_BY, { name = tostring(lb.by), time = Look.When(lb.t) }) or taken }
+    E.victimsHit:Show()
+  else
+    E.victimsHit.tip = nil
+    E.victimsHit:Hide()
+  end
   GF.ShowStamp(E.stampNr1, false)
   GF.Stamp(E.stampOther, "hunt")
   GF.ShowStamp(E.stampOther, true)

@@ -448,7 +448,7 @@ function Look.FitText(fs, text, opts)
   opts = opts or {}
   text = text or ""
   local width = opts.width or (fs.GetWidth and fs:GetWidth()) or 0
-  if fs.fitText == text and fs.fitW == width and fs.fitOpts == opts then return not fs.cut end
+  if fs.fitText == text and fs.fitW == width and fs.fitOpts == opts and fs:GetText() == text then return not fs.cut end
   fs.fitText, fs.fitW, fs.fitOpts = text, width, opts
   fs.fit, fs.full = true, text
   local kind, flags = opts.kind or fs.fontKind or "body", opts.flags or fs.fontFlags
@@ -469,8 +469,8 @@ function Look.FitText(fs, text, opts)
     size(sizes[i])
     fs:SetText(text)
     if not cut() then fs.cut = false; return true end
-    -- opts.wrapFirst: running text wraps in this size before it gets smaller
-    if lines > 1 and opts.wrapFirst then
+    -- opts.wrapFirst: running text wraps in this size before it gets smaller (a number: from that step of the ladder on)
+    if lines > 1 and opts.wrapFirst and i >= (opts.wrapFirst == true and 1 or opts.wrapFirst) then
       fs:SetWordWrap(true)
       fs:SetText(text)
       if not cut() then fs.cut = false; return true end
