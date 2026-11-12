@@ -47,6 +47,17 @@ end
 local function TooltipText(e)
   local rank = e.status == "wanted" and ns.Store.Rank(e.key) or nil
   local rv = tonumber(e.revenge) or 0
+  -- 1.3.0: "IN THE BOOK: Score 1 : 2 · rank 3" (the revenge is in the score; settled: "Score 2 : 2 · even")
+  local m, h, score
+  if Look.Stand then m, h, score = Look.Stand(e) end
+  if m and e.status ~= "suspect" and (m > 0 or h > 0) then
+    local st = Look.ScoreState(m, h)
+    local a = Look.Assists(e)
+    local s = Look.Join(e.status == "pardoned" and L.TIP_PARDONED or nil, Fmt(L.STAND_LINE, { score = score }),
+      (e.status == "wanted" and st ~= "open") and L[Look.STATE_WORD[st]] or nil,
+      a > 0 and Fmt(L.TALLY_ASSISTED, { times = Look.Times(a) }) or nil, rank and Fmt(L.TIP_RANK, { rank = rank }))
+    return Look.HEX.tipLabel .. L.TIP_IN_BOOK .. "|r " .. Look.HEX.tipText .. s .. "|r"
+  end
   local s = Look.Join(e.status == "pardoned" and L.TIP_PARDONED or nil, Look.Tally(e),
                       rank and Fmt(L.TIP_RANK, { rank = rank }), rv > 0 and Fmt(L.TIP_REVENGE, { times = Look.Times(rv) }))
   return Look.HEX.tipLabel .. L.TIP_IN_BOOK .. "|r " .. Look.HEX.tipText .. s .. "|r"
@@ -91,6 +102,13 @@ local function OnTooltipUnit(tt, data)
       if #names > 0 then
         tt:AddLine(Look.HEX.tipListed .. L.TIP_GUILDBOOK .. "|r " .. Look.HEX.tipText .. Fmt(L.TIP_LISTED_BY, { names = Look.NameList(names, 2) }) .. "|r")
       end
+    end
+    -- 1.3.0: a victim of the rap sheet (not in the own book): "RAP SHEET: killed by you 3×, last yesterday"
+    local Lg = ns.Ledger
+    local v = Lg and Lg.Enabled and Lg.Enabled() and Lg.Victim and Lg.Victim(key)
+    if type(v) == "table" then
+      tt:AddLine(Look.HEX.tipLabel .. L.TIP_IN_RECORD .. "|r " .. Look.HEX.tipText
+        .. Fmt(L.TIP_RECORD_LINE, { times = Look.Times(v.n), time = Look.Ago(v.last) or "?" }) .. "|r")
     end
     return
   end
@@ -483,8 +501,10 @@ local function OnRevenge(key)
   local e = key and ns.Store.Get(key)
   if not e then return end
   local r, g, b = Look.ClassRGB(e.class)
+  -- 1.3.0: the second line is the standing ("Score 1 : 1 · even") while the rap sheet is on
+  local stand = Look.StandLine and Look.StandLine(e)
   Banner(L.BANNER_REVENGE, Look.Name(e), { r, g, b },
-         Fmt(L.BANNER_REVENGE_LINE, { count = e.revenge or 1 }), "rache", false, key)
+         stand and Fmt(L.STAND_LINE, { score = stand }) or Fmt(L.BANNER_REVENGE_LINE, { count = e.revenge or 1 }), "rache", false, key)
   Look.Alarm("revenge")
 end
 

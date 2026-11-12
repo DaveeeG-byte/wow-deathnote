@@ -124,6 +124,33 @@ end
 local AnyCollapsed, SetAllMembers -- forward declaration (guild by guildmate)
 
 ------------------------------------------------------------------------
+-- 1.3.0 standing "me : him" (Ledger.Standing): one place for row, poster, tooltip (Extras), alarm line (Alert),
+-- notice. Everything returns nil while the rap sheet is off or missing: then the book looks as in 1.2.2.
+------------------------------------------------------------------------
+Look.STATE_WORD = { open = "STATE_OPEN", even = "STATE_EVEN", ahead = "STATE_AHEAD", victim = "STATE_VICTIM" }   -- locale key
+-- mine, his and the score text of a book entry (or a key) through Look.Score (Alert.lua: one notation for alarm and
+-- book), nil while the rap sheet is off
+function Look.Stand(e)
+  local key = type(e) == "table" and e.key or e
+  if not Look.Score or type(key) ~= "string" then return nil end
+  local ok, text, m, h = pcall(Look.Score, key)
+  if not ok or type(text) ~= "string" or type(m) ~= "number" or type(h) ~= "number" then return nil end
+  return m, h, text
+end
+-- the state of the numbers alone, whatever the status (the poster of a pardoned one shows its second stamp too)
+function Look.ScoreState(m, h)
+  if h > m or m == 0 then return "open" end
+  return h == m and "even" or "ahead"
+end
+-- "1 : 2" once I killed him, "2 : 2 · even" when settled; nil before my first kill (alarm line, notice)
+function Look.StandLine(e)
+  local m, h, text = Look.Stand(e)
+  if not m or m == 0 then return nil end
+  local st = Look.ScoreState(m, h)
+  return Look.Join(text, st ~= "open" and L[Look.STATE_WORD[st]] or nil)
+end
+
+------------------------------------------------------------------------
 -- Building blocks
 ------------------------------------------------------------------------
 local function Rule(parent, y, x1, x2, alpha)
@@ -992,17 +1019,34 @@ function UX.BindEnemyRow(r, e)
   local pardoned, suspect = e.status == "pardoned", e.status == "suspect"
   r.skull:Hide()
   SetRank(r, rank, suspect and "?" or nil)
+  -- 1.3.0: the standing "me : him" replaces "REVENGE n×" at the right (from my first kill on); a settled one
+  -- (even, ahead) says so first in its sub line, has no rank and is drawn pale
+  local m, h, score = Look.Stand(e)
+  local settled = m and m > 0 and not pardoned and not suspect and Look.ScoreState(m, h) ~= "open" and Look.ScoreState(m, h)
   local sub
   if pardoned then sub = Look.Join(L.ROW_PARDONED, Look.Tally(e))
   elseif suspect then sub = Look.Join(L.ROW_SUSPECT, DeedWhere(Look.LastDeed(e)))
   else
     -- "seen … ago" goes first when the row does not fit
     local tally = Look.Tally(e)
-    sub = { Look.Join(tally, UX.Seen(e)), tally }
+    local word = settled and L[Look.STATE_WORD[settled]] or nil
+    sub = { Look.Join(word, tally, UX.Seen(e)), Look.Join(word, tally) }
   end
-  local rv = tonumber(e.revenge) or 0
-  SetRow(r, Look.Name(e), sub, rv > 0 and Fmt(L.MARK_REVENGE, { times = Look.Times(rv) }) or nil,
-         (rank == 1 and "red") or (pardoned and "pale") or "normal")
+  local mark
+  if m then
+    mark = m > 0 and score or nil
+  else
+    local rv = tonumber(e.revenge) or 0
+    mark = rv > 0 and Fmt(L.MARK_REVENGE, { times = Look.Times(rv) }) or nil
+  end
+  SetRow(r, Look.Name(e), sub, mark, (rank == 1 and "red") or ((pardoned or settled) and "pale") or "normal", settled and true or false)
+  if mark and m then
+    -- the row's tooltip says what the numbers mean ("you 1, them 2"), with name and sub line whole (one table per row)
+    local t = r.standTip or {}
+    r.standTip = t
+    t[1], t[2], t[3] = Look.Name(e), type(sub) == "table" and sub[1] or sub, Fmt(L.STAND_TIP, { mine = m, his = h })
+    r.full = t
+  end
   Look.ClassIcon(r.icon, e.class)
   r.icon:Show()
   GF.Coin(r, e.key)
@@ -1257,7 +1301,10 @@ end
 -- textless frame (same angle, colour, wear) with the text from the locale table on top.
 -- per stamp: key, angle from make_media.sh (degrees, ImageMagick clockwise), ink
 GF.STAMPS = { nr1 = { "STAMP_NR1", -11, 1 }, guild = { "STAMP_GUILD_NR1", -9, 1 }, rache = { "STAMP_REVENGE", 9, 1 },
-              pardon = { "STAMP_PARDONED", -6, 2 }, suspect = { "STAMP_SUSPECT", 7, 3 }, hunt = { "STAMP_HUNT", 8, 1 } }
+              pardon = { "STAMP_PARDONED", -6, 2 }, suspect = { "STAMP_SUSPECT", 7, 3 }, hunt = { "STAMP_HUNT", 8, 1 },
+              -- 1.3.0: the standing's second stamp; no picture of their own: the frame of "rache" (4th field) with the
+              -- word in every language, German too
+              quitt = { "STAMP_QUITT", 9, 2, "rache" }, overpaid = { "STAMP_OVERPAID", 9, 1, "rache" } }
 GF.STAMP_INK = Look.STAMP_INK   -- 1.3.0: the theme's stamp inks (red, dark, darker), filled in place
 GF.STAMP_TEXT_W = 104       -- inner frame of the stamp at 140x70 px
 GF.FIT_STAMP = { sizes = { 16, 13, 11, 9 }, lines = 2, wrapFirst = 2 }
@@ -1279,13 +1326,14 @@ function GF.Stamp(tex, id)
   local s, fs = GF.STAMPS[id], tex.label
   local code = ns.Locale and ns.Locale.code
   -- 1.3.0: the picture with burnt-in text only where the theme has one (the black book, German)
-  local baked = Look.StampTex(id)
+  local frame = s and s[4] or id
+  local baked = not (s and s[4]) and Look.StampTex(id)
   if not (s and fs and code) or (code == "deDE" and baked) then
-    Look.StampSkin(tex, baked or Look.StampTex(id, true))
+    Look.StampSkin(tex, baked or Look.StampTex(frame, true))
     if fs then fs.on = false; fs:Hide() end
     return
   end
-  Look.StampSkin(tex, Look.StampTex(id, true))
+  Look.StampSkin(tex, Look.StampTex(frame, true))
   local text = L[s[1]]
   if fs.text ~= text then
     fs.text = text
@@ -1544,6 +1592,9 @@ function UX.BuildPoster()
   E.tally:SetMaxLines(2)
   E.tallyHit = CreateFrame("Frame", nil, E)
   E.tallyHit:SetAllPoints(E.tally)
+  -- 1.3.0: over the standing, what the numbers mean ("you 1, them 2"); a cut line still shows whole (hook below)
+  E.tallyHit:SetScript("OnEnter", function(self) if self.standTip then Tip(self, { E.tally.full or E.tally:GetText() or "", self.standTip }) end end)
+  E.tallyHit:SetScript("OnLeave", function(self) if self.standTip then GameTooltip:Hide() end end)
   Look.TipIfCut(E.tallyHit, E.tally)
   E.info = {}
   for i = 1, INFO_LINES do
@@ -2084,7 +2135,18 @@ local function FillEnemy(e)
   local rank = (e.status == "wanted") and S.Rank(e.key) or nil
   E.doa:SetText(Spaced(L.POSTER_DOA))
   SetPhoto(E, e)
-  Look.FitText(E.tally, e.status == "pardoned" and Look.Join(L.ROW_PARDONED, Look.Tally(e)) or Look.Tally(e), GF.FIT_TALLY)
+  -- 1.3.0: the key number is the standing "Score 1 : 2 · 1× involved" (not for suspects and pure hand entries)
+  local m, h, score = Look.Stand(e)
+  if m and e.status ~= "suspect" and (m > 0 or h > 0) then
+    local a = Look.Assists(e)
+    Look.FitText(E.tally, Look.Join(e.status == "pardoned" and L.ROW_PARDONED or nil, Fmt(L.STAND_LINE, { score = score }),
+      a > 0 and Fmt(L.TALLY_ASSISTED, { times = Look.Times(a) }) or nil), GF.FIT_TALLY)
+    E.tallyHit.standTip = Fmt(L.STAND_TIP, { mine = m, his = h })
+  else
+    m = nil
+    E.tallyHit.standTip = nil
+    Look.FitText(E.tally, e.status == "pardoned" and Look.Join(L.ROW_PARDONED, Look.Tally(e)) or Look.Tally(e), GF.FIT_TALLY)
+  end
 
   -- Details: "Level 36 · Mage", race, "Guild: Beispielgilde", last seen (race and guild drop out
   -- first with a two-line name)
@@ -2118,7 +2180,13 @@ local function FillEnemy(e)
   SetInfo(E, info, opt)
   GF.PlaceBountyLine(E, bidx, brows, aidx, arows, bsum)
 
+  -- second stamp place: REVENGE TAKEN (1.2.x: from the revenge count; 1.3.0: open and me > 0), EVEN, OVERPAID
   local rv = tonumber(e.revenge) or 0
+  local second = (not m and rv > 0 and "rache") or nil
+  if m and m > 0 then
+    local st = Look.ScoreState(m, h)
+    second = (st == "open" and "rache") or (st == "even" and "quitt") or "overpaid"
+  end
   E.bountyLabel:SetText(Spaced(L.POSTER_BOUNTY))
   -- 1.2.1: posted: the sum large in red ink; otherwise the book's value as before
   if bsum > 0 then
@@ -2129,7 +2197,7 @@ local function FillEnemy(e)
     SetBounty(E, GoldText(bounty), bounty >= 1000 * 10000)
     E.bounty:SetTextColor(C(Look.INK))
   end
-  PlaceBounty(E, rv > 0)
+  PlaceBounty(E, second ~= nil)
   E.bountyHit.key = GF.MayBounty(e) and e.key or nil
   E.bountyHit.tip = E.bountyHit.key and GF.BountyTip(brows) or nil
   E.bountyHit:SetShown(E.bountyHit.key ~= nil)
@@ -2159,8 +2227,10 @@ local function FillEnemy(e)
     GF.HuntStamp(E, e.key, rank == 1)
   end
   GF.SetHuntWord(E, e.status == "wanted" and e.key or nil)
-  GF.ShowStamp(E.stampRache, rv > 0)
-  E.racheCount:SetShown(rv > 0)
+  if second then GF.Stamp(E.stampRache, second) end
+  GF.ShowStamp(E.stampRache, second ~= nil)
+  -- the count "×2" next to the stamp only without the standing (the key number says it then)
+  E.racheCount:SetShown(second == "rache" and not m)
   E.racheCount:SetText("×" .. rv)
   E.strike.key = e.key
   E.strike:Show()

@@ -289,7 +289,6 @@ return {
   STATE_EVEN = { max = 16, field = "state of the score: both sides equal" },
   STATE_AHEAD = { max = 16, field = "state of the score: you lead" },
   STATE_VICTIM = { max = 24, field = "victim sheet: a victim of yours who never killed you" },
-  STAND_SCORE = { max = 9, field = "the score, always 'you : them'; {mine} = your killing blows on them, {his} = theirs on you. Keep the order" },
   RECORD_HEAD = { max = 20, field = "head of the index card with your rank (big handwriting, 26 pt)" },
   RECORD_LOG_HEAD = { max = 20, field = "head of the list of your latest kills" },
   RECORD_NEEDLE_LOW = { max = 12, field = "left end of the needle scale" },

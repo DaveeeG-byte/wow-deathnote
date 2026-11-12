@@ -701,7 +701,6 @@ L.STATE_OPEN = "open"  -- [max 16] state of the score: they killed you more ofte
 L.STATE_EVEN = "even"  -- [max 16] state of the score: both sides equal
 L.STATE_AHEAD = "overpaid"  -- [max 16] state of the score: you lead
 L.STATE_VICTIM = "not in the book"  -- [max 24] victim sheet: a victim of yours who never killed you
-L.STAND_SCORE = "{mine} : {his}"  -- [max 9] the score, always 'you : them'; {mine} = your killing blows on them, {his} = theirs on you. Keep the order
 L.STAND_LINE = "Score {score}"  -- poster, tooltip, notice; {score} = STAND_SCORE
 L.STAND_TIP = "you {mine}, them {his}"  -- tooltip that explains the score
 L.TIP_IN_RECORD = "RAP SHEET:"  -- game tooltip label over a player you killed (not in the book)
