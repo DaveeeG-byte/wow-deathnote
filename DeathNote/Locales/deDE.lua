@@ -1,7 +1,7 @@
--- DeathNote: Deutsch (deDE). Wortlaut wie in 1.1.0, nicht umformulieren.
--- Mehrzahl: 2 Formen {count|eins|mehr} (1 | alles andere). Regel: Locale.lua, PLURAL_OF.deDE.
--- [max N] = Höchstlänge in Zeichen (Quelle tests/sprachen/_limits.lua). Platzhalter {name} bleiben stehen.
--- Die Wortwahl-Wächter (tests/ui/gesamtschau.lua) gelten: Buch, Gildenbuch, Täter, Kollege, streichen.
+-- DeathNote: Deutsch (deDE). Wording as in 1.1.0, do not rephrase.
+-- Plural: 2 forms {count|one|other} (1 | everything else). Rule: Locale.lua, PLURAL_OF.deDE.
+-- [max N] = maximum length in characters (source tests/sprachen/_limits.lua). Placeholders like {name} stay.
+-- The word choice guards (tests/ui/gesamtschau.lua) apply: Buch, Gildenbuch, Täter, Kollege, streichen.
 --
 -- TOC-Notes: Todesliste für Open-World-PvP: merkt sich, wer dich getötet hat, und warnt, wenn er in der Nähe ist.
 
@@ -11,33 +11,33 @@ if not (Locale and Locale.Wants("deDE")) then return end
 
 Locale.Register("deDE", function(L)
 
--- Reiter auf dem schwarzen Einband (die Zahl hängt der Code an) -----------------------------------
-L.TAB_WANTED   = "Gesucht"       -- [max 16] Reiter 1: wer dich getötet hat, nach Rang
-L.TAB_UNSOLVED = "Zu klären"     -- [max 16] Reiter 2: Tode, deren Täter noch offen ist
-L.TAB_DEATHLOG = "Todesjournal"  -- [max 16] Reiter 3: eigene Tode durch Spieler, neueste zuerst
-L.TAB_GUILD    = "Gilde"         -- [max 16] Reiter 4, nur Gilde: das geteilte Gildenbuch
+-- Tabs on the black cover (the code appends the number) -------------------------------------------
+L.TAB_WANTED   = "Gesucht"       -- [max 16] tab 1: who killed you, by rank
+L.TAB_UNSOLVED = "Zu klären"     -- [max 16] tab 2: deaths whose killer is still open
+L.TAB_DEATHLOG = "Todesjournal"  -- [max 16] tab 3: own deaths by players, newest first
+L.TAB_GUILD    = "Gilde"         -- [max 16] tab 4, guild only: the shared guild book
 
--- Seitenköpfe (große Handschrift rechts) ----------------------------------------------------------
-L.HEAD_RULES = "Hausordnung"         -- [max 24] Einstellungen (Zahnrad)
-L.HEAD_HELP  = "Gebrauchsanweisung"  -- [max 24] Hilfe ("?")
+-- Page heads (large handwriting on the right) -----------------------------------------------------
+L.HEAD_RULES = "Hausordnung"         -- [max 24] settings (cog)
+L.HEAD_HELP  = "Gebrauchsanweisung"  -- [max 24] help ("?")
 
--- Blätter der Hausordnung -------------------------------------------------------------------------
-L.SHEET_BOOK  = "Buch"           -- [max 14] Blatt mit den Einstellungen des Buchs
-L.SHEET_ALERT = "Alarm"          -- [max 14] Blatt mit den Alarm-Einstellungen
+-- Sheets of the house rules -----------------------------------------------------------------------
+L.SHEET_BOOK  = "Buch"           -- [max 14] sheet with the settings of the book
+L.SHEET_ALERT = "Alarm"          -- [max 14] sheet with the alarm settings
 
--- Stempel auf dem Plakat (WANTED bleibt immer englisch und steht nicht hier) ----------------------
-L.STAMP_NR1      = "STAATSFEIND Nr. 1"  -- [max 24] Plakat von Rang 1
-L.STAMP_REVENGE  = "RACHE GENOMMEN"     -- [max 16] du hast zurückgetötet
-L.STAMP_PARDONED = "BEGNADIGT"          -- [max 16] begnadigt, kein Alarm mehr
-L.STAMP_SUSPECT  = "VERDACHT"           -- [max 16] Beteiligung nicht bewiesen
+-- Stamps on the poster (WANTED always stays English and is not here) ------------------------------
+L.STAMP_NR1      = "STAATSFEIND Nr. 1"  -- [max 24] poster of rank 1
+L.STAMP_REVENGE  = "RACHE GENOMMEN"     -- [max 16] you killed back
+L.STAMP_PARDONED = "BEGNADIGT"          -- [max 16] pardoned, no more alarm
+L.STAMP_SUSPECT  = "VERDACHT"           -- [max 16] involvement not proven
 
--- Alarm-Popup (oben mittig, kantige Schrift) ------------------------------------------------------
-L.ALERT_SIGHTED_NR1     = "STAATSFEIND Nr. 1 GESICHTET"  -- [max 30] Titel, wenn Rang 1 in der Nähe ist
-L.ALERT_SIGHTED         = "STAATSFEIND GESICHTET"        -- [max 30] Titel für alle anderen Gesuchten
-L.ALERT_SIGHTED_SUSPECT = "VERDÄCHTIGER GESICHTET"       -- [max 30] Titel bei Verdacht
-L.ALERT_TITLE_GUILD     = "GILDENFEIND GESICHTET"        -- [max 30] Täter aus dem Gildenbuch
-L.ALERT_TITLE_FRIENDS   = "TÄTER DER FREUNDE GESICHTET"  -- [max 30] Täter aus dem Freundesbuch
-L.ALERT_TITLE_HUNT      = "ZIEL DER ABSCHUSSLISTE"       -- [max 30] Ziel der Abschussliste
+-- Alarm popup (top centre, angular font) ----------------------------------------------------------
+L.ALERT_SIGHTED_NR1     = "STAATSFEIND Nr. 1 GESICHTET"  -- [max 30] title when rank 1 is near
+L.ALERT_SIGHTED         = "STAATSFEIND GESICHTET"        -- [max 30] title for all other wanted ones
+L.ALERT_SIGHTED_SUSPECT = "VERDÄCHTIGER GESICHTET"       -- [max 30] title for a suspicion
+L.ALERT_TITLE_GUILD     = "GILDENFEIND GESICHTET"        -- [max 30] killer from the guild book
+L.ALERT_TITLE_FRIENDS   = "TÄTER DER FREUNDE GESICHTET"  -- [max 30] killer from the friends' book
+L.ALERT_TITLE_HUNT      = "ZIEL DER ABSCHUSSLISTE"       -- [max 30] hit list target
 L.ALERT_LINE_SUSPECT        = "steht unter Verdacht"
 L.ALERT_LINE_KILLED         = "hat dich {times} getötet"
 L.ALERT_LINE_KILLED_ASSISTED = "hat dich {times} getötet, war {assists} beteiligt"
@@ -52,7 +52,7 @@ L.ALERT_HINT_TARGET = "Klick: anvisieren  ·  Rechtsklick: schließen" -- [max 4
 L.ALERT_MORE = "+{count} {count|weiterer|weitere}"                  -- [max 14]
 L.SAMPLE_ZONE = "Schlingendorntal"
 
--- Gemeinsame Zeilen (Alarm, Gildenbuch, Abschussliste) --------------------------------------------
+-- Shared lines (alarm, guild book, hit list) ------------------------------------------------------
 L.GUILD_LINE_IN_GUILD   = "steht im Gildenbuch"
 L.GUILD_LINE_IN_FRIENDS = "steht im Freundesbuch"
 L.GUILD_LINE_LISTED_BY  = "steht im Buch von {names}"
@@ -64,7 +64,7 @@ L.HUNT_LINE_BY       = "freigegeben von {names}"
 L.HUNT_LINE_RELEASED = "zur Jagd freigegeben"
 L.HUNT_LINE_REASON   = "{text}: {reason}"
 
--- Kleine Bausteine --------------------------------------------------------------------------------
+-- Small building blocks ---------------------------------------------------------------------------
 L.TIMES = "{count}×"
 L.TALLY_SUSPECT  = "unter Verdacht"
 L.TALLY_MANUAL   = "von Hand eingetragen"
@@ -75,7 +75,7 @@ L.PLACE_UNKNOWN  = "unbekannter Ort"
 L.GKILLS_CAP     = "mindestens {count}"
 L.NAMELIST_MORE  = "{names} und {count} {count|weiterer|weitere}"
 
--- Zeit und Geld -----------------------------------------------------------------------------------
+-- Time and money ----------------------------------------------------------------------------------
 L.TIME_FMT_WHEN      = "%d.%m. %H:%M"
 L.TIME_FMT_WHEN_YEAR = "%d.%m.%Y %H:%M"
 L.TIME_FMT_DAY       = "%d.%m."
@@ -89,7 +89,7 @@ L.MONEY_GOLD   = "{count}g"
 L.MONEY_SILVER = "{count}s"
 L.MONEY_COPPER = "{count}k"
 
--- Stand von Gilde und Freunden --------------------------------------------------------------------
+-- State of guild and friends ----------------------------------------------------------------------
 L.GUILD_HEARD    = "{count} {count|Kollege|Kollegen} mit DeathNote gehört."
 L.HEALTH_NOGUILD = "Du bist in keiner Gilde, es wird nichts geteilt."
 L.HEALTH_OFF     = "Teilen ist ausgeschaltet."
@@ -101,7 +101,7 @@ L.HEALTH_SHORT_HOLD    = "Wartet"          -- [max 18]
 L.HEALTH_SHORT_ASKED   = "Angefragt"       -- [max 18]
 L.HEALTH_SHORT_FAIL    = "Geht nicht"      -- [max 18]
 
--- Alarmtöne und Tonkanäle -------------------------------------------------------------------------
+-- Alarm sounds and sound channels -----------------------------------------------------------------
 L.SOUND_NONE        = "Kein Ton"       -- [max 16]
 L.SOUND_RAIDWARNING = "Raid-Warnung"   -- [max 16]
 L.SOUND_BELL        = "Glocke"         -- [max 16]
@@ -113,16 +113,16 @@ L.CHANNEL_MASTER    = "Master"         -- [max 16]
 L.CHANNEL_SFX       = "Effekte"        -- [max 16]
 L.CHANNEL_DIALOG    = "Dialog"         -- [max 16]
 
--- Chatzeilen nach /dn-Befehlen --------------------------------------------------------------------
+-- Chat lines after /dn commands -------------------------------------------------------------------
 L.CHAT_ADDED     = "{name} steht jetzt im Buch."
 L.CHAT_REMOVED   = "{name} ist aus dem Buch gestrichen."
 L.CHAT_SYNC_WAIT = "Gerade erst abgeglichen. Nochmal in {seconds} Sek."
 
--- Leeres Buch (erster Reiter) ---------------------------------------------------------------------
-L.EMPTY_WANTED_HEAD = "Noch kein Name eingetragen."  -- große Zeile mitten auf der leeren Seite
-L.EMPTY_WANTED_SUB  = "Geh mal vor die Tür."          -- kleine Zeile darunter
+-- Empty book (first tab) --------------------------------------------------------------------------
+L.EMPTY_WANTED_HEAD = "Noch kein Name eingetragen."  -- large line in the middle of the empty page
+L.EMPTY_WANTED_SUB  = "Geh mal vor die Tür."          -- small line below it
 
--- Hilfe zu den Befehlen (/dn hilfe) ---------------------------------------------------------------
+-- Help for the commands (/dn hilfe) ---------------------------------------------------------------
 L.HELP_TOGGLE   = "/dn  Buch auf/zu"
 L.HELP_ADD      = "/dn add <Name [Nachname]>  Täter von Hand ins Buch eintragen"
 L.HELP_DEL      = "/dn del <Name [Nachname]>  Täter aus dem Buch streichen"
@@ -140,7 +140,7 @@ L.HELP_DEBUG    = "/dn debug  Fehlersuche: jeden Tod genau mitschreiben (an/aus)
 L.HELP_HELP     = "/dn hilfe  diese Hilfe"
 L.HELP_SILENT_ZONES = "In Dungeons, Schlachtfeldern und Arenen schweigt das Buch von selbst."
 
--- Chatzeilen --------------------------------------------------------------------------------------
+-- Chat lines --------------------------------------------------------------------------------------
 L.WORD_ON  = "an"
 L.WORD_OFF = "aus"
 L.CHAT_WHO_ADD  = "Wen denn? /dn add <Name>"
@@ -183,12 +183,12 @@ L.CHAT_LANG_BAD     = "Unbekannte Sprache: {code}"
 L.CHAT_LANG_SET     = "Sprache: {lang}."
 L.CHAT_LANG_RELOAD  = "Sprache: {lang}. Gilt nach /reload."
 
--- Erster Kontakt ----------------------------------------------------------------------------------
+-- First contact -----------------------------------------------------------------------------------
 L.WELCOME = "Das Buch liegt bereit. Wer dich in der offenen Welt tötet, steht danach drin. Aufschlagen mit /dn oder am Minimap-Knopf."
 L.WELCOME_PLATES = "Feindliche Namensplaketten sind aus. Ohne sie sieht der Alarm nur dein Ziel."
 L.WELCOME_SHARE = "Gilde und Freunde mit DeathNote lesen mit. Notizen und Verdacht bleiben bei dir."
 
--- Tooltip-Zeile -----------------------------------------------------------------------------------
+-- Tooltip line ------------------------------------------------------------------------------------
 L.TIP_IN_BOOK   = "IM BUCH:"
 L.TIP_HUNT      = "ABSCHUSSLISTE:"
 L.TIP_GUILDBOOK = "GILDENBUCH:"
@@ -198,7 +198,7 @@ L.TIP_REVENGE   = "Rache {times}"
 L.TIP_LISTED_BY = "im Buch von {names}"
 L.TIP_NOTE      = "Notiz: {note}"
 
--- Bildschirmmeldung (Köpfe werden im Code gesperrt) -----------------------------------------------
+-- On-screen notice (heads are letter-spaced in the code) ------------------------------------------
 L.BANNER_TIP          = "Klick: aufschlagen · Rechtsklick: weg"
 L.BANNER_NEW          = "NEUER EINTRAG"        -- [max 24]
 L.BANNER_NEW_LINE     = "steht jetzt im Buch"
@@ -217,7 +217,7 @@ L.BANNER_KILLED_BY    = "wurde von {name} getötet"
 L.BANNER_HUNT         = "ABSCHUSSLISTE"        -- [max 24]
 L.BANNER_BAGGED       = "erlegt von {name}, {time}"
 
--- Stand von Gilde und Freunden (Statuszeile, Hausordnung, /dn gilde) ------------------------------
+-- State of guild and friends (status line, house rules, /dn gilde) --------------------------------
 L.SYNC_GUILD_OFF   = "Teilen ist ausgeschaltet (Hausordnung, Blatt Gilde)."
 L.SYNC_FRIENDS_OFF = "Teilen mit Freunden ist aus."
 L.SYNC_NOBODY      = "Keine Gilde und keine Freunde zum Teilen."
@@ -254,7 +254,7 @@ L.FRIENDS_HOLD     = "Senden an Freunde wartet, bis es wieder geht."
 L.FRIENDS_RUNNING  = "Läuft: {count} {count|Freund|Freunde} mit DeathNote."
 L.NOTE_FROM_GUILD  = "Aus dem Gildenbuch übernommen ({kills}× getötet in der Gilde)."
 
--- Buch einlesen: Meldungen ------------------------------------------------------------------------
+-- Importing a book: messages ----------------------------------------------------------------------
 L.IMPORT_NO_DB      = "Datenbank nicht geladen."
 L.IMPORT_NO_TEXT    = "Kein Text."
 L.IMPORT_NO_HEADER  = "Die erste Zeile fehlt (sie beginnt mit {header}). Bitte den ganzen Text kopieren."
@@ -602,7 +602,7 @@ L.HUNT_ROW_CALLS = "{count} {count|Freigabe|Freigaben}: {names}"
 L.POSTER_ON_HUNTLIST = "Auf der Abschussliste ({names})"
 L.REL_SELF = "Dich selbst kannst du nicht freigeben."
 L.REL_MATE = "Das ist einer von euch (Gilde oder Freunde mit DeathNote)."
--- Freunde ohne Nachnamen auf der Liste: welcher volle Name dahintersteht (1.2.0) ---------------------
+-- Friends without a surname on the list: which full name stands behind them (1.2.0) ---------------
 L.FRIENDS_CONFLICT = "Wer ist dein Freund {friend}: {a} oder {b}? Bitte wählen."
 L.FRIENDS_SHORT_CONFLICT = "Freund unklar"  -- [max 22]
 L.CHAT_FRIENDS_CONFLICT = "Zwei Spieler geben sich als dein Freund {friend} aus: {a} und {b}. Bis du wählst, nimmt das Buch von keinem etwas an. Gilde & Freunde, Ansicht Nach Kollege: Rechtsklick auf den Namen."
