@@ -539,6 +539,25 @@ G.print = function() end
 local ALLOWED_NEW = { DeathNote_OnCompartmentClick = true, DeathNote_OnCompartmentEnter = true,
                       DeathNote_OnCompartmentLeave = true }
 
+-- 1.2.2: what the real embedded LibDBIcon-1.0 (DeathNote/Libs) needs beyond the above, checked against
+-- LibDBIcon-1.0.lua (tests/ui/minimap_real_libs.lua loads the real libraries into this mock)
+for _, kind in ipairs({ "Frame", "Button", "CheckButton" }) do
+  WHITELIST[kind].SetFixedFrameStrata = true
+  WHITELIST[kind].SetFixedFrameLevel = true
+end
+WHITELIST.Button.LockHighlight, WHITELIST.Button.UnlockHighlight = true, true
+WHITELIST.Texture.GetVertexColor = true
+WHITELIST.GameTooltip.GetOwner = true
+function methods.GetVertexColor(self)
+  local c = self._vc or { 1, 1, 1, 1 }
+  return c[1], c[2], c[3], c[4]
+end
+-- the tooltip remembers its owner (LibDBIcon's tooltip and our OnTooltipShow ask for it)
+function methods.SetOwner(self, owner) self._owner = owner end
+function methods.GetOwner(self) return self._owner end
+-- the libraries' own globals (LibStub, the LibDBIcon tooltip and our button through LibDBIcon)
+ALLOWED_NEW.LibStub, ALLOWED_NEW.LibDBIconTooltip, ALLOWED_NEW.LibDBIcon10_DeathNote = true, true, true
+
 setmetatable(G, {
   __index = function(_, k) error("unbekannte globale Variable: " .. tostring(k), 2) end,
   __newindex = function(t, k, v)

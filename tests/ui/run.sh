@@ -54,6 +54,14 @@ if [ -z "$1" ] && [ -f "$adir/Friends.lua" ]; then
   done
 fi
 
+# 1.2.2: the minimap button with the real embedded libraries (DeathNote/Libs) instead of stand-ins
+for f in tests/ui/real_libs.lua tests/ui/minimap_real_libs.lua; do
+  if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
+done
+if [ -z "$1" ] && [ -f "$adir/Libs/embeds.xml" ]; then
+  luajit tests/ui/minimap_real_libs.lua . || status=1
+fi
+
 # "Staatsfeind" (the old addon name) may only appear in the UI files as the poster term
 if grep -n "Staatsfeind" "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua | grep -v "STAATSFEIND\|Staatsfeind Nr\. 1"; then
   echo "RED: old addon name in the UI files"; status=1
