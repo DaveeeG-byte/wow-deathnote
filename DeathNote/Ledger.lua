@@ -94,7 +94,7 @@ end
 local MAX_SANE = 1000   -- levels beyond this are garbage, not a level
 
 local function level(v)
-  if not finite(v) then return nil end
+  if IsSecret(v) or not finite(v) then return nil end
   v = floor(v)
   if v < 1 or v > MAX_SANE then return nil end
   return v
@@ -182,6 +182,31 @@ function Ledger.Needle(mood)
   local x = round(100 * (e + s - r) / den)
   if x > 100 then x = 100 elseif x < -100 then x = -100 end
   return x
+end
+
+-- adds the points of one kill to st = { acc, mood, counted } (the booking and Ledger.Simulate share it)
+function Ledger.Accrue(st, r, e, j, s)
+  local pts = { r = r, e = e, j = j, s = s }
+  for _, p in ipairs(PATHS) do
+    st.acc[p] = st.acc[p] + pts[p]
+    st.mood[p] = st.mood[p] * Ledger.DECAY + pts[p]
+  end
+  if r + e + j + s > 0 then st.counted = st.counted + 1 end
+end
+
+-- the repute after a list of kills { { band, ctx }, ... } from zero, and after each kill when `each` is given:
+-- each(i, acc, mood, counted, path)
+function Ledger.Simulate(list, each)
+  local st = { acc = { r = 0, e = 0, j = 0, s = 0 }, mood = { r = 0, e = 0, j = 0, s = 0 }, counted = 0 }
+  local path
+  for i, k in ipairs(list) do
+    Ledger.Accrue(st, Ledger.Points(k[1], k[2]))
+    path = Ledger.Path(st.mood, path, st.counted)
+    if each then each(i, st.acc, st.mood, st.counted, path) end
+  end
+  local sum = st.acc.r + st.acc.e + st.acc.j + st.acc.s
+  return { acc = st.acc, mood = st.mood, counted = st.counted, total = sum, tier = (Ledger.Tier(sum)), path = path,
+    needle = Ledger.Needle(st.mood) }
 end
 
 -- state of a standing. status = the book entry's status, nil = no book entry.
@@ -410,9 +435,15 @@ local function addVictim(key, info)
 end
 
 local INFO = { "class", "guild", "faction" }
+local moveVictim
 local function applyInfo(v, info)
   if type(info) ~= "table" then return end
   local g = Str(info.guid)
+  -- a placeholder (first name only) with this GUID belongs to this full name: it moves in here
+  local other = g and byGuid[g]
+  if other and other ~= v.key and v.surname ~= nil and victims[other] and victims[other].surname == nil then
+    moveVictim(other, v.key)
+  end
   if g and (v.guid == nil or v.surname ~= nil) then
     if v.guid and byGuid[v.guid] == v.key then byGuid[v.guid] = nil end
     v.guid = g
@@ -427,7 +458,7 @@ local function applyInfo(v, info)
 end
 
 -- moves a victim to a new key (placeholder seen with surname, or the book entry moved); merges into an existing one
-local function moveVictim(oldKey, newKey)
+function moveVictim(oldKey, newKey)
   local v = victims[oldKey]
   if not v or oldKey == newKey then return end
   local into = victims[newKey]
@@ -878,6 +909,11 @@ end
 -- books one own kill. info: what we know of the victim; opts: { pet, honor, case, how, age }
 local function book(info, opts)
   local c = opts.case
+  -- a placeholder of this GUID (first name only) takes the full name now, before the kill is booked
+  local g = Str(info.guid)
+  if g and byGuid[g] and Str(info.surname) and Str(info.name) then
+    promote({ guid = g, name = info.name, surname = info.surname })
+  end
   local key = keyOf(info)
   if not key then return reject(c, "name") end
   local S = ns.Store
@@ -916,13 +952,8 @@ local function book(info, opts)
   v.pts = v.pts + r + ee + j + s
   db.gone[key] = nil
   -- accounts
-  local pts = { r = r, e = ee, j = j, s = s }
-  for _, p in ipairs(PATHS) do
-    db.acc[p] = db.acc[p] + pts[p]
-    db.mood[p] = db.mood[p] * Ledger.DECAY + pts[p]
-  end
+  Ledger.Accrue(db, r, ee, j, s)
   db.n = db.n + 1
-  if r + ee + j + s > 0 then db.counted = db.counted + 1 end
   db.bands[band] = (db.bands[band] or 0) + 1
   -- best marks
   if vl and myLevel and vl - myLevel > (db.best.gap or 0) then db.best.gap = vl - myLevel end
