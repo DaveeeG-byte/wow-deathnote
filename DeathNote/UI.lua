@@ -14,6 +14,8 @@ ns.UI = UI
 -- 1.2.0: rarely called helpers and fixed tables without a local name of their own (keeps room below the limit of
 -- 200 local names per file; tests/test_grenzen.lua guards it)
 local UX = {}
+-- 1.3.0: the rap sheet's tab (fifth tab, own file, victims), filled further down
+local RS = {}
 
 local W, H = 800, 548
 local PAGE_W, PAGE_H = 380, 490
@@ -28,10 +30,12 @@ UX.FILTERS = {
   { id = "open",    key = "TAB_UNSOLVED" },
   { id = "journal", key = "TAB_DEATHLOG" },
   { id = "guild",   key = "TAB_GUILD" },
+  { id = "record",  key = "TAB_RECORD" },   -- 1.3.0: only from the first own kill on (RS.On)
 }
 UX.SORTS = { "rank", "recent", "name", "seen" }
 UX.GSORTS = { "rank", "recent", "name" }
-local SORT_LABEL = { rank = "SORT_RANK", recent = "SORT_RECENT", name = "SORT_NAME", seen = "SORT_SEEN" }   -- locale keys
+local SORT_LABEL = { rank = "SORT_RANK", recent = "SORT_RECENT", name = "SORT_NAME", seen = "SORT_SEEN",
+  state = "SORT_STATE", points = "SORT_POINTS", count = "SORT_COUNT" }   -- locale keys (the last three: rap sheet)
 -- Empty states: large, small, very small (only the first tab explains what the book does)
 -- per state: key stem and number of lines (STEM_HEAD, _SUB, _HINT in the locale table)
 local EMPTY = {
@@ -66,6 +70,7 @@ UX.HELP = {
   { "MANUAL_GUILD_HEAD", "MANUAL_GUILD" },
   { "MANUAL_SHARE_HEAD", "MANUAL_SHARE" },
   { "MANUAL_QUIET_HEAD", "MANUAL_QUIET" },
+  { "MANUAL_RECORD_HEAD", "MANUAL_RECORD" },   -- 1.3.0
 }
 -- UI.HELP: the same paragraphs as texts of the active language (filled on activation)
 UI.HELP = {}
@@ -88,7 +93,9 @@ local dataIdx      -- journal with search only: position in the unfiltered list
 local state = { filter = "wanted", sort = "rank", gsort = "rank", offset = 0, selected = nil, osel = nil,
                 gselected = nil, death = nil, deathRef = nil, panel = nil, query = "", spage = 1,
                 gview = "enemy", gmember = nil, gsource = "all", hselected = nil, viewPicked = false,
-                release = nil }
+                release = nil,
+                -- 1.3.0 rap sheet: selected victim (nil = the own file), view of the file ("file" | "log"), sort
+                rsel = nil, rview = "file", rsort = "recent" }
 local dirty = true
 local pending = false
 local ready = false
@@ -411,6 +418,12 @@ UX.CONFIRM = {
   DEATHNOTE_CALLOFF_ALL = { "CONFIRM_CALLOFF_ALL", "CONFIRM_CALLOFF_ALL_OK",
                             function() GCall("CallOffAll"); UI.Refresh() end },
   -- 1.2.0: friend without surname on the list: release the link to the full name (their data goes with it)
+  -- 1.3.0: empty the rap sheet (victims and log; rank, points and awards stay), strike one victim (its points stay)
+  DEATHNOTE_RECORD_CLEAR = { "CONFIRM_RECORD_CLEAR", "CONFIRM_RECORD_CLEAR_OK",
+                             function() if ns.Ledger and ns.Ledger.Clear then ns.Ledger.Clear() end state.rsel = nil; UI.Refresh() end },
+  DEATHNOTE_VICTIM_STRIKE = { "CONFIRM_VICTIM_STRIKE", "CONFIRM_DELETE_OK",
+                              function(_, key) if key and ns.Ledger and ns.Ledger.RemoveVictim then ns.Ledger.RemoveVictim(key) end
+                                if state.rsel == key then state.rsel = nil end UI.Refresh() end },
   DEATHNOTE_TIE_LOOSE = { "CONFIRM_TIE_LOOSE", "ACT_TIE_LOOSE",
                           function(_, list) if ns.Friends and ns.Friends.Unbind then ns.Friends.Unbind(list) end UI.Refresh() end },
 }
@@ -782,6 +795,9 @@ local function SelectRow(row)
     state.gselected, state.gmember = row.item.r.key, row.item.m.name
   elseif state.filter == "journal" then
     state.death, state.deathRef = row.index, row.item
+  elseif state.filter == "record" then
+    -- a click on the selected victim goes back to the own file
+    state.rsel = (state.rsel ~= row.item.key) and row.item.key or nil
   elseif state.filter == "open" then
     state.osel = IsCase(row.item) and row.item or row.item.key
   elseif state.filter == "guild" then
@@ -796,7 +812,7 @@ end
 
 function UX.RowMenu(row, anchor)
   local item = row.item
-  if not item or state.filter == "journal" or IsCase(item) then return end
+  if not item or state.filter == "journal" or state.filter == "record" or IsCase(item) then return end
   if item.wrap then
     item = GuildItem(item)
     if not item then return end
@@ -1266,6 +1282,7 @@ BindRows = function()
     r.item, r.index = item, (dataIdx and dataIdx[idx]) or idx
     if item then
       if state.filter == "journal" then UX.BindDeathRow(r, item, r.index)
+      elseif state.filter == "record" then RS.BindRow(r, item)
       elseif item.wrap then
         if item.head then UX.BindMemberHead(r, item) else UX.BindMemberChild(r, item) end
       elseif state.filter == "guild" then
@@ -1596,6 +1613,8 @@ function UX.BuildPoster()
   E.tallyHit:SetScript("OnEnter", function(self) if self.standTip then Tip(self, { E.tally.full or E.tally:GetText() or "", self.standTip }) end end)
   E.tallyHit:SetScript("OnLeave", function(self) if self.standTip then GameTooltip:Hide() end end)
   Look.TipIfCut(E.tallyHit, E.tally)
+  E.measure = Look.Text(E, "type", 11, Look.INK)   -- 1.3.0: measures the line "last seen" (never shown)
+  E.measure:Hide()
   E.info = {}
   for i = 1, INFO_LINES do
     local l = Look.Text(E, "type", 11, Look.INK)
@@ -2174,10 +2193,19 @@ local function FillEnemy(e)
   if bline then info[#info + 1] = bline; bidx = #info; opt[#info] = true end
   local aline, arows = GF.AvengedLine(e.key)
   if aline then info[#info + 1] = aline; aidx = #info; opt[#info] = true end
-  local ls = e.lastSeen
-  local ago = type(ls) == "table" and Look.Ago(ls.t)
-  info[#info + 1] = ago and Fmt(L.POSTER_LAST_SEEN, { time = ago }) or L.POSTER_NOT_SEEN
+  -- 1.3.0: "Last seen: Stranglethorn Vale, 2 hrs ago"; when that is wider than the line, the line of 1.2.2
+  local seen, short = RS.LastSeen(e)
+  local full
+  if short and (GF.MeasureAt(E.measure, seen, 11) or 0) > 192 then full, seen = seen, short end
+  info[#info + 1] = seen
   SetInfo(E, info, opt)
+  if full and not E.infoHit:IsShown() then
+    -- the zone did not fit: the whole line in the tooltip over the details
+    local t = wipe(scratchTip)
+    t[1], t[2] = Look.Name(e), full
+    E.infoHit.tip = t
+    E.infoHit:Show()
+  end
   GF.PlaceBountyLine(E, bidx, brows, aidx, arows, bsum)
 
   -- second stamp place: REVENGE TAKEN (1.2.x: from the revenge count; 1.3.0: open and me > 0), EVEN, OVERPAID
@@ -2675,14 +2703,611 @@ function UX.ShowCaseOrEnemy(item, index)
   end
 end
 
+------------------------------------------------------------------------
+-- 1.3.0 Rap sheet (fifth tab): on the left the victims (rows of the same pool), on the right the own file, the list of
+-- the latest kills ("Show more") or the sheet of one victim. Built on the first visit; reads Ledger.Victims, .Log,
+-- .Repute, .Victim, .Standing only (never writes into what they return).
+------------------------------------------------------------------------
+RS.SORTS = { "recent", "state", "points", "count", "name" }
+RS.LOG_LINES = 60          -- Ledger.LOG_MAX: one line per kill of the log
+RS.KILL_LINES = 8          -- kill lines on a victim sheet
+RS.FIT_TITLE = { sizes = { 26, 22, 19 }, lines = 2, wrapFirst = 3 }
+RS.FIT_LINE = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
+RS.FIT_ONE = { sizes = { 11, 10 } }
+RS.FIT_SCORE = { sizes = { 26, 22, 19 } }
+RS.FIT_BTN = { sizes = { 10, 9 } }
+RS.PATHS = { "r", "e", "j", "s" }
+RS.TAG = { { "n", "KILL_TAG_KICK" }, { "v", "KILL_TAG_REVENGE" }, { "g", "KILL_TAG_GROUP" } }   -- flag, locale key
+
+-- the tab exists from the first own kill on (it stays after "Clear rap sheet": the repute keeps the count)
+function RS.On()
+  local Lg = ns.Ledger
+  if not (Lg and Lg.Enabled and Lg.Victims and Lg.Repute) or not Lg.Enabled() then return false end
+  return (tonumber(Lg.VictimCount and Lg.VictimCount()) or 0) > 0 or (tonumber(Lg.Repute().n) or 0) > 0
+end
+
+-- the one place that forms the name of a victim (never from its key: "Name-Realm#1A2B" of a second namesake)
+function RS.Name(v)
+  if type(v) ~= "table" or type(v.name) ~= "string" then return "?" end
+  if type(v.surname) == "string" and v.surname ~= "" then return v.name .. " " .. v.surname end
+  return v.name
+end
+-- the book entry of a victim (a key of the rap sheet alone, "…#…", never goes to the book)
+function RS.Book(v)
+  if type(v) ~= "table" or type(v.key) ~= "string" or v.key:find("#", 1, true) then return nil end
+  return Store().Get(v.key)
+end
+
+-- "+3 Honour, +2 Hunt" of a log row, or "no points"
+function Look.KillPoints(row)
+  local out = {}
+  for _, p in ipairs(RS.PATHS) do
+    local n = tonumber(row[p]) or 0
+    if n > 0 then out[#out + 1] = Fmt(L.RECORD_POINTS, { points = n, path = ns.Ranks and ns.Ranks.PathWord(p) or p }) end
+  end
+  return #out > 0 and table.concat(out, ", ") or L.RECORD_NO_POINTS
+end
+Look.BAND_KEY = { grau = "BAND_GRAU", gruen = "BAND_GRUEN", gelb = "BAND_GELB", orange = "BAND_ORANGE", rot = "BAND_ROT",
+  schaedel = "BAND_SCHAEDEL", unbekannt = "BAND_UNBEKANNT" }      -- band id (Ledger.BANDS) -> locale key
+function Look.BandWord(b) return L[Look.BAND_KEY[b] or "BAND_UNBEKANNT"] end
+function RS.Level(lv) return type(lv) == "number" and Fmt(L.POSTER_LEVEL, { level = lv }) or L.ALERT_LEVEL_UNKNOWN end
+function RS.Tag(f)
+  if type(f) ~= "string" then return nil end
+  for _, t in ipairs(RS.TAG) do if f:find(t[1], 1, true) then return L[t[2]] end end
+end
+-- "12 s", "4 min", "3 h"
+function RS.Duration(s)
+  s = math.max(0, math.floor(tonumber(s) or 0))
+  if s < 120 then return Fmt(L.DUR_SECONDS, { count = s }) end
+  if s < 7200 then return Fmt(L.DUR_MINUTES, { count = math.floor(s / 60 + 0.5) }) end
+  return Fmt(L.DUR_HOURS, { count = math.floor(s / 3600 + 0.5) })
+end
+
+-- the left page: a row per victim; the score at the right (red while he still leads)
+function RS.Sub(v)
+  local ago = Look.Ago(v.last)
+  local last = ago and Fmt(L.ROW_LAST, { text = ago }) or nil
+  return Look.Join(last, v.zone), last or ""
+end
+function RS.BindRow(r, v)
+  SetRowMode(r, "normal")
+  SetRank(r, nil)
+  r.skull:Hide(); r.strike:Hide(); r.coin:Hide()
+  Look.ClassIcon(r.icon, v.class)
+  r.icon:Show()
+  local m, h, score = Look.Stand(v.key)
+  local full, short = RS.Sub(v)
+  local lead = m and Look.ScoreState(m, h) == "open" and RS.Book(v) ~= nil
+  local sub = r.rsSub or {}
+  r.rsSub = sub
+  sub[1], sub[2] = full, short
+  SetRow(r, RS.Name(v), sub, score, "normal", not lead)
+  r.tipFn = RS.RowTip
+  r.under:SetShown(state.rsel == v.key)
+  r.under:SetWidth(InkWidth(r.name))
+end
+function RS.RowTip(v)
+  local t = { RS.Name(v) }
+  local who = Look.Join(type(v.level) == "number" and Fmt(L.POSTER_LEVEL, { level = v.level }) or nil, ClassName(v), v.guild)
+  if who ~= "" then t[#t + 1] = who end
+  t[#t + 1] = (RS.Sub(v))
+  local m, h, score = Look.Stand(v.key)
+  if m then t[#t + 1] = Look.Join(Fmt(L.STAND_LINE, { score = score }), Fmt(L.STAND_TIP, { mine = m, his = h })) end
+  t[#t + 1] = Fmt(L.VICTIM_POINTS, { points = tonumber(v.pts) or 0 })
+  return t
+end
+
+-- index card on the right page: head at the top, body that scrolls (card coordinates as the case file), foot with a
+-- word at the bottom right and room for one button at the bottom left
+function RS.Card(R)
+  local C = CreateFrame("Frame", nil, R)
+  C:SetAllPoints()
+  C:Hide()
+  C.head = Look.Text(C, "head", 26, Look.INK)
+  C.head:SetPoint("TOPLEFT", 24, -16)
+  C.head:SetWidth(220)
+  C.head:SetJustifyH("LEFT")
+  C.headHit = CreateFrame("Button", nil, C)
+  C.headHit:SetAllPoints(C.head)
+  Look.TipIfCut(C.headHit, C.head)
+  C.right = Look.Text(C, "type", 11, Look.INK)
+  C.right:SetPoint("TOPRIGHT", -24, -28)
+  C.right:SetJustifyH("RIGHT")
+  Rule(C, -52, 24, 24, 0.7)
+  C.page = Look.Page(C, { top = 54, foot = 46, w = 352, h = 452, paper = "paper" })
+  local S = CreateFrame("Frame", nil, C.page.body)
+  S:SetPoint("TOPLEFT", C.page.body, "TOPLEFT", 0, 54)
+  S:SetSize(352, 452)
+  C.sheet = S
+  C.word = WordButton(C.page.foot, "", "hand", 13)
+  C.word:SetPoint("BOTTOMRIGHT", -20, 11)
+  C.word:SetSize(120, 20)
+  C.word.text:SetWidth(120)
+  C.word.text:SetJustifyH("RIGHT")
+  C.word.text:ClearAllPoints()
+  C.word.text:SetPoint("RIGHT", 0, 0)
+  Look.TipIfCut(C.word, C.word.text)
+  return C
+end
+function RS.Text(parent, kind, size, tone)
+  local fs = Look.Text(parent, kind or "type", size or 11, Look.INK)
+  fs:SetWidth(304)
+  fs:SetJustifyH("LEFT")
+  if tone then fs:SetTextColor(C(Look.INK, tone)) end
+  return fs
+end
+-- an invisible area over a text with its own tooltip lines (tipFn(self) -> lines); a cut text shows whole there too
+function RS.Hit(parent, fs, tipFn)
+  local b = CreateFrame("Button", nil, parent)
+  b:SetAllPoints(fs)
+  b.tipFn = tipFn
+  b:SetScript("OnEnter", function(self) local t = self.tipFn and self.tipFn(self); if t then Tip(self, t) end end)
+  b:SetScript("OnLeave", GameTooltip_Hide)
+  Look.TipShows(b, fs)
+  return b
+end
+-- a kill line (log, victim sheet): text with its tag at the right, tooltip with everything
+function RS.Line(parent, y)
+  local b = CreateFrame("Button", nil, parent)
+  b:SetSize(312, 16)
+  b:SetPoint("TOPLEFT", 20, y)
+  b.text = Look.Text(b, "hand", 13, Look.INK)
+  b.text:SetPoint("LEFT", 0, 0)
+  b.text:SetWidth(312)
+  b.text:SetJustifyH("LEFT")
+  b.text:SetWordWrap(false)
+  b.tag = Look.Text(b, "hand", 13, Look.INK)
+  b.tag:SetPoint("RIGHT", 0, 0)
+  b.tag:SetJustifyH("RIGHT")
+  b.tag:SetTextColor(C(Look.INK, TONE.sub))
+  b:SetScript("OnEnter", DeedEnter)
+  b:SetScript("OnLeave", GameTooltip_Hide)
+  Look.TipShows(b, b.text)
+  b:Hide()
+  return b
+end
+function RS.SetLine(b, text, tag, row, tipFn)
+  b.text:SetText(text or "")
+  b.tag:SetText(tag or "")
+  local w = tag and math.floor(312 - TextWidth(b.tag, 60) - 10) or 312
+  if b.tagged ~= w then b.tagged = w; b.text:SetWidth(w) end
+  b.tipItem, b.tipFn = row, tipFn
+  b:Show()
+end
+function RS.LogTip(row)
+  local t = { Look.When(row.t), tostring(row.name or "?") }
+  t[#t + 1] = Look.Join(RS.Level(row.vl), Look.BandWord(row.band))
+  t[#t + 1] = Look.KillPoints(row)
+  local tag = RS.Tag(row.f)
+  if tag then t[#t + 1] = tag end
+  if type(row.zone) == "string" and row.zone ~= "" then t[#t + 1] = Fmt(L.VICTIM_SCENE, { zone = row.zone, time = Look.Ago(row.t) or "?" }) end
+  if row.me and row.me ~= Look.Me() then t[#t + 1] = "(" .. Look.First(row.me) .. ")" end
+  return t
+end
+
+function RS.Build()
+  local R = CreateFrame("Frame", nil, P)
+  R:SetAllPoints()
+  R:Hide()
+  P.record = R
+
+  -- own file
+  local F = RS.Card(R)
+  R.file = F
+  Look.FitText(F.head, L.RECORD_HEAD, GF.FIT_NAME26)
+  local S = F.sheet
+  F.title = Look.Text(S, "head", 26, Look.INK)
+  F.title:SetPoint("TOP", 0, -62)
+  F.title:SetWidth(304)
+  F.title:SetJustifyH("CENTER")
+  F.titleHit = RS.Hit(S, F.title, RS.TitleTip)
+  F.line = Look.Text(S, "type", 11, Look.INK)
+  F.line:SetWidth(304)
+  F.line:SetJustifyH("CENTER")
+  F.line:SetTextColor(C(Look.INK, TONE.sub))
+  F.nums = Look.Text(S, "type", 10, Look.INK)
+  F.nums:SetTextColor(C(Look.INK, TONE.sub))
+  F.nums:SetJustifyH("RIGHT")
+  F.track = S:CreateTexture(nil, "ARTWORK")
+  F.track:SetSize(304, 8)
+  F.track:SetColorTexture(C(Look.INK, 0.14))
+  F.fill = S:CreateTexture(nil, "ARTWORK", nil, 1)
+  F.fill:SetHeight(8)
+  F.fill:SetPoint("LEFT", F.track, "LEFT", 0, 0)
+  F.fill:SetColorTexture(C(Look.RED, 0.8))
+  F.barHit = CreateFrame("Button", nil, S)
+  F.barHit:SetPoint("TOPLEFT", F.track, "TOPLEFT", 0, 14)
+  F.barHit:SetPoint("BOTTOMRIGHT", F.track, "BOTTOMRIGHT", 0, -2)
+  F.barHit:SetScript("OnEnter", function(self) if self.tip then Tip(self, self.tip) end end)
+  F.barHit:SetScript("OnLeave", GameTooltip_Hide)
+  F.next = RS.Text(S, "type", 11)
+  F.nextHit = RS.Hit(S, F.next, function() return { F.next.full or F.next:GetText() } end)
+  -- needle: words at both ends, a line between them, a tick in the middle, the triangle and the value
+  F.low = Look.Text(S, "body", 10, Look.INK)
+  F.low:SetTextColor(C(Look.INK, TONE.sub))
+  F.high = Look.Text(S, "body", 10, Look.INK)
+  F.high:SetTextColor(C(Look.INK, TONE.sub))
+  F.scale = S:CreateTexture(nil, "ARTWORK")
+  F.scale:SetHeight(1)
+  F.scale:SetColorTexture(C(Look.INK, 0.55))
+  F.tick = S:CreateTexture(nil, "ARTWORK")
+  F.tick:SetSize(1, 7)
+  F.tick:SetColorTexture(C(Look.INK, 0.55))
+  F.tick:SetPoint("CENTER", F.scale, "CENTER", 0, 0)
+  F.needle = Tri(S, 10, -1.5708)
+  F.value = Look.Text(S, "body", 10, Look.INK)
+  F.needleHit = CreateFrame("Button", nil, S)
+  F.needleHit:SetPoint("TOPLEFT", F.low, "TOPLEFT", 0, 4)
+  F.needleHit:SetPoint("BOTTOMRIGHT", F.high, "BOTTOMRIGHT", 0, -14)
+  F.needleHit:SetScript("OnEnter", function(self) Tip(self, { L.RECORD_NEEDLE_TIP, self.value }) end)
+  F.needleHit:SetScript("OnLeave", GameTooltip_Hide)
+  F.acc = RS.Text(S, "type", 11)
+  F.accHit = RS.Hit(S, F.acc, RS.AccTip)
+  F.kills = RS.Text(S, "type", 11)
+  F.killsHit = RS.Hit(S, F.kills, RS.BandTip)
+  F.best = RS.Text(S, "type", 11)
+  F.bestHit = RS.Hit(S, F.best, function() return { F.best.full or F.best:GetText() } end)
+  F.awardLabel = Label(S, L.RECORD_AWARDS)
+  F.awardRule = S:CreateTexture(nil, "ARTWORK")
+  F.awardRule:SetHeight(1)
+  F.awardRule:SetColorTexture(C(Look.INK, 0.45))
+  F.awardCount = Look.Text(S, "body", 10, Look.INK)
+  F.awardCount:SetTextColor(C(Look.INK, TONE.sub))
+  F.awards = {}
+  for i = 1, #((ns.Ledger and ns.Ledger.AWARDS) or {}) do
+    local b = CreateFrame("Button", nil, S)
+    b:SetSize(20, 20)
+    b.tex = b:CreateTexture(nil, "ARTWORK")
+    b.tex:SetAllPoints()
+    Look.Skin(b.tex, "coin")
+    b.tex:SetDesaturated(true)
+    b:SetScript("OnEnter", function(self) if self.tip then Tip(self, self.tip) end end)
+    b:SetScript("OnLeave", GameTooltip_Hide)
+    F.awards[i] = b
+  end
+  F.word.fn = function() state.rview = "log"; ShowRight() end
+  F.word:SetScript("OnClick", function(self) Look.Sound("click"); if self.fn then self.fn() end end)
+
+  -- latest kills
+  local G = RS.Card(R)
+  R.log = G
+  Look.FitText(G.head, L.RECORD_LOG_HEAD, GF.FIT_NAME26)
+  G.lines = {}
+  for i = 1, RS.LOG_LINES do G.lines[i] = RS.Line(G.sheet, -62 - (i - 1) * 16) end
+  G.empty = RS.Text(G.sheet, "hand", 13, TONE.sub)
+  G.empty:SetPoint("TOPLEFT", 20, -62)
+  G.word:SetScript("OnClick", function() Look.Sound("click"); state.rview = "file"; ShowRight() end)
+
+  -- one victim
+  local V = RS.Card(R)
+  R.vic = V
+  V.head:SetWidth(230)
+  V.headHit:SetScript("OnClick", function(self) if self.key and Store().Get(self.key) then UI.ShowEnemy(self.key) end end)
+  V.score = Look.Text(V, "hand", 26, Look.INK)
+  V.score:SetPoint("TOPRIGHT", -24, -16)
+  V.score:SetJustifyH("RIGHT")
+  V.score:SetWidth(80)
+  V.scoreHit = RS.Hit(V, V.score, function(self) return self.tip end)
+  local VS = V.sheet
+  V.who = RS.Text(VS, "type", 11)
+  V.state = Look.Text(VS, "body", 10, Look.RED_INK)
+  V.state:SetWidth(304)
+  V.state:SetJustifyH("LEFT")
+  V.note = RS.Text(VS, "type", 11, TONE.sub)
+  V.sum = RS.Text(VS, "type", 11)
+  V.scene = RS.Text(VS, "type", 11)
+  V.seen = RS.Text(VS, "type", 11)
+  for _, k in ipairs({ "who", "note", "sum", "scene", "seen" }) do
+    local fs = V[k]
+    V[k .. "Hit"] = RS.Hit(VS, fs, function() return { fs.full or fs:GetText() } end)
+  end
+  V.label = Label(VS, L.VICTIM_KILLS_LABEL)
+  V.rule = VS:CreateTexture(nil, "ARTWORK")
+  V.rule:SetHeight(1)
+  V.rule:SetColorTexture(C(Look.INK, 0.45))
+  V.rule:SetPoint("TOPLEFT", V.label, "BOTTOMLEFT", -4, -2)
+  V.rule:SetWidth(312)
+  V.lines = {}
+  for i = 1, RS.KILL_LINES do V.lines[i] = RS.Line(VS, 0) end
+  V.strike = InkButton(V.page.foot, "", 132, 22, function(self)
+    local v = self.key and ns.Ledger.Victim(self.key)
+    if v then Confirm("DEATHNOTE_VICTIM_STRIKE", RS.Name(v), self.key) end
+  end)
+  V.strike:SetPoint("BOTTOMLEFT", 20, 10)
+  -- the button grows with its label (132 to 200 px), the word at the right keeps its room
+  V.strike:SetWidth(math.max(132, math.min(200, math.ceil((GF.MeasureAt(V.strike.text, L.ACT_VICTIM_STRIKE, 10) or 120) + 16))))
+  V.strike:SetLabel(L.ACT_VICTIM_STRIKE)
+  V.word:SetScript("OnClick", function() Look.Sound("click"); state.rsel = nil; BindRows(); ShowRight() end)
+  for _, X in ipairs({ G, V }) do
+    X.word.text:SetText("")
+    Look.FitText(X.word.text, L.RECORD_BACK, GF.FIT_STRIKE)
+  end
+  Look.FitText(F.word.text, L.RECORD_MORE, GF.FIT_STRIKE)
+end
+
+-- tooltips of the file
+function RS.TitleTip()
+  local r = ns.Ledger.Repute()
+  local t = { ns.Ranks.Title(r.tier, r.path), Fmt(L.REPUTE_LINE, { tier = r.tier, path = ns.Ranks.PathWord(r.path) }) }
+  for _, p in ipairs(RS.PATHS) do
+    local s = r.share and tonumber(r.share[p]) or 0
+    if s > 0 then t[#t + 1] = ns.Ranks.PathWord(p) .. " " .. math.floor(s * 100 + 0.5) .. " %" end
+  end
+  return t
+end
+function RS.AccTip()
+  local r = ns.Ledger.Repute()
+  local t = {}
+  for _, p in ipairs(RS.PATHS) do
+    t[#t + 1] = Look.Join(ns.Ranks.PathWord(p) .. " " .. math.floor(tonumber(r.acc[p]) or 0), L["TIP_PATH_" .. p:upper()])
+  end
+  return t
+end
+function RS.BandTip()
+  local r = ns.Ledger.Repute()
+  local t = { L.RECORD_BANDS }
+  for _, b in ipairs((ns.Ledger.BANDS) or {}) do
+    local n = r.bands and tonumber(r.bands[b]) or 0
+    if n > 0 then t[#t + 1] = Look.BandWord(b) .. " " .. n end
+  end
+  t[#t + 1] = P.record.file.kills.full or P.record.file.kills:GetText()
+  return t
+end
+
+-- "Last seen: Stranglethorn Vale, 2 hrs ago" (zone of the sighting, written by the tracker every 5 s); the line without
+-- the zone as the shorter form
+function RS.LastSeen(e)
+  local ls = type(e) == "table" and e.lastSeen
+  local ago = type(ls) == "table" and Look.Ago(ls.t)
+  if not ago then return L.POSTER_NOT_SEEN end
+  local short = Fmt(L.POSTER_LAST_SEEN, { time = ago })
+  if type(ls.zone) == "string" and ls.zone ~= "" and not Look.Secret(ls.zone) then
+    return Fmt(L.POSTER_LAST_SEEN_IN, { zone = ls.zone, time = ago }), short
+  end
+  return short
+end
+
+-- place a text at y (card coordinates) and fit it; returns the y below it
+function RS.Put(fs, y, text, fit, gap)
+  fs:ClearAllPoints()
+  fs:SetPoint("TOPLEFT", 24, -y)
+  if not text or text == "" then fs:SetText(""); fs:Hide(); return y end
+  fs:Show()
+  Look.FitText(fs, text, fit or RS.FIT_LINE)
+  return y + Look.TextH(fs, (fit or RS.FIT_LINE).lines or 1) + (gap or 3)
+end
+
+function RS.FillFile()
+  local F = P.record.file
+  local Lg, Rk = ns.Ledger, ns.Ranks
+  local r = Lg.Repute()
+  local y = 62
+  Look.FitText(F.title, Rk.Title(r.tier, r.path), RS.FIT_TITLE)
+  y = y + Look.TextH(F.title, 2) + 2
+  F.line:ClearAllPoints()
+  F.line:SetPoint("TOP", F.sheet, "TOP", 0, -y)
+  if Rk.Name(r.tier, r.path) then
+    -- the title is a name: the line below says rank and path; else the title is that line already
+    Look.FitText(F.line, Fmt(L.REPUTE_LINE, { tier = r.tier, path = Rk.PathWord(r.path) }), RS.FIT_ONE)
+    F.line:Show()
+    y = y + 14
+  else
+    F.line:SetText(""); F.line:Hide()
+  end
+  y = y + 10
+  -- the bar from where this rank began to where the next begins
+  local total = math.floor(tonumber(r.total) or 0)
+  local goal = r.next and (total + math.floor(r.next)) or nil
+  local floor0 = tonumber(r.floor) or 0
+  F.nums:ClearAllPoints()
+  F.nums:SetPoint("TOPRIGHT", F.sheet, "TOPRIGHT", -24, -y)
+  F.nums:SetText(goal and (total .. " / " .. goal) or tostring(total))
+  y = y + 13
+  F.track:ClearAllPoints()
+  F.track:SetPoint("TOPLEFT", 24, -y)
+  local frac = (goal and goal > floor0) and (total - floor0) / (goal - floor0) or 1
+  frac = math.max(0, math.min(1, frac))
+  F.fill:SetWidth(math.max(1, math.floor(304 * frac + 0.5)))
+  F.fill:SetShown(frac > 0)
+  y = y + 12
+  local nextName = goal and (Lg.NextRankName() or Rk.Title(r.nextTier, r.nextPath)) or nil
+  y = RS.Put(F.next, y, goal and Fmt(L.RECORD_NEXT, { points = math.floor(r.next), rank = nextName }) or L.RECORD_TOP)
+  F.barHit.tip = { goal and Fmt(L.RECORD_BAR_TIP, { total = total, goal = goal }) or L.RECORD_TOP, F.next.full or F.next:GetText() }
+  y = y + 12
+  -- the needle: -100 ruthless .. +100 honourable
+  local FIT_END = RS.FIT_END or { sizes = { 10, 9 }, width = 96 }
+  RS.FIT_END = FIT_END
+  for _, x in ipairs({ { F.low, L.RECORD_NEEDLE_LOW, "TOPLEFT", 24 }, { F.high, L.RECORD_NEEDLE_HIGH, "TOPRIGHT", -24 } }) do
+    local fs = x[1]
+    fs:SetWidth(96)
+    fs:SetJustifyH(x[3] == "TOPLEFT" and "LEFT" or "RIGHT")
+    fs:ClearAllPoints()
+    fs:SetPoint(x[3], F.sheet, x[3], x[4], -y)
+    Look.FitText(fs, x[2], FIT_END)
+  end
+  local lw, hw = math.min(96, math.ceil(Look.TextW(F.low) or 60)), math.min(96, math.ceil(Look.TextW(F.high) or 60))
+  local sw = 304 - lw - hw - 16
+  F.scale:ClearAllPoints()
+  F.scale:SetPoint("TOPLEFT", F.sheet, "TOPLEFT", 24 + lw + 8, -(y + 6))
+  F.scale:SetWidth(sw)
+  local needle = math.max(-100, math.min(100, math.floor(tonumber(r.needle) or 0)))
+  local x = math.floor(sw * (needle + 100) / 200 + 0.5)
+  F.needle:ClearAllPoints()
+  F.needle:SetPoint("BOTTOM", F.scale, "TOPLEFT", x, 1)
+  F.value:ClearAllPoints()
+  F.value:SetPoint("TOP", F.scale, "TOPLEFT", x, -5)
+  F.value:SetText(needle > 0 and ("+" .. needle) or tostring(needle))
+  F.needleHit.value = Look.Join(L.RECORD_NEEDLE_LOW .. " -100", L.RECORD_NEEDLE_HIGH .. " +100") .. ": " .. F.value:GetText()
+  y = y + 34
+  -- the accounts, biggest first; kills and victims; best marks
+  local order = RS.order or {}
+  RS.order = order
+  for i, p in ipairs(RS.PATHS) do order[i] = p end
+  table.sort(order, function(a, b)
+    local va, vb = tonumber(r.acc[a]) or 0, tonumber(r.acc[b]) or 0
+    if va ~= vb then return va > vb end
+    return a < b
+  end)
+  local parts = RS.parts or {}
+  RS.parts = parts
+  for i, p in ipairs(order) do parts[i] = Rk.PathWord(p) .. " " .. math.floor(tonumber(r.acc[p]) or 0) end
+  y = RS.Put(F.acc, y, table.concat(parts, " · ", 1, #order))
+  y = RS.Put(F.kills, y, Fmt(L.RECORD_KILLS, { kills = tonumber(r.n) or 0, victims = Lg.VictimCount() }))
+  local b = r.best or {}
+  local best = Look.Join((tonumber(b.gap) or 0) > 0 and Fmt(L.RECORD_BEST_GAP, { count = b.gap }) or nil,
+    (tonumber(b.streak) or 0) > 1 and Fmt(L.RECORD_BEST_STREAK, { count = b.streak }) or nil,
+    b.quick and Fmt(L.RECORD_BEST_QUICK, { time = RS.Duration(b.quick) }) or nil)
+  y = RS.Put(F.best, y, best ~= "" and Fmt(L.RECORD_BEST, { list = best }) or nil)
+  -- awards: names and conditions live in Humor.lua (German and English only); other languages show none
+  local H = ns.Humor
+  local AW = Lg.AWARDS or {}
+  local named = H and H.Award and AW[1] and H.Award(AW[1].id)
+  F.awardLabel:SetShown(named and true or false)
+  F.awardRule:SetShown(named and true or false)
+  F.awardCount:SetShown(named and true or false)
+  local got = 0
+  for i, btn in ipairs(F.awards) do
+    local a = AW[i]
+    if named and a then
+      local t = r.awards and r.awards[a.id]
+      local name, cond = H.Award(a.id)
+      if t then got = got + 1 end
+      btn:ClearAllPoints()
+      btn:SetPoint("TOPLEFT", F.sheet, "TOPLEFT", 24 + (i - 1) * 28, -(y + 20))
+      btn.tex:SetVertexColor(C(t and Look.COLOR.stampInk or Look.INK, t and 0.9 or 0.22))
+      if t then btn.tip = { name, cond, Fmt(L.RECORD_AWARD_AT, { time = Look.When(t) }) }
+      elseif a.hidden then btn.tip = { "???", L.RECORD_AWARD_OPEN }
+      else btn.tip = { name, cond, L.RECORD_AWARD_OPEN } end
+      btn:Show()
+    else
+      btn:Hide()
+    end
+  end
+  if named then
+    F.awardLabel:ClearAllPoints()
+    F.awardLabel:SetPoint("TOPLEFT", F.sheet, "TOPLEFT", 24, -(y + 2))
+    F.awardRule:ClearAllPoints()
+    F.awardRule:SetPoint("TOPLEFT", F.sheet, "TOPLEFT", 20, -(y + 14))
+    F.awardRule:SetWidth(312)
+    F.awardCount:ClearAllPoints()
+    F.awardCount:SetPoint("TOPRIGHT", F.sheet, "TOPRIGHT", -24, -(y + 2))
+    F.awardCount:SetText(got .. "/" .. #AW)
+    y = y + 20 + 20
+  end
+  F.right:SetText("")
+  F.page:Layout(math.ceil(y + 6 - 54))
+end
+
+function RS.FillLog()
+  local G = P.record.log
+  local log = ns.Ledger.Log() or {}
+  local n = math.min(#log, RS.LOG_LINES)
+  for i = 1, RS.LOG_LINES do
+    local row = log[i]
+    if i <= n and type(row) == "table" then
+      RS.SetLine(G.lines[i], Look.Join(Look.When(row.t), tostring(row.name or "?"), RS.Level(row.vl), Look.BandWord(row.band),
+        Look.KillPoints(row)), RS.Tag(row.f), row, RS.LogTip)
+    else
+      G.lines[i]:Hide()
+    end
+  end
+  G.empty:SetText(n == 0 and L.POSTER_NO_DEEDS or "")
+  G.right:SetText("")
+  G.page:Layout(math.ceil(62 + math.max(n, 1) * 16 + 6 - 54))
+end
+
+function RS.FillVictim(v)
+  local V = P.record.vic
+  local e = RS.Book(v)
+  V.headHit.key = e and v.key or nil
+  Look.FitText(V.head, RS.Name(v), GF.FIT_NAME26)
+  local m, h, score = Look.Stand(v.key)
+  local st = (e and m) and Look.ScoreState(m, h) or "victim"
+  Look.FitText(V.score, score or "", RS.FIT_SCORE)
+  V.score:SetTextColor(C(st == "open" and Look.RED or Look.INK))
+  V.scoreHit.tip = m and { Fmt(L.STAND_LINE, { score = score }), Fmt(L.STAND_TIP, { mine = m, his = h }) } or nil
+  local y = 62
+  y = RS.Put(V.who, y, Look.Join(type(v.level) == "number" and Fmt(L.POSTER_LEVEL, { level = v.level }) or nil, ClassName(v), v.guild), RS.FIT_ONE)
+  y = y + 5
+  V.state:ClearAllPoints()
+  V.state:SetPoint("TOPLEFT", 24, -y)
+  V.state:SetText(Spaced(L[Look.STATE_WORD[st]] or ""))
+  y = y + 14
+  y = RS.Put(V.note, y, e and L.CASE_CLICK_NAME or nil)
+  y = y + 6
+  y = RS.Put(V.sum, y, Look.Join(Fmt(L.VICTIM_KILLED, { times = Look.Times(v.n) }), Fmt(L.VICTIM_POINTS, { points = tonumber(v.pts) or 0 })))
+  y = RS.Put(V.scene, y, (type(v.zone) == "string" and v.zone ~= "") and Fmt(L.VICTIM_SCENE, { zone = v.zone, time = Look.Ago(v.last) or "?" }) or nil)
+  y = RS.Put(V.seen, y, e and (RS.LastSeen(e)) or nil)
+  y = y + 12
+  V.label:ClearAllPoints()
+  V.label:SetPoint("TOPLEFT", 24, -y)
+  y = y + 16
+  -- his kills from the log, newest first; the older ones (fallen out of the log) as "… and n more"
+  local log, shown = ns.Ledger.Log() or {}, 0
+  local more = 0
+  for i = 1, #log do
+    local row = log[i]
+    if type(row) == "table" and row.key == v.key then
+      if shown < RS.KILL_LINES then
+        shown = shown + 1
+        local b = V.lines[shown]
+        b:ClearAllPoints()
+        b:SetPoint("TOPLEFT", 20, -(y + (shown - 1) * 16))
+        RS.SetLine(b, Look.Join(Look.When(row.t), RS.Level(row.vl), Look.BandWord(row.band), Look.KillPoints(row)), RS.Tag(row.f), row, RS.LogTip)
+      else
+        more = more + 1
+      end
+    end
+  end
+  more = math.max(more, (tonumber(v.n) or 0) - shown)
+  if more > 0 and shown == RS.KILL_LINES then
+    -- the last line names the rest
+    local b = V.lines[shown]
+    RS.SetLine(b, Fmt(L.MORE_LINE, { count = more + 1 }), nil, nil, nil)
+  elseif more > 0 and shown < RS.KILL_LINES then
+    shown = shown + 1
+    local b = V.lines[shown]
+    b:ClearAllPoints()
+    b:SetPoint("TOPLEFT", 20, -(y + (shown - 1) * 16))
+    RS.SetLine(b, Fmt(L.MORE_LINE, { count = more }), nil, nil, nil)
+  end
+  for i = shown + 1, RS.KILL_LINES do V.lines[i]:Hide() end
+  V.strike.key = v.key
+  V.right:SetText("")
+  V.page:Layout(math.ceil(y + math.max(shown, 1) * 16 + 6 - 54))
+  if V.ref ~= v.key then V.ref = v.key; V.page:Top() end
+end
+
+-- the right page of the tab; returns true when the selection had to be dropped (victim struck meanwhile)
+function RS.Show()
+  if not P.record then RS.Build() end
+  local R = P.record
+  local v = state.rsel and ns.Ledger.Victim(state.rsel)
+  local dropped = state.rsel ~= nil and not v
+  if dropped then state.rsel = nil end
+  PosterMode(true)
+  R.file:SetShown(not v and state.rview ~= "log")
+  R.log:SetShown(not v and state.rview == "log")
+  R.vic:SetShown(v and true or false)
+  if v then RS.FillVictim(v)
+  elseif state.rview == "log" then RS.FillLog()
+  else RS.FillFile() end
+  R:Show()
+  return dropped
+end
+
 -- true if ShowRight had to set a selection first (then refresh the rows once)
 local picked = false
 ShowRight = function()
   if state.panel then return end
   local n = #data
   P.enemy:Hide(); P.death:Hide(); RP.empty:Hide()
+  if P.record then P.record:Hide() end
   P:Show()
-  if n == 0 then
+  if state.filter == "record" then
+    -- 1.3.0: the own file, the latest kills or one victim; never the empty page (the file is always there)
+    if RS.Show() then picked = true end
+  elseif n == 0 then
     ShowEmpty(EmptyKind())
   elseif state.filter == "journal" then
     -- the selection is the entry itself; the position follows it when new deaths slide in before it
@@ -2883,7 +3508,19 @@ GF.MORE_WARN = {
   { "announce",    "OPT_F_ANNOUNCE" },
   { "announceHunt", "OPT_F_ANNOUNCEHUNT" },   -- 1.2.0 fix: the message taken down / new targets had no switch
 }
-local SHEETS = { "SHEET_BOOK", "SHEET_ALERT", "SHEET_GUILD" }   -- locale key
+local SHEETS = { "SHEET_BOOK", "SHEET_ALERT", "SHEET_GUILD", "SHEET_RECORD" }   -- locale key (4th: 1.3.0, the rap sheet)
+-- 1.3.0: sheet 4, the rap sheet's switches (the sheets Book and Alarm are full: a row more would make them scroll)
+GF.RECORD_OPTIONS = {
+  { "ledger.enabled", "OPT_LEDGER", true },
+  { "ledger.chat",    "OPT_LEDGER_CHAT", true },
+  { "alert.victims",  "OPT_VICTIMS", false },
+}
+GF.SETTLED = { { "always", "SET_SETTLED_ALWAYS" }, { "quiet", "SET_SETTLED_QUIET" }, { "off", "SET_SETTLED_OFF" } }
+function GF.SheetOn(i)
+  if i == 3 then return HasGuild() end
+  if i == 4 then return type(ns.Ledger) == "table" and type(ns.Ledger.Enabled) == "function" end
+  return true
+end
 GF.SHEET_TOP = 76     -- 1.2.2: head and sheet tabs stand still, the sheet scrolls below them
 GF.TIP_NAMES = 12    -- 1.2.2: at most this many names per list in the status line tooltip (before 20 + 20)
 GF.SYNC_MIN, GF.SYNC_MAX = 84, 150   -- sync button: grows with its text (1.2.0)
@@ -3045,15 +3682,32 @@ BuildSettings = function()
 
   -- sheets: Book | Alarm | Guild (the third only if the guild feature exists)
   S.tabs = {}
-  -- 1.2.0: width from the word (70 to 96 px, at least 70 px as 1.1.0), 28 px gap
+  -- 1.2.0: width from the word (70 to 96 px, at least 70 px as 1.1.0), 28 px gap. 1.3.0: with four sheets 50 to 96 px
+  -- and 16 px gap; if even that is wider than the rule (320 px), all get narrower alike and the word 10 pt (tooltip)
   local prevTab
+  local on, ws, total = {}, {}, 0
+  for i = 1, #SHEETS do if GF.SheetOn(i) then on[#on + 1] = i end end
+  local four = #on >= 4
+  local minW, gap = four and 50 or 70, four and 16 or 28
   for i, key in ipairs(SHEETS) do
     local t = WordTab(S, L[key], 70, function(self) state.spage = self.page; UI.FillSettings() end)
-    t:SetWidth(math.max(70, math.min(96, TextWidth(t.text, 60) + 6)))
-    if prevTab then t:SetPoint("LEFT", prevTab, "RIGHT", 28, 0) else t:SetPoint("TOPLEFT", 30, -56) end
-    prevTab = t
+    ws[i] = math.max(minW, math.min(96, TextWidth(t.text, 60) + 6))
+    t:SetWidth(ws[i])
     t.page = i
     S.tabs[i] = t
+  end
+  for k, i in ipairs(on) do total = total + ws[i] + (k > 1 and gap or 0) end
+  local fit = four and total > PAGE_W - 60 and (PAGE_W - 60 - gap * (#on - 1)) / (total - gap * (#on - 1)) or 1
+  for _, i in ipairs(on) do
+    local t = S.tabs[i]
+    if fit < 1 then
+      t:SetWidth(math.floor(ws[i] * fit))
+      t.text:SetWidth(math.floor(ws[i] * fit) - 4)
+      Look.FitText(t.text, L[SHEETS[i]], GF.FIT_WORD)
+      Look.TipIfCut(t, t.text)
+    end
+    if prevTab then t:SetPoint("LEFT", prevTab, "RIGHT", gap, 0) else t:SetPoint("TOPLEFT", 30, -56) end
+    prevTab = t
   end
 
   local function onCheck(self)
@@ -3308,6 +3962,25 @@ BuildSettings = function()
     S.fclear = fclear
   end
   hint(B, friendsSheet and L.SET_HINT_FRIENDS or L.SET_HINT_GUILD)
+
+  -- sheet 4 (1.3.0): the rap sheet: keep it, chat line, victim alarm, alarm when settled, empty it
+  local RR = sheet()
+  RR:Hide()
+  S.pageR = RR
+  if GF.SheetOn(4) then
+    y = checks(RR, GF.RECORD_OPTIONS)
+    S.settled = Stepper(RR, y, L.SET_SETTLED, function(d)
+      local cur, idx = Look.Setting("alert.settled", "always"), 1
+      for i, x in ipairs(GF.SETTLED) do if x[1] == cur then idx = i end end
+      Set("alert.settled", GF.SETTLED[(idx - 1 + d) % #GF.SETTLED + 1][1])
+    end, 96)
+    y = y - OPT_H - 6
+    S.recordClear = InkButton(RR, "", 132, 22, function() Confirm("DEATHNOTE_RECORD_CLEAR") end)
+    S.recordClear:SetPoint("TOPLEFT", 30, y - 4)
+    S.recordClear:SetWidth(math.max(132, math.min(200, math.ceil((GF.MeasureAt(S.recordClear.text, L.RECORD_CLEAR, 10) or 120) + 16))))
+    S.recordClear:SetLabel(L.RECORD_CLEAR)
+    RR.bottom = -(y - 4) + 22
+  end
 
   local back = InkButton(S, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
   back:SetPoint("BOTTOM", 0, 12)
@@ -3647,14 +4320,19 @@ function UI.FillSettings()
   local S = RP and RP.settings
   if not S then return end
   local guild = HasGuild()
-  if not guild and state.spage == 3 then state.spage = 1 end
+  if not GF.SheetOn(state.spage) then state.spage = 1 end
   for i, t in ipairs(S.tabs) do
-    t:SetShown(i < 3 or guild)
+    t:SetShown(GF.SheetOn(i))
     t:SetOn(state.spage == i)
   end
   S.pageA:SetShown(state.spage == 1)
   S.pageL:SetShown(state.spage == 2)
   S.pageB:SetShown(state.spage == 3)
+  S.pageR:SetShown(state.spage == 4)
+  if S.settled then
+    local cur = Look.Setting("alert.settled", "always")
+    for _, x in ipairs(GF.SETTLED) do if x[1] == cur then S.settled:SetValue(L[x[2]]) end end
+  end
   if S.gmore then
     -- 1.2.0: second page of the guild sheet ("More"), state remembered, closed by default
     local more = Look.Setting("ui.guildMore", false) == true
@@ -3722,7 +4400,7 @@ end
 -- 1.2.2: put the hint of the open sheet into the flow and set the height of the scroll area; another sheet
 -- (or "More") starts at the top
 function GF.LayoutSheet(S)
-  local X = (state.spage == 1 and S.pageA) or (state.spage == 2 and S.pageL) or S.pageB
+  local X = (state.spage == 1 and S.pageA) or (state.spage == 2 and S.pageL) or (state.spage == 4 and S.pageR) or S.pageB
   local inner = X
   if X == S.pageB and S.pageB2 then inner = S.pageB2:IsShown() and S.pageB2 or S.pageB1 end
   local h = X.hint
@@ -3828,6 +4506,7 @@ end -- house rules
 
 -- number on the tab: only when there is something; "Unsolved" in red
 function UX.TabCount(id)
+  if id == "record" then return 0 end     -- 1.3.0: the rap sheet's tab carries no number (it stays calm and narrow)
   if id == "journal" then return #UX.Journal() end
   if id == "guild" then return UX.GuildCount() end
   local w, s, _, o = Counts()
@@ -3836,14 +4515,29 @@ function UX.TabCount(id)
 end
 
 function UX.UpdateTabs()
-  local guild = HasGuild()
+  local guild, record = HasGuild(), RS.On()
+  -- 1.3.0: the fifth tab comes with the first own kill; the row is laid out again when the shown tabs change
+  local sig, shown = "", 0
+  for _, t in ipairs(F.tabs) do
+    local show = (t.id ~= "guild" or guild) and (t.id ~= "record" or record)
+    t:SetShown(show)
+    if show then sig = sig .. t.id; shown = shown + 1 end
+  end
+  if F.tabSig ~= sig then F.tabSig = sig; GF.LayoutTabs() end
   for _, t in ipairs(F.tabs) do
     local on = t.id == state.filter
-    t:SetShown(t.id ~= "guild" or guild)
     local n = UX.TabCount(t.id) or 0
-    if n <= 0 then t.text:SetText(t.label)
-    elseif t.id == "open" then t.text:SetText(t.label .. "  " .. Look.HEX.accentOnCover .. n .. "|r")
-    else t.text:SetText(t.label .. "  " .. n) end
+    local text
+    if n <= 0 then text = t.label
+    elseif t.id == "open" then text = t.label .. "  " .. Look.HEX.accentOnCover .. n .. "|r"
+    else text = t.label .. "  " .. n end
+    if shown >= 5 then
+      -- five tabs: a label that does not fit gets 10 pt, then the whole of it in the tab's tooltip
+      Look.FitText(t.text, text, GF.FIT_TAB)
+    else
+      t.text.fitText = nil      -- written plainly as in 1.2.2 (four tabs always fit)
+      t.text:SetText(text)
+    end
     t.text:SetTextColor(C(on and Look.BONE or Look.TAB_OFF))
     t.mark:SetShown(on)
   end
@@ -3891,15 +4585,15 @@ function UX.UpdateTabs()
     LP.sort:ClearAllPoints()
     if foot then LP.sort:SetPoint("BOTTOMRIGHT", -14, 32) else LP.sort:SetPoint("TOPRIGHT", -14, -14) end
   end
-  local sortKey = (state.filter == "guild") and state.gsort or state.sort
+  local sortKey = (state.filter == "guild" and state.gsort) or (state.filter == "record" and state.rsort) or state.sort
   LP.sort.text:SetText(SORT_LABEL[sortKey] and L[SORT_LABEL[sortKey]] or "")
   LP.sort:SetWidth(math.max(90, math.min(120, TextWidth(LP.sort.text, 60) + 16)))
-  LP.sort:SetShown(state.filter == "wanted" or (state.filter == "guild" and not member and not GF.HuntView()))
+  LP.sort:SetShown(state.filter == "wanted" or state.filter == "record" or (state.filter == "guild" and not member and not GF.HuntView()))
   -- 1.2.2: the placeholder stays inside the field (smaller, then truncated)
   LP.search.ph:SetWidth(sw - 4)
   Look.FitText(LP.search.ph, (state.filter == "guild" and ((views or GF.HuntView()) and L.SEARCH_SHORT or L.SEARCH_KILLER))
                        or (state.filter == "journal" and L.SEARCH_JOURNAL)
-                       or (state.filter == "open" and L.SEARCH_SHORT) or L.SEARCH_ADD, GF.FIT_PH)
+                       or ((state.filter == "open" or state.filter == "record") and L.SEARCH_SHORT) or L.SEARCH_ADD, GF.FIT_PH)
 end
 
 function UX.UpdateStatus()
@@ -3994,7 +4688,7 @@ function UX.ApplyQuery(list)
       local x = list[i]
       if IsCase(x) then
         if DeathMatches(x, q) then out[#out + 1] = x end
-      elseif Matches(Look.Name(x), q) then
+      elseif Matches(state.filter == "record" and RS.Name(x) or Look.Name(x), q) then
         out[#out + 1] = x
       end
     end
@@ -4135,6 +4829,7 @@ Refresh = function()
   dirty = false
   local S = Store()
   if state.filter == "guild" and not HasGuild() then state.filter = "wanted" end
+  if state.filter == "record" and not RS.On() then state.filter = "wanted" end
   if state.filter == "guild" then GF.Survey() end
   local list
   if state.filter == "journal" then
@@ -4145,6 +4840,8 @@ Refresh = function()
     list = GF.SrcOn() and GF.Hunts() or {}
   elseif state.filter == "guild" and not MemberView() then
     list = GuildEnemies(state.gsort)
+  elseif state.filter == "record" then
+    list = ns.Ledger.Victims(state.rsort)    -- the rap sheet's own list, read only
   elseif state.filter ~= "guild" then
     list = UX.WantedData()
   end
@@ -4205,6 +4902,7 @@ local function SubmitSearch(box)
         if not data[i].head then state.gselected, state.gmember = data[i].r.key, data[i].m.name; break end
       end
     elseif state.filter == "open" then state.osel = IsCase(first) and first or first.key
+    elseif state.filter == "record" then state.rsel = first.key
     elseif state.filter == "guild" then state.gselected = first.key
     else state.selected = first.key end
     state.offset = 0
@@ -4293,17 +4991,20 @@ end
 
 -- sort menu: the values as a list, in the Wanted tab also "show/hide pardoned"
 function UX.SortMenu(btn)
-  local guild = state.filter == "guild"
-  local list = guild and UX.GSORTS or UX.SORTS
+  local guild, record = state.filter == "guild", state.filter == "record"
+  local list = (guild and UX.GSORTS) or (record and RS.SORTS) or UX.SORTS
+  local cur = (guild and state.gsort) or (record and state.rsort) or state.sort
   local spec = {}
   for _, k in ipairs(list) do
-    spec[#spec + 1] = { (k == (guild and state.gsort or state.sort) and "• " or "") .. L[SORT_LABEL[k]], function()
-      if guild then state.gsort = k else state.sort = k; Set("ui.sort", k) end
+    spec[#spec + 1] = { (k == cur and "• " or "") .. L[SORT_LABEL[k]], function()
+      if guild then state.gsort = k
+      elseif record then state.rsort = k; Set("ui.recordSort", k)
+      else state.sort = k; Set("ui.sort", k) end
       state.offset = 0
       Refresh()
     end }
   end
-  if not guild then
+  if not guild and not record then
     local on = ShowPardoned()
     spec[#spec + 1] = { on and L.SORT_HIDE_PARDONED or L.SORT_SHOW_PARDONED, function()
       Set("ui.showPardoned", not on)
@@ -4492,13 +5193,22 @@ end
 GF.TAB_X0, GF.TAB_X1, GF.TAB_GAP, GF.TAB_MAX, GF.TAB_ROOM = 184, 704, 4, 150, 34
 GF.FIT_PH = { sizes = { 16, 13, 11 } }
 -- withCount (1.2.2): width also from the shown text with its number (four digits), the text stays
+GF.TAB_BASE5 = 92        -- 1.3.0: with five tabs every tab may be this narrow (repute concept 8.1)
+GF.FIT_TAB = { sizes = { 11, 10 } }
+GF.tabList = {}
 function GF.LayoutTabs(withCount)
   local ws, total = {}, 0
-  for i, t in ipairs(F.tabs) do
+  -- 1.3.0: only the shown tabs, one after the other (the fifth comes and goes with the rap sheet)
+  local list = GF.tabList
+  for i = #list, 1, -1 do list[i] = nil end
+  for _, t in ipairs(F.tabs) do if t:IsShown() then list[#list + 1] = t end end
+  local five = #list >= 5
+  for i, t in ipairs(list) do
     local cur = withCount and t.text:GetText()
     local cw = cur and math.floor((Look.TextW(t.text) or 0) + 8 + 0.5) or 0
     t.text:SetText(t.label)
-    ws[i] = math.min(GF.TAB_MAX, math.max(t.base, cw, math.floor(TextWidth(t.text, 60) + GF.TAB_ROOM + 0.5)))
+    local base = five and math.min(t.base, GF.TAB_BASE5) or t.base
+    ws[i] = math.min(GF.TAB_MAX, math.max(base, cw, math.floor(TextWidth(t.text, 60) + GF.TAB_ROOM + 0.5)))
     total = total + ws[i] + (i > 1 and GF.TAB_GAP or 0)
     if cur then t.text:SetText(cur) end
   end
@@ -4508,7 +5218,7 @@ function GF.LayoutTabs(withCount)
     for i = 1, #ws do ws[i] = math.floor(ws[i] * k) end
   end
   local x = GF.TAB_X0
-  for i, t in ipairs(F.tabs) do
+  for i, t in ipairs(list) do
     t:SetWidth(ws[i])
     t.text:SetWidth(ws[i] - 4)
     t:ClearAllPoints()
@@ -4643,6 +5353,8 @@ local function Build()
     t.text:SetPoint("CENTER", 0, 1)
     t.text:SetWordWrap(false)
     t:SetScript("OnClick", function(self) Look.Sound("click"); SetFilter(self.id) end)
+    Look.TipIfCut(t, t.text)
+    if f.id == "record" then t:Hide() end      -- 1.3.0: shown by UX.UpdateTabs from the first own kill on
     F.tabs[#F.tabs + 1] = t
   end
   GF.LayoutTabs()
@@ -4670,6 +5382,8 @@ local function Build()
   if SORT_LABEL[sort] then state.sort = sort end
   local gv = Look.Setting("ui.guildView", "enemy")
   if gv == "member" or gv == "enemy" or (gv == "hunt" and GF.HasHunts()) then state.gview = gv end
+  local rs = Look.Setting("ui.recordSort", "recent")
+  for _, k in ipairs(RS.SORTS) do if k == rs then state.rsort = rs end end
   local gs = Look.Setting("ui.guildSource", "all")
   if gs == "all" or gs == "guild" or gs == "friends" then state.gsource = gs end
 end
@@ -4980,6 +5694,9 @@ ns:On("PLATES_CHANGED", function()
   end
 end)
 ns:On("ENEMY_UPDATED", RequestRefresh)
+-- 1.3.0 rap sheet: an own kill, a new standing, rank, path or award, the rap sheet emptied (also while switched off)
+for _, ev in ipairs({ "OWN_KILL", "STANDING_CHANGED", "REPUTE_RANK", "REPUTE_PATH", "AWARD" }) do ns:On(ev, RequestRefresh) end
+ns:On("LEDGER_CLEARED", function() state.rsel = nil; RequestRefresh() end)
 ns:On("DEATH_RECORDED", RequestRefresh)
 ns:On("REVENGE", RequestRefresh)
 ns:On("GUILD_UPDATED", function() mv.dirty = true; gpart.src = nil; RequestRefresh() end)
@@ -5000,6 +5717,7 @@ ns:On("SETTINGS_CHANGED", function(path)
   end
   if path == "alert.enabled" then IconAlpha() end
   if path == "ui.scale" then ApplyScale() end
+  if path == "ledger.enabled" then RequestRefresh() end
   if path == "ui.guildCollapsed" then collapseVer = collapseVer + 1; if MemberView() then RequestRefresh() end end
   if type(path) == "string" and path:find("^guild%.") then RequestRefresh() end
   if F and F:IsShown() and state.panel == "settings" then UI.FillSettings() end
