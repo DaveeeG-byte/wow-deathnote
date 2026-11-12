@@ -106,5 +106,24 @@ for _, code in ipairs({ "deDE", "enUS", "ruRU" }) do
   K.check(code .. " B01 hit list: line not cut after GUILD_UPDATED", popup:IsShown() and not popup.line:IsTruncated(), popup.line._text)
 end
 
+------------------------------------------------------------------------
+-- B06: the fuller name after a move of the entry (ENEMY_REKEYED) shrinks like the first one instead of being cut
+------------------------------------------------------------------------
+do
+  local ns = K.world("deDE")
+  local BM, G = K.BM, K.G
+  local short = ns.Store.AddManual("Maximilianus")
+  K.tick(30); for _ = 1, 3 do K.settle() end
+  BM.levels.player = 40
+  ns:Fire("ENEMY_SPOTTED", short, nil, "other"); K.tick()
+  local popup = rawget(G, "DeathNoteAlert")
+  K.check("B06 alarm for the first name, whole", popup and popup:IsShown() and not popup.name:IsTruncated(), popup and popup.name._text)
+  local full = ns.Store.Promote("Maximilianus", "Wunderkammerdiener", "Player-1-MW"); K.tick()
+  K.check("B06 the store moved the entry to the full key", type(full) == "string" and ns.Store.Get(full) ~= nil, tostring(full))
+  K.check("B06 popup shows the fuller name", (popup.name._text or ""):find("Wunderkammerdiener", 1, true) ~= nil, popup.name._text)
+  K.check("B06 the fuller name is whole (smaller instead of cut)", not popup.name:IsTruncated(),
+    ("%.0f px at %s pt in 286 px"):format(BM.Unbounded(popup.name), tostring(popup.name._fontSize)))
+end
+
 io.write(("Layout fixes 1.2.2 (hunt B): %d green, %d red\n"):format(K.ok, K.bad))
 os.exit(K.bad == 0 and 0 or 1)

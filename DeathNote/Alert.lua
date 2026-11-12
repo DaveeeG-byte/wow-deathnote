@@ -1594,7 +1594,7 @@ ns:On("ENEMY_REKEYED", function(old, new)
     local e = ns.Store.Get(new)
     if e then currentEntry = e end
     if popup and popup:IsShown() then
-      popup.name:SetText(Look.Name(currentEntry))
+      SetName(currentEntry)
       ArmButton()
       Guard()
       SetHint()
