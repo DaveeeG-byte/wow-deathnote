@@ -349,4 +349,51 @@ test("A grey entered by hand before the kill (he never killed me): infamy as wit
   ok(ns.Ledger.Log()[1].f:find("v"), "with a debt: revenge")
 end)
 
+---------------------------------------------------------------------------
+-- The cap of 200 victims (finding 10, capVictims without a quadratic search)
+---------------------------------------------------------------------------
+local function fullLedger(n, inBook)
+  local db = { version = 4, settings = {}, deaths = {}, enemies = {}, ledger = { victims = {} } }
+  for i = 1, n do
+    local nm = "N" .. i
+    db.ledger.victims[nm .. "-Alt"] = { name = nm, surname = "Alt", n = 1, last = 1600000000 + i, guid = "Player-93-" .. nm }
+    if inBook then db.enemies[nm .. "-Alt"] = entry(nm, "Alt", 2, 1, { guid = "Player-93-" .. nm }) end
+  end
+  return db
+end
+
+test("Register full, every victim in the book: the new victim stays, kicking and wear work", function()
+  load(fullLedger(200, true))
+  eq(ns.Ledger.VictimCount(), 200)
+  local g = seen("Frei", "Wild", 40)
+  local rec
+  ns:On("OWN_KILL", function(_, row) rec = row end)
+  kill(g)
+  ok(ns.Ledger.Victim("Frei-Wild"), "the victim just booked stays")
+  eq(rec and rec.state, "victim", "OWN_KILL carries his state")
+  eq(ns.Ledger.Victim("N1-Alt"), nil, "the oldest last kill went (all are in the book)")
+  eq(ns.Ledger.VictimCount(), 200)
+  M.Advance(15); seen("Frei", "Wild", 40, { guid = g }); kill(g)
+  local row = ns.Ledger.Log()[1]
+  ok(row.f:find("n"), "second kill after 15 s is kicking"); eq(row.e, 0); eq(ns.Ledger.Victim("Frei-Wild").n, 2)
+end)
+
+test("Register full: victims outside the book go first, the oldest first", function()
+  local db = fullLedger(200, true)
+  db.enemies["N1-Alt"] = nil; db.enemies["N7-Alt"] = nil
+  load(db)
+  kill(seen("Frei", "Wild", 40)); M.Advance(11)
+  eq(ns.Ledger.Victim("N1-Alt"), nil, "outside the book, oldest")
+  ok(ns.Ledger.Victim("N2-Alt"), "in the book, older than N7")
+  kill(seen("Frei", "Zwei", 40))
+  eq(ns.Ledger.Victim("N7-Alt"), nil, "the next outside the book")
+  ok(ns.Ledger.Victim("N2-Alt"))
+end)
+
+test("A broken file with 5000 victims is cut to the 200 newest in one pass", function()
+  load(fullLedger(5000, false))
+  eq(ns.Ledger.VictimCount(), 200)
+  ok(ns.Ledger.Victim("N5000-Alt")); ok(ns.Ledger.Victim("N4801-Alt")); eq(ns.Ledger.Victim("N4800-Alt"), nil)
+end)
+
 M.done("ledger_fixes")

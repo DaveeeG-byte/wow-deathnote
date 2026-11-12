@@ -35,7 +35,7 @@ local Call, IsSecret, Str, Num = Util.Call, Util.IsSecret, Util.Str, Util.Num
 local Ledger = {}
 ns.Ledger = Ledger
 
-Ledger.VICTIMS_MAX = 200     -- victims kept; the oldest one that is not in the book goes first
+Ledger.VICTIMS_MAX = 200     -- victims kept; the oldest one that is not in the book goes first, never the newest
 Ledger.LOG_MAX = 60          -- newest kills kept
 Ledger.DEDUPE = 10           -- seconds: the same victim twice is one kill
 Ledger.KICK = 600            -- seconds: a second kill on the same victim within this is "kicking"
@@ -452,19 +452,34 @@ local function dropVictim(key)
   nVictims = nVictims - 1
 end
 
--- the cap: the victim with the oldest last kill that is not in the book goes
-local function capVictims()
-  while nVictims > Ledger.VICTIMS_MAX do
-    local oldK, oldT
+-- the cap: victims without a book entry go first, the oldest last kill first; when all are in the book, the one with
+-- the oldest last kill. keep (the victim just booked) never goes. One pass, no quadratic search.
+local function capOrder(a, b)
+  if a[2] ~= b[2] then return a[2] < b[2] end
+  if a[3] ~= b[3] then return a[3] < b[3] end
+  return a[1] < b[1]
+end
+
+local function capVictims(keep)
+  local over = nVictims - Ledger.VICTIMS_MAX
+  if over <= 0 then return end
+  if over == 1 then
+    local best
     for k, v in pairs(victims) do
-      if not inBook(k) then
-        local t = v.last or 0
-        if not oldT or t < oldT then oldK, oldT = k, t end
+      if k ~= keep then
+        local x = { k, inBook(k) and 1 or 0, v.last or 0 }
+        if not best or capOrder(x, best) then best = x end
       end
     end
-    if not oldK then break end
-    dropVictim(oldK)
+    if best then dropVictim(best[1]) end
+    return
   end
+  local list = {}
+  for k, v in pairs(victims) do
+    if k ~= keep then list[#list + 1] = { k, inBook(k) and 1 or 0, v.last or 0 } end
+  end
+  table.sort(list, capOrder)
+  for i = 1, math.min(over, #list) do dropVictim(list[i][1]) end
 end
 
 -- name and realm (or surname) of a victim key; "Name-Realm#GUID" is the placeholder of a second player with the
@@ -998,7 +1013,7 @@ local function book(info, opts)
     db.best.quick = t - hisLast
   end
   remember(gt, Str(info.guid), key, firstOf(info.name))
-  capVictims()
+  capVictims(key)
   reputeCache = nil
   local mine1, his1, state1 = Ledger.Standing(key)
   row.state = state1
