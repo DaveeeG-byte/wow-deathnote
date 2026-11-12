@@ -80,4 +80,60 @@ test("A namesake key shows as the name: NameParts and DisplayName, also after a 
   eq(ns.Store.Get(key), nil, "never in the book")
 end)
 
+---------------------------------------------------------------------------
+-- One player, one key: the book's key for his GUID leads (finding 1)
+---------------------------------------------------------------------------
+-- seen with surname, plate gone, the buffer pruned; the recall keeps him for 15 min
+local function gone()
+  M.units["nameplate" .. plate] = nil
+  M.Advance(120); ns.Tracker.Prune(true)
+end
+local function unseenRevenge()
+  fresh()
+  local g = seen("Gerd", "Groll", 40); gone()
+  ok(ns.Tracker.Recall(g), "only in the recall")
+  dieBy(g, "Gerd")                                     -- he kills me unseen: the book lists his first name and GUID
+  ok(ns.Store.Get("Gerd-Forever"), "book entry under the first name")
+  M.Advance(30); kill(g)                               -- my killing blow without a new sighting (DoT, pet)
+  return g
+end
+
+test("A kill on a listed enemy the book knows by first name and GUID is revenge, booked under the book's key", function()
+  local g = unseenRevenge()
+  local row = ns.Ledger.Log()[1]
+  eq(row.key, "Gerd-Forever")
+  ok(row.f:find("v"), "flag v, f = '" .. row.f .. "'")
+  local v = ns.Ledger.Victim("Gerd-Forever")
+  eq(v.pre, nil, "no kill before he was listed")
+  eq(v.guid, g)
+  eq(ns.Ledger.Victim("Gerd-Groll"), nil, "no second key for the same GUID")
+  eq(standing("Gerd-Forever"), "1:1 even")
+end)
+
+test("The book moves to the full name at the sighting: the one kill counts once, also after a reload", function()
+  local g = unseenRevenge()
+  M.Advance(60); seen("Gerd", "Groll", 40, { guid = g })
+  eq(ns.Store.ByGUID(g), "Gerd-Groll")
+  eq(standing("Gerd-Groll"), "1:1 even")
+  eq(ns.Ledger.VictimCount(), 1)
+  reload()
+  eq(standing("Gerd-Groll"), "1:1 even")
+end)
+
+test("A victim known with surname follows a later book entry of the same GUID under the first name", function()
+  fresh()
+  local g = seen("Anna", "Ast", 40)
+  kill(g); gone(); M.Advance(1000)                     -- killed before she was listed, the recall ran out
+  dieBy(g, "Anna")                                     -- she kills me unseen: the book lists "Anna-<realm>"
+  local bk = ns.Store.ByGUID(g)
+  eq(bk, "Anna-Forever")
+  eq(standing(bk), "1:1 even")
+  local v = ns.Ledger.Victim(bk)
+  eq(v and v.surname, "Ast", "the victim keeps the surname it knew")
+  eq(v and v.pre, 1, "killed before she was listed")
+  eq(ns.Ledger.VictimCount(), 1)
+  M.Advance(60); seen("Anna", "Ast", 40, { guid = g })  -- the book moves to the full name, the victim along
+  eq(ns.Store.ByGUID(g), "Anna-Ast"); eq(standing("Anna-Ast"), "1:1 even"); eq(ns.Ledger.VictimCount(), 1)
+end)
+
 M.done("ledger_fixes_e")

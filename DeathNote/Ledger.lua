@@ -571,7 +571,7 @@ function moveVictim(oldKey, newKey, surname)
   if not v or oldKey == newKey then return end
   local into = victims[newKey]
   dropVictim(oldKey)
-  surname = Util.CleanName(Str(surname))
+  surname = Util.CleanName(Str(surname)) or v.surname
   if surname then surname = Util.CapFirst(surname) end
   if into then
     if into.surname == nil and surname then into.surname = surname; nPlaceholders = nPlaceholders - 1 end
@@ -612,6 +612,10 @@ local function promote(r)
   if not v or v.surname ~= nil then return end
   local full = Util.KeyFor(r.name, sn)
   if not full or otherGuid(full, g) then return end
+  -- the book knows him under another key: the victim stays with the book (ENEMY_REKEYED moves both)
+  local S = ns.Store
+  local bk = S and S.ByGUID and S.ByGUID(g)
+  if bk and bk ~= full then return end
   local cs = Util.CleanName(sn)
   if not cs then return end
   moveVictim(k, full, cs)
@@ -625,14 +629,18 @@ Ledger.Promote = promote
 -- Keeps the keys consistent at every start, books nothing: a victim whose GUID the book knows under another key
 -- (the book entry moved while an older version played) follows it there. Silent, idempotent, and only while the
 -- rap sheet is switched on. Returns the number of victims moved.
--- the book's key for a victim (same GUID, another key), or nil: never from a full name back to a first-name key,
--- never away from a key the book has itself
+-- the book's key for a victim (same GUID, another key), or nil: never away from a key the book has itself for him.
+-- A victim known with surname follows the book's first-name key too and keeps its surname (the book moves to the
+-- full name at the next sighting, ENEMY_REKEYED takes the victim along): one player, one key.
 local function bookKeyOf(key, v)
   local S = ns.Store
   local k2 = v.guid and S and S.ByGUID and S.ByGUID(v.guid)
   local be = k2 and k2 ~= key and S.Get(k2)
-  if be and not S.Get(key) and (be.surname ~= nil or v.surname == nil) then return k2, be end
-  return nil
+  if not be then return nil end
+  local own = S.Get(key)
+  local og = own and Str(own.guid)
+  if own and (og == nil or og == v.guid) then return nil end
+  return k2, be
 end
 
 -- the book learned a GUID (a kill, a sighting): a victim of that GUID under another key follows at once, so the
@@ -913,23 +921,25 @@ end
 
 local function guidFits(known, guid) return known == nil or known == guid end
 
--- the key for a victim: full name when known; else a book entry or victim with this GUID or a unique first name;
--- else the placeholder "Name-<realm>" (moved later when he is seen with surname)
+-- the key for a victim: the book's key for his GUID first (book and rap sheet are joined by the GUID where there is
+-- one, the book's key leads: when the book moves to a fuller name, ENEMY_REKEYED takes the victim along), then the
+-- rap sheet's; else the full name when known; else a unique first name; else the placeholder "Name-<realm>" (moved
+-- later when he is seen with surname)
 local function keyOf(info)
   if info.key then return info.key end
   local sn = Str(info.surname)
   local S = ns.Store
   local g = Str(info.guid)
+  if g then
+    local k = S and S.ByGUID(g)
+    if k then return k end
+    if byGuid[g] then return byGuid[g] end
+  end
   if sn then
     local full = Util.KeyFor(info.name, sn)
     -- that full name belongs to another GUID: this one is known by his first name only
     if not otherGuid(full, g) then return full end
     info.surname = nil
-  end
-  if g then
-    local k = S and S.ByGUID(g)
-    if k then return k end
-    if byGuid[g] then return byGuid[g] end
   end
   local name = Str(info.name)
   if not name then return nil end
@@ -1127,14 +1137,15 @@ end
 -- books one own kill. info: what we know of the victim; opts: { pet, honor, case, how, age }
 local function book(info, opts)
   local c = opts.case
-  -- a placeholder of this GUID (first name only) takes the full name now, before the kill is booked
+  -- a placeholder of this GUID (first name only) takes the full name now, before the kill is booked (unless the book
+  -- knows him: its key leads, promote() leaves him)
   local g = Str(info.guid)
+  local S = ns.Store
   if g and byGuid[g] and Str(info.surname) and Str(info.name) then
     promote({ guid = g, name = info.name, surname = info.surname })
   end
   local key = keyOf(info)
   if not key then return reject(c, "name") end
-  local S = ns.Store
   local t, gt = nowT(), gtime()
   -- the state before the kill
   local mine0, his0, state0 = standingBefore(key, t)
@@ -1169,8 +1180,9 @@ local function book(info, opts)
   v.zone, v.mapID = row.zone, mapID
   if vl then v.level = vl end
   v.pts = v.pts + r + ee + j + s
-  -- no book entry: the book could not have counted this kill as revenge
-  if not e then v.pre = (v.pre or 0) + 1 end
+  -- no book entry for him (by GUID where there is one): the book could not have counted this kill as revenge
+  local eg = e and Str(e.guid)
+  if not (e and (not g or not eg or eg == g)) and not (g and S and S.ByGUID(g)) then v.pre = (v.pre or 0) + 1 end
   -- accounts
   Ledger.Accrue(db, r, ee, j, s)
   db.n = db.n + 1
