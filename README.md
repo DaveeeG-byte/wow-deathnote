@@ -1,4 +1,4 @@
-# DeathNote 1.2.1
+# DeathNote 1.2.2
 
 An addon for WoW Forever (Interface 16001). In open-world PvP it writes down who killed you, shows your killers as a
 book and warns you when one of them is in sight again. Confirmed kills are shared silently with your guildmates (the
@@ -12,20 +12,24 @@ post your own bounties. Changes per version: `CHANGELOG.md`.
 - `tests/` logic tests (`bash tests/run.sh`), `tests/ui/` UI tests (`bash tests/ui/run.sh`), both run with luajit;
   `tests/fixtures/` holds real SavedVariables from 1.0.1 as a migration case, and `addon-1.1.0/` and `addon-1.2.0/` as
   old clients for the mixed-version tests
+- `DeathNote/Libs/` embedded libraries (see below)
+- `tests/ui/layout_guard.lua` checks every view in all 21 languages for overlapping or cut text (1.2.2);
+  `tests/test_plates_libs.lua` and `tests/ui/minimap_real_libs.lua` (loader `tests/ui/real_libs.lua`) check the
+  nameplate status and the minimap button with the real embedded libraries (1.2.2)
 - `tests/ui/make_media.sh` rebuilds the textures (ImageMagick), `tests/ui/make_sounds.sh` the sounds
 - `TRANSLATING.md` how to translate the addon
 
 ## Commands
-`/dn` open/close the book · `/dn add <Name [Surname]>` add a killer by hand · `/dn del <Name>` strike them ·
+`/dn` open/close the book · `/dn add <Name [Surname]>` add a killer by hand · `/dn del <Name [Surname]>` strike them ·
 `/dn quiet` alarm off/on · `/dn test` test alarm · `/dn guild` guild book status · `/dn friends` friends' book status ·
 `/dn sync` sync guild and friends now · `/dn hunt <Name [Surname]>` put on the hit list (no name: show the hit list) ·
-`/dn calloff <Name>` call off your own hunt · `/dn bounty <Name [Surname]> <gold>` post your own bounty (no gold or 0:
-take it back; nothing at all: list your own) · `/dn lang <code|auto>` language of the book (after `/reload`) ·
-`/dn probe` troubleshooting · `/dn debug` detailed log of every death · `/dn help`. Same thing: `/deathnote`,
-`/todesliste`, `/deathlist`. The English subcommands work in every language
-(`help quiet guild friends test sync add del hunt calloff bounty lang`); the German ones (`hilfe still gilde freunde
-jagd abblasen kopfgeld sprache`) keep working too. On the first login (once per account) a greeting line shows in chat
-5 s later, never in combat.
+`/dn calloff <Name [Surname]>` call off your own hunt · `/dn bounty <Name [Surname]> <gold>` post your own bounty (no
+gold or 0: take it back; nothing at all: list your own) · `/dn lang <code|auto>` language of the book (after `/reload`)
+· `/dn probe` troubleshooting (`/dn probe combatlog` also tries the combat log) · `/dn debug` detailed log of every
+death · `/dn help`. Same thing: `/deathnote`, `/todesliste`, `/deathlist`. The English subcommands work in every
+language (`help quiet guild friends test sync add del hunt calloff bounty lang`, plus the aliases `?`, `mute`, `rm`,
+`delete` and `language`); the German ones (`hilfe still ruhe gilde freunde jagd abblasen kopfgeld sprache`) keep
+working too. On the first login (once per account) a greeting line shows in chat 5 s later, never in combat.
 
 ## Languages (1.2.0)
 21 languages. The default is the client's language (`enGB` counts as English, `esMX` as Spanish, `ptPT` as
@@ -198,6 +202,22 @@ books). The state of "More" is remembered. Quick off: `/dn quiet`.
 | `UI.lua` | the book: Wanted, Unsolved, Death Log, Guild, House Rules, How it works |
 | `Extras.lua` | tooltip line, messages after a death, revenge and guild deaths, new hit list targets |
 | `Humor.lua` | dry remarks, milestones, hidden commands (German and English only) |
+| `Libs/` | embedded LibStub, CallbackHandler, LibDataBroker and LibDBIcon for the minimap button (1.2.2) |
+
+## Embedded libraries (1.2.2)
+The minimap button is a standard LibDBIcon-1.0 button with a LibDataBroker-1.1 launcher, so minimap button collectors
+recognise it. Its position and "Show minimap button" carry over from 1.2.1. The libraries sit unmodified in
+`DeathNote/Libs/` and load through `Libs/embeds.xml` before `Core.lua`; LibStub loads each library only once per client,
+the newest minor of all installed addons wins. Without them DeathNote falls back to its own button.
+
+| Library | Minor | License |
+|---|---|---|
+| LibStub | 2 | Public Domain (header of `LibStub.lua`) |
+| CallbackHandler-1.0 | 8 | Ace3 style BSD license, `CallbackHandler-1.0/LICENSE.txt` |
+| LibDataBroker-1.1 | 4 | by tekkub, https://github.com/tekkub/libdatabroker-1-1 (no license file upstream) |
+| LibDBIcon-1.0 | 57 | Ace3 style BSD license, `LibDBIcon-1.0/LICENSE.txt` |
+
+Details: `DeathNote/Libs/README.txt`. The release zip contains the folder with its license files.
 
 ## Guild protocol (version 1)
 1. Prefix `DeathNote`, GUILD channel only, silent addon messages, no visible chat.
