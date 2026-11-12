@@ -4574,7 +4574,18 @@ local function UpdateLibButton(lib)
   if type(db) ~= "table" then return true end
   local b = LibButton()
   if not b then
-    if not pcall(lib.Register, lib, LDB_NAME, ldbObj, db) then return false end
+    if not pcall(lib.Register, lib, LDB_NAME, ldbObj, db) then
+      -- LibDBIcon lists the button before it is built: hide the half-built one and take it off the list, so
+      -- neither the library nor button collectors keep it next to the own button
+      pcall(function()
+        local half = type(lib.objects) == "table" and lib.objects[LDB_NAME]
+        if half then
+          lib.objects[LDB_NAME] = nil
+          half:Hide()
+        end
+      end)
+      return false
+    end
     b = LibButton()
     if not b then return false end
   elseif b.db ~= db then
