@@ -1140,16 +1140,17 @@ end
 ---------------------------------------------------------------------------
 -- The honour line (fallback)
 ---------------------------------------------------------------------------
-local honorPattern, honorPatternOf
+local honorPattern, honorOrder, honorPatternOf
 local function pattern()
   local fmt = _G.COMBATLOG_HONORGAIN
   if IsSecret(fmt) or type(fmt) ~= "string" then return nil end
   if honorPatternOf ~= fmt then
     local A = ns.Attribution
-    honorPattern = A and A.FormatToPattern and A.FormatToPattern(fmt) or nil
+    honorPattern, honorOrder = nil, nil
+    if A and A.FormatToPattern then honorPattern, honorOrder = A.FormatToPattern(fmt) end
     honorPatternOf = fmt
   end
-  return honorPattern
+  return honorPattern, honorOrder
 end
 Ledger.HonorPattern = pattern
 
@@ -1210,9 +1211,10 @@ function Ledger.OnHonorGain(text)
   probeCounts.honor = probeCounts.honor + 1
   text = Str(text)
   if not text then return false, "secret" end
-  local p = pattern()
+  local p, order = pattern()
   local name, rank, honor
-  if p then name, rank, honor = text:match(p) end
+  local A = ns.Attribution
+  if p and A and A.MatchArgs then name, rank, honor = A.MatchArgs(text, p, order) end
   if not name then
     probeCounts.honorPlain = probeCounts.honorPlain + 1
     local c = newCase("honor")

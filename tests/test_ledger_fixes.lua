@@ -503,4 +503,40 @@ test("Own release, own bounty and my own death by him: no hit list, no bounty, n
   eq(#M.errors, 0, M.errors[1])
 end)
 
+---------------------------------------------------------------------------
+-- Positions in the client's format ("%2$s ... %1$s"), precision ("%.2f") (finding 15)
+---------------------------------------------------------------------------
+test("FormatToPattern and MatchArgs: arguments in their own order, %.2f understood", function()
+  fresh()
+  local A = ns.Attribution
+  local p, o = A.FormatToPattern("(%2$s) %1$s dies. Honor: %3$d")
+  eq(table.concat(o, ","), "2,1,3")
+  local n, r, h = A.MatchArgs("(Rang Drei) Anna Ast dies. Honor: 12", p, o)
+  eq(n, "Anna Ast"); eq(r, "Rang Drei"); eq(h, "12")
+  p, o = A.FormatToPattern("%s dies, honorable kill Rank: %s (Estimated Honor Points: %d)")
+  eq(table.concat(o, ","), "1,2,3")
+  p, o = A.FormatToPattern("%s gains %.2f honor")
+  eq(A.MatchArgs("Anna gains 12.50 honor", p, o), "Anna")
+  eq(A.MatchArgs("nothing like it", p, o), nil)
+end)
+
+test("Honour line with positions: the victim is the first argument (fallback on), the book's revenge too", function()
+  fresh()
+  ns.Ledger.HONOR_FALLBACK = true
+  _G.COMBATLOG_HONORGAIN = "(%2$s) %1$s dies. Honor: %3$d"
+  seen("Anna", "Ast", 40)
+  M.FireEvent("CHAT_MSG_COMBAT_HONOR_GAIN", "(Rang Drei) Anna Ast dies. Honor: 12"); M.Advance(3)
+  local keys = {}
+  for k in pairs(ns.Ledger.DB().victims) do keys[#keys + 1] = k end
+  eq(table.concat(keys, ","), "Anna-Ast")
+  -- Attribution reads the same line for revenge on a listed enemy I fought
+  fresh()
+  _G.COMBATLOG_HONORGAIN = "(%2$s) %1$s dies. Honor: %3$d"
+  local g = seen("Grimm", "Bart", 40)
+  ns.Store.ApplyKill({ name = "Grimm", surname = "Bart", guid = g }, { t = time() - 100 }, true)
+  M.units.target = M.units["nameplate" .. plate]; M.FireEvent("PLAYER_TARGET_CHANGED")
+  M.FireEvent("CHAT_MSG_COMBAT_HONOR_GAIN", "(Rang Drei) Grimm Bart dies. Honor: 12")
+  eq(ns.Store.Get("Grimm-Bart").revenge, 1, "revenge on the right name")
+end)
+
 M.done("ledger_fixes")

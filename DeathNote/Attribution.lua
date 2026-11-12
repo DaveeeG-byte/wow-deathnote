@@ -212,18 +212,24 @@ function A.Decide(stages, suspects, opts)
   return res
 end
 
--- Turns a Blizzard format string ("You have slain %s!") into a Lua pattern with captures.
+-- Turns a Blizzard format string ("You have slain %s!") into a Lua pattern with captures. Second value: order[i] =
+-- the argument number of capture i ("%2$s ... %1$s" in some languages puts the arguments in another order; 1.3.0).
+-- %s, %d, %i, %u and %f/%g with a precision ("%.2f") are understood.
 function A.FormatToPattern(fmt)
   if type(fmt) ~= "string" or fmt == "" then return nil end
-  local out, i, n = {}, 1, #fmt
+  local out, order, i, n, nextArg = {}, {}, 1, #fmt, 1
   while i <= n do
     local c = fmt:sub(i, i)
     if c == "%" then
-      local spec = fmt:match("^%%%d?%$?([sd])", i)
+      local pos = fmt:match("^%%(%d+)%$", i)
+      local j = i + 1 + (pos and (#pos + 1) or 0)
+      local prec, spec = fmt:match("^([%.%d]*)([sdiufg])", j)
       if spec then
-        local len = #fmt:match("^%%%d?%$?[sd]", i)
-        out[#out + 1] = spec == "d" and "([%d%.,]+)" or "(.+)"
-        i = i + len
+        out[#out + 1] = spec == "s" and "(.+)" or "([%d%.,]+)"
+        local arg = tonumber(pos)
+        if not arg then arg = nextArg; nextArg = nextArg + 1 end
+        order[#order + 1] = arg
+        i = j + #prec + 1
       else
         out[#out + 1] = "%%"
         i = i + ((fmt:sub(i + 1, i + 1) == "%") and 2 or 1)
@@ -236,7 +242,22 @@ function A.FormatToPattern(fmt)
       i = i + 1
     end
   end
-  return "^" .. table.concat(out) .. "$"
+  return "^" .. table.concat(out) .. "$", order
+end
+
+-- The arguments of a line in their own order (1.3.0): text matched against FormatToPattern(fmt). Returns nil when
+-- the line does not match, else arg1, arg2, arg3.
+function A.MatchArgs(text, pattern, order)
+  if type(text) ~= "string" or type(pattern) ~= "string" then return nil end
+  local caps = { text:match(pattern) }
+  if caps[1] == nil then return nil end
+  if type(order) ~= "table" then return caps[1], caps[2], caps[3] end
+  local args = {}
+  for k = 1, #caps do
+    local a = order[k]
+    if a and args[a] == nil then args[a] = caps[k] end
+  end
+  return args[1], args[2], args[3]
 end
 
 ---------------------------------------------------------------------------
@@ -870,11 +891,10 @@ local patterns
 
 local function getPatterns()
   if patterns then return patterns end
-  patterns = {
-    slain = A.FormatToPattern(_G.SELFKILLOTHER),
-    dies = A.FormatToPattern(_G.UNITDIESOTHER),
-    honor = A.FormatToPattern(_G.COMBATLOG_HONORGAIN),
-  }
+  patterns = { order = {} }
+  for k, g in pairs({ slain = "SELFKILLOTHER", dies = "UNITDIESOTHER", honor = "COMBATLOG_HONORGAIN" }) do
+    patterns[k], patterns.order[k] = A.FormatToPattern(_G[g])
+  end
   return patterns
 end
 
@@ -945,13 +965,13 @@ function A.OnHostileDeath(text)
   local Store = ns.Store
   if not Store or next(Store.All()) == nil then return false end
   local P = getPatterns()
-  local who = P.slain and text:match(P.slain)
+  local who = P.slain and A.MatchArgs(text, P.slain, P.order.slain)
   if who then
     local key = nameToListed(who)
     if key then return A.Revenge(key, "slain") end
     return false
   end
-  who = P.dies and text:match(P.dies)
+  who = P.dies and A.MatchArgs(text, P.dies, P.order.dies)
   if who then
     local key = nameToListed(who)
     if key and engaged(key, A.REVENGE_ENGAGE, true) then return A.Revenge(key, "dies") end
@@ -963,7 +983,7 @@ function A.OnHonorGain(text)
   text = Str(text)
   local P = getPatterns()
   if not text or not P.honor then return false end
-  local who = text:match(P.honor)
+  local who = A.MatchArgs(text, P.honor, P.order.honor)
   local key = who and nameToListed(who)
   if key and engaged(key, A.REVENGE_ENGAGE) then return A.Revenge(key, "honor") end
   return false
