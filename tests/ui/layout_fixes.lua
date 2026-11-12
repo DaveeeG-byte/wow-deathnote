@@ -288,5 +288,50 @@ for _, code in ipairs({ "enUS", "deDE", "frFR", "esES", "itIT", "ptBR", "ruRU", 
   K.check(code .. " B04 the word 'strike out' is whole", not E.strike.text:IsTruncated(), E.strike.text._text)
 end
 
+------------------------------------------------------------------------
+-- B05: a hit area made only for a tooltip (Look.TipIfCut on a frame without mouse) takes the hover but no click:
+-- a right click on the tally line of the poster opens the poster menu, the tooltip of a cut tally still shows
+------------------------------------------------------------------------
+do
+  local ns = K.world("deDE")
+  local BM, G = K.BM, K.G
+  local t = _G.time()
+  local k = ns.Store.AddManual("Anna", "Beispiel")
+  ns.Store.ApplyKill({ name = "Anna", surname = "Beispiel", class = "MAGE", level = 60 }, { t = t - 86400, zone = "Z" }, true)
+  K.tick(30); for _ = 1, 4 do K.settle() end
+  ns:Fire("TOGGLE_UI"); K.tick(); K.settle()
+  ns.UI.ShowEnemy(k); K.tick(); K.settle()
+  local E = K.find(function(f) return f.bounty and f.stampRache end)
+  local function depth(f) local n = 0; while f._parent do n = n + 1; f = f._parent end return n end
+  -- the frame that gets a click at a spot of fs: the deepest visible click-enabled frame of the poster there
+  local function target(fs)
+    local l, b, _, tp = BM.RectUI(fs)
+    local x, y = l + 20, (b + tp) / 2
+    local best, bd
+    for _, f in ipairs(BM.frames) do
+      if (f._kind == "Frame" or f._kind == "Button") and f._mouse and f:IsVisible() and K.under(f, E) then
+        local fl, fb, fr, ft = BM.RectUI(f)
+        if fl and x >= fl and x <= fr and y >= fb and y <= ft then
+          local d = depth(f)
+          if not best or d >= bd then best, bd = f, d end
+        end
+      end
+    end
+    return best
+  end
+  local hit = target(E.tally)
+  local s = hit and hit._scripts or {}
+  if s.OnMouseUp then s.OnMouseUp(hit, "RightButton") elseif s.OnClick then s.OnClick(hit, "RightButton") end
+  K.tick()
+  local menu = rawget(G, "DeathNoteMenu")
+  K.check("B05 right click on the tally line opens the poster menu", menu and menu:IsShown(), hit and hit._src)
+  if menu and menu:IsShown() then menu.blocker._scripts.OnClick(menu.blocker); K.tick() end
+  K.check("B05 the tooltip area of the tally takes the hover but no click", E.tallyHit._motion == true and E.tallyHit._mouse == false,
+    ("motion %s, click %s"):format(tostring(E.tallyHit._motion), tostring(E.tallyHit._mouse)))
+  E.tally.cut = true
+  local tip = K.hover(E.tallyHit)
+  K.check("B05 a cut tally still shows whole in its tooltip", tip ~= "" and tip == E.tally.full, tip)
+end
+
 io.write(("Layout fixes 1.2.2 (hunt B): %d green, %d red\n"):format(K.ok, K.bad))
 os.exit(K.bad == 0 and 0 or 1)

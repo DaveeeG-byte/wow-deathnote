@@ -548,7 +548,13 @@ function Look.TipIfCut(owner, fs)
     owner.cutHooked = true
     if owner:GetScript("OnEnter") then owner:HookScript("OnEnter", TipEnter) else owner:SetScript("OnEnter", TipEnter) end
     if owner:GetScript("OnLeave") then owner:HookScript("OnLeave", TipLeave) else owner:SetScript("OnLeave", TipLeave) end
-    if owner.EnableMouse and not owner:IsMouseEnabled() then owner:EnableMouse(true) end
+    if owner.EnableMouse and not owner:IsMouseEnabled() then
+      -- a hit area made only for the tooltip: it takes the hover, clicks go on to what lies below (right click on
+      -- the poster opens its menu). Attested in Forever addons: ForeverAuras RegionTypes/Text.lua:203 (its
+      -- tooltipFrame), WhatsTraining Forever/Settings.lua:86
+      owner:EnableMouse(true)
+      if owner.SetMouseClickEnabled then owner:SetMouseClickEnabled(false) end
+    end
   end
   owner.cutFs = fs
   fs.tipOwner = owner

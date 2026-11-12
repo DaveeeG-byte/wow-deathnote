@@ -65,7 +65,8 @@ local REGION = set([[Show Hide SetShown IsShown IsVisible SetPoint ClearAllPoint
 local FRAME = set([[SetScript GetScript HookScript HasScript CreateTexture CreateMaskTexture CreateFontString
   SetFrameStrata GetFrameStrata SetFrameLevel GetFrameLevel EnableMouse IsMouseEnabled EnableMouseWheel SetMovable
   RegisterForDrag StartMoving StopMovingOrSizing SetUserPlaced SetClampedToScreen SetScale GetScale Raise Lower
-  SetAttribute GetAttribute IsProtected RegisterEvent UnregisterEvent SetParent SetToplevel IsMouseOver]], REGION)
+  SetAttribute GetAttribute IsProtected RegisterEvent UnregisterEvent SetParent SetToplevel IsMouseOver
+  SetMouseClickEnabled]], REGION)   -- SetMouseClickEnabled: ForeverAuras RegionTypes/Text.lua:203, WhatsTraining Forever/Settings.lua:86
 local BUTTON = set([[RegisterForClicks SetHighlightTexture SetNormalTexture SetPushedTexture Click Enable Disable
   SetEnabled IsEnabled]], FRAME)
 local WHITELIST = {
@@ -362,8 +363,10 @@ function methods.GetFrameStrata(self)
 end
 function methods.SetFrameLevel(self, l) self._level = l end
 function methods.GetFrameLevel(self) return self._level or 5 end
-function methods.EnableMouse(self, v) self._mouse = v and true or false end
-function methods.IsMouseEnabled(self) return self._mouse end
+-- _mouse: the frame takes clicks; _motion: it takes the hover (EnableMouse sets both, SetMouseClickEnabled only clicks)
+function methods.EnableMouse(self, v) self._mouse = v and true or false; self._motion = self._mouse end
+function methods.SetMouseClickEnabled(self, v) self._mouse = v and true or false end
+function methods.IsMouseEnabled(self) return self._mouse or self._motion or false end
 -- like the client: a dragged, named frame ends up in layout-local.txt until SetUserPlaced(false)
 function methods.StartMoving(self) self._moving = true; self._userPlaced = true end
 function methods.StopMovingOrSizing(self) self._moving = false end
