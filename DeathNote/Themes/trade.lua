@@ -60,8 +60,9 @@ ns.Theme.Register("trade", {
     stamp       = "#a81c1c80",
     stampNotice = "#a81c1c80",
   },
-  -- headings in Nimrod (form print), names in Friz Quadrata (block letters); title, body, notes as the black book
-  font = { head = "type", hand = "body" },
+  -- headings in Nimrod (form print); names stay in the hand of the black book: Friz Quadrata for names (concept)
+  -- also widens the hand-written input fields (release reason without a tooltip: a finding of the layout hunt)
+  font = { head = "type" },
   sound = { alert = "glocke" },    -- shop door bell
   words = "trade",
 })

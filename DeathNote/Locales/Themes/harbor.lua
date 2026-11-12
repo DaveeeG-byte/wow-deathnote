@@ -32,7 +32,7 @@ Locale.RegisterWords("harbor", "enUS", function(T)
   T.ALERT_TITLE_GUILD   = "BANE OF THE CREW IN SIGHT"
   T.ALERT_TITLE_FRIENDS = "BANE OF FRIENDS IN SIGHT"
   T.ALERT_TITLE_HUNT    = "PRIZE IN SIGHT"
-  T.BOUNTY_GOLD         = "{count} DOUBLOONS"
+  T.BOUNTY_GOLD         = "{count} GUINEAS"   -- currency word at most 8 letters (DOUBLOONS ends in an ellipsis)
   T.BOUNTY_SILVER       = "{count} PENNIES"
   T.WELCOME             = "Signed on. The bay pays per head, the ledger keeps the list. Open it with /dn or the minimap button."
   T.EMPTY_WANTED_HEAD   = "No bounties yet."

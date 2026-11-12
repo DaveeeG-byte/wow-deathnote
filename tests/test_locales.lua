@@ -663,7 +663,7 @@ end)
 
 for _, f in ipairs(WORD_FILES) do
   local id = f:gsub("%.lua$", "")
-  test("Theme-Woerter " .. id .. ": Schauwoerter, Grenzen des Grundschluessels, Stempel 2 x 12, deDE und enUS gleich", function()
+  test("Theme-Woerter " .. id .. ": Schauwoerter, Grenzen des Grundschluessels, Stempel 2 x 12, Waehrung 8, deDE und enUS gleich", function()
     local ns = newClient()
     assert(loadfile(DIR .. "Locales/Themes/" .. f))("DeathNote", ns)
     local L2 = ns.Locale
@@ -687,6 +687,11 @@ for _, f in ipairs(WORD_FILES) do
               end
             else
               for _, pr in ipairs(checkText(code, k, v)) do bad[#bad + 1] = code .. " " .. k .. ": " .. pr end
+            end
+            -- the currency word of the book's value: at most 8 characters (concept 2.1: longer ends in an ellipsis)
+            if (k == "BOUNTY_GOLD" or k == "BOUNTY_SILVER") and type(v) == "string" then
+              local word = v:gsub("{count}", ""):gsub("^%s+", ""):gsub("%s+$", "")
+              if Locale.Measure(word, code) > 8 then bad[#bad + 1] = ("%s %s: Waehrungswort '%s' laenger als 8"):format(code, k, word) end
             end
             if k:find("^STAMP_") and type(v) == "string" then
               local n, long = stampLines(v, code)
