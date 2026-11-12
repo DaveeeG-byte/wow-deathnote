@@ -1,21 +1,21 @@
 local ADDON, ns = ...
 
--- Naeherungs-Alarm: Fahndungs-Popup oben mittig, Ton, roter Randblitz, Klick visiert an.
--- Dazu ns.Look: gemeinsame Optik-Helfer fuer Alert, UI und Extras (Schriften, Texturen, Farben).
+-- Proximity alarm: wanted popup at the top centre, sound, red edge flash, a click targets.
+-- Also ns.Look: shared look helpers for Alert, UI and Extras (fonts, textures, colours).
 
 local Look = {}
 ns.Look = Look
--- Texte (1.2.0): ns.L ist ab ADDON_LOADED gefuellt; L.KEY nur in Funktionen lesen, nie auf Dateiebene
+-- Texts (1.2.0): ns.L is filled from ADDON_LOADED on; read L.KEY inside functions only, never at file level
 local L, Fmt = ns.L, ns.F
 
--- Medienpfad immer ueber den Ordnernamen (ADDON), nie fest verdrahtet
+-- Media path always through the folder name (ADDON), never hard-wired
 local MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\"
 Look.MEDIA = MEDIA
 Look.TEX = {
-  paper   = MEDIA .. "paper.tga",     -- Fahndungsplakat
-  page    = MEDIA .. "page.tga",      -- Notizbuchseite
-  cover   = MEDIA .. "cover.tga",     -- schwarzer Ledereinband
-  ink     = MEDIA .. "ink.tga",       -- Federstrich
+  paper   = MEDIA .. "paper.tga",     -- wanted poster
+  page    = MEDIA .. "page.tga",      -- notebook page
+  cover   = MEDIA .. "cover.tga",     -- black leather cover
+  ink     = MEDIA .. "ink.tga",       -- quill stroke
   mugshot = MEDIA .. "mugshot.tga",
   edge    = MEDIA .. "edge.tga",
   nr1     = MEDIA .. "stamp_nr1.tga",
@@ -23,57 +23,57 @@ Look.TEX = {
   pardon  = MEDIA .. "stamp_pardon.tga",
   suspect = MEDIA .. "stamp_suspect.tga",
   guild   = MEDIA .. "stamp_guild.tga",
-  hunt    = MEDIA .. "stamp_hunt.tga",    -- ZUR JAGD FREIGEGEBEN (Abschussliste, 1.2.0)
+  hunt    = MEDIA .. "stamp_hunt.tga",    -- stamp "ZUR JAGD FREIGEGEBEN" (hit list, 1.2.0)
   check   = MEDIA .. "check.tga",
   pin     = MEDIA .. "pin.tga",
   skull   = MEDIA .. "skull.tga",
   icon    = MEDIA .. "icon.tga",
   tape    = MEDIA .. "tape.tga",
-  tri     = MEDIA .. "tri.tga",       -- Dreieck auf/zu (Gilde nach Mitglied)
+  tri     = MEDIA .. "tri.tga",       -- triangle open/closed (guild by guildmate)
   white   = "Interface\\Buttons\\WHITE8X8",
   border  = "Interface\\Tooltips\\UI-Tooltip-Border",
   classes = "Interface\\Glues\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES",
 }
--- Nur Client-Schriften (Pfade wie in OpenMap bzw. ElvUI-LibSharedMedia belegt), je Liste der Reihe nach
--- versucht, zuletzt GameFontNormal.
+-- Client fonts only (paths as used by OpenMap and ElvUI's LibSharedMedia), each list tried in order,
+-- GameFontNormal last.
 Look.FONT = {
-  title = { "Fonts\\SKURRI_CYR.TTF", "Fonts\\SKURRI.TTF" },        -- kantig: Titel, Alarm-Kopf
-  hand  = { "Fonts\\MORPHEUS.TTF", "Fonts\\MORPHEUS_CYR.TTF" },    -- Feder-Handschrift, WANTED
-  body  = { "Fonts\\FRIZQT__.TTF" },                                -- Beschriftung
-  type  = { "Fonts\\NIM_____.ttf" },                                -- Aktenvermerk
+  title = { "Fonts\\SKURRI_CYR.TTF", "Fonts\\SKURRI.TTF" },        -- angular: titles, alarm head
+  hand  = { "Fonts\\MORPHEUS.TTF", "Fonts\\MORPHEUS_CYR.TTF" },    -- quill handwriting, WANTED
+  body  = { "Fonts\\FRIZQT__.TTF" },                                -- labels
+  type  = { "Fonts\\NIM_____.ttf" },                                -- file note
 }
 Look.FONT.head = Look.FONT.hand
--- 1.2.0: Schriften je Schriftsystem der aktiven Sprache (Locale.FONTS); Latein-West bleibt wie oben
+-- 1.2.0: fonts per script of the active language (Locale.FONTS); Latin West stays as above
 if ns.Locale and ns.Locale.OnActivate then
   ns.Locale.OnActivate(function()
     for _, kind in ipairs({ "title", "hand", "body", "type" }) do Look.FONT[kind] = ns.Locale.FontList(kind) end
     Look.FONT.head = Look.FONT.hand
   end)
 end
--- Farbwelt: Schwarz, Knochenweiss, Tintenschwarz, Blutrot als einzige Akzentfarbe
+-- Palette: black, bone white, ink black, blood red as the only accent
 Look.INK   = { 0.08, 0.07, 0.07 }
-Look.RED   = { 0.72, 0.04, 0.04 }       -- grosse Schrift (ab 16 pt) und Flaechen auf Papier
-Look.RED_INK = { 0.55, 0.03, 0.03 }     -- kleine rote Schrift auf Papier (Kontrast ab 4,5:1)
-Look.RED_ON_BLACK = { 1.0, 0.40, 0.33 }   -- rote Schrift auf dem schwarzen Einband, Popup und Meldung
+Look.RED   = { 0.72, 0.04, 0.04 }       -- large text (16 pt and up) and areas on paper
+Look.RED_INK = { 0.55, 0.03, 0.03 }     -- small red text on paper (contrast 4.5:1 or more)
+Look.RED_ON_BLACK = { 1.0, 0.40, 0.33 }   -- red text on the black cover, popup and notice
 Look.BONE  = { 0.93, 0.90, 0.82 }
 Look.CREAM = Look.BONE
 Look.FADED = { 0.38, 0.35, 0.31 }
 Look.BLACK = { 0.05, 0.045, 0.045 }
-Look.TAB_OFF = { 0.62, 0.59, 0.54 }     -- inaktive Reiter auf dem Einband
-Look.WARN = { 1.0, 0.62, 0.18 }         -- Warnfarbe im Popup (Ziel hoeher als du), auf Schwarz
--- Tinte auf Papier: Deckkraft je Rolle. Gemessen gegen Seite und Plakat (tests/ui Kontrast-Waechter):
--- jede Rolle fuer kleine Schrift haelt 4,5:1, "hand" und "off" gelten nur fuer Schrift ab 16 pt.
+Look.TAB_OFF = { 0.62, 0.59, 0.54 }     -- inactive tabs on the cover
+Look.WARN = { 1.0, 0.62, 0.18 }         -- warning colour in the popup (target above your level), on black
+-- Ink on paper: opacity per role. Measured against page and poster (contrast guard in tests/ui):
+-- every role for small text keeps 4.5:1, "hand" and "off" are for text of 16 pt and up only.
 Look.TONE = { ink = 1, label = 0.85, sub = 0.8, hint = 0.8, hand = 0.7, off = 0.5 }
 
 local issecret = issecretvalue or function() return false end
 function Look.Secret(v) return issecret(v) and true or false end
--- Wahrheitswert, der ein Secret wie "falsch" behandelt (nie boolean-Test auf Secrets)
+-- Truth value that treats a secret as false (never a boolean test on secrets)
 function Look.True(v)
   if issecret(v) then return false end
   return v and true or false
 end
 
--- list (1.2.0, optional): eigene Schriftliste statt Look.FONT[kind], z. B. fuer den Eigennamen einer Sprache
+-- list (1.2.0, optional): own font list instead of Look.FONT[kind], e.g. for a language's own name
 function Look.Font(fs, kind, size, flags, list)
   -- 1.2.2: kind, size and flags stay on the string (Look.FitText steps through the sizes of the same font)
   if not list then fs.fontKind, fs.fontSize, fs.fontFlags = kind, size, flags end
@@ -81,20 +81,20 @@ function Look.Font(fs, kind, size, flags, list)
   for i = 1, #list do
     if fs:SetFont(list[i], size or 12, flags or "") then return fs end
   end
-  -- Standardschrift des Clients (deckt dessen Sprache), dann das Schriftobjekt
+  -- the client's standard font (covers its language), then the font object
   local std = ns.Locale and ns.Locale.Global and ns.Locale.Global("STANDARD_TEXT_FONT")
   if type(std) == "string" and fs:SetFont(std, size or 12, flags or "") then return fs end
   fs:SetFontObject(GameFontNormal)
   return fs
 end
 
--- Schriftliste fuer einen Text in einer bestimmten Sprache (Sprachliste der Hausordnung)
+-- Font list for a text in a given language (language list of the house rules)
 function Look.FontOf(code, kind)
   if ns.Locale and ns.Locale.FontList then return ns.Locale.FontList(kind or "body", code) end
   return Look.FONT[kind or "body"]
 end
 
--- FontString in einem Rutsch
+-- FontString in one go
 function Look.Text(parent, kind, size, color, flags, layer)
   local fs = parent:CreateFontString(nil, layer or "OVERLAY")
   Look.Font(fs, kind, size, flags)
@@ -104,7 +104,7 @@ function Look.Text(parent, kind, size, color, flags, layer)
   return fs
 end
 
--- Textur mit Rueckfallfarbe (kein gruenes Fehlquadrat, falls die Datei fehlt)
+-- Texture with a fallback colour (no green error square if the file is missing)
 function Look.Tex(tex, path, r, g, b, a)
   local ok = tex:SetTexture(path)
   if ok == false then tex:SetColorTexture(r or 0.5, g or 0.4, b or 0.3, a or 1) end
@@ -136,8 +136,8 @@ function Look.Name(e)
   return e.display or e.name or e.key or "?"
 end
 
--- Name fuer /targetexact und die Chat-Eingabe. nil, wenn er Steuerzeichen, "|" oder "/" enthaelt oder zu
--- lang ist: ein Zeilenumbruch wuerde im Makro des Anvisieren-Knopfs eine weitere Befehlszeile ergeben.
+-- Name for /targetexact and the chat input. nil when it holds control characters, "|" or "/" or is too
+-- long: a line break would add another command line to the macro of the target button.
 local TARGET_MAX = 60
 local function SafeTargetName(n)
   if type(n) ~= "string" or Look.Secret(n) or n == "" or #n > TARGET_MAX then return nil end
@@ -154,18 +154,18 @@ function Look.TargetName(e)
 end
 
 ------------------------------------------------------------------------
--- Bausteine fuer Text: jede wiederkehrende Form genau einmal (Waechter in tests/ui pruefen das)
+-- Text building blocks: every recurring form exactly once (guards in tests/ui check this)
 ------------------------------------------------------------------------
--- Zeit: nur zwei Formen. Ago = wie lange her ("vor 2 Tagen"), When = Zeitpunkt ("11.11. 01:01").
--- Beide kommen aus der Logik (ns.Util); hier steht nur der Rueckfall fuer eine aeltere Logik.
+-- Time: two forms only. Ago = how long ago ("2 days ago"), When = point in time ("11/11 01:01").
+-- Both come from the logic (ns.Util); here is only the fallback for an older logic.
 function Look.Ago(t)
   if type(t) ~= "number" or Look.Secret(t) then return nil end
   if ns.Util and ns.Util.Ago then return ns.Util.Ago(t) end
   return Look.When(t)
 end
 
--- Notiz wie angezeigt (1.2.0): eigener Text, sonst der Satz einer Uebernahme aus dem Gildenbuch in der
--- aktiven Sprache (gespeichert ist nur ein Merker, Util.NoteOf)
+-- Note as shown (1.2.0): own text, else the sentence for an entry taken from the guild book in the
+-- active language (only a marker is stored, Util.NoteOf)
 function Look.NoteOf(e)
   if ns.Util and ns.Util.NoteOf then return ns.Util.NoteOf(e) end
   return type(e) == "table" and type(e.note) == "string" and e.note or ""
@@ -177,7 +177,7 @@ function Look.When(t)
     local ok, s = pcall(ns.Util.When, t)
     if ok and type(s) == "string" then return s end
   end
-  -- Jahr nur, wenn es nicht das laufende ist; Formatzeilen aus der Sprachdatei, geprueft (Util.FmtDate)
+  -- year only when it is not the current one; format lines from the language file, checked (Util.FmtDate)
   local key = date("%Y", t) ~= date("%Y", time()) and "TIME_FMT_WHEN_YEAR" or "TIME_FMT_WHEN"
   if ns.Util and ns.Util.FmtDate then return ns.Util.FmtDate(key, t) end
   local fmt = L[key]
@@ -185,7 +185,7 @@ function Look.When(t)
   return date(fmt, t)
 end
 
--- Teile einer Unterzeile mit " · " verbinden; leere und nil-Teile fallen weg
+-- Join the parts of a sub line with " · "; empty and nil parts drop out
 local joinScratch = {}
 function Look.Join(...)
   local n = 0
@@ -198,25 +198,25 @@ function Look.Join(...)
   return s
 end
 
--- Zahl mit Mal-Zeichen: "3×"
+-- Number with a times sign: "3×"
 function Look.Times(n) return Fmt(L.TIMES, { count = tonumber(n) or 0 }) end
 
--- Zaehlwort: "1 Opfer", "3 Kandidaten". 1.2.0: text ist ein Sprachtext mit {count} und
--- {count|eins|mehr}; die alte Form Look.Count(n, eins, mehr) bleibt fuer aeltere Aufrufer.
+-- Count word: "1 victim", "3 candidates". 1.2.0: text is a language text with {count} and
+-- {count|one|other}; the old form Look.Count(n, one, other) stays for older callers.
 function Look.Count(n, text, many)
   n = tonumber(n) or 0
   if many == nil and type(text) == "string" and text:find("{", 1, true) then return Fmt(text, { count = n }) end
   return n .. " " .. (n == 1 and text or (many or text))
 end
 
--- Kollegen erscheinen in Zeilen, Meldungen und Tooltip-Zeilen nur mit dem Vornamen
+-- Guildmates appear in rows, notices and tooltip lines with their first name only
 function Look.First(name)
   if type(name) ~= "string" or Look.Secret(name) then return "?" end
   return name:match("^(%S+)") or name
 end
 
--- Rolle einer Tat: "kill" (Todesstoss), "assist" (belegt beteiligt), "suspect" (nur vermutet).
--- Aeltere Logik ohne Rolle: sicher = Todesstoss, sonst Verdacht.
+-- Role of a deed: "kill" (killing blow), "assist" (proven involvement), "suspect" (only suspected).
+-- Older logic without a role: sure = killing blow, else suspicion.
 function Look.Role(d)
   if type(d) ~= "table" then return "suspect" end
   local r = d.role
@@ -229,7 +229,7 @@ function Look.Assists(e)
   return tonumber(e.assists) or 0
 end
 
--- Gewicht fuer Schwellen (Alarm ab n Toden): Todesstoesse plus Beteiligungen
+-- Weight for thresholds (alarm from n deaths on): killing blows plus assists
 function Look.Weight(e)
   if type(e) ~= "table" then return 0 end
   local S = ns.Store
@@ -240,7 +240,7 @@ function Look.Weight(e)
   return (tonumber(e.kills) or 0) + Look.Assists(e)
 end
 
--- Kernzahl eines Eintrags in Worten: "2× getötet · 1× beteiligt", "unter Verdacht", "von Hand eingetragen"
+-- Core number of an entry in words: "2× killed · 1× involved", "under suspicion", "added by hand"
 function Look.Tally(e)
   if type(e) ~= "table" then return "" end
   if e.status == "suspect" then return L.TALLY_SUSPECT end
@@ -250,12 +250,12 @@ function Look.Tally(e)
     a > 0 and Fmt(L.TALLY_ASSISTED, { times = Look.Times(a) }))
 end
 
--- neueste Tat eines Eintrags (deaths, neueste zuerst)
+-- newest deed of an entry (deaths, newest first)
 function Look.LastDeed(e)
   return type(e) == "table" and type(e.deaths) == "table" and e.deaths[1] or nil
 end
 
--- genauester Ort: Unterzone, sonst Zone
+-- most exact place: subzone, else zone
 function Look.Place(z, sz)
   if type(sz) == "string" and sz ~= "" then return sz end
   if type(z) == "string" and z ~= "" then return z end
@@ -269,7 +269,7 @@ function Look.Setting(path, default)
   return v
 end
 
--- Scale-Animation (neue API SetScaleFrom/To, alte SetFromScale/ToScale)
+-- Scale animation (new API SetScaleFrom/To, old SetFromScale/ToScale)
 function Look.ScaleAnim(group, from, to, dur, order)
   local a = group:CreateAnimation("Scale")
   if a.SetScaleFrom then
@@ -288,7 +288,7 @@ function Look.AlphaAnim(group, from, to, dur, order, delay)
   return a
 end
 
--- Klick- und Oeffnen-Geraeusch der Oberflaeche (kurz, ungedrosselt)
+-- Click and open sound of the interface (short, not throttled)
 function Look.Sound(kind)
   if kind == "alert" or kind == "revenge" then return Look.Alarm(kind) end
   local kit = SOUNDKIT and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON
@@ -296,13 +296,13 @@ function Look.Sound(kind)
 end
 
 ------------------------------------------------------------------------
--- Alarmton: alle Alarme und Meldungen laufen ueber Look.Alarm
+-- Alarm sound: every alarm and notice goes through Look.Alarm
 ------------------------------------------------------------------------
--- Die API kennt keine Lautstaerke je Ton, nur den Kanal. Darum liegt jeder eigene Ton in fuenf
--- Pegeln als Datei vor (wie RareScanner: <name>-1..4.ogg), erzeugt von tests/ui/make_sounds.sh.
--- Dateinamen klein und ohne Umlaute; der Client unterscheidet unter Linux Gross/Klein.
--- "Kein Ton" steht vorn: der einzige Weg zur Stille (alert.sound folgt der Wahl, siehe Look.SetSound)
--- key ist gespeichert (sprachneutral), lkey der Text in der Sprachtabelle; label fuellt die Aktivierung
+-- The API knows no volume per sound, only the channel. So every own sound exists as a file in five
+-- levels (<key>_1..5.ogg, Look.SoundFile; the idea comes from RareScanner), made by tests/ui/make_sounds.sh.
+-- File names lower case and without umlauts; on Linux the client tells upper and lower case apart.
+-- "No sound" comes first: the only way to silence (alert.sound follows the choice, see Look.SetSound)
+-- key is stored (language neutral), lkey is the text in the language table; activation fills label
 Look.SOUNDS = {
   { key = "aus",        lkey = "SOUND_NONE", silent = true },
   { key = "warnung",    lkey = "SOUND_RAIDWARNING", builtin = true },
@@ -324,9 +324,9 @@ if ns.Locale and ns.Locale.OnActivate then
 end
 local CHANNEL_OK = { Master = true, SFX = true, Dialog = true, Music = true, Ambience = true }
 Look.VOLUMES = 5
-Look.SOUND_GAP = 1.5          -- hoechstens ein Alarmton je 1,5 s
+Look.SOUND_GAP = 1.5          -- at most one alarm sound per 1.5 s
 
--- Tonwahl schreibt beides: den Ton und den alten Hauptschalter alert.sound (Kein Ton = aus)
+-- Choosing a sound writes both: the sound and the old main switch alert.sound (no sound = off)
 function Look.SetSound(key)
   local s = Look.SOUND_BY_KEY[key]
   if not (s and ns.Store and ns.Store.Setting) then return end
@@ -342,7 +342,7 @@ end
 function Look.SoundChoice()
   local key = Look.Setting("alert.soundKey", "warnung")
   local s = Look.SOUND_BY_KEY[key] or Look.SOUND_BY_KEY.warnung
-  -- aeltere Einstellung "Ton beim Alarm" aus: gilt als "Kein Ton"
+  -- older setting "sound on alarm" off: counts as "no sound"
   if Look.Setting("alert.sound", true) == false then s = Look.SOUND_BY_KEY.aus end
   local vol = math.floor(tonumber(Look.Setting("alert.volume", 3)) or 3)
   if vol < 1 then vol = 1 elseif vol > Look.VOLUMES then vol = Look.VOLUMES end
@@ -351,7 +351,7 @@ function Look.SoundChoice()
   return s, vol, ch
 end
 
--- eingebauter Ton ueber SOUNDKIT, sonst Datei-ID wie DBM
+-- built-in sound through SOUNDKIT, else a file ID as DBM does
 local function PlayBuiltin(kind, ch)
   local kit = SOUNDKIT and (kind == "revenge" and SOUNDKIT.LFG_REWARDS or SOUNDKIT.RAID_WARNING)
   if kit then
@@ -367,8 +367,8 @@ end
 
 local lastPlay, previewHandle
 
--- kind: "alert" (Alarm, Gildenalarm), "revenge" (eigener Ton der Rache-Meldung), "preview" (Probe in der
--- Hausordnung, ungedrosselt, auch bei ausgeschaltetem Hauptschalter). Rueckgabe: was gespielt wurde.
+-- kind: "alert" (alarm, guild alarm), "revenge" (own sound of the revenge notice), "preview" (sample in the
+-- house rules, not throttled, also with the main switch off). Returns what was played.
 function Look.Alarm(kind)
   local preview = kind == "preview"
   if not preview then
@@ -378,7 +378,7 @@ function Look.Alarm(kind)
     lastPlay = now
   end
   local s, vol, ch = Look.SoundChoice()
-  if s.silent then return nil end                 -- "Kein Ton" gilt auch fuer die Rache-Meldung
+  if s.silent then return nil end                 -- "no sound" applies to the revenge notice too
   if kind == "revenge" then
     return PlayBuiltin("revenge", ch) and "revenge" or nil
   end
@@ -391,15 +391,15 @@ function Look.Alarm(kind)
       end
       return s.key
     end
-    -- Datei spielt nicht (fehlt, falscher Name, Format): Rueckfall auf den bisherigen Ton
+    -- file does not play (missing, wrong name, format): fall back to the built-in sound
   end
   return PlayBuiltin("alert", ch) and "warnung" or nil
 end
 
--- Schriftgrade: nur diese Stufen (Design-Regel). 1.2.2: 9 ist die Notstufe fuer Knoepfe, Stempel und Menues,
--- wenn ein Wort einer Sprache sonst nicht passt (vorher schon so im Code, jetzt in der Skala).
+-- Font sizes: these steps only (design rule). 1.2.2: 9 is the emergency step for buttons, stamps and menus
+-- when a word of a language does not fit otherwise (already so in the code before, now in the scale).
 Look.SIZE = { 9, 10, 11, 13, 16, 19, 22, 26, 46 }
--- Groessenstufen fuer Buch und Alarm
+-- Scale steps for book and alarm
 Look.SCALES = { 0.8, 0.9, 1.0, 1.15, 1.3, 1.5 }
 
 ------------------------------------------------------------------------
@@ -641,7 +641,7 @@ function Look.Page(parent, opts)
 end
 
 ------------------------------------------------------------------------
--- Gilde: jeder Zugriff auf ns.Guild nur ueber diese Helfer (Sync.lua kann fehlen)
+-- Guild: every access to ns.Guild goes through these helpers only (Sync.lua may be missing)
 ------------------------------------------------------------------------
 local GUILD_DEFAULTS = { share = true, receive = true, alert = true, announce = true, sightings = false, minKills = 1,
                          shareManual = true, alertListed = false, friends = true, alertHunt = true,
@@ -649,7 +649,7 @@ local GUILD_DEFAULTS = { share = true, receive = true, alert = true, announce = 
 
 function Look.HasGuild() return type(ns.Guild) == "table" end
 
--- ruft ns.Guild[fn](...) geschuetzt; nil, wenn es die Funktion nicht gibt oder sie wirft
+-- calls ns.Guild[fn](...) protected; nil when the function does not exist or throws
 function Look.GCall(fn, ...)
   local G = ns.Guild
   local f = type(G) == "table" and G[fn]
@@ -659,8 +659,8 @@ function Look.GCall(fn, ...)
   return nil
 end
 
--- Gildeneintrag, an dem ein anderer Char als ich beteiligt ist (Opfer oder Eintrager)?
--- Die Logik setzt g.foreign; aeltere Logik: selbst aus victims/listedBy ableiten.
+-- Guild entry that involves a char other than me (victim or lister)?
+-- The logic sets g.foreign; older logic: derive it from victims/listedBy.
 function Look.Foreign(g)
   if type(g) ~= "table" then return false end
   if g.foreign ~= nil then return g.foreign == true end
@@ -674,15 +674,15 @@ function Look.Foreign(g)
   return false
 end
 
--- Teilen-Zustand: { ok, reason, text, short } aus ns.Guild.Health, sonst aus den alten Funktionen
+-- Sharing state: { ok, reason, text, short } from ns.Guild.Health, else from the old functions
 local HEALTH_SHORT = { noguild = "HEALTH_SHORT_NOGUILD", off = "HEALTH_SHORT_OFF", prefix = "HEALTH_SHORT_BLOCKED",
                        blocked = "HEALTH_SHORT_BLOCKED", failing = "HEALTH_SHORT_FAILING", hold = "HEALTH_SHORT_HOLD",
                        quiet = "HEALTH_SHORT_ASKED", ok = "HEALTH_SHORT_ASKED" }
--- src (1.2.0): nil/"guild", "friends" oder "all" (die Logik fasst beide in einem Satz zusammen)
+-- src (1.2.0): nil/"guild", "friends" or "all" (the logic sums both up in one sentence)
 function Look.GuildHealth(src)
   local h = Look.GCall("Health", src)
   if type(h) == "table" and type(h.text) == "string" then
-    -- 1.2.0: kein Freund auf der Liste bzw. niemand zum Teilen ist kein Fehler: gedaempft statt rot
+    -- 1.2.0: no friend on the list or nobody to share with is no error: muted instead of red
     if h.reason == "nofriends" or h.reason == "nobody" then h.calm = true end
     if type(h.short) ~= "string" or h.short == "" then
       local k = HEALTH_SHORT[h.reason]
@@ -702,7 +702,7 @@ function Look.GuildHealth(src)
   return { ok = true, reason = "ok", text = Fmt(L.GUILD_HEARD, { count = n }), short = L.HEALTH_SHORT_ASKED }
 end
 
--- Gilden-Toetungen sind in Sync.lua bei 20 gedeckelt: 20 heisst "20 oder mehr"
+-- Guild kills are capped at 20 in Sync.lua: 20 means "20 or more"
 function Look.GKills(n)
   n = tonumber(n) or 0
   if n >= 20 then return Fmt(L.GKILLS_CAP, { count = 20 }) end
@@ -715,14 +715,14 @@ function Look.GuildSetting(name)
   return Look.Setting("guild." .. name, GUILD_DEFAULTS[name])
 end
 
--- Gildeneintrag nur von Hand eingetragen (keine Tat)?
+-- Guild entry only added by hand (no deed)?
 function Look.ListedOnly(g)
   if type(g) ~= "table" then return false end
   if g.listedOnly ~= nil then return g.listedOnly == true end
   return (tonumber(g.kills) or 0) == 0 and type(g.listedBy) == "table" and next(g.listedBy) ~= nil
 end
 
--- Namen aus listedBy, aelteste Eintragung zuerst; out wird wiederverwendet
+-- Names from listedBy, oldest listing first; out is reused
 function Look.ListedNames(g, out)
   out = out or {}
   for i = #out, 1, -1 do out[i] = nil end
@@ -739,7 +739,7 @@ function Look.ListedNames(g, out)
   return out
 end
 
--- Kollegen mit Vornamen: "Anna, Bert" bzw. "Anna, Bert und 3 weitere"
+-- Guildmates by first name: "Anna, Bert" or "Anna, Bert and 3 more"
 local nameHead = {}
 function Look.NameList(names, max)
   local n = #names
@@ -753,7 +753,7 @@ function Look.NameList(names, max)
   return Fmt(L.NAMELIST_MORE, { names = s, count = n - max })
 end
 
--- Rechteck eines Frames in UIParent-Einheiten (links, unten, rechts, oben) oder nil
+-- Rectangle of a frame in UIParent units (left, bottom, right, top) or nil
 function Look.Rect(f)
   if not (f and f.GetLeft and f.GetTop) then return nil end
   local ok1, l = pcall(f.GetLeft, f)
@@ -761,7 +761,7 @@ function Look.Rect(f)
   local ok3, r = pcall(f.GetRight, f)
   local ok4, t = pcall(f.GetTop, f)
   if not (ok1 and ok2 and ok3 and ok4) then return nil end
-  -- jeden Wert einzeln pruefen: ohne Anker oder vor dem Layout liefert der Client nil
+  -- check every value on its own: without an anchor or before layout the client returns nil
   if type(l) ~= "number" or type(b) ~= "number" or type(r) ~= "number" or type(t) ~= "number" then return nil end
   if Look.Secret(l) or Look.Secret(b) or Look.Secret(r) or Look.Secret(t) then return nil end
   local s = f:GetScale()
@@ -769,7 +769,7 @@ function Look.Rect(f)
   return l * s, b * s, r * s, t * s
 end
 
--- eigener Name ("Vorname Nachname"), nil bei Secret
+-- own name ("Name Surname"), nil for a secret
 local myName
 function Look.Me()
   if myName then return myName end
@@ -781,7 +781,7 @@ function Look.Me()
   return n
 end
 
--- Zone des letzten Todes durch diesen Feind
+-- Zone of the last death by this enemy
 function Look.LastPlace(e)
   local d = Look.LastDeed(e)
   if d then return Look.Place(d.zone, d.subzone) end
@@ -793,19 +793,19 @@ end
 local Alert = {}
 ns.Alert = Alert
 
-local HOLD = 12           -- Sekunden sichtbar
+local HOLD = 12           -- seconds shown
 local W, H = 384, 108
 local QUEUE_MAX = 9
 
 local ready = false
 local lastAlert = {}      -- key -> GetTime()
 local queue = {}          -- { { key = k, guild = bool }, ... }
-local current             -- key, die gerade angezeigt wird
+local current             -- key shown right now
 local currentEntry
-local currentGuild        -- true, wenn das Popup einen Gildenfeind zeigt
+local currentGuild        -- true when the popup shows a guild enemy
 local popup, button, flash
 local hideTimer
-local armedFor            -- Ziel-Name, auf den der Secure-Knopf zeigt, solange er sichtbar ist
+local armedFor            -- target name the secure button points at while it is shown
 
 local function InCombat() return InCombatLockdown() and true or false end
 
@@ -813,15 +813,15 @@ local function Eligible(e)
   if not e or e.status == "pardoned" then return false end
   if not Look.Setting("alert.enabled", true) then return false end
   if e.status == "suspect" then return Look.Setting("alert.suspects", false) and true or false end
-  -- von Hand Eingetragene melden auch ohne Kill (sonst wuerde /dn add nie warnen)
+  -- entries added by hand alert without a kill too (else /dn add would never warn)
   if e.manual then return true end
-  -- Schwelle zaehlt Todesstoesse und Beteiligungen
+  -- the threshold counts killing blows and assists
   return Look.Weight(e) >= (tonumber(Look.Setting("alert.minKills", 1)) or 1)
 end
 
--- Gildenfeind (nicht auf der eigenen Liste): eigene Schalter guild.alert / guild.minKills;
--- nur von Hand Eingetragene (ohne Tat) zusaetzlich nur mit guild.alertListed.
--- 1.2.0: gilt fuer Gilde und Freunde; Ziele der Abschussliste (hunt) mit eigenem Schalter guild.alertHunt
+-- Guild enemy (not on the own list): own switches guild.alert / guild.minKills;
+-- entries only added by hand (no deed) additionally need guild.alertListed.
+-- 1.2.0: applies to guild and friends; hit list targets (hunt) have their own switch guild.alertHunt
 local function EligibleGuild(g, hunt)
   if type(g) ~= "table" or type(g.key) ~= "string" then return false end
   local own = ns.Store and ns.Store.Get and ns.Store.Get(g.key)
@@ -857,23 +857,23 @@ local function PlacePopup()
   if type(pt) == "table" and pt[1] then
     popup:SetPoint(pt[1], UIParent, pt[2] or pt[1], pt[3] or 0, pt[4] or 0)
   else
-    -- unter dem roten Fehlertext des Clients; Abstand in Bildschirmeinheiten, unabhaengig von alert.scale
+    -- below the client's red error text; offset in screen units, independent of alert.scale
     popup:SetPoint("TOP", UIParent, "TOP", 0, -190 / Scale())
   end
 end
 
--- Positionen nie zusaetzlich in layout-local.txt (der Client merkt sich gezogene, benannte Frames)
+-- Positions never also in layout-local.txt (the client remembers dragged, named frames)
 local function NotUserPlaced(f)
   if f.SetUserPlaced then pcall(f.SetUserPlaced, f, false) end
 end
 
--- Secure-Knopf deckungsgleich ueber das Popup legen und Ziel setzen (nur ausserhalb des Kampfes)
-local EnsureButton -- vorwaerts
+-- Put the secure button exactly over the popup and set the target (only out of combat)
+local EnsureButton -- forward declaration
 
--- Zeigt der (sichtbare) Secure-Knopf auf jemand anderen als das Popup? Das kann nur im Kampf passieren,
--- wenn der Knopf nicht versteckt werden konnte. Dann liegt das Popup eine Schicht ueber dem Knopf und
--- faengt jeden Klick selbst ab: ein Klick visiert nie einen anderen an, als das Popup zeigt.
--- (Das Popup ist kein geschuetzter Frame, SetFrameStrata ist im Kampf erlaubt.)
+-- Does the (shown) secure button point at someone other than the popup? That can only happen in combat,
+-- when the button could not be hidden. Then the popup lies one layer above the button and catches
+-- every click itself: a click never targets anyone other than the one the popup shows.
+-- (The popup is no protected frame, SetFrameStrata is allowed in combat.)
 local function Guard()
   if not popup then return end
   local stale = button and button:IsShown() and (not currentEntry or armedFor ~= Look.TargetName(currentEntry))
@@ -894,12 +894,12 @@ end
 local function ArmButton()
   if not (popup and popup:IsShown() and currentEntry) or InCombat() then return end
   local name = Look.TargetName(currentEntry)
-  -- ohne sicheren Namen nicht scharf schalten (und einen alten Knopf wegnehmen)
+  -- without a safe name do not arm (and take an old button away)
   if not name then DisarmButton(); return end
   if not EnsureButton() then return end
   local cx, cy = popup:GetCenter()
   if type(cx) ~= "number" or type(cy) ~= "number" or Look.Secret(cx) or Look.Secret(cy) then return end
-  -- GetCenter liefert Werte im Massstab des Popups; der Knopf haengt an UIParent
+  -- GetCenter returns values in the popup's scale; the button hangs on UIParent
   local s = Scale()
   local macro = "/cleartarget\n/targetexact " .. name
   button:SetAttribute("type1", "macro")
@@ -943,7 +943,7 @@ local function BuildFlash()
   t:SetBlendMode("ADD")
   flash:SetAlpha(0)
   flash:Hide()
-  -- ein ruhiger Puls; bei Rang 1 ein zweiter, schwaecherer
+  -- a calm pulse; for rank 1 a second, weaker one
   local function done() flash:SetAlpha(0); flash:Hide() end
   local g1 = flash:CreateAnimationGroup()
   Look.AlphaAnim(g1, 0, 0.55, 0.25, 1)
@@ -966,7 +966,7 @@ local function Flash(strong)
   if strong then flash.double:Play() else flash.single:Play() end
 end
 
-local Finish -- vorwaerts
+local Finish -- forward declaration
 
 local function Dismiss()
   if not popup or not popup:IsShown() then return end
@@ -984,7 +984,7 @@ local EDGE_NR1  = { 0.90, 0.12, 0.10 }
 local function EdgeColor(c) popup:SetBackdropBorderColor(c[1], c[2], c[3], 1) end
 local function EdgeIdle() EdgeColor(popup.nr1 and EDGE_NR1 or EDGE_IDLE) end
 
--- Kante: 2 px, bei Staatsfeind Nr. 1 3 px in hellem Rot
+-- Edge: 2 px, for public enemy no. 1 3 px in light red
 local function SetEdge(nr1)
   popup.nr1 = nr1 and true or false
   popup:SetBackdrop({ edgeFile = Look.TEX.white, edgeSize = nr1 and 3 or 2 })
@@ -999,7 +999,7 @@ function Alert.ApplyScale()
   if popup:IsShown() and not InCombat() then ArmButton() end
 end
 
--- Schwarzer Streifen mit blutroter Kante, links das Fahndungsfoto, rechts der frisch eingetragene Name
+-- Black strip with a blood red edge, the mugshot on the left, the freshly written name on the right
 local function Build()
   popup = CreateFrame("Frame", "DeathNoteAlert", UIParent, "BackdropTemplate")
   popup:SetSize(W, H)
@@ -1016,7 +1016,7 @@ local function Build()
   bg:SetPoint("TOPLEFT", 2, -2); bg:SetPoint("BOTTOMRIGHT", -2, 2)
   Look.Tex(bg, Look.TEX.cover, 0.06, 0.05, 0.05, 1)
   bg:SetTexCoord(0, 1, 0.2, 0.5)
-  -- duenne rote Linie unter dem Kopf
+  -- thin red line under the head
   local rule = popup:CreateTexture(nil, "BORDER")
   rule:SetColorTexture(Look.RED[1], Look.RED[2], Look.RED[3], 0.8)
   rule:SetHeight(1)
@@ -1031,7 +1031,7 @@ local function Build()
   popup.more:SetPoint("BOTTOMRIGHT", -10, 8)
   popup.more:SetWordWrap(false)
 
-  -- Fahndungsfoto
+  -- mugshot
   local photo = CreateFrame("Frame", nil, popup)
   photo:SetSize(66, 66)
   photo:SetPoint("LEFT", 10, 0)
@@ -1057,9 +1057,9 @@ local function Build()
   Look.Tex(tape, Look.TEX.tape, 0.9, 0.86, 0.7, 0.6)
   tape:SetRotation(0.12)
 
-  -- Name in Feder-Handschrift, Klassenfarbe; erscheint mit kurzer Verzoegerung wie frisch eingetragen.
-  -- 1.2.2: die ganze Breite (286 px) fuer den Name; die Stufe steht vorn in der Textzeile. Kein Tooltip moeglich
-  -- (der Secure-Knopf liegt darueber): lieber kleiner (22, 19, 16, 13 pt) als gekuerzt.
+  -- Name in quill handwriting, class colour; appears with a short delay as if freshly written.
+  -- 1.2.2: the full width (286 px) for the name; the level stands at the front of the text line. No tooltip
+  -- possible (the secure button lies above): rather smaller (22, 19, 16, 13 pt) than cut.
   popup.name = Look.Text(popup, "hand", 22, nil, nil)
   popup.name:SetPoint("TOPLEFT", 86, -30)
   popup.name:SetWidth(W - 86 - 12)
@@ -1081,17 +1081,17 @@ local function Build()
 
   popup.hint = Look.Text(popup, "body", 10, { 0.62, 0.58, 0.52 })
   popup.hint:SetPoint("BOTTOMLEFT", 86, 8)
-  -- 1.2.2: der Hinweis endet vor "+n weitere" (vorher fester Abstand, zwei- und dreistellige Zahlen ragten hinein)
+  -- 1.2.2: the hint ends before "+n more" (before: a fixed gap, two- and three-digit numbers ran into it)
   popup.hint:SetPoint("RIGHT", popup.more, "LEFT", -8, 0)
   popup.hint:SetJustifyH("LEFT")
   popup.hint:SetWordWrap(false)
 
-  -- Einblenden: kurzer Plopp; der Name kommt mit Verzoegerung "in Tinte" nach
+  -- Fade in: a short pop; the name follows "in ink" with a delay
   local ia = popup:CreateAnimationGroup()
   Look.AlphaAnim(ia, 0, 1, 0.15, 1)
   Look.ScaleAnim(ia, 1.12, 1, 0.22, 1)
   popup.inAnim = ia
-  -- (Alpha-Animationen springen danach auf die eigene Alpha zurueck: darum erst 0->0 halten, dann einblenden)
+  -- (alpha animations jump back to the own alpha afterwards: so first hold 0->0, then fade in)
   local na = popup.name:CreateAnimationGroup()
   Look.AlphaAnim(na, 0, 0, 0.12, 1)
   Look.AlphaAnim(na, 0, 1, 0.6, 2)
@@ -1102,7 +1102,7 @@ local function Build()
   popup.strokeAnim = sa
   local oa = popup:CreateAnimationGroup()
   Look.AlphaAnim(oa, 1, 0, 0.35, 1)
-  if oa.SetToFinalAlpha then oa:SetToFinalAlpha(true) end   -- kein Aufblitzen mit Alpha 1 am Ende
+  if oa.SetToFinalAlpha then oa:SetToFinalAlpha(true) end   -- no flash at alpha 1 at the end
   oa:SetScript("OnFinished", function() Finish() end)
   popup.outAnim = oa
 
@@ -1129,13 +1129,13 @@ local function Build()
   Alert.ApplyScale()
 end
 
--- Unsichtbarer Secure-Knopf, erst gebaut, wenn er ausserhalb des Kampfes gebraucht wird
--- (Erzeugen und Einrichten eines geschuetzten Frames im Kampf waere blockiert).
+-- Invisible secure button, built only when it is needed out of combat
+-- (creating and setting up a protected frame in combat would be blocked).
 EnsureButton = function()
   if button then return button end
   if InCombat() then return nil end
-  -- Unsichtbarer Secure-Knopf: liegt ausserhalb des Kampfes deckungsgleich ueber dem Popup.
-  -- Nicht an das Popup geankert, damit das Popup selbst ungeschuetzt bleibt (im Kampf zeig-/versteckbar).
+  -- Invisible secure button: lies exactly over the popup out of combat.
+  -- Not anchored to the popup, so the popup itself stays unprotected (can be shown/hidden in combat).
   button = CreateFrame("Button", "DeathNoteAlertButton", UIParent, "SecureActionButtonTemplate")
   button:SetFrameStrata("HIGH")
   button:SetFrameLevel(popup:GetFrameLevel() + 20)
@@ -1163,7 +1163,7 @@ EnsureButton = function()
   return button
 end
 
--- Ziehen am Knopf beenden: Popup wieder an UIParent haengen (nie an den Secure-Knopf geankert lassen)
+-- Stop dragging the button: hang the popup on UIParent again (never leave it anchored to the secure button)
 function Alert.EndButtonDrag()
   if not (button and button.moving) then return end
   button.moving = nil
@@ -1242,8 +1242,8 @@ local function LineFor(e, drop)
   return s
 end
 
--- Modell nur, wenn der Unit-Token jetzt wirklich zu diesem Feind gehoert;
--- ohne mitgeliefertes Token fragt der Tracker nach einem gueltigen.
+-- Model only when the unit token really belongs to this enemy now;
+-- without a token passed in, the tracker is asked for a valid one.
 local function UnitFor(key, unit)
   if type(unit) == "string" and not Look.Secret(unit) and ns.Util and ns.Util.KeyOfUnit then
     local ok, k = pcall(ns.Util.KeyOfUnit, unit)
@@ -1255,9 +1255,9 @@ local function UnitFor(key, unit)
   end
 end
 
--- "hat 7× Kollegen getötet, zuletzt Anna"; Hand-Eintrag: "steht im Buch von Bert"
+-- "killed guildmates 7×, last Anna"; hand entry: "is in Bert's book"
 local listedScratch = {}
--- Woher ein geteilter Eintrag kommt (1.2.0): "guild", "friends", "both"
+-- Where a shared entry comes from (1.2.0): "guild", "friends", "both"
 local function SourceOf(key) return Look.GCall("Source", key) end
 
 local function GuildLineFor(g)
@@ -1277,7 +1277,7 @@ local function GuildLineFor(g)
   return s
 end
 
--- Ziel der Abschussliste: wer freigegeben hat, dazu der Grund
+-- Hit list target: who released it, plus the reason
 -- 1.2.2: drop >= 1: the reason as in the list (at most Look.WHY_SHORT characters, then "…"), 2: one name only
 Look.WHY_SHORT = 24
 function Look.ShortWhy(why, n)
@@ -1293,19 +1293,19 @@ local function HuntLineFor(h, drop)
   drop = drop or 0
   local names = type(h.names) == "table" and h.names or {}
   local s = #names > 0 and Fmt(L.HUNT_LINE_BY, { names = Look.NameList(names, drop >= 2 and 1 or 2) }) or L.HUNT_LINE_RELEASED
-  -- der Grund ist Freitext des Spielers und wird nie uebersetzt
+  -- the reason is the player's free text and is never translated
   if type(h.why) == "string" and h.why ~= "" and not Look.Secret(h.why) then
     s = Fmt(L.HUNT_LINE_REASON, { text = s, reason = drop >= 1 and Look.ShortWhy(h.why, Look.WHY_SHORT) or h.why })
   end
   return s
 end
 
--- Eigenes Buch: steht der Gesuchte zugleich auf der Abschussliste, nennt der Alarm sie (1.2.0)
+-- Own book: when the wanted one is also on the hit list, the alarm says so (1.2.0)
 local function OwnLine(e, drop)
   local s = LineFor(e, drop)
   local h = Look.HasGuild() and Look.GCall("Hunt", e.key, "all")
   if type(h) == "table" and not h.hidden then
-    -- 1.2.0: nur, wenn ein anderer freigegeben hat; der eigene Name steht nie darin
+    -- 1.2.0: only when someone else released it; the own name never appears in it
     local names, others = type(h.names) == "table" and h.names or {}, {}
     for i = 1, #names do
       if not Look.GCall("IsOwnChar", names[i]) then others[#others + 1] = names[i] end
@@ -1315,7 +1315,7 @@ local function OwnLine(e, drop)
   return s
 end
 
--- guild: false (eigenes Buch), true (Gilde/Freunde) oder "hunt" (Ziel der Abschussliste)
+-- guild: false (own book), true (guild/friends) or "hunt" (hit list target)
 local function GuildTitle(e, guild)
   if guild == "hunt" then return L.ALERT_TITLE_HUNT end
   local src = SourceOf(e.key)
@@ -1335,8 +1335,8 @@ local function Fill(e, unit, how, guild)
   Look.FitText(popup.title, guild and GuildTitle(e, guild) or HeaderFor(e, rank), nr1 and Look.FIT_TITLE_NR1 or Look.FIT_TITLE)
   Look.FitText(popup.name, Look.Name(e), Look.FIT_NAME)
   popup.name:SetTextColor(Look.ClassRGB(e.class))
-  -- Stufe vorn in der Textzeile (1.2.2; vorher rechts neben dem Namen, sie nahm ihm bis 132 px), hoeher als du
-  -- in Warnfarbe mit dem Abstand ("Stufe 63 (+3)")
+  -- Level at the front of the text line (1.2.2; before: right of the name, it took up to 132 px from it),
+  -- above your level in the warning colour with the gap ("Level 63 (+3)")
   local lt, warn = Look.LevelLine(unit, e.level)
   popup.levelText, popup.levelWarn = lt, warn or nil
   local lead = ""
@@ -1344,8 +1344,8 @@ local function Fill(e, unit, how, guild)
     local c = warn and Look.WARN or Look.BONE
     lead = ("|cff%02x%02x%02x%s|r · "):format(c[1] * 255, c[2] * 255, c[3] * 255, lt)
   end
-  -- Textzeile in hoechstens zwei Zeilen; passt sie nicht, weicht zuerst der Ort, dann "zuletzt" (eigenes Buch)
-  -- bzw. der lange Grund, dann der zweite Name (Abschussliste); zuletzt 10 pt
+  -- Text line in two lines at most; if it does not fit, first the place gives way, then "last" (own book)
+  -- or the long reason, then the second name (hit list); last of all 10 pt
   for drop = 0, 2 do
     local s = (guild == "hunt" and HuntLineFor(e, drop)) or (guild and GuildLineFor(e)) or OwnLine(e, drop)
     if Look.FitText(popup.line, lead .. s, drop < 2 and Look.FIT_LINE or Look.FIT_LINE_LAST) or (guild and guild ~= "hunt") then break end
@@ -1353,7 +1353,7 @@ local function Fill(e, unit, how, guild)
   popup.how = how
   SetEdge(nr1)
 
-  -- SetUnit wirft nicht immer, sondern meldet ein nicht ladbares Modell auch mit false
+  -- SetUnit does not always throw, it also reports a model that cannot load with false
   local shown = false
   if unit then
     popup.model:ClearModel()
@@ -1369,7 +1369,7 @@ local function Fill(e, unit, how, guild)
   return nr1
 end
 
-local currentHunt = false   -- 1.2.0: das Popup zeigt ein Ziel der Abschussliste
+local currentHunt = false   -- 1.2.0: the popup shows a hit list target
 local function Show(e, unit, how, silent, guild)
   if not popup then Build() end
   current, currentEntry, currentGuild = e.key, e, guild and true or false
@@ -1392,18 +1392,18 @@ local function Show(e, unit, how, silent, guild)
   end
   if hideTimer then hideTimer:Cancel() end
   hideTimer = C_Timer.NewTimer(HOLD, function() hideTimer = nil; Dismiss() end)
-  -- eine laufende Meldung (anderer Spieler) rueckt unter bzw. ueber das Popup, nie darunter versteckt
+  -- a running notice (other player) moves below or above the popup, never hidden under it
   if ns.Extras and ns.Extras.PlaceBanner then ns.Extras.PlaceBanner() end
 end
 
--- sichtbares Popup in UIParent-Einheiten (fuer die Meldung), sonst nil
+-- shown popup in UIParent units (for the notice), else nil
 function Alert.Rect()
   if not (popup and popup:IsShown()) then return nil end
   return Look.Rect(popup)
 end
 
 local function ShowNext()
-  -- ist inzwischen ein neuer Alarm zu sehen, wartet die Schlange auf dessen Ende (Finish)
+  -- if a new alarm is shown by now, the queue waits for its end (Finish)
   if current then UpdateMore(); return end
   while #queue > 0 do
     local q = table.remove(queue, 1)
@@ -1438,24 +1438,24 @@ local function Queued(key)
   return false
 end
 
--- gemeinsame Abklingzeit je Schluessel; true = melden waere jetzt dran
+-- shared cooldown per key; true = an alarm would be due now
 local function Due(key)
   local cd = Look.Setting("alert.cooldown", 90) or 90
   local last = lastAlert[key]
   return not (last and GetTime() - last < cd)
 end
 
--- Abklingzeit erst setzen, wenn der Alarm gezeigt oder wirklich eingereiht wurde
+-- set the cooldown only once the alarm was shown or really queued
 local function Mark(key) lastAlert[key] = GetTime() end
 
--- Zeigt gerade eine Bildschirmmeldung (Tod, Rache, Gildentod) genau diesen Spieler?
+-- Does an on-screen notice (death, revenge, guild death) show exactly this player right now?
 local function OnBanner(key)
   local X = ns.Extras
   return X and X.BannerShows and X.BannerShows(key) and true or false
 end
 
--- Ein Ereignis, ein Fenster: die Meldung zeigt den Spieler schon. Abklingzeit gilt als verbraucht,
--- ein laufendes Popup fuer ihn geht zu, ein wartendes faellt aus der Schlange.
+-- One event, one window: the notice already shows the player. The cooldown counts as used,
+-- a running popup for him closes, a waiting one drops out of the queue.
 function Alert.Silence(key)
   if type(key) ~= "string" or Look.Secret(key) then return end
   Mark(key)
@@ -1474,7 +1474,7 @@ function Alert.Spotted(key, unit, how)
   if not ready or type(key) ~= "string" or Look.Secret(key) then return end
   local e = ns.Store.Get(key)
   if not Eligible(e) then return end
-  -- ein Schluessel, ein Popup; die eigene Liste hat Vorrang vor der Gildenliste
+  -- one key, one popup; the own list goes before the guild list
   if current == key then
     if currentGuild then
       currentGuild, currentEntry = false, e
@@ -1494,8 +1494,8 @@ function Alert.Spotted(key, unit, how)
   Show(e, UnitFor(key, unit), how)
 end
 
--- Gildenfeind (1.2.0: oder Taeter der Freunde), der nicht auf meiner Liste steht;
--- kind = "hunt": ein Ziel der Abschussliste
+-- Guild enemy (1.2.0: or a killer from the friends' book) who is not on my list;
+-- kind = "hunt": a hit list target
 function Alert.GuildSpotted(key, unit, how, kind)
   if not ready or type(key) ~= "string" or Look.Secret(key) or not Look.HasGuild() then return end
   local hunt = kind == "hunt"
@@ -1512,7 +1512,7 @@ function Alert.GuildSpotted(key, unit, how, kind)
   Show(g, UnitFor(key, unit), how, false, hunt and "hunt" or true)
 end
 
--- 1.2.0: zeigt oder haelt das Popup gerade diesen Spieler? (neue Freigabe in Sicht: Alarm statt Chatzeile)
+-- 1.2.0: does the popup show or hold this player right now? (new release in sight: alarm instead of a chat line)
 function Alert.Shows(key) return type(key) == "string" and (current == key or Queued(key)) and true or false end
 
 local SAMPLE = {
@@ -1529,14 +1529,14 @@ function Alert.Test()
   end
   if not e then
     SAMPLE.lastKill = time() - 2 * 86400
-    SAMPLE.deaths[1].zone = L.SAMPLE_ZONE      -- Beispielzone in der Sprache des Buchs
+    SAMPLE.deaths[1].zone = L.SAMPLE_ZONE      -- sample zone in the language of the book
     e = SAMPLE
   end
   Show(e, UnitFor(e.key, "target"), "test")
 end
 
 ------------------------------------------------------------------------
--- Bus und Kampf-Wechsel
+-- Bus and combat changes
 ------------------------------------------------------------------------
 ns:On("READY", function()
   ready = true
@@ -1563,15 +1563,15 @@ ns:On("GUILD_UPDATED", function()
   popup.line:SetText(currentHunt and HuntLineFor(g) or GuildLineFor(g))
 end)
 
--- Der Store zieht einen Eintrag auf einen neuen Schluessel um (gleiche GUID, vollerer Name):
--- Popup, Warteschlange und Abklingzeit ziehen mit
+-- The store moves an entry to a new key (same GUID, fuller name):
+-- popup, queue and cooldown move along
 ns:On("ENEMY_REKEYED", function(old, new)
   if type(old) ~= "string" or type(new) ~= "string" or old == new then return end
   if lastAlert[old] then lastAlert[new] = lastAlert[old]; lastAlert[old] = nil end
   for i = 1, #queue do if queue[i].key == old and not queue[i].guild then queue[i].key = new end end
   if current == old and not currentGuild then current = new end
-  -- derselbe Spieler hoechstens einmal: Doppel in der Schlange (alter und neuer Schluessel) und den
-  -- gerade gezeigten aus der Schlange nehmen
+  -- the same player at most once: take doubles out of the queue (old and new key) and the
+  -- one shown right now
   for i = #queue, 1, -1 do
     local k = queue[i].key
     local dup = k == current
@@ -1595,9 +1595,9 @@ ns:On("SETTINGS_CHANGED", function(path)
   if path == "alert.scale" then Alert.ApplyScale() end
 end)
 
--- Vor dem Kampf-Lockdown den Knopf wegnehmen (sonst bliebe er im Kampf als unsichtbare Klickflaeche).
--- Ob das Verstecken hier noch durchgeht, ist im Spiel unbelegt: armedFor bleibt darum stehen, solange
--- der Knopf sichtbar ist, und Guard() legt das Popup notfalls ueber ihn.
+-- Take the button away before the combat lockdown (else it would stay in combat as an invisible click area).
+-- Whether hiding still goes through here is unproven in the game: so armedFor stays set while
+-- the button is shown, and Guard() puts the popup over it if need be.
 ns:RegisterEvent("PLAYER_REGEN_DISABLED", function()
   if popup and popup.moving then
     popup.moving = nil
@@ -1616,7 +1616,7 @@ ns:RegisterEvent("PLAYER_REGEN_DISABLED", function()
   SetHint()
 end)
 
--- Nach dem Kampf: Klick-Ziel nachziehen bzw. liegengebliebenen Knopf wegraeumen
+-- After combat: update the click target or clear away a button left behind
 ns:RegisterEvent("PLAYER_REGEN_ENABLED", function()
   if popup and popup:IsShown() and currentEntry then
     ArmButton()
