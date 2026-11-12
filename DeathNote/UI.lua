@@ -1787,7 +1787,7 @@ function UX.BuildPoster()
   D.when:SetJustifyH("RIGHT")
   Rule(D, -52, 24, 24, 0.7)
   -- 1.2.2: below the head the file scrolls (same coordinates as before), the source line stands in the foot
-  D.page = Look.Page(D, { top = 54, foot = 46, w = 352, h = 452 })
+  D.page = Look.Page(D, { top = 54, foot = 46, w = 352, h = 452, paper = Look.TEX.paper })
   local Ds = CreateFrame("Frame", nil, D.page.body)
   Ds:SetPoint("TOPLEFT", D.page.body, "TOPLEFT", 0, 54)
   Ds:SetSize(352, 452)
@@ -3343,7 +3343,7 @@ function GF.LayoutHelp()
     p[2]:SetPoint("TOPLEFT", 116, -y)
     y = y + math.max(Look.TextH(p[2]), Look.TextH(p[1]) + 1) + 7
   end
-  Hp.page:Layout(y)
+  Hp.page:Layout(y - 7)   -- 1.2.2: the gap after the last paragraph is no content
 end
 
 -- 1.2.0: sheet "Put on hit list": for whom (Guild & Friends, Guild, Friends) and a short reason.

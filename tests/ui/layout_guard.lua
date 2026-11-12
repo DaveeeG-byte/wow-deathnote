@@ -229,13 +229,19 @@ local function run(code)
     if not (sf and body and foot) then note("PAGE", where, nil, "no page"); return end
     local vh = sf._h
     local range = sf:GetVerticalScrollRange()
-    if (body._h or 0) - vh > 0.5 and not pg.bar:IsShown() then note("PAGE", where, nil, "content taller than its window, no bar") end
+    local slack = ns.Look.PAGE_SLACK or 0
+    if (body._h or 0) - vh > slack + 0.5 and not pg.bar:IsShown() then note("PAGE", where, nil, "content taller than its window, no bar") end
     if (body._h or 0) <= vh and pg.bar:IsShown() then note("PAGE", where, nil, "bar without need") end
     if mustScroll ~= nil and (range > 0) ~= mustScroll then note("PAGE", where, nil, "scrolls: " .. tostring(range > 0)) end
-    -- the wheel reaches the end and the start
+    -- the wheel reaches the end and the start; the fade shows while content goes on below (1.2.2)
     local wheel = sf._scripts.OnMouseWheel
+    local fade = pg.fade
+    if fade and (fade:IsShown() and true or false) ~= (range > 0 and sf:GetVerticalScroll() < range) then
+      note("PAGE", where, nil, "fade at the bottom: " .. tostring(fade:IsShown()) .. " at offset " .. sf:GetVerticalScroll())
+    end
     for _ = 1, 100 do wheel(sf, -1) end
     if math.abs(sf:GetVerticalScroll() - range) > 0.5 then note("PAGE", where, nil, "wheel does not reach the end") end
+    if fade and fade:IsShown() then note("PAGE", where, nil, "fade still shown at the end") end
     for _ = 1, 100 do wheel(sf, 1) end
     if sf:GetVerticalScroll() ~= 0 then note("PAGE", where, nil, "wheel does not reach the start") end
     -- the foot is no child of the scroll frame

@@ -71,7 +71,7 @@ local BUTTON = set([[RegisterForClicks SetHighlightTexture SetNormalTexture SetP
   SetEnabled IsEnabled]], FRAME)
 local WHITELIST = {
   Texture = set([[SetTexture GetTexture SetColorTexture SetTexCoord SetVertexColor SetDesaturated SetBlendMode
-    SetRotation SetDrawLayer SetAtlas]], REGION),
+    SetRotation SetDrawLayer SetAtlas SetGradient]], REGION),   -- SetGradient: Leatrix_Maps.lua:997, WhatsTraining Forever/Widgets.lua:103
   FontString = set([[SetFont SetFontObject SetText GetText SetFormattedText SetTextColor SetShadowOffset
     SetShadowColor SetJustifyH SetJustifyV SetWordWrap SetMaxLines SetSpacing GetStringWidth GetStringHeight
     IsTruncated SetRotation SetNonSpaceWrap GetUnboundedStringWidth]], REGION),
@@ -531,6 +531,11 @@ function methods.SetTexture(self, path)
   self._tex = path
   return true
 end
+function methods.SetGradient(self, orientation, minColor, maxColor)
+  if orientation ~= "VERTICAL" and orientation ~= "HORIZONTAL" then error("SetGradient: orientation " .. tostring(orientation), 2) end
+  if type(minColor) ~= "table" or type(maxColor) ~= "table" then error("SetGradient: colours from CreateColor expected", 2) end
+  self._grad = { orientation, minColor, maxColor }
+end
 function methods.SetTexCoord(self, ...)
   local n = select("#", ...)
   if n ~= 4 and n ~= 8 then error("SetTexCoord mit " .. n .. " Werten", 2) end
@@ -608,6 +613,8 @@ G.StaticPopup_Show = function(which, a1, a2, data)
   M.popups[#M.popups + 1] = { which = which, text = a1, data = data }
 end
 G.GameTooltip_Hide = function() end
+-- colour object for Texture:SetGradient (Leatrix_Maps.lua:997, WhatsTraining Forever/Widgets.lua:95)
+G.CreateColor = function(r, g, b, a) return { r = r, g = g, b = b, a = a or 1 } end
 G.InCombatLockdown = function() return M.combat end
 G.GetTime = function() return M.now end
 G.time = function() return 1800000000 end

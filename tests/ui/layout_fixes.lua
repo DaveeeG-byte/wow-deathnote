@@ -422,4 +422,68 @@ do
   end
 end
 
+------------------------------------------------------------------------
+-- B13: scroll pages. The gap after the last paragraph of the manual is no content; up to Look.PAGE_SLACK px more than
+-- the window does not scroll; while content goes on below, a soft fade of the page's own paper lies over the bottom
+-- of the window (gone at the end), in every Look.Page
+------------------------------------------------------------------------
+for _, code in ipairs({ "enUS", "deDE", "daDK", "fiFI", "nbNO", "svSE", "ruRU", "zhCN" }) do
+  local ns = K.world(code)
+  local BM, Look = K.BM, ns.Look
+  ns:Fire("TOGGLE_UI"); K.tick(); K.settle()
+  ns.UI.OpenPanel("help"); K.tick()
+  local RP = K.find(function(f) return f.help and f.settings end)
+  local pg = RP and RP.help and RP.help.page
+  K.check(code .. " B13 manual is a scroll page with a fade", pg and pg.fade ~= nil)
+  if pg then
+    -- bottom of the last paragraph in the body
+    local last = 0
+    for _, p in ipairs(RP.help.paras) do
+      local _, _, _, _, py = p[2]:GetPoint(1)
+      local y = -(py or 0)
+      last = math.max(last, y + math.max(Look.TextH(p[2]), Look.TextH(p[1]) + 1))
+    end
+    K.check(code .. " B13 manual: the content ends with its last paragraph (no gap after it)", math.abs(pg.used - math.ceil(last)) <= 1,
+      ("content %s, last paragraph ends %.1f"):format(tostring(pg.used), last))
+    local fade = pg.fade or { IsShown = function() return nil end }
+    K.check(code .. " B13 manual: fade only while content goes on below", fade:IsShown() == (pg.range > 0),
+      ("range %s, fade %s"):format(tostring(pg.range), tostring(fade:IsShown())))
+    if pg.range > 0 then
+      pg.scroll._scripts.OnMouseWheel(pg.scroll, -100)
+      K.check(code .. " B13 manual: no fade at the end", not fade:IsShown())
+      pg.scroll._scripts.OnMouseWheel(pg.scroll, 100)
+      K.check(code .. " B13 manual: fade again at the start", fade:IsShown())
+    end
+    K.check(code .. " B13 fade: paper of the page, opaque at the bottom, clear at the top", fade._tex and fade._tex:find("page", 1, true)
+      and fade._grad and fade._grad[1] == "VERTICAL" and fade._grad[2].a == 1 and fade._grad[3].a == 0, fade._tex)
+  end
+end
+do
+  local ns = K.world("deDE")
+  local G, Look = K.G, ns.Look
+  local parent = G.CreateFrame("Frame", nil, G.UIParent)
+  parent:SetSize(380, 490); parent:SetPoint("CENTER")
+  local pg = Look.Page(parent, { top = 58, foot = 44, w = 380, h = 490 })
+  local slack = Look.PAGE_SLACK or 3
+  pg.fade = pg.fade or { IsShown = function() return nil end }
+  pg:Layout(pg.viewH + slack)
+  K.check("B13 a page " .. slack .. " px taller than its window does not scroll (no bar, no fade)",
+    pg.range == 0 and not pg.bar:IsShown() and not pg.fade:IsShown(), pg.range)
+  pg:Layout(pg.viewH + 10)
+  K.check("B13 a page 10 px taller scrolls, with bar and fade", pg.range == 10 and pg.bar:IsShown() and pg.fade:IsShown(), pg.range)
+  pg.bar._scripts.OnValueChanged(pg.bar, 10)
+  K.check("B13 dragging the bar to the end hides the fade", not pg.fade:IsShown())
+  -- the fade samples the strip of the paper right above the foot (texture coordinates of the page)
+  local tc = pg.fade._tcoord
+  K.check("B13 the fade shows the paper of its own strip", tc and math.abs(tc[4] - (490 - 44) / 490) < 1e-6
+    and math.abs(tc[3] - (490 - 44 - (Look.PAGE_FADE or 0)) / 490) < 1e-6, tc and table.concat(tc, ", "))
+  -- the case file lies on the poster paper
+  local ns2 = K.world("deDE")
+  ns2:Fire("TOGGLE_UI"); K.tick(); K.settle()
+  local RPf = K.find(function(f) return f.enemy and f.death end)
+  local dp = RPf and RPf.death and RPf.death.page
+  K.check("B13 the fade of the case file is the poster paper", dp and dp.fade and (dp.fade._tex or ""):find("paper", 1, true),
+    dp and dp.fade and dp.fade._tex)
+end
+
 K.done("Layout fixes 1.2.2 (hunt B)")

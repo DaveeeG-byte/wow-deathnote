@@ -606,24 +606,46 @@ end
 -- Look.Page(parent, opts): standing head (above opts.top), body that scrolls (only stacked from the top,
 -- nothing hangs at its bottom), standing foot (opts.foot high, buttons and foot lines).
 -- opts: top (px from the top of parent), foot (px), w, h (size of parent), bar (px from the right edge for the
--- scroll bar), step (px per mouse wheel step). Fields: page.body (scroll child), page.foot, page.scroll, page.bar.
+-- scroll bar), step (px per mouse wheel step), paper (the texture that fills parent; default Look.TEX.page). Fields: page.body (scroll child), page.foot, page.scroll, page.bar.
 -- page:Layout(height) sets the height of the content, shows the bar only when needed, keeps the offset in range;
 -- page:Top() goes back to the start. No OnUpdate: the bar and the wheel move it, nothing else.
+-- 1.2.2: content up to PAGE_SLACK px taller than the window does not scroll (the line box of the last line has room
+-- below its descenders; a bar for 2 px looked like the old fault). Callers do not count the gap after their last
+-- element (GF.LayoutHelp).
+Look.PAGE_SLACK = 3
+Look.PAGE_FADE = 20        -- height of the soft paper fade at the bottom of the window while content goes on below
+local function PageFade(page)
+  if page.fade then page.fade:SetShown(page.range > 0 and page.offset < page.range) end
+end
 local function PageSet(page, v)
   v = math.max(0, math.min(page.range or 0, math.floor((v or 0) + 0.5)))
   page.offset = v
   page.scroll:SetVerticalScroll(v)
   if page.bar:GetValue() ~= v then page.bar:SetValue(v) end
+  PageFade(page)
 end
 local function PageLayout(page, height)
   height = math.max(1, math.ceil(height or page.used or 1))
   page.used = height
   page.body:SetHeight(height)
   page.range = math.max(0, height - page.viewH)
+  if page.range <= Look.PAGE_SLACK then page.range = 0 end
   page.bar:SetMinMaxValues(0, page.range)
   page.bar:SetShown(page.range > 0)
   PageSet(page, page.offset or 0)
   return page.range > 0
+end
+-- the fade: the paper of the page itself (opts.paper, the texture that fills parent) over the bottom strip of the
+-- window, opaque at the bottom and clear at the top (SetGradient with CreateColor as in Leatrix_Maps.lua:997 and
+-- WhatsTraining Forever/Widgets.lua:103), on a frame above the scroll window that takes no mouse
+local function PageFadeAt(page)
+  local f = page.fade
+  if not f then return end
+  local h, w, fh, foot = page.h, page.w, Look.PAGE_FADE, page.footH
+  f:SetTexCoord(0, (w - page.fadeInset) / w, (h - foot - fh) / h, (h - foot) / h)
+  f:ClearAllPoints()
+  f:SetPoint("BOTTOMLEFT", page.parent, "BOTTOMLEFT", 0, foot)
+  f:SetSize(w - page.fadeInset, fh)
 end
 function Look.Page(parent, opts)
   local top, foot = opts.top or 0, opts.foot or 0
@@ -663,19 +685,33 @@ function Look.Page(parent, opts)
   if bar.SetObeyStepOnDrag then bar:SetObeyStepOnDrag(true) end
   bar:SetScript("OnValueChanged", function(_, v)
     v = math.floor((v or 0) + 0.5)
-    if v ~= page.offset then page.offset = v; sf:SetVerticalScroll(v) end
+    if v ~= page.offset then page.offset = v; sf:SetVerticalScroll(v); PageFade(page) end
   end)
   bar:Hide()
   page.scroll, page.body, page.foot, page.bar = sf, body, ft, bar
+  page.parent, page.w, page.h, page.footH, page.fadeInset = parent, w, h, foot, (opts.bar or 6) + 14
+  if CreateColor then
+    local over = CreateFrame("Frame", nil, parent)
+    over:SetAllPoints(parent)
+    over:SetFrameLevel(sf:GetFrameLevel() + 3)
+    local fade = over:CreateTexture(nil, "OVERLAY")
+    Look.Tex(fade, opts.paper or Look.TEX.page)
+    if fade.SetGradient then fade:SetGradient("VERTICAL", CreateColor(1, 1, 1, 1), CreateColor(1, 1, 1, 0)) end
+    fade:Hide()
+    page.fade = fade
+    PageFadeAt(page)
+  end
   page.Layout = PageLayout
   page.Set = PageSet
   function page:Top() PageSet(self, 0) end
   -- foot height after its content is known (e.g. a foot line that needs two lines)
   function page:SetFoot(fh)
     self.viewH = h - top - fh
+    self.footH = fh
     ft:SetHeight(math.max(1, fh))
     sf:SetHeight(self.viewH)
     bar:SetHeight(self.viewH - 8)
+    PageFadeAt(self)
     PageLayout(self)
   end
   return page
