@@ -508,7 +508,7 @@ test("Migration DB Version 2: neue Defaults, kaputte Typen repariert, keine Date
     deaths = { { t = t, kind = "pvp", killerKey = "Alt-Feind" } } }
   local ns = loadGuild({ db = db })
   local s = _G.DeathNoteDB.settings
-  eq(_G.DeathNoteDB.version, 3)
+  eq(_G.DeathNoteDB.version, 4)  -- 1.3.0: version 4 (rap sheet)
   eq(s.alert.sound, false, "Hauptschalter bleibt"); eq(s.alert.cooldown, 30)
   eq(s.alert.soundKey, "warnung"); eq(s.alert.volume, 3); eq(s.alert.channel, "Master")
   eq(s.ui.scale, 1.2); eq(s.ui.guildView, "enemy")

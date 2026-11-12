@@ -8,8 +8,9 @@ local Util = ns.Util
 local Store = {}
 ns.Store = Store
 
-local DB_VERSION = 3      -- 2: combat log stage off by default (closed on Forever)
+local DB_VERSION = 4      -- 2: combat log stage off by default (closed on Forever)
                           -- 3: every deed has a role (kill/assist/suspect), entries count assists
+                          -- 4: the rap sheet (DeathNoteDB.ledger, Ledger.lua) took over the recognised revenge
 local MAX_ENEMY_DEATHS = 30
 local MAX_JOURNAL = 100
 local HAND_TIMES = 10     -- 1.2.1: times of hand revenges kept per entry (revengeHandAt)
@@ -19,7 +20,10 @@ local VALID_ROLE = { kill = true, assist = true, suspect = true }
 local DEFAULT_SETTINGS = {
   -- sound is the master switch; soundKey/volume (1..5)/channel are read by Alert.lua (1.1.0)
   alert = { enabled = true, sound = true, cooldown = 90, flash = true, minKills = 1, suspects = false,
-    soundKey = "warnung", volume = 3, channel = "Master" },
+    soundKey = "warnung", volume = 3, channel = "Master",
+    -- 1.3.0: alarm for an enemy whose standing is even or ahead: "always" | "quiet" (no sound) | "off";
+    -- victims: alarm when an own victim shows up (read by Alert.lua)
+    settled = "always", victims = false },
   -- guildView: "enemy" | "member" (1.1.0) | "hunt" (1.2.0); guildCollapsed: member char name -> true (1.1.0)
   -- guildSource (1.2.0): "all" | "guild" | "friends", the source chosen in the fourth tab
   -- guildMore (1.2.0): true = House Rules, sheet Guild shows its second page "More"; absent = closed
@@ -27,6 +31,9 @@ local DEFAULT_SETTINGS = {
   -- repairSettings derives it from angle
   ui = { scale = 1, sort = "rank", minimap = { hide = false, angle = 215 }, guildView = "enemy", guildCollapsed = {},
     guildSource = "all" },
+  -- 1.3.0 (Ledger.lua): enabled = keep the rap sheet (off: nothing is booked, the data stays); chat = a chat line
+  -- after an own kill (written by the book)
+  ledger = { enabled = true, chat = true },
   deathMessage = true,
   tooltip = true,
   debug = false,
@@ -76,6 +83,7 @@ end
 local SOUND_CHANNELS = { Master = true, SFX = true, Music = true, Ambience = true, Dialog = true }
 local GUILD_VIEWS = { enemy = true, member = true, hunt = true }
 local GUILD_SOURCES = { all = true, guild = true, friends = true }
+local SETTLED_MODES = { always = true, quiet = true, off = true }
 
 -- Value repairs beyond the type (1.1.0 fields). Store.Setting itself stays a plain accessor.
 local function repairSettings(st)
@@ -88,6 +96,7 @@ local function repairSettings(st)
   if a.soundKey == "" or #a.soundKey > 64 then a.soundKey = DEFAULT_SETTINGS.alert.soundKey end
   if not GUILD_VIEWS[ui.guildView] then ui.guildView = DEFAULT_SETTINGS.ui.guildView end
   if not GUILD_SOURCES[ui.guildSource] then ui.guildSource = DEFAULT_SETTINGS.ui.guildSource end
+  if not SETTLED_MODES[a.settled] then a.settled = DEFAULT_SETTINGS.alert.settled end
   for k, x in pairs(ui.guildCollapsed) do
     if type(k) ~= "string" or x ~= true then ui.guildCollapsed[k] = nil end
   end
@@ -329,6 +338,13 @@ function Store.Init()
   rankCache = nil
   Store.TouchJournal()
   rebuildIndex()
+  -- 4: the rap sheet. Its check runs at every start (idempotent: a downgrade to 1.2.x that recognised more revenge
+  -- is caught up without a version compare); the version only marks that the book was converted once.
+  if ns.Ledger and ns.Ledger.Init then
+    local ok, err = pcall(ns.Ledger.Init, db)
+    if not ok then ns.ReportError(err) end
+  end
+  if db.version < 4 then db.version = 4 end
   return db
 end
 
@@ -474,6 +490,33 @@ local function rankLess(a, b)
   return (a.key or "") < (b.key or "")
 end
 
+-- 1.3.0 (decision 4): the open debt of an entry, max(0, his kills - my kills incl. revenge noted by hand); 0 while the
+-- rap sheet is off. open = the standing is open (debt, or 0 : 0 with assists or by hand)
+function Store.Debt(e)
+  if type(e) ~= "table" or type(e.key) ~= "string" then return 0, false end
+  local Lg = ns.Ledger
+  local mine, his, state
+  if Lg and Lg.Standing then mine, his, state = Lg.Standing(e.key) end
+  if not mine then return 0, false end
+  return math.max(0, his - mine), state == "open"
+end
+
+-- open debt first (biggest first), open cases without debt next, then even and ahead; inside each the old rank.
+-- Debts are read once per sort, not per comparison.
+local function debtSort(list)
+  local debt, open = {}, {}
+  for i = 1, #list do
+    local e = list[i]
+    debt[e], open[e] = Store.Debt(e)
+  end
+  table.sort(list, function(a, b)
+    if debt[a] ~= debt[b] then return debt[a] > debt[b] end
+    if open[a] ~= open[b] then return open[a] end
+    return rankLess(a, b)
+  end)
+  return list
+end
+
 local SORTS = {
   rank = rankLess,
   recent = function(a, b)
@@ -494,12 +537,15 @@ local SORTS = {
   end,
 }
 
+-- sort "debt" (1.3.0): the order of decision 4 (open debt first); the book's default stays "rank" until the
+-- book switches over
 function Store.Ranked(filter, sort)
   filter = filter or "wanted"
   local out = {}
   for _, e in pairs(enemies or {}) do
     if filter == "all" or e.status == filter then out[#out + 1] = e end
   end
+  if sort == "debt" then return debtSort(out) end
   table.sort(out, SORTS[sort] or rankLess)
   return out
 end
@@ -519,6 +565,11 @@ end
 function Store.Bounty(e)
   if type(e) ~= "table" then return 0 end
   local kills, susp, rev = e.kills or 0, e.suspected or 0, e.revenge or 0
+  -- 1.3.0: the bounty sinks with "me" of the standing (own killing blows incl. those before he was listed, and the
+  -- revenge noted by hand); the same as revenge for every book converted from version 3
+  local Lg = ns.Ledger
+  local mine = Lg and Lg.Mine and type(e.key) == "string" and Lg.Mine(e.key, e) or nil
+  if mine then rev = mine end
   local assists = tonumber(e.assists) or 0
   local level = tonumber(e.level) or 0
   -- an assist is worth 40 % of a kill

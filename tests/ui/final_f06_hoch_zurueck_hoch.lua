@@ -107,7 +107,7 @@ sauber("neuer Stand mit der Fixture")
 local db1 = copy(_G.DeathNoteDB)
 erwartet("Upgrade: eigenes Buch vollstaendig", zaehle(db1.enemies) >= eigeneVorher and #db1.deaths >= todeVorher,
   zaehle(db1.enemies) .. "/" .. eigeneVorher)
-erwartet("Upgrade: DB-Version unveraendert 3", db1.version == 3, db1.version)
+erwartet("Upgrade: DB-Version 4 (1.3.0: rap sheet)", db1.version == 4, db1.version)
 local gl1 = db1.guild.lists["Die Testgilde"]
 erwartet("neuer Stand: Freigaben in beiden Listen, Bindung, Ausgeblendetes gespeichert",
   gl1 and gl1.hunts["Vier-Wicht"] and gl1.hunts["Zwei-Wicht"] and db1.friends.hunts["Drei-Wicht"] and db1.friends.hunts["Vier-Wicht"]

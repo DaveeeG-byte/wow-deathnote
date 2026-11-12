@@ -42,7 +42,7 @@ test("Migration an Autors echten Daten: Mittäter werden Beteiligte und Gesuchte
   eq(raw.enemies["Yoron-Pvp"].suspected, 2, "vorher: Yoron 2 Verdachtsfälle")
   local ns = loadAutor(raw)
   local S = ns.Store
-  eq(_G.DeathNoteDB.version, 3)
+  eq(_G.DeathNoteDB.version, 4)  -- 1.3.0: version 4 (rap sheet)
   local x = S.Get("Yoron-Pvp")
   eq(x.kills, 1); eq(x.assists, 2); eq(x.suspected, 0); eq(x.status, "wanted")
   eq(roles(x), "kill,assist,assist")

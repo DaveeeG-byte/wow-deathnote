@@ -61,6 +61,9 @@ Probe.APIS = {
   -- friends' book (Friends.lua, 1.2.0)
   "C_FriendList.GetNumFriends", "C_FriendList.GetFriendInfoByIndex", "C_FriendList.ShowFriends",
   "BNGetNumFriends", "BNSendGameData", "C_BattleNet.GetFriendAccountInfo", "C_BattleNet.GetGameAccountInfoByID",
+  -- rap sheet (Ledger.lua, 1.3.0): group size, maximum level, the client's level colour, duel to the death
+  "GetNumGroupMembers", "GetMaxLevelForPlayerExpansion", "GetMaxPlayerLevel", "MAX_PLAYER_LEVEL",
+  "GetQuestDifficultyColor", "UnitIsDeadOrGhost", "GetDuelerInfo", "StartDuel",
 }
 
 -- COMBAT_LOG_EVENT_UNFILTERED is not in this list: the client closes it to addons and an
@@ -70,7 +73,7 @@ Probe.EVENTS = {
   "CHAT_MSG_COMBAT_HONOR_GAIN", "PLAYER_PVP_KILLS_CHANGED", "NAME_PLATE_UNIT_ADDED", "UNIT_TARGET",
   "PLAYER_FOCUS_CHANGED", "UPDATE_MOUSEOVER_UNIT", "DUEL_REQUESTED", "DUEL_FINISHED",
   "CHAT_MSG_ADDON", "PLAYER_GUILD_UPDATE", "ADDON_RESTRICTION_STATE_CHANGED",
-  "FRIENDLIST_UPDATE", "BN_CHAT_MSG_ADDON", "CVAR_UPDATE",
+  "FRIENDLIST_UPDATE", "BN_CHAT_MSG_ADDON", "CVAR_UPDATE", "DUEL_TO_THE_DEATH_REQUESTED",
 }
 
 local scratch
@@ -208,10 +211,21 @@ function Probe.Run(verbose, opts)
       out.friends = pf
     end
   end
+  -- 1.3.0: own kills (Ledger.lua): counters, the honour pattern, the duel to the death; the cases of /dn debug stay
+  local keepKills = db and type(db.probe) == "table" and type(db.probe.kills) == "table" and db.probe.kills or nil
+  if ns.Ledger and ns.Ledger.ProbeSnapshot then
+    local okk, k = pcall(ns.Ledger.ProbeSnapshot)
+    if okk and type(k) == "table" then
+      k.cases = keepKills and type(keepKills.cases) == "table" and keepKills.cases or {}
+      k.deathDuelEvent = out.events.DUEL_TO_THE_DEATH_REQUESTED
+      out.kills = k
+    end
+  end
   if db then
     local keep = db.probe and db.probe.deaths
     db.probe = out
     out.deaths = keep or {}
+    if not out.kills and keepKills then out.kills = keepKills end
   end
   if verbose then
     -- 1.2.0: framing words from the language table; the values (codes, numbers) stay technical
@@ -235,6 +249,13 @@ function Probe.Run(verbose, opts)
       end
       Util.Print("nameplateShowEnemies: " .. tostring(out.plates.known) .. " (" .. tostring(out.plates.by) .. ") · "
         .. (#parts > 0 and table.concat(parts, " · ") or "CVAR_UPDATE -"))
+    end
+    -- technical line (no translation): own kills seen since login
+    if out.kills and type(out.kills.counts) == "table" then
+      local c = out.kills.counts
+      Util.Print(("PARTY_KILL %d (own %d, pet %d, dup %d, booked %d) · honour %d (named %d, alone %d) · cases %d · max level %s")
+        :format(c.partyKill or 0, c.own or 0, c.pet or 0, c.dup or 0, c.booked or 0, c.honor or 0, c.honorNamed or 0,
+        c.honorAlone or 0, #(out.kills.cases or {}), tostring(out.kills.maxLevel)))
     end
     if out.target then
       Util.Print(Fmt(L.PROBE_TARGET, { name = tostring(out.target.name), guid = tostring(out.target.guid),

@@ -52,6 +52,8 @@ Core.lua
 Store.lua
 Tracker.lua
 Attribution.lua
+Ranks.lua
+Ledger.lua
 Probe.lua
 Sync.lua
 Friends.lua

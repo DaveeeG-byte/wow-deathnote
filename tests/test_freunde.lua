@@ -333,7 +333,7 @@ test("Upgrade mit der Fixture, dann zurück auf 1.1.0 mit Freundesbuch und Absch
   a.login(); b.login(); W.run(60)
   local saved = a.env.DeathNoteDB
   eq(type(saved.friends), "table", "Freundesbuch angelegt")
-  eq(saved.version, 3, "keine neue DB-Version")
+  eq(saved.version, 4, "no newer DB version than 4 (1.3.0: rap sheet)")
   local n1 = 0
   for _ in pairs(saved.enemies) do n1 = n1 + 1 end
   eq(n1, n0, "kein Eintrag verloren")

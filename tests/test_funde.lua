@@ -336,7 +336,7 @@ test("B19 Kampflog: Standard aus, alte DB wird umgestellt, beim Login keine Regi
   M.Reset(); M.closedEvents = {}
   local ns = M.Load({ keepWorld = true, db = { version = 1, settings = { attribution = { combatlog = true } } } })
   _G.CombatLogGetCurrentEventInfo = function() end
-  eq(ns.Store.Setting("attribution.combatlog"), false); eq(_G.DeathNoteDB.version, 3)
+  eq(ns.Store.Setting("attribution.combatlog"), false); eq(_G.DeathNoteDB.version, 4)  -- 1.3.0: version 4 (rap sheet)
   ns.Attribution.Setup()
   for _, f in ipairs(M.frames) do no(f.events.COMBAT_LOG_EVENT_UNFILTERED, "nicht registriert") end
   ns.Probe.Run(false)

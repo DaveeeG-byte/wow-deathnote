@@ -11,7 +11,7 @@ end
 test("Leere DB: Defaults, READY gefeuert", function()
   local ns = M.Load()
   local db = _G.DeathNoteDB
-  eq(db.version, 3)
+  eq(db.version, 4)  -- 1.3.0: version 4 (rap sheet)
   eq(db.settings.alert.cooldown, 90)
   eq(db.settings.alert.minKills, 1)
   eq(db.settings.ui.minimap.angle, 215)
@@ -36,7 +36,7 @@ test("Alte/kaputte DB wird repariert, Werte bleiben", function()
     probe = "x",
   } })
   local db = _G.DeathNoteDB
-  eq(db.version, 3)
+  eq(db.version, 4)  -- 1.3.0: version 4 (rap sheet)
   eq(db.settings.alert.cooldown, 30, "Nutzerwert bleibt")
   eq(db.settings.alert.sound, true, "fehlender Default ergänzt")
   eq(type(db.settings.ui), "table")

@@ -16,7 +16,8 @@ M.ADDON_DIR = ADDON_DIR
 -- opts.lang = false (M.Load / W.client) leaves the language unchosen like a fresh install.
 -- GetLocale() returns M.client or M.locale (the client's language: the default without an own choice).
 M.FILES = { "Locale.lua", "Locales/enUS.lua", "Locales/deDE.lua",
-  "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Probe.lua", "Sync.lua", "Friends.lua", "Bounty.lua" }
+  "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Ranks.lua", "Ledger.lua", "Probe.lua", "Sync.lua",
+  "Friends.lua", "Bounty.lua" }
 M.locale = os.getenv("DN_LANG") or "deDE"
 
 -- the file list for the active M.locale (its file is added after deDE when it is another one)
@@ -107,7 +108,8 @@ function M.Reset()
   M.errors = {}
   M.chat = {}
   M.closedEvents = { COMBAT_LOG_EVENT_UNFILTERED = true }  -- Forever: closed to addons
-  M.unknownEvents = { CHAT_MSG_COMBAT_HONOR_GAIN = true }
+  -- 1.3.0: CHAT_MSG_COMBAT_HONOR_GAIN registers on Forever (probe in the real SavedVariables); nothing is unknown
+  M.unknownEvents = {}
   M.instance = { false, "none" }
   M.units = {}
   M.recap = nil          -- { id = n, events = {...} }  or a secret table via M.SecretTable()
@@ -190,7 +192,8 @@ function M.InstallGlobals()
   G.UNKNOWNOBJECT = "Unbekannt"
   G.SELFKILLOTHER = "Ihr habt %s getötet!"
   G.UNITDIESOTHER = "%s stirbt."
-  G.COMBATLOG_HONORGAIN = "%s stirbt, ehrenhafter Sieg Rang: %s (Geschätzte Ehrenpunkte: %d)"
+  -- 1.3.0: the text of the German Forever client (probe), not the Classic one
+  G.COMBATLOG_HONORGAIN = "%s stirbt (Ehrenhafter Sieg: %s). Ihr erhaltet %d Ehre."
   G.RAID_CLASS_COLORS = { WARRIOR = { r = 0.78, g = 0.61, b = 0.43 }, ROGUE = { r = 1, g = 0.96, b = 0.41 } }
   G.DEFAULT_CHAT_FRAME = { AddMessage = function(_, msg) M.chat[#M.chat + 1] = msg end }
   G.Enum = { DamageMeterType = { DamageTaken = 7, Deaths = 9 }, DamageMeterSessionType = { Overall = 0, Current = 1 } }
