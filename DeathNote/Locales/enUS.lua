@@ -600,9 +600,9 @@ L.STAMP_HUNT = "OPEN SEASON"  -- [max 20] stamp on a hit list target's poster
 -- Identity, hit list, alarm level, expiry (1.2.0) -----------------------------------------------
 L.FRIENDS_IMPOSTOR = "{name} posed as your friend {friend}: refused."  -- friends status line (one line on the House Rules, full in the tooltip); {name} = the stranger's full name, {friend} = the friend's name on your list
 L.FRIENDS_SHORT_IMPOSTOR = "Stranger refused"  -- [max 22] short status: a second full name with a friend's first name was refused
-L.ALERT_LEVEL = "Level {level}"  -- [max 12] alarm popup, right of the name: level seen just now; {level} = number
-L.ALERT_LEVEL_LAST = "last level {level}"  -- [max 20] alarm popup, right of the name: no live level, the one stored last; {level} = number
-L.ALERT_LEVEL_UNKNOWN = "Level ??"  -- [max 12] alarm popup, right of the name: the game shows a skull (far above you)
+L.ALERT_LEVEL = "Level {level}"  -- [max 12] alarm popup, at the front of the text line under the name: level seen just now; {level} = number
+L.ALERT_LEVEL_LAST = "last level {level}"  -- [max 20] alarm popup, at the front of the text line under the name: no live level, the one stored last; {level} = number
+L.ALERT_LEVEL_UNKNOWN = "Level ??"  -- [max 12] alarm popup, at the front of the text line under the name: the game shows a skull (far above you)
 L.ALERT_LINE_HUNT = "{text} · on the hit list ({names})"  -- alarm popup for your own wanted player who is also on the hit list; {text} = the line so far, {names} = who put him on it
 L.BANNER_NEW_HUNTS = "{count} new {count|target|targets}"  -- [max 24] message: several targets put on the hit list by others at once; {count} = number
 L.BANNER_NEW_HUNTS_LINE = "new on the hit list"  -- message, line under BANNER_NEW_HUNTS
