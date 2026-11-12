@@ -4,9 +4,10 @@
 
 ### Changed
 - Nothing overlaps any more, in all 21 languages, with long names and with full books:
-  - "How it works" scrolls with the mouse wheel; the imprint and the back button stand in a foot of their own and no longer lie over a paragraph. The House Rules sheets, the "Put on hit list" sheet and the case file of a death scroll the same way when their content is taller than the room.
+  - "How it works" scrolls with the mouse wheel; the imprint and the back button stand in a foot of their own and no longer lie over a paragraph. The House Rules sheets, the "Put on hit list" sheet and the case file of a death scroll the same way when their content is taller than the room. While more text follows below, the bottom edge fades softly into the paper.
   - Long names, counts, stamp words and labels get smaller or wrap instead of being cut. Where a text still has to be shortened, a tooltip shows it whole.
-  - The alarm shows the level at the start of its text line, so a long name keeps the whole width (smaller rather than cut).
+  - The alarm shows the level at the start of its text line, so a long name keeps the whole width (smaller rather than cut). Its text line shrinks down to 9 pt before anything is cut.
+  - Stamps on the kill message may take a third line; the Hungarian "pardoned" stamp got a shorter word.
   - The bottom row of the poster shares its width: "Strike" no longer runs into the second button.
   - The row and sort menu takes its width from its longest entry, stays on the screen and opens away from the nearer edges.
   - The book checks its size again when the game's resolution or UI scale changes.

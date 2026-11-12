@@ -620,7 +620,7 @@ end
 local function PageSet(page, v)
   v = math.max(0, math.min(page.range or 0, math.floor((v or 0) + 0.5)))
   page.offset = v
-  page.scroll:SetVerticalScroll(v)
+  page.scroll:SetVerticalScroll(v + (page.pin or 0))
   if page.bar:GetValue() ~= v then page.bar:SetValue(v) end
   PageFade(page)
 end
@@ -629,7 +629,10 @@ local function PageLayout(page, height)
   page.used = height
   page.body:SetHeight(height)
   page.range = math.max(0, height - page.viewH)
-  if page.range <= Look.PAGE_SLACK then page.range = 0 end
+  -- a small overhang gets no bar, but the content is pinned up by it (the top of a page has more room than that),
+  -- so the descenders of the last line are never cut off out of reach
+  page.pin = 0
+  if page.range <= Look.PAGE_SLACK then page.pin, page.range = page.range, 0 end
   page.bar:SetMinMaxValues(0, page.range)
   page.bar:SetShown(page.range > 0)
   PageSet(page, page.offset or 0)
@@ -685,7 +688,7 @@ function Look.Page(parent, opts)
   if bar.SetObeyStepOnDrag then bar:SetObeyStepOnDrag(true) end
   bar:SetScript("OnValueChanged", function(_, v)
     v = math.floor((v or 0) + 0.5)
-    if v ~= page.offset then page.offset = v; sf:SetVerticalScroll(v); PageFade(page) end
+    if v ~= page.offset then page.offset = v; sf:SetVerticalScroll(v + (page.pin or 0)); PageFade(page) end
   end)
   bar:Hide()
   page.scroll, page.body, page.foot, page.bar = sf, body, ft, bar
@@ -696,10 +699,13 @@ function Look.Page(parent, opts)
     over:SetFrameLevel(sf:GetFrameLevel() + 3)
     local fade = over:CreateTexture(nil, "OVERLAY")
     Look.Tex(fade, opts.paper or Look.TEX.page)
-    if fade.SetGradient then fade:SetGradient("VERTICAL", CreateColor(1, 1, 1, 1), CreateColor(1, 1, 1, 0)) end
     fade:Hide()
-    page.fade = fade
-    PageFadeAt(page)
+    -- without a working gradient there is no fade at all: an opaque strip of paper would hide the last lines
+    local ok = fade.SetGradient and pcall(fade.SetGradient, fade, "VERTICAL", CreateColor(1, 1, 1, 1), CreateColor(1, 1, 1, 0))
+    if ok then
+      page.fade = fade
+      PageFadeAt(page)
+    end
   end
   page.Layout = PageLayout
   page.Set = PageSet
