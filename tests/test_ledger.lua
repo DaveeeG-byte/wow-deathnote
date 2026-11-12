@@ -449,16 +449,21 @@ test("Awards: first entry, David (red, alone), same day, patience; arch-enemy at
   ok(L().Log()[1].f:find("g"), "group flag"); eq(L().Log()[1].j, 3, "hunt halved")
 end)
 
-test("REPUTE_RANK fires once per change of tier or path", function()
+test("REPUTE_RANK fires once per change of tier, REPUTE_PATH once per change of path", function()
   load(40)
+  local paths = {}
+  ns:On("REPUTE_PATH", function(...) paths[#paths + 1] = { ... } end)
   for i = 1, 4 do kill(seen("Opfer" .. i, "Gelb", 40)); M.Advance(20) end
   eq(#fired("REPUTE_RANK"), 1, "12 points: tier 2")
   local r = fired("REPUTE_RANK")[1]
   eq(r[2], 2); eq(r[3], nil); eq(r[4], 1); eq(r[5], nil)
+  eq(#paths, 0, "no path on tier 2")
   for i = 5, 10 do kill(seen("Opfer" .. i, "Gelb", 40)); M.Advance(20) end
   local rr = fired("REPUTE_RANK")
-  eq(#rr, 3, "tier 3 at 30 points, then the path at the 10th kill")
-  eq(rr[3][3], "e"); eq(L().Repute().path, "e"); eq(L().Repute().tier, 3)
+  eq(#rr, 2, "tier 3 at 27 points (9th kill), nothing more at the 10th")
+  eq(rr[2][2], 3); eq(rr[2][3], "e", "tier 3 comes with its path"); eq(rr[2][4], 2)
+  eq(#paths, 1); eq(paths[1][1], "e"); eq(paths[1][2], nil); eq(paths[1][3], 3)
+  eq(L().Repute().path, "e"); eq(L().Repute().tier, 3)
   eq(L().DB().tier, 3); eq(L().DB().path, "e")
 end)
 

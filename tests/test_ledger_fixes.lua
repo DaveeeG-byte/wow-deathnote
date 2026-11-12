@@ -415,4 +415,48 @@ test("Six kills on the same enemy, the clock set back a day before each: no fres
   eq(ns.Ledger.Log()[1].e, 3, "a new day: full honour again"); eq(v.dn, 1)
 end)
 
+---------------------------------------------------------------------------
+-- Tier 3 and above always has a path and a name (finding 12)
+---------------------------------------------------------------------------
+test("Tier 3 before the tenth counted kill: a path, a rank name, REPUTE_RANK with the path", function()
+  fresh(20)
+  local ranks, paths = {}, {}
+  ns:On("REPUTE_RANK", function(...) ranks[#ranks + 1] = { ... } end)
+  ns:On("REPUTE_PATH", function(...) paths[#paths + 1] = { ... } end)
+  for i = 1, 4 do kill(seen("Hoch" .. string.char(64 + i), "Tier", 35)); M.Advance(20) end
+  local r = ns.Ledger.Repute()
+  eq(r.tier, 3); eq(r.total, 40); eq(r.path, "j"); eq(r.counted, 4)
+  ok(ns.Ranks.Name(r.tier, r.path), "a rank name")
+  for _, x in ipairs(ranks) do
+    if x[1] >= 3 then ok(x[2] ~= nil, "REPUTE_RANK(" .. x[1] .. ") with a path") end
+  end
+  eq(#ranks, 2, "tier 2, 3"); eq(ranks[2][2], "j"); eq(#paths, 1, "the path once"); eq(paths[1][1], "j"); eq(paths[1][3], 3)
+end)
+
+test("Ranks.Title reads a broken tier as the nearest real one", function()
+  fresh()
+  eq(ns.Ranks.Title(11, "e", "notebook", "enUS"), ns.Ranks.Title(10, "e", "notebook", "enUS"))
+  eq(ns.Ranks.Title(nil, nil, "notebook", "enUS"), "Blank Page")
+  eq(ns.Ranks.Title(0 / 0, nil, "notebook", "enUS"), "Blank Page")
+end)
+
+test("Simulate: from tier 3 on there is always a path (any mix of bands, 2000 random lists)", function()
+  fresh()
+  local L = ns.Ledger
+  math.randomseed(1312)
+  for _ = 1, 2000 do
+    local list = {}
+    for i = 1, math.random(1, 14) do
+      list[i] = { L.BANDS[math.random(#L.BANDS)], { revenge = math.random(4) == 1, group = math.random(3) == 1,
+        nthToday = math.random(1, 6), kick = math.random(6) == 1 } }
+    end
+    local bad
+    L.Simulate(list, function(i, acc, mood, counted, path)
+      local t = L.Tier(acc.r + acc.e + acc.j + acc.s)
+      if t >= 3 and not path then bad = i end
+    end)
+    if bad then ok(false, "no path at tier 3+ after kill " .. bad); break end
+  end
+end)
+
 M.done("ledger_fixes")

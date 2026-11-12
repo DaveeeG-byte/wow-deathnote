@@ -163,6 +163,9 @@ end
 
 -- What the book shows as the rank: the name, else "Rank 6 · Path: Honour" (REPUTE_LINE).
 function Ranks.Title(tier, path, theme, lang)
+  -- a broken tier reads as the nearest real one (1..MAX_TIER)
+  tier = (type(tier) == "number" and tier == tier) and math.floor(tier) or 1
+  if tier < 1 then tier = 1 elseif tier > Ranks.MAX_TIER then tier = Ranks.MAX_TIER end
   local name = Ranks.Name(tier, path, theme, lang)
   if name then return name end
   local L, F = ns.L, ns.F

@@ -42,7 +42,8 @@ Ledger.KICK = 600            -- seconds: a second kill on the same victim within
 Ledger.WINDOW = 86400        -- seconds: the wear window per victim
 Ledger.WEAR = { 1, 0.8, 0.6, 0.4, 0.2 }   -- factor of the 1st..5th kill in the window, 0 from the 6th on
 Ledger.DECAY = 0.98          -- mood = mood * DECAY + points
-Ledger.PATH_FROM = 10        -- counted kills before a path is named
+Ledger.PATH_FROM = 10        -- counted kills before a path is named ...
+Ledger.PATH_TIER = 3         -- ... or this tier, whichever comes first (tiers 1 and 2 are common to all paths)
 Ledger.PATH_SWITCH = 1.15    -- another account must beat the current path by 15 % to take over
 Ledger.COUNT_MAX = 9999      -- a count read for the standing never goes beyond this (broken or pasted data)
 Ledger.HONOR_WAIT = 2        -- seconds the honour line waits for a PARTY_KILL of the same kill
@@ -85,6 +86,7 @@ local function round(x)
   if x >= 0 then return floor(x + 0.5) end
   return -floor(-x + 0.5)
 end
+local function total(acc) return acc.r + acc.e + acc.j + acc.s end
 
 ---------------------------------------------------------------------------
 -- Pure part (no WoW calls)
@@ -164,10 +166,14 @@ function Ledger.Tier(total)
   return tier, nxt and (nxt - total) or nil
 end
 
--- the path: the biggest account of mood, from PATH_FROM counted kills on; another one takes over only when it
--- beats the current path by PATH_SWITCH
-function Ledger.Path(mood, prevPath, counted)
-  if type(mood) ~= "table" or not finite(counted) or counted < Ledger.PATH_FROM then return nil end
+-- the path: the biggest account of mood, from PATH_FROM counted kills or tier PATH_TIER on (a tier 3 and above
+-- always has a path, so it always has a name); another one takes over only when it beats the current path by
+-- PATH_SWITCH
+function Ledger.Path(mood, prevPath, counted, tier)
+  if type(mood) ~= "table" then return nil end
+  local byKills = finite(counted) and counted >= Ledger.PATH_FROM
+  local byTier = finite(tier) and tier >= Ledger.PATH_TIER
+  if not (byKills or byTier) then return nil end
   local best, bv
   for _, p in ipairs(PATHS) do
     local v = finite(mood[p]) and mood[p] or 0
@@ -212,7 +218,7 @@ function Ledger.Simulate(list, each)
   local path
   for i, k in ipairs(list) do
     Ledger.Accrue(st, Ledger.Points(k[1], k[2]))
-    path = Ledger.Path(st.mood, path, st.counted)
+    path = Ledger.Path(st.mood, path, st.counted, (Ledger.Tier(total(st.acc))))
     if each then each(i, st.acc, st.mood, st.counted, path) end
   end
   local sum = st.acc.r + st.acc.e + st.acc.j + st.acc.s
@@ -330,6 +336,8 @@ local function sanitize(raw)
   for k in pairs(d.log) do if type(k) ~= "number" or k > #d.log then d.log[k] = nil end end
   while #d.log > Ledger.LOG_MAX do table.remove(d.log) end
   d.acc, d.mood = newAcc(d.acc), newAcc(d.mood)
+  -- a mood lost to broken data while the accounts stand: the accounts are the best guess (a path from tier 3 on)
+  if total(d.mood) <= 0 and total(d.acc) > 0 then for _, p in ipairs(PATHS) do d.mood[p] = d.acc[p] end end
   d.n = math.max(count(d.n), #d.log)
   d.counted = math.min(count(d.counted), d.n)
   d.tier = count(d.tier)
@@ -349,7 +357,6 @@ local function sanitize(raw)
   return d
 end
 
-local function total(acc) return acc.r + acc.e + acc.j + acc.s end
 
 ---------------------------------------------------------------------------
 -- Standing
@@ -675,7 +682,7 @@ function Ledger.Repute()
   if reputeCache then return reputeCache end
   local sum = total(db.acc)
   local tier, nxt = Ledger.Tier(sum)
-  reputeCache = { tier = tier, path = Ledger.Path(db.mood, db.path, db.counted), total = sum, next = nxt,
+  reputeCache = { tier = tier, path = Ledger.Path(db.mood, db.path, db.counted, tier), total = sum, next = nxt,
     needle = Ledger.Needle(db.mood), acc = db.acc, n = db.n, counted = db.counted, best = db.best, awards = db.awards,
     bands = db.bands }
   return reputeCache
@@ -1041,12 +1048,12 @@ local function book(info, opts)
   ns:Fire("OWN_KILL", key, row)
   ns:Fire("STANDING_CHANGED", key)
   local tier = Ledger.Tier(total(db.acc))
-  local path = Ledger.Path(db.mood, db.path, db.counted)
-  if tier ~= db.tier or path ~= db.path then
-    local oldTier, oldPath = db.tier, db.path
-    db.tier, db.path = tier, path
-    ns:Fire("REPUTE_RANK", tier, path, oldTier, oldPath)
-  end
+  local path = Ledger.Path(db.mood, db.path, db.counted, tier)
+  local oldTier, oldPath = db.tier, db.path
+  db.tier, db.path = tier, path
+  -- a banner needs no check of its own: REPUTE_RANK only when the tier changes, REPUTE_PATH only for the path
+  if tier ~= oldTier then ns:Fire("REPUTE_RANK", tier, path, oldTier, oldPath) end
+  if path ~= oldPath then ns:Fire("REPUTE_PATH", path, oldPath, tier) end
   updateHook()
   return true, key
 end
