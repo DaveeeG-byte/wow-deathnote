@@ -21,6 +21,8 @@ A.REVENGE_ENGAGE = 15         -- seconds: "I was fighting him"
 A.REVENGE_DEDUPE = 10         -- seconds: one kill reported by several events
 A.DUEL_WINDOW = 30            -- seconds after a duel event in which a death counts as duel
 A.PENDING_MAX = 10            -- seconds: an unfinished evaluation older than this is dropped
+A.DEATH_DUEL_AFTER = 30       -- 1.3.0: seconds after a duel to the death in which the opponent's kill or death is the duel's
+A.DEATH_DUEL_MAX = 900        -- 1.3.0: a duel to the death that never finished is let go after this long
 
 ---------------------------------------------------------------------------
 -- Pure part
@@ -540,6 +542,78 @@ local duelAt          -- GetTime of a duel request/start, cleared when the duel 
 -- do not happen, the duel ends at 1 HP; this only covers dying to someone else meanwhile)
 local function inDuel() return duelAt ~= nil and GetTime() - duelAt < A.DUEL_WINDOW end
 
+-- 1.3.0: a duel to the death ends with a real death, which is no world PvP. Only the opponent is held out (a third
+-- player who kills one of us meanwhile still counts): his death by me is no revenge, no rap sheet kill and no "taken
+-- down"; my death by him is no deed in the book. The opponent comes from DUEL_TO_THE_DEATH_REQUESTED (the
+-- challenger's name; GetDuelerInfo for the GUID where the client has it) or from my own StartDuel(target, _, true).
+-- Event, GetDuelerInfo and the third StartDuel argument are read this way by an addon on the same client; unmeasured
+-- here (/dn probe: probe.kills.deathDuel).
+local deathDuel   -- { first = lower first name, guid, at, ended } (GetTime)
+
+local function firstName(n)
+  n = Str(n)
+  if not n then return nil end
+  n = n:match("^([^%s%-]+)") or n
+  return n:lower()
+end
+
+function A.OnDeathDuel(name, guid)
+  local first = firstName(name)
+  if not guid then
+    guid = Str(Call(_G.GetDuelerInfo))
+    if guid and not guid:find("^Player%-") then guid = nil end
+  end
+  if not first and not guid then return false end
+  local d = deathDuel
+  -- the game may send both challenges for one duel: the same opponent keeps his record
+  if d and not d.ended and ((guid and d.guid == guid) or (first and d.first == first)) then
+    d.guid, d.first = d.guid or guid, d.first or first
+    return true
+  end
+  deathDuel = { first = first, guid = guid, at = GetTime() }
+  return true
+end
+
+-- my own challenge: StartDuel(unit or name, _, toTheDeath)
+function A.OnStartDuel(target, _, toTheDeath)
+  if not Util.True(toTheDeath) then return end
+  local unit = Str(target) or "target"
+  local guid, name
+  if Util.True(Call(_G.UnitExists, unit)) then
+    guid = Str(Call(_G.UnitGUID, unit))
+    name = Call(_G.UnitName, unit)
+  end
+  A.OnDeathDuel(Str(name) or Str(target), guid)
+end
+
+-- is this player (GUID, or first name when the GUID is not known) the opponent of a duel to the death that is
+-- under way or ended at most DEATH_DUEL_AFTER seconds ago?
+function A.DuelFoe(guid, name)
+  local d = deathDuel
+  if not d then return false end
+  local t = GetTime()
+  if (d.ended and t - d.ended > A.DEATH_DUEL_AFTER) or (not d.ended and t - d.at > A.DEATH_DUEL_MAX) then
+    deathDuel = nil
+    return false
+  end
+  guid = Str(guid)
+  if guid and d.guid then return guid == d.guid end
+  local first = firstName(name)
+  if not first and guid then
+    local _, _, _, _, _, n = Call(_G.GetPlayerInfoByGUID, guid)
+    first = firstName(n)
+  end
+  return first ~= nil and first == d.first
+end
+
+-- for /dn probe: the state without names
+function A.DeathDuelState()
+  local d = deathDuel
+  if not d then return nil end
+  return { guid = d.guid ~= nil, name = d.first ~= nil, ago = math.floor(GetTime() - d.at), ended = d.ended and
+    math.floor(GetTime() - d.ended) or nil }
+end
+
 local function stageOn(name)
   local v = ns.Store and ns.Store.Setting("attribution." .. name)
   return v ~= false
@@ -595,6 +669,11 @@ local function finalize(p, result)
   local Store = ns.Store
   if not Store then return end
   local counted = p.openWorld and not p.duel
+  -- 1.3.0: killed by the opponent of a duel to the death: the duel's death, no deed in the book
+  local ki = result.killerInfo
+  if counted and result.killerKey and type(ki) == "table" and A.DuelFoe(ki.guid, ki.name) then
+    counted, p.deathDuel = false, true
+  end
   local journal = {
     t = p.t, zone = p.zone, subzone = p.subzone, mapID = p.mapID, x = p.x, y = p.y,
     me = p.me, myLevel = p.myLevel, kind = result.kind or "unknown",
@@ -766,6 +845,9 @@ function A.Revenge(key, how)
   local Store = ns.Store
   if not (Store and key and Store.Get(key)) then return false end
   if not Util.IsOpenWorld() then return false end
+  -- 1.3.0: the opponent of a duel to the death
+  local e = Store.Get(key)
+  if A.DuelFoe(e.guid, e.name) then return false end
   local t = GetTime()
   if lastRevenge[key] and t - lastRevenge[key] < A.REVENGE_DEDUPE then return false end
   lastRevenge[key] = t
@@ -794,6 +876,7 @@ function A.OnPartyKill(attackerGUID, targetGUID)
   if not attackerGUID or not targetGUID or guidKind(targetGUID) ~= "Player" then return false end
   local me, pet = myGUID(), Str(Call(UnitGUID, "pet"))
   if attackerGUID ~= me and attackerGUID ~= pet then return false end
+  if A.DuelFoe(targetGUID) then return false end
   local key = keyForGUID(targetGUID)
   if key then return A.Revenge(key, "partykill") end
   return false
@@ -874,6 +957,11 @@ ns:RegisterEvent("CHAT_MSG_COMBAT_HONOR_GAIN", function(_, text) A.OnHonorGain(t
 ns:RegisterEvent("PLAYER_PVP_KILLS_CHANGED", function() A.OnPvPKillsChanged() end)
 ns:RegisterEvent("DUEL_REQUESTED", function() duelAt = GetTime() end)
 ns:RegisterEvent("DUEL_INBOUNDS", function() duelAt = GetTime() end)
+ns:RegisterEvent("DUEL_TO_THE_DEATH_REQUESTED", function(_, name) A.OnDeathDuel(name) end)
+if type(_G.hooksecurefunc) == "function" and type(_G.StartDuel) == "function" then
+  pcall(_G.hooksecurefunc, "StartDuel", function(...) pcall(A.OnStartDuel, ...) end)
+end
 ns:RegisterEvent("DUEL_FINISHED", function()
+  if deathDuel and not deathDuel.ended then deathDuel.ended = GetTime() end
   if _G.C_Timer and _G.C_Timer.After then _G.C_Timer.After(1, function() duelAt = nil end) else duelAt = nil end
 end)

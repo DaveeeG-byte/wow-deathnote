@@ -3450,6 +3450,9 @@ function Guild.OnPartyKill(attackerGUID, targetGUID)
   local meG, pet = Str(call1(_G.UnitGUID, "player")), Str(call1(_G.UnitGUID, "pet"))
   if attackerGUID ~= meG and attackerGUID ~= pet then return false end
   if not Util.IsOpenWorld() then return false end
+  -- 1.3.0: the opponent of a duel to the death is not "taken down" (Attribution.DuelFoe)
+  local A = ns.Attribution
+  if A and A.DuelFoe and A.DuelFoe(targetGUID) then return false end
   local key = hunted and huntKeyForGUID(targetGUID) or nil
   local mine = myFullName()
   if not mine then return false end
