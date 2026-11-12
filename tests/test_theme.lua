@@ -262,4 +262,47 @@ ns.Locale.RegisterWords("tiny", "enUS", function(T) T.TAB_WANTED = "Bounties"; T
   M.locale = saved
 end)
 
+---------------------------------------------------------------------------
+-- The themes of 1.3.0: harbor (Privateer's Ledger) and trade (The Workshop)
+---------------------------------------------------------------------------
+test("harbor and trade: stored choice activates the theme, its files, tints and words", function()
+  local saved = M.locale
+  M.locale = "deDE"
+  for id, want in pairs({ harbor = { "Kaperbuch", "harbor_dagger.tga", "KIELGEHOLT" }, trade = { "Kundenbuch", "trade_clamp.tga", "AUFTRAG ERLEDIGT" } }) do
+    local ns = M.Load({ db = { settings = { ui = { theme = id } } } })
+    eq(ns.Theme.id, id)
+    eq(#M.errors, 0, tostring(M.errors[1]))
+    eq(ns.L.BOOK_TITLE, want[1])
+    eq(ns.L.STAMP_REVENGE, want[3])
+    eq(ns.L.ACT_STRIKE, "Streichen")                        -- control word: the same in every theme
+    local Look = { MEDIA = "Interface\\AddOns\\DeathNote\\Media\\" }    -- the logic world has no ns.Look
+    ns.Theme.Fill(Look)
+    ok(Look.TEX.pin:find(want[2], 1, true), Look.TEX.pin)
+    ok(Look.TEX.cover:find("g_cover.tga", 1, true), Look.TEX.cover)
+    ok(Look.TINT.cover and Look.TINT.page and Look.TINT.paper and Look.TINT.stamp, "tints")
+    -- no German picture with burnt-in text: frame plus the theme's word also in German
+    eq(Look.STAMP_BAKED.rache, nil)
+    ok(Look.STAMP_BLANK.rache:find(id .. "_stamp_rache.tga", 1, true), Look.STAMP_BLANK.rache)
+    eq(Look.THEME_SOUND, "glocke")
+  end
+  M.locale = saved
+end)
+
+test("harbor and trade in a language without theme words (frFR, ruRU, plPL): only that language's own words", function()
+  local saved = M.locale
+  for _, code in ipairs({ "frFR", "ruRU", "plPL" }) do
+    M.locale = code
+    local base = M.Load({ db = { settings = { ui = { theme = "notebook" } } } })
+    local words = {}
+    for k in pairs(base.Locale.THEME_KEYS) do words[k] = rawget(base.L, k) end
+    for _, id in ipairs({ "harbor", "trade" }) do
+      local ns = M.Load({ db = { settings = { ui = { theme = id } } } })
+      eq(ns.Theme.id, id, code)
+      for k, w in pairs(words) do eq(rawget(ns.L, k), w, code .. " " .. id .. " " .. k) end
+      eq(ns.Locale.themeWords, 0, code .. " " .. id)
+    end
+  end
+  M.locale = saved
+end)
+
 M.done("test_theme")

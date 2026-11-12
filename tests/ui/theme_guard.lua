@@ -22,7 +22,7 @@ local function check(name, cond, info)
 end
 
 local AM, BM, G
-local function world(code, theme)
+local function world(code, theme, db)
   package.loaded.mock_wow, package.loaded.mock = nil, nil
   AM = require("mock_wow")
   BM = require("mock")
@@ -38,7 +38,7 @@ local function world(code, theme)
   end
   local saved = AM.FILES
   AM.FILES = files
-  local ns = AM.Load({ noLogin = true, db = { settings = { ui = { theme = theme } } }, before = function()
+  local ns = AM.Load({ noLogin = true, db = db or { settings = { ui = { theme = theme } } }, before = function()
     AM.units.player.guild = "Die Wuchtwaldwallwaechter"
     _G.C_FriendList = {
       GetNumFriends = function() return #FR end,
@@ -213,6 +213,148 @@ for _, code in ipairs(CODES) do
     check(code .. ": the probe's word stands where the black book shows " .. k, shown[k] == true)
   end
   check(code .. ": show words of the black book seen in the views", n >= 8, n)
+end
+
+---------------------------------------------------------------------------
+-- The real themes (every registered theme except the base and the probe): where a theme sets its own value,
+-- no value of the black book shows through. Colours (rgb) and textures the theme replaces must not stand at the
+-- same element in both runs; values the theme keeps (or uses for another role) are allowed. The theme's own
+-- show words stand where the black book shows its word.
+---------------------------------------------------------------------------
+local function copy(t)
+  if type(t) ~= "table" then return t end
+  local o = {}
+  for k, v in pairs(t) do o[k] = copy(v) end
+  return o
+end
+local REAL = {}
+do
+  local ns = world("enUS", "notebook")
+  for _, id in ipairs(ns.Theme.List()) do if id ~= "notebook" and id ~= "probe" then REAL[#REAL + 1] = id end end
+end
+check("real themes registered (harbor, trade)", #REAL >= 2, table.concat(REAL, ","))
+
+for _, code in ipairs(CODES) do
+  local ns0 = world(code, "notebook")
+  local base = ns0.L
+  local nbTex = copy(ns0.Look.TEX)
+  local nbBlank, nbBaked = copy(ns0.Look.STAMP_BLANK), copy(ns0.Look.STAMP_BAKED)
+  local control = {}
+  for k, v in pairs(base) do if type(v) == "string" and not ns0.Locale.THEME_KEYS[k] then control[v] = true end end
+  views(ns0)
+  local A = snapshot()
+  for _, id in ipairs(REAL) do
+    local ns = world(code, id)
+    check(code .. " " .. id .. ": theme active", ns.Theme.id == id, ns.Theme.id)
+    local T, d = ns.Theme, ns.Theme.Get(id)
+    -- colours the theme replaces, minus every colour the theme itself shows (any role, also inherited)
+    local own, forbidden = {}, {}
+    for _, role in ipairs(T.COLORS) do own[rgbKey(T.Color(role, id))] = true end
+    for key in pairs(d.tint or {}) do local c = T.ParseColor(d.tint[key]); if c then own[rgbKey(c)] = true end end
+    for role in pairs(d.color or {}) do
+      local nb = rgbKey(T.Color(role, "notebook"))
+      if nb ~= rgbKey(T.Color(role, id)) and not own[nb] and not CLASS[nb] then forbidden[nb] = role end
+    end
+    -- textures the theme replaces (stamps: the theme's frames take the place of the black book's pictures)
+    local ownTex, badTex = {}, {}
+    for _, v in pairs(ns.Look.TEX) do ownTex[v] = true end
+    for _, v in pairs(ns.Look.STAMP_BLANK) do ownTex[v] = true end
+    for key in pairs(d.tex or {}) do if nbTex[key] and not ownTex[nbTex[key]] then badTex[nbTex[key]] = key end end
+    if d.stamp then
+      for _, t in ipairs({ nbBlank, nbBaked }) do for k, v in pairs(t) do if not ownTex[v] then badTex[v] = "stamp " .. k end end end
+    end
+    -- show words the theme replaces in this language
+    local words = {}
+    for k in pairs(ns.Locale.THEME_KEYS) do
+      local w0, w1 = rawget(base, k), rawget(ns.L, k)
+      if type(w0) == "string" and w0 ~= w1 and not control[w0] then words[k] = { w0, w1 } end
+    end
+    views(ns)
+    local B = snapshot()
+    check(code .. " " .. id .. ": no errors", #AM.errors + #BM.violations == 0, tostring(AM.errors[1] or BM.violations[1]))
+    check(code .. " " .. id .. ": same objects as the black book", #A == #B, #A .. " / " .. #B)
+    local leaks, seen, n = {}, {}, 0
+    local function leak(what, o)
+      local key = what .. " " .. tostring(o.src)
+      if not seen[key] then seen[key] = true; leaks[#leaks + 1] = ("%s at %s (%s)"):format(what, tostring(o.src), tostring(o.kind)) end
+    end
+    for i = 1, math.min(#A, #B) do
+      local a, b = A[i], B[i]
+      for _, k in ipairs(COLS) do
+        local x, y = a[k], b[k]
+        if type(x) == "table" and type(y) == "table" and not (x[4] == 0 and y[4] == 0) then
+          n = n + 1
+          local r = rgbKey(x)
+          if r == rgbKey(y) and forbidden[r] then leak(k .. " " .. forbidden[r] .. " " .. r, a) end
+        end
+      end
+      for _, k in ipairs({ "tex", "bg", "edge" }) do
+        if type(a[k]) == "string" then n = n + 1 end
+        if type(a[k]) == "string" and a[k] == b[k] and badTex[a[k]] then leak(k .. " " .. badTex[a[k]] .. " " .. a[k], a) end
+      end
+      if type(a.text) == "string" and a.text == b.text then
+        for k, w in pairs(words) do if a.text == w[1] and #w[1] >= 3 then leak("word " .. k .. " '" .. w[1] .. "'", a) end end
+      end
+    end
+    table.sort(leaks)
+    local nf, nt, nw = 0, 0, 0
+    for _ in pairs(forbidden) do nf = nf + 1 end
+    for _ in pairs(badTex) do nt = nt + 1 end
+    for _ in pairs(words) do nw = nw + 1 end
+    check(("%s %s: no value of the black book where the theme sets its own (%d colours, %d textures, %d words; %d values compared)")
+      :format(code, id, nf, nt, nw, n), #leaks == 0 and nf > 0 and nt > 0, "\n      " .. table.concat(leaks, "\n      "))
+    -- the theme's words reach the screen where the black book shows its word
+    for k, w in pairs(words) do
+      local onA, onB = false, false
+      for i = 1, math.min(#A, #B) do
+        if A[i].text == w[1] then onA = true end
+        if B[i].text == w[2] then onB = true end
+      end
+      if onA then check(code .. " " .. id .. ": the theme's word stands where the black book shows " .. k, onB, w[2]) end
+    end
+  end
+end
+
+---------------------------------------------------------------------------
+-- There and back: /dn theme <id>, reload, /dn theme notebook, reload: the book is the black book again
+-- (every colour, texture, font and text of every element as in a fresh black book). Settings only travel.
+---------------------------------------------------------------------------
+do
+  local code = CODES[1]
+  local ns = world(code, "notebook")
+  views(ns)
+  local A = snapshot()
+  local settings
+  ns = world(code, nil, { settings = { ui = { theme = "notebook" } } })
+  for _, id in ipairs(REAL) do
+    _G.SlashCmdList.DEATHNOTE("theme " .. id)
+    check(code .. ": /dn theme " .. id .. " is stored and waits for /reload", ns.Theme.Pending() and ns.Theme.StoredChoice() == id)
+    settings = copy(_G.DeathNoteDB.settings)
+    ns = world(code, nil, { settings = settings })
+    check(code .. ": after the reload " .. id .. " is active", ns.Theme.id == id, ns.Theme.id)
+  end
+  _G.SlashCmdList.DEATHNOTE("theme notebook")
+  check(code .. ": /dn theme notebook waits for /reload", ns.Theme.Pending() and ns.Theme.StoredChoice() == "notebook")
+  settings = copy(_G.DeathNoteDB.settings)
+  ns = world(code, nil, { settings = settings })
+  check(code .. ": back on the black book", ns.Theme.id == "notebook", ns.Theme.id)
+  views(ns)
+  local C = snapshot()
+  check(code .. ": same objects as before the round trip", #A == #C, #A .. " / " .. #C)
+  local diff = {}
+  for i = 1, math.min(#A, #C) do
+    local a, c = A[i], C[i]
+    for _, k in ipairs({ "tex", "font", "text", "bg", "edge" }) do
+      if a[k] ~= c[k] and #diff < 8 then diff[#diff + 1] = ("%s %s: %s / %s"):format(tostring(a.src), k, tostring(a[k]), tostring(c[k])) end
+    end
+    for _, k in ipairs(COLS) do
+      local x, y = a[k], c[k]
+      if (type(x) == "table") ~= (type(y) == "table") or (type(x) == "table" and (rgbKey(x) ~= rgbKey(y) or x[4] ~= y[4])) then
+        if #diff < 8 then diff[#diff + 1] = ("%s %s"):format(tostring(a.src), k) end
+      end
+    end
+  end
+  check(code .. ": every element as in a fresh black book after the round trip", #diff == 0, "\n      " .. table.concat(diff, "\n      "))
 end
 
 io.write(("theme guard: %d green, %d red\n"):format(ok, bad))
