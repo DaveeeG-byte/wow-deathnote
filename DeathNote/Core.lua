@@ -7,7 +7,7 @@ _G.DeathNote = ns
 ns.name = ADDON
 ns.Util = {}
 local Util = ns.Util
--- Texte (1.2.0): ns.L ist ab ADDON_LOADED gefuellt (Locale.lua); L.KEY nur in Funktionen lesen
+-- Texts (1.2.0): ns.L is filled from ADDON_LOADED on (Locale.lua); read L.KEY inside functions only
 local L, Fmt = ns.L, ns.F
 
 ---------------------------------------------------------------------------
@@ -270,9 +270,9 @@ end
 
 -- The two time forms of the addon (1.1.0, one place for all of them; 1.2.0: words and date formats
 -- from the language table, TIME_*):
---   Util.Ago(t)  relative, for lists and sub lines: "gerade eben", "vor 23 Min.", "vor 3 Std.",
---                "vor 2 Tagen"; from 7 days on the day "11.11." (with year "11.11.25" when not this year)
---   Util.When(t) absolute, for files, deeds and tooltips: "11.11. 01:01" ("11.11.2025 01:01" when not this year)
+--   Util.Ago(t)  relative, for lists and sub lines: "just now", "23 min ago", "3 h ago",
+--                "2 days ago"; from 7 days on the day "11/11" (with year "11/11/25" when not this year)
+--   Util.When(t) absolute, for files, deeds and tooltips: "11/11 01:01" ("11/11/2025 01:01" when not this year)
 -- `date` is the client's os.date (used e.g. by DBM-Core/localization.de.lua:10).
 local dateFn = _G.date or (os and os.date)
 
@@ -467,7 +467,7 @@ function Util.BountyReport(disp, gold, ok, why)
   disp = Str(disp) or "?"
   if ok then
     if gold and gold > 0 then
-      -- 1.2.1 fix: "Gilde und Freunde sehen es" only when there is somebody to see it
+      -- 1.2.1 fix: "Guild and friends with DeathNote see it" only when there is somebody to see it
       local G, F = ns.Guild, ns.Friends
       local fdb = F and F.DB and F.DB()
       local shared = (G and G.HuntTargets and G.HuntTargets()) or (type(fdb) == "table" and type(fdb.members) == "table"
@@ -696,7 +696,7 @@ function ns.HandleSlash(msg)
   elseif cmd == "hilfe" or cmd == "help" or cmd == "?" then
     if #HELP == 0 then buildHelp() end
     for i = 1, #HELP do Util.Print(HELP[i]) end
-  elseif ns.Humor and select(2, pcall(ns.Humor.Slash, cmd)) == true then -- Humor: versteckte Befehle (nur de/en, nur sonst unbekannte Woerter)
+  elseif ns.Humor and select(2, pcall(ns.Humor.Slash, cmd)) == true then -- Humor: hidden commands (deDE/enUS only, only words that are otherwise unknown)
   else
     Util.Print(L.CHAT_UNKNOWN_CMD)
   end
