@@ -75,6 +75,8 @@ end
 
 -- list (1.2.0, optional): eigene Schriftliste statt Look.FONT[kind], z. B. fuer den Eigennamen einer Sprache
 function Look.Font(fs, kind, size, flags, list)
+  -- 1.2.2: kind, size and flags stay on the string (Look.FitText steps through the sizes of the same font)
+  if not list then fs.fontKind, fs.fontSize, fs.fontFlags = kind, size, flags end
   list = list or Look.FONT[kind] or Look.FONT.body
   for i = 1, #list do
     if fs:SetFont(list[i], size or 12, flags or "") then return fs end
@@ -394,10 +396,214 @@ function Look.Alarm(kind)
   return PlayBuiltin("alert", ch) and "warnung" or nil
 end
 
--- Schriftgrade: nur diese acht Stufen (Design-Regel), kleinster 10
-Look.SIZE = { 10, 11, 13, 16, 19, 22, 26, 46 }
+-- Schriftgrade: nur diese Stufen (Design-Regel). 1.2.2: 9 ist die Notstufe fuer Knoepfe, Stempel und Menues,
+-- wenn ein Wort einer Sprache sonst nicht passt (vorher schon so im Code, jetzt in der Skala).
+Look.SIZE = { 9, 10, 11, 13, 16, 19, 22, 26, 46 }
 -- Groessenstufen fuer Buch und Alarm
 Look.SCALES = { 0.8, 0.9, 1.0, 1.15, 1.3, 1.5 }
+
+------------------------------------------------------------------------
+-- 1.2.2 layout building blocks: one line that shrinks, wraps and shows the whole text in a tooltip,
+-- a tooltip only when cut, menus kept on the screen, and a page with standing head and foot and a body
+-- that scrolls when its content is taller than the room.
+------------------------------------------------------------------------
+-- real width of a text on one line (GetUnboundedStringWidth; GetStringWidth can stop at the set width)
+function Look.TextW(fs)
+  local f = fs.GetUnboundedStringWidth
+  if f then
+    local ok, w = pcall(f, fs)
+    if ok and type(w) == "number" and not Look.Secret(w) then return w end
+  end
+  f = fs.GetStringWidth
+  if not f then return nil end
+  local ok, w = pcall(f, fs)
+  if ok and type(w) == "number" and not Look.Secret(w) then return w end
+  return nil
+end
+
+-- is the shown text cut (ellipsis or lines missing)? Secret-safe like Details; nil when the client cannot say
+function Look.IsCut(fs)
+  if not fs.IsTruncated then return nil end
+  local ok, v = pcall(fs.IsTruncated, fs)
+  if not ok or Look.Secret(v) or v == nil then return nil end
+  return v and true or false
+end
+
+-- height of a text in UI units (GetStringHeight; fallback: number of lines x size)
+function Look.TextH(fs, lines)
+  local ok, h = pcall(fs.GetStringHeight, fs)
+  if ok and type(h) == "number" and not Look.Secret(h) and h > 0 then return h end
+  local t = fs.GetText and fs:GetText()
+  if type(t) ~= "string" or t == "" then return 0 end
+  return (lines or 1) * ((fs.fontSize or 12) + 2)
+end
+
+-- Look.FitText(fs, text, opts): set text so that it is never cut silently. Order of round 1.2.2:
+-- it fits: done; else the next smaller size of opts.sizes (default: the current one only); then wrap up to
+-- opts.lines lines in the smallest size; last an ellipsis by the client and fs.full = text for the tooltip
+-- (Look.TipIfCut). opts.must = true: never an ellipsis worth hiding (no tooltip possible there): smallest size and
+-- all lines. opts.kind/flags: font (default: what Look.Font set last). Returns true when the whole text shows.
+-- Costs: one SetText per tried size; same text and width as last time: nothing.
+function Look.FitText(fs, text, opts)
+  opts = opts or {}
+  text = text or ""
+  local width = opts.width or (fs.GetWidth and fs:GetWidth()) or 0
+  if fs.fitText == text and fs.fitW == width and fs.fitOpts == opts then return not fs.cut end
+  fs.fitText, fs.fitW, fs.fitOpts = text, width, opts
+  fs.fit, fs.full = true, text
+  local kind, flags = opts.kind or fs.fontKind or "body", opts.flags or fs.fontFlags
+  local sizes = opts.sizes or { fs.fontSize or 11 }
+  local lines = opts.lines or 1
+  local function size(s)
+    if fs.fontSize ~= s or fs.fontKind ~= kind then Look.Font(fs, kind, s, flags) end
+  end
+  local function cut()
+    local c = Look.IsCut(fs)
+    if c ~= nil then return c end
+    local w = Look.TextW(fs)
+    return w ~= nil and width > 0 and w > width + 0.5
+  end
+  if fs.SetMaxLines then fs:SetMaxLines(lines) end
+  fs:SetWordWrap(false)
+  for i = 1, #sizes do
+    size(sizes[i])
+    fs:SetText(text)
+    if not cut() then fs.cut = false; return true end
+    -- opts.wrapFirst: running text wraps in this size before it gets smaller
+    if lines > 1 and opts.wrapFirst then
+      fs:SetWordWrap(true)
+      fs:SetText(text)
+      if not cut() then fs.cut = false; return true end
+      fs:SetWordWrap(false)
+    end
+  end
+  if lines > 1 then
+    fs:SetWordWrap(true)
+    fs:SetText(text)
+    if not cut() then fs.cut = false; return true end
+  end
+  fs.cut = true
+  return false
+end
+
+-- tooltip with the whole text over owner, only while fs is cut (fs.full from Look.FitText, else its text)
+local function TipEnter(self)
+  local fs = self.cutFs
+  if not fs or not (fs.cut or Look.IsCut(fs)) then return end
+  local t = fs.full or (fs.GetText and fs:GetText())
+  if type(t) ~= "string" or t == "" or Look.Secret(t) then return end
+  GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+  GameTooltip:SetText(t, Look.BONE[1], Look.BONE[2], Look.BONE[3], 1, true)
+  GameTooltip:Show()
+  self.cutTip = true
+end
+local function TipLeave(self)
+  if self.cutTip then self.cutTip = nil; GameTooltip:Hide() end
+end
+function Look.TipIfCut(owner, fs)
+  if not owner.cutHooked then
+    owner.cutHooked = true
+    if owner:GetScript("OnEnter") then owner:HookScript("OnEnter", TipEnter) else owner:SetScript("OnEnter", TipEnter) end
+    if owner:GetScript("OnLeave") then owner:HookScript("OnLeave", TipLeave) else owner:SetScript("OnLeave", TipLeave) end
+    if owner.EnableMouse and not owner:IsMouseEnabled() then owner:EnableMouse(true) end
+  end
+  owner.cutFs = fs
+  fs.tipOwner = owner
+  return owner
+end
+
+-- frame opened at the cursor: clamped to the screen and opening away from the nearer edges
+-- (cursor right of the middle: grows to the left; in the lower half: grows upwards)
+function Look.KeepOnScreen(frame, x, y)
+  frame:SetClampedToScreen(true)
+  if type(x) ~= "number" or type(y) ~= "number" or Look.Secret(x) or Look.Secret(y) then return end
+  local w, h = UIParent:GetWidth(), UIParent:GetHeight()
+  if type(w) ~= "number" or type(h) ~= "number" or Look.Secret(w) or Look.Secret(h) then w, h = nil, nil end
+  local right = w and x > w / 2
+  local low = h and y < h / 2
+  local p = (low and "BOTTOM" or "TOP") .. (right and "RIGHT" or "LEFT")
+  frame:ClearAllPoints()
+  frame:SetPoint(p, UIParent, "BOTTOMLEFT", x, y)
+  frame.openPoint = p
+end
+
+-- Look.Page(parent, opts): standing head (above opts.top), body that scrolls (only stacked from the top,
+-- nothing hangs at its bottom), standing foot (opts.foot high, buttons and foot lines).
+-- opts: top (px from the top of parent), foot (px), w, h (size of parent), bar (px from the right edge for the
+-- scroll bar), step (px per mouse wheel step). Fields: page.body (scroll child), page.foot, page.scroll, page.bar.
+-- page:Layout(height) sets the height of the content, shows the bar only when needed, keeps the offset in range;
+-- page:Top() goes back to the start. No OnUpdate: the bar and the wheel move it, nothing else.
+local function PageSet(page, v)
+  v = math.max(0, math.min(page.range or 0, math.floor((v or 0) + 0.5)))
+  page.offset = v
+  page.scroll:SetVerticalScroll(v)
+  if page.bar:GetValue() ~= v then page.bar:SetValue(v) end
+end
+local function PageLayout(page, height)
+  height = math.max(1, math.ceil(height or page.used or 1))
+  page.used = height
+  page.body:SetHeight(height)
+  page.range = math.max(0, height - page.viewH)
+  page.bar:SetMinMaxValues(0, page.range)
+  page.bar:SetShown(page.range > 0)
+  PageSet(page, page.offset or 0)
+  return page.range > 0
+end
+function Look.Page(parent, opts)
+  local top, foot = opts.top or 0, opts.foot or 0
+  local w, h = opts.w or parent:GetWidth(), opts.h or parent:GetHeight()
+  local page = { viewH = h - top - foot, offset = 0, range = 0, step = opts.step or 40 }
+  local sf = CreateFrame("ScrollFrame", nil, parent)
+  sf:SetPoint("TOPLEFT", 0, -top)
+  sf:SetSize(w, page.viewH)
+  local body = CreateFrame("Frame", nil, sf)
+  body:SetPoint("TOPLEFT")      -- like AceGUI's ScrollFrame container: anchored, then made the scroll child
+  body:SetSize(w, 1)
+  sf:SetScrollChild(body)
+  sf:EnableMouseWheel(true)
+  sf:SetScript("OnMouseWheel", function(_, delta) PageSet(page, page.offset - delta * page.step) end)
+  local ft = CreateFrame("Frame", nil, parent)
+  ft:SetPoint("BOTTOMLEFT", 0, 0)
+  ft:SetSize(w, math.max(1, foot))
+  -- scroll bar in the style of the list: 14 px grip, 5 px visible
+  local bar = CreateFrame("Slider", nil, parent)
+  bar:SetOrientation("VERTICAL")
+  bar:SetSize(14, page.viewH - 8)
+  bar:SetPoint("TOPRIGHT", -(opts.bar or 6), -top - 4)
+  local track = bar:CreateTexture(nil, "BACKGROUND")
+  track:SetColorTexture(Look.INK[1], Look.INK[2], Look.INK[3], 0.12)
+  track:SetWidth(5)
+  track:SetPoint("TOP"); track:SetPoint("BOTTOM")
+  local thumb = bar:CreateTexture(nil, "OVERLAY")
+  thumb:SetColorTexture(0, 0, 0, 0)
+  thumb:SetSize(14, 34)
+  bar:SetThumbTexture(thumb)
+  local tv = bar:CreateTexture(nil, "OVERLAY", nil, 1)
+  tv:SetColorTexture(Look.INK[1], Look.INK[2], Look.INK[3], 0.75)
+  tv:SetWidth(5)
+  tv:SetPoint("TOP", thumb, "TOP"); tv:SetPoint("BOTTOM", thumb, "BOTTOM")
+  bar:SetMinMaxValues(0, 0)
+  bar:SetValueStep(1)
+  if bar.SetObeyStepOnDrag then bar:SetObeyStepOnDrag(true) end
+  bar:SetScript("OnValueChanged", function(_, v)
+    v = math.floor((v or 0) + 0.5)
+    if v ~= page.offset then page.offset = v; sf:SetVerticalScroll(v) end
+  end)
+  bar:Hide()
+  page.scroll, page.body, page.foot, page.bar = sf, body, ft, bar
+  page.Layout = PageLayout
+  page.Set = PageSet
+  function page:Top() PageSet(self, 0) end
+  -- foot height after its content is known (e.g. a foot line that needs two lines)
+  function page:SetFoot(fh)
+    self.viewH = h - top - fh
+    ft:SetHeight(math.max(1, fh))
+    sf:SetHeight(self.viewH)
+    bar:SetHeight(self.viewH - 8)
+    PageLayout(self)
+  end
+  return page
+end
 
 ------------------------------------------------------------------------
 -- Gilde: jeder Zugriff auf ns.Guild nur ueber diese Helfer (Sync.lua kann fehlen)
@@ -788,6 +994,7 @@ local function Build()
   popup.title:SetWordWrap(false)
   popup.more = Look.Text(popup, "body", 10, Look.BONE)
   popup.more:SetPoint("BOTTOMRIGHT", -10, 8)
+  popup.more:SetWordWrap(false)
 
   -- Fahndungsfoto
   local photo = CreateFrame("Frame", nil, popup)
@@ -815,10 +1022,12 @@ local function Build()
   Look.Tex(tape, Look.TEX.tape, 0.9, 0.86, 0.7, 0.6)
   tape:SetRotation(0.12)
 
-  -- Name in Feder-Handschrift, Klassenfarbe; erscheint mit kurzer Verzoegerung wie frisch eingetragen
+  -- Name in Feder-Handschrift, Klassenfarbe; erscheint mit kurzer Verzoegerung wie frisch eingetragen.
+  -- 1.2.2: die ganze Breite (286 px) fuer den Name; die Stufe steht vorn in der Textzeile. Kein Tooltip moeglich
+  -- (der Secure-Knopf liegt darueber): lieber kleiner (22, 19, 16, 13 pt) als gekuerzt.
   popup.name = Look.Text(popup, "hand", 22, nil, nil)
   popup.name:SetPoint("TOPLEFT", 86, -30)
-  popup.name:SetPoint("RIGHT", popup, "RIGHT", -12, 0)
+  popup.name:SetWidth(W - 86 - 12)
   popup.name:SetJustifyH("LEFT")
   popup.name:SetWordWrap(false)
   popup.stroke = popup:CreateTexture(nil, "ARTWORK")
@@ -832,18 +1041,13 @@ local function Build()
   popup.line:SetPoint("TOPLEFT", popup.name, "BOTTOMLEFT", 0, -6)
   popup.line:SetPoint("RIGHT", popup, "RIGHT", -12, 0)
   popup.line:SetJustifyH("LEFT")
+  popup.line:SetWidth(W - 86 - 12)
   popup.line:SetMaxLines(2)
-
-  -- Stufe rechts in der Namenszeile; hoeher als du: in Warnfarbe mit dem Abstand ("Stufe 63 (+3)").
-  -- 1.2.0: keine eigene Warnzeile mehr, die zweite Textzeile bleibt ganz lesbar
-  popup.level = Look.Text(popup, "body", 11, Look.BONE)
-  popup.level:SetPoint("TOPRIGHT", -12, -38)
-  popup.level:SetJustifyH("RIGHT")
-  popup.level:SetWordWrap(false)
 
   popup.hint = Look.Text(popup, "body", 10, { 0.62, 0.58, 0.52 })
   popup.hint:SetPoint("BOTTOMLEFT", 86, 8)
-  popup.hint:SetPoint("RIGHT", popup, "RIGHT", -76, 0)
+  -- 1.2.2: der Hinweis endet vor "+n weitere" (vorher fester Abstand, zwei- und dreistellige Zahlen ragten hinein)
+  popup.hint:SetPoint("RIGHT", popup.more, "LEFT", -8, 0)
   popup.hint:SetJustifyH("LEFT")
   popup.hint:SetWordWrap(false)
 
@@ -978,8 +1182,10 @@ function Look.LevelLine(unit, stored)
   return text, nil
 end
 
-local function LineFor(e)
-  local place = Look.LastPlace(e)
+-- drop (1.2.2): what gives way first when the line does not fit in two lines: 1 = the zone, 2 = also "last ..."
+local function LineFor(e, drop)
+  drop = drop or 0
+  local place = drop < 1 and Look.LastPlace(e)
   local d = Look.LastDeed(e)
   local ago = Look.Ago(e.lastKill or (d and d.t))
   local k, a = tonumber(e.kills) or 0, Look.Assists(e)
@@ -995,7 +1201,7 @@ local function LineFor(e)
   else
     s = L.ALERT_LINE_MANUAL
   end
-  if ago then s = Fmt(L.ALERT_LINE_LAST, { text = s, time = ago }) end
+  if ago and drop < 2 then s = Fmt(L.ALERT_LINE_LAST, { text = s, time = ago }) end
   if place and place ~= L.PLACE_UNKNOWN then s = Fmt(L.ALERT_LINE_IN, { text = s, zone = place }) end
   if (e.revenge or 0) > 0 then s = Fmt(L.ALERT_LINE_REVENGE, { text = s, times = Look.Times(e.revenge) }) end
   return s
@@ -1037,17 +1243,31 @@ local function GuildLineFor(g)
 end
 
 -- Ziel der Abschussliste: wer freigegeben hat, dazu der Grund
-local function HuntLineFor(h)
+-- 1.2.2: drop >= 1: the reason as in the list (at most Look.WHY_SHORT characters, then "…"), 2: one name only
+Look.WHY_SHORT = 24
+function Look.ShortWhy(why, n)
+  local count, cut = 0, nil
+  for pos in why:gmatch("()[%z\1-\127\194-\244]") do
+    count = count + 1
+    if count == n + 1 then cut = pos; break end
+  end
+  if not cut then return why end
+  return why:sub(1, cut - 1):gsub("%s+$", "") .. "…"
+end
+local function HuntLineFor(h, drop)
+  drop = drop or 0
   local names = type(h.names) == "table" and h.names or {}
-  local s = #names > 0 and Fmt(L.HUNT_LINE_BY, { names = Look.NameList(names, 2) }) or L.HUNT_LINE_RELEASED
+  local s = #names > 0 and Fmt(L.HUNT_LINE_BY, { names = Look.NameList(names, drop >= 2 and 1 or 2) }) or L.HUNT_LINE_RELEASED
   -- der Grund ist Freitext des Spielers und wird nie uebersetzt
-  if type(h.why) == "string" and h.why ~= "" then s = Fmt(L.HUNT_LINE_REASON, { text = s, reason = h.why }) end
+  if type(h.why) == "string" and h.why ~= "" and not Look.Secret(h.why) then
+    s = Fmt(L.HUNT_LINE_REASON, { text = s, reason = drop >= 1 and Look.ShortWhy(h.why, Look.WHY_SHORT) or h.why })
+  end
   return s
 end
 
 -- Eigenes Buch: steht der Gesuchte zugleich auf der Abschussliste, nennt der Alarm sie (1.2.0)
-local function OwnLine(e)
-  local s = LineFor(e)
+local function OwnLine(e, drop)
+  local s = LineFor(e, drop)
   local h = Look.HasGuild() and Look.GCall("Hunt", e.key, "all")
   if type(h) == "table" and not h.hidden then
     -- 1.2.0: nur, wenn ein anderer freigegeben hat; der eigene Name steht nie darin
@@ -1068,31 +1288,35 @@ local function GuildTitle(e, guild)
   return L.ALERT_TITLE_GUILD
 end
 
+Look.FIT_TITLE, Look.FIT_TITLE_NR1 = { sizes = { 13, 11 } }, { sizes = { 16, 13, 11 } }
+Look.FIT_NAME = { sizes = { 22, 19, 16, 13 } }
+Look.FIT_LINE = { sizes = { 11 }, lines = 2, must = true, wrapFirst = true }
+Look.FIT_LINE_LAST = { sizes = { 11, 10 }, lines = 2, must = true, wrapFirst = true }
 local function Fill(e, unit, how, guild)
   local rank = (not guild and e.status == "wanted" and ns.Store.Rank) and ns.Store.Rank(e.key) or nil
   local nr1 = rank == 1
-  Look.Font(popup.title, "title", nr1 and 16 or 13)
-  popup.title:SetText(guild and GuildTitle(e, guild) or HeaderFor(e, rank))
-  -- 1.2.0: a long title in another language shrinks instead of being cut (288 px between photo and edge)
-  if nr1 then
-    local ok, w = pcall(popup.title.GetStringWidth, popup.title)
-    if ok and type(w) == "number" and not Look.Secret(w) and w > 286 then Look.Font(popup.title, "title", 14) end
-  end
-  popup.name:SetText(Look.Name(e))
+  -- 1.2.2: a long title in another language shrinks step by step instead of being cut (288 px)
+  popup.title:SetWidth(W - 86 - 10)
+  Look.FitText(popup.title, guild and GuildTitle(e, guild) or HeaderFor(e, rank), nr1 and Look.FIT_TITLE_NR1 or Look.FIT_TITLE)
+  Look.FitText(popup.name, Look.Name(e), Look.FIT_NAME)
   popup.name:SetTextColor(Look.ClassRGB(e.class))
-  popup.line:SetText((guild == "hunt" and HuntLineFor(e)) or (guild and GuildLineFor(e)) or OwnLine(e))
+  -- Stufe vorn in der Textzeile (1.2.2; vorher rechts neben dem Namen, sie nahm ihm bis 132 px), hoeher als du
+  -- in Warnfarbe mit dem Abstand ("Stufe 63 (+3)")
+  local lt, warn = Look.LevelLine(unit, e.level)
+  popup.levelText, popup.levelWarn = lt, warn or nil
+  local lead = ""
+  if lt then
+    local c = warn and Look.WARN or Look.BONE
+    lead = ("|cff%02x%02x%02x%s|r · "):format(c[1] * 255, c[2] * 255, c[3] * 255, lt)
+  end
+  -- Textzeile in hoechstens zwei Zeilen; passt sie nicht, weicht zuerst der Ort, dann "zuletzt" (eigenes Buch)
+  -- bzw. der lange Grund, dann der zweite Name (Abschussliste); zuletzt 10 pt
+  for drop = 0, 2 do
+    local s = (guild == "hunt" and HuntLineFor(e, drop)) or (guild and GuildLineFor(e)) or OwnLine(e, drop)
+    if Look.FitText(popup.line, lead .. s, drop < 2 and Look.FIT_LINE or Look.FIT_LINE_LAST) or (guild and guild ~= "hunt") then break end
+  end
   popup.how = how
   SetEdge(nr1)
-  -- Stufe rechts neben dem Namen, hoeher als du in Warnfarbe (1.2.0: statt einer Warnzeile)
-  local lt, warn = Look.LevelLine(unit, e.level)
-  popup.level:SetText(lt or "")
-  local lc = warn and Look.WARN or Look.BONE
-  popup.level:SetTextColor(lc[1], lc[2], lc[3], 1)
-  popup.level.warn = warn or nil
-  popup.name:ClearAllPoints()
-  popup.name:SetPoint("TOPLEFT", 86, -30)
-  if lt then popup.name:SetPoint("RIGHT", popup.level, "LEFT", -6, 0)
-  else popup.name:SetPoint("RIGHT", popup, "RIGHT", -12, 0) end
 
   -- SetUnit wirft nicht immer, sondern meldet ein nicht ladbares Modell auch mit false
   local shown = false

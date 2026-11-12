@@ -39,7 +39,7 @@ AM.AddEnemy("mouseover", { name = "Ziel", surname = "Eins", guid = "Player-1-ZE"
 AM.FireEvent("UPDATE_MOUSEOVER_UNIT"); tick()
 local popup = rawget(G, "DeathNoteAlert")
 erwartet("Alarm im Kampf fuer ein Ziel der Abschussliste, Stufe mit Abstand (fix-3)", popup and popup:IsShown()
-  and (popup.level._text or ""):find("(+20)", 1, true) ~= nil)
+  and (popup.levelText or ""):find("(+20)", 1, true) ~= nil and (popup.line._text or ""):find("(+20)", 1, true) ~= nil)
 kampf(false); kampf(true)                      -- Kampfende und neuer Kampf bei offenem Popup
 ns:Fire("HUNT_BAGGED", "Ziel-Eins", "Kollege Lang", _G.time(), "guild"); tick()
 ns:Fire("HUNT_NEW", 3, "Ziel-Zwei", "Kollege Lang", "guild"); tick()

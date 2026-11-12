@@ -79,38 +79,44 @@ local k1 = ns.Store.AddManual("Hoch", "Drueber")
 check("Alarm fuer den eigenen Gesuchten (hoeher)", sehen("Hoch", "Drueber", "Player-1-HD", 43))
 -- fix-3: keine eigene Warnzeile mehr; die Stufe selbst traegt den Abstand und steht in Warnfarbe
 local function warnInk(fs) return fs._tc and fs._tc[1] == 1 and fs._tc[3] < 0.3 end
-check("Stufe rechts neben dem Namen, mit Abstand", popup.level._text == "Stufe 43 (+3)", popup.level._text)
-check("Stufe in Warnfarbe", warnInk(popup.level))
+-- 1.2.2: the level leads the text line (in its colour) instead of standing right of the name; Lvl() reads it back
+local function Lvl()
+  local t = popup.levelText or ""
+  local lead = (popup.line._text or ""):match("^|cff%x%x%x%x%x%x(.-)|r · ")
+  return { _text = (lead == t) and t or ("<line: " .. tostring(lead) .. ">"), _tc = popup.levelWarn and { 1, 0.62, 0.18 } or { 0.93, 0.9, 0.82 } }
+end
+check("Stufe rechts neben dem Namen, mit Abstand", Lvl()._text == "Stufe 43 (+3)", Lvl()._text)
+check("Stufe in Warnfarbe", warnInk(Lvl()))
 check("keine Warnzeile", popup.warn == nil)
 check("Popup so hoch wie vorher (108), Zeile zweizeilig", popup:GetHeight() == 108 and popup.line._maxl == 2,
       tostring(popup:GetHeight()) .. " / " .. tostring(popup.line._maxl))
-check("Name endet vor der Stufe", popup.name._points[2] and popup.name._points[2][2] == popup.level)
+check("Name has the whole width (level moved into the text line)", #popup.name._points == 1 and popup.name._w == 384 - 86 - 12)
 ns.Store.Remove(k1)
 
 local k2 = ns.Store.AddManual("Eins", "Mehr")
 check("Alarm (eine Stufe hoeher)", sehen("Eins", "Mehr", "Player-1-EM", 41))
-check("eine hoeher: Stufe 41 (+1) in Warnfarbe", popup.level._text == "Stufe 41 (+1)" and warnInk(popup.level), popup.level._text)
+check("eine hoeher: Stufe 41 (+1) in Warnfarbe", Lvl()._text == "Stufe 41 (+1)" and warnInk(Lvl()), Lvl()._text)
 ns.Store.Remove(k2)
 
 local k3 = ns.Store.AddManual("Gleich", "Auf")
 check("Alarm (gleich)", sehen("Gleich", "Auf", "Player-1-GA", 40))
-check("gleich: Stufe ohne Abstand, nicht in Warnfarbe, Zeile zweizeilig", popup.level._text == "Stufe 40" and not warnInk(popup.level)
-      and popup.line._maxl == 2, tostring(popup.level._text))
+check("gleich: Stufe ohne Abstand, nicht in Warnfarbe, Zeile zweizeilig", Lvl()._text == "Stufe 40" and not warnInk(Lvl())
+      and popup.line._maxl == 2, tostring(Lvl()._text))
 ns.Store.Remove(k3)
 
 local k4 = ns.Store.AddManual("Klein", "Drunter")
 check("Alarm (niedriger)", sehen("Klein", "Drunter", "Player-1-KD", 22))
-check("niedriger: nicht in Warnfarbe", popup.level._text == "Stufe 22" and not warnInk(popup.level))
+check("niedriger: nicht in Warnfarbe", Lvl()._text == "Stufe 22" and not warnInk(Lvl()))
 ns.Store.Remove(k4)
 
 local k5 = ns.Store.AddManual("Toten", "Kopf")
 check("Alarm (Totenkopf)", sehen("Toten", "Kopf", "Player-1-TK", -1))
-check("Totenkopf: Stufe ?? in Warnfarbe", popup.level._text == "Stufe ??" and warnInk(popup.level), tostring(popup.level._text))
+check("Totenkopf: Stufe ?? in Warnfarbe", Lvl()._text == "Stufe ??" and warnInk(Lvl()), tostring(Lvl()._text))
 ns.Store.Remove(k5)
 
 local k6 = ns.Store.AddManual("Kein", "Wert")
 check("Alarm (keine Stufe vom Client)", sehen("Kein", "Wert", "Player-1-KW", false))
-check("kein Wert: Stufe ?? in Warnfarbe", popup.level._text == "Stufe ??" and warnInk(popup.level), popup.level._text)
+check("kein Wert: Stufe ?? in Warnfarbe", Lvl()._text == "Stufe ??" and warnInk(Lvl()), Lvl()._text)
 ns.Store.Remove(k6)
 
 -- Secret: erst pruefen, dann vergleichen; ersatzweise die gespeicherte Stufe ("zuletzt")
@@ -126,8 +132,8 @@ local e7 = ns.Store.Get(k7)
 AM.FireEvent("UPDATE_MOUSEOVER_UNIT"); tick()
 popup = rawget(G, "DeathNoteAlert")
 check("Secret: Alarm ohne Fehler", popup:IsShown() and #AM.errors == 0, AM.errors[1])
-check("Secret: gespeicherte Stufe als zuletzt", e7.level == nil or (popup.level._text or ""):find("^zuletzt Stufe " .. tostring(e7.level)) ~= nil,
-      tostring(popup.level._text) .. " / " .. tostring(e7.level))
+check("Secret: gespeicherte Stufe als zuletzt", e7.level == nil or (Lvl()._text or ""):find("^zuletzt Stufe " .. tostring(e7.level)) ~= nil,
+      tostring(Lvl()._text) .. " / " .. tostring(e7.level))
 BM.levelFn = nil
 AM.errors = {}
 ns.Store.Remove(k7)
@@ -137,13 +143,13 @@ guildMsg(P.EncodeHunt({ key = "Ohne-Stufe", display = "Ohne Stufe", t = time(), 
 tick(1); quiet()
 ns:Fire("GUILD_ENEMY_SPOTTED", "Ohne-Stufe", nil, "other", "hunt"); tick()
 popup = rawget(G, "DeathNoteAlert")
-check("unbekannt: Alarm ohne Stufe", popup:IsShown() and popup.level._text == "", tostring(popup.level._text))
+check("unbekannt: Alarm ohne Stufe", popup:IsShown() and popup.levelText == nil and not (popup.line._text or ""):find("^|c"), tostring(popup.levelText))
 -- gespeicherte Stufe ohne Einheit: "zuletzt"
 guildMsg(P.EncodeHunt({ key = "Mit-Stufe", display = "Mit Stufe", level = 44, t = time(), by = "Kollege Wurst", why = "x" }))
 tick(1); quiet()
 ns:Fire("GUILD_ENEMY_SPOTTED", "Mit-Stufe", nil, "other", "hunt"); tick()
-check("ohne Einheit: zuletzt Stufe 44 (+4) in Warnfarbe", popup.level._text == "zuletzt Stufe 44 (+4)" and warnInk(popup.level),
-      tostring(popup.level._text))
+check("ohne Einheit: zuletzt Stufe 44 (+4) in Warnfarbe", Lvl()._text == "zuletzt Stufe 44 (+4)" and warnInk(Lvl()),
+      tostring(Lvl()._text))
 clean("W2 Stufe im Alarm")
 
 -- kein Aufruf im heissen Pfad: Namensplakette eines Feindes ohne Alarm fragt keine Stufe

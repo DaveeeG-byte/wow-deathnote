@@ -73,7 +73,7 @@ local WHITELIST = {
     SetRotation SetDrawLayer SetAtlas]], REGION),
   FontString = set([[SetFont SetFontObject SetText GetText SetFormattedText SetTextColor SetShadowOffset
     SetShadowColor SetJustifyH SetJustifyV SetWordWrap SetMaxLines SetSpacing GetStringWidth GetStringHeight
-    IsTruncated SetRotation SetNonSpaceWrap]], REGION),
+    IsTruncated SetRotation SetNonSpaceWrap GetUnboundedStringWidth]], REGION),
   Frame = FRAME,
   Button = BUTTON,
   CheckButton = set("SetChecked GetChecked", BUTTON),
@@ -81,7 +81,7 @@ local WHITELIST = {
     HighlightText SetFont SetFontObject SetTextColor SetTextInsets SetJustifyH SetCursorPosition Insert]], FRAME),
   Slider = set([[SetOrientation SetMinMaxValues GetMinMaxValues SetValue GetValue SetValueStep SetObeyStepOnDrag
     SetThumbTexture]], FRAME),
-  ScrollFrame = set("SetScrollChild SetVerticalScroll GetVerticalScroll", FRAME),
+  ScrollFrame = set("SetScrollChild SetVerticalScroll GetVerticalScroll GetVerticalScrollRange", FRAME),
   PlayerModel = set("SetUnit ClearModel SetCamDistanceScale SetPortraitZoom SetPosition SetFacing", FRAME),
   GameTooltip = set("SetOwner SetText AddLine AddDoubleLine GetUnit ClearLines NumLines", FRAME),
   StatusBar = set("SetMinMaxValues SetValue GetValue SetStatusBarTexture SetStatusBarColor", FRAME),
@@ -112,6 +112,15 @@ local function new(kind, name, parent, template)
               _mouse = (kind == "Button" or kind == "CheckButton" or kind == "EditBox" or kind == "Slider") }
   if kind ~= "Texture" and kind ~= "FontString" and kind ~= "AnimationGroup" and kind ~= "Animation" then
     o._shown = (kind == "Frame" or kind == "Button") and true or true
+  end
+  -- 1.2.2: where the object was made (only for the layout guard, M.trace): first addon file in the stack
+  if M.trace then
+    for lvl = 3, 8 do
+      local info = debug.getinfo(lvl, "Sl")
+      if not info then break end
+      local src = info.source or ""
+      if src:find("DeathNote/[%w]+%.lua$") then o._src = src:match("([%w]+%.lua)$") .. ":" .. tostring(info.currentline); break end
+    end
   end
   o._secure = (template or ""):find("Secure") ~= nil
   o._backdrop = (template or ""):find("BackdropTemplate") ~= nil
@@ -256,8 +265,13 @@ end
 local function rectUI(f, depth)
   if f == M.G.UIParent then return 0, 0, f._w, f._h end
   depth = (depth or 0) + 1
-  if depth > 20 or not f._points or #f._points ~= 1 then return nil end
-  local pt = f._points[1]
+  -- scroll child (1.2.2): sits at the top left of its ScrollFrame, moved up by the offset
+  local pt
+  if f._parent and f._parent._child == f then
+    pt = { "TOPLEFT", f._parent, "TOPLEFT", 0, f._parent._vscroll or 0 }
+  end
+  if not pt and (depth > 20 or not f._points or #f._points ~= 1) then return nil end
+  pt = pt or f._points[1]
   local p, rel, rp, x, y = pt[1], pt[2], pt[3], pt[4], pt[5]
   if type(rel) == "number" then rel, rp, x, y = f._parent, p, pt[2], pt[3]
   elseif type(rel) == "string" then rel, rp, x, y = f._parent, rel, pt[3], pt[4] end
@@ -319,14 +333,127 @@ function methods.StartMoving(self) self._moving = true; self._userPlaced = true 
 function methods.StopMovingOrSizing(self) self._moving = false end
 function methods.SetUserPlaced(self, v) self._userPlaced = v and true or false end
 function methods.SetFontObject(self, o) self._fontObject = o end
--- Textbreite: im Client gemessen; im Mock nur mit M.measure eine Schaetzung (Zeichen x Grad x Faktor),
--- sonst nil wie ein ungelayouteter Text (die Rueckfaelle der Oberflaeche laufen dann mit)
-local WIDTH = { ["Fonts\\MORPHEUS.TTF"] = 0.5, ["Fonts\\FRIZQT__.TTF"] = 0.52, ["Fonts\\NIM_____.ttf"] = 0.45, ["Fonts\\SKURRI_CYR.TTF"] = 0.6 }
-function methods.GetStringWidth(self)
-  if not M.measure or type(self._text) ~= "string" then return nil end
-  local n = #self._text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("[\128-\191]", "")
-  return n * (self._fontSize or 12) * (WIDTH[self._font] or 0.5)
+-- Text width: measured in the client; in the mock only with M.measure an estimate, otherwise nil like a
+-- text that is not laid out yet (the fallbacks of the UI then run too).
+-- 1.2.2: factors at the wide end of the real fonts (calibrated against the client screenshot of round 1.2.2):
+-- em width per character for mixed case; text that is mostly capitals counts 0.70 per letter (stamps, labels),
+-- CJK and Hangul 1.07 em, spaces 0.30 em in capitals text. Line height 1.10 x size (plus SetSpacing).
+local WIDTH = { ["Fonts\\MORPHEUS.TTF"] = 0.56, ["Fonts\\MORPHEUS_CYR.TTF"] = 0.60, ["Fonts\\FRIZQT__.TTF"] = 0.56,
+  ["Fonts\\FRIZQT___CYR.TTF"] = 0.58, ["Fonts\\NIM_____.ttf"] = 0.60, ["Fonts\\SKURRI.TTF"] = 0.70,
+  ["Fonts\\SKURRI_CYR.TTF"] = 0.70, ["Fonts\\ARIALN.TTF"] = 0.45 }
+M.WIDTH, M.CAPS, M.CJK, M.LINE = WIDTH, 0.70, 1.07, 1.10
+local function wideCp(cp)
+  return (cp >= 0x1100 and cp <= 0x115F) or (cp >= 0x2E80 and cp <= 0xA4CF) or (cp >= 0xAC00 and cp <= 0xD7A3)
+    or (cp >= 0xF900 and cp <= 0xFAFF) or (cp >= 0xFE30 and cp <= 0xFE4F) or (cp >= 0xFF00 and cp <= 0xFF60)
 end
+-- characters of a string: { width in em, is a space } (colour codes removed)
+local function glyphs(text, font)
+  text = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+  local f = WIDTH[font] or 0.56
+  local up, low = 0, 0
+  for c in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+    local b1, b2 = c:byte(1), c:byte(2)
+    if (b1 >= 65 and b1 <= 90) or (b1 == 0xC3 and b2 and b2 >= 0x80 and b2 <= 0x9E) or (b1 == 0xD0 and b2 and b2 >= 0x80 and b2 <= 0xAF) then up = up + 1
+    elseif (b1 >= 97 and b1 <= 122) or (b1 == 0xC3 and b2 and b2 >= 0x9F) or (b1 == 0xD0 and b2 and b2 >= 0xB0) or b1 == 0xD1 then low = low + 1 end
+  end
+  local caps = up > 0 and up >= low
+  local out = {}
+  for c in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+    local b = c:byte(1)
+    local cp = b
+    if #c == 3 then cp = (b - 0xE0) * 4096 + (c:byte(2) - 128) * 64 + (c:byte(3) - 128) end
+    if c == " " then out[#out + 1] = { caps and 0.30 or f, true }
+    elseif c == "\n" then out[#out + 1] = { 0, "\n" }
+    elseif #c == 3 and wideCp(cp) then out[#out + 1] = { M.CJK, false, true }
+    else out[#out + 1] = { caps and math.max(f, M.CAPS) or f, false } end
+  end
+  return out
+end
+-- width of the text on one line (widest line when the text has line breaks)
+function M.Unbounded(self)
+  if type(self._text) ~= "string" then return nil end
+  local size, best, w = self._fontSize or 12, 0, 0
+  for _, g in ipairs(glyphs(self._text, self._font)) do
+    if g[2] == "\n" then w = 0 else w = w + g[1] * size end
+    if w > best then best = w end
+  end
+  return best
+end
+-- width a text gets from its frame: SetWidth, or two horizontal anchors (left edge of the first, right of the second)
+function M.EffWidth(self)
+  if self._wset then return self._w end
+  local pts = self._points
+  if #pts == 2 then
+    local a, b = pts[1], pts[2]
+    local function xOf(pt)
+      local p, rel, rp, x = pt[1], pt[2], pt[3], pt[4]
+      if type(rel) == "number" then rel, rp, x = self._parent, p, rel
+      elseif type(rel) == "string" then rel, rp, x = self._parent, rel, pt[3] end
+      rel, rp, x = rel or self._parent, rp or p, x or 0
+      local l, _, r = M.RectUI(rel)
+      if not l then return nil end
+      local ax = rp:find("LEFT") and 0 or rp:find("RIGHT") and 1 or 0.5
+      return l + (r - l) * ax + x
+    end
+    local l, r = xOf(a), xOf(b)
+    if l and r and r > l then return r - l end
+  end
+  return nil
+end
+-- greedy word wrap like the client: lines needed and whether a single word is wider than the line
+function M.Lines(self)
+  if type(self._text) ~= "string" or self._text == "" then return 0, false end
+  local width = M.EffWidth(self)
+  local size = self._fontSize or 12
+  if self._wrap == false or not width then return 1, false end
+  local lines, w, word, wide = 1, 0, 0, false
+  local function flushWord()
+    if w > 0 and w + word > width + 0.5 then lines = lines + 1; w = 0 end
+    if word > width + 0.5 then wide = true end
+    w = w + word; word = 0
+  end
+  for _, g in ipairs(glyphs(self._text, self._font)) do
+    if g[2] == "\n" then flushWord(); lines = lines + 1; w = 0
+    elseif g[2] then flushWord(); w = w + g[1] * size
+    elseif g[3] then flushWord(); word = g[1] * size; flushWord()   -- CJK breaks between characters
+    else word = word + g[1] * size end
+  end
+  flushWord()
+  return lines, wide
+end
+function methods.GetStringWidth(self)
+  if not M.measure then return nil end
+  return M.Unbounded(self)
+end
+function methods.GetUnboundedStringWidth(self)
+  if not M.measure then return nil end
+  return M.Unbounded(self)
+end
+function methods.GetStringHeight(self)
+  if not M.measure or type(self._text) ~= "string" then return nil end
+  local n = M.Lines(self)
+  if self._maxl and self._maxl > 0 and n > self._maxl then n = self._maxl end
+  local size = self._fontSize or 12
+  return n * size * M.LINE + math.max(0, n - 1) * (self._spacing or 0)
+end
+function methods.IsTruncated(self)
+  if not M.measure or type(self._text) ~= "string" then return nil end
+  local width = M.EffWidth(self)
+  if not width then return false end
+  if self._wrap == false then return (M.Unbounded(self) or 0) > width + 0.5 end
+  local n, wide = M.Lines(self)
+  return wide or (self._maxl and self._maxl > 0 and n > self._maxl) or false
+end
+function methods.SetClampedToScreen(self, v) self._clamped = v and true or false end
+-- ScrollFrame: child, offset, range (child height minus own height)
+function methods.SetScrollChild(self, c) self._child = c end
+function methods.SetVerticalScroll(self, v) self._vscroll = v end
+function methods.GetVerticalScroll(self) return self._vscroll or 0 end
+function methods.GetVerticalScrollRange(self)
+  local c = self._child
+  return c and math.max(0, (c._h or 0) - (self._h or 0)) or 0
+end
+function methods.EnableMouseWheel(self, v) self._wheel = v and true or false end
 function methods.SetColorTexture(self, r, g, b, a) self._color = { r, g, b, a }; self._tex = nil end
 function methods.GetName(self) return self._name end
 function methods.GetParent(self) return self._parent end

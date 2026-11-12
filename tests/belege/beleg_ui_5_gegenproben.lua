@@ -175,15 +175,16 @@ do
       local popup = rawget(W2.BM.G, "DeathNoteAlert")
       if not (popup and popup:IsShown()) then okAll, err = false, case .. ": kein Popup" else
         local pl = W2.frameBox(popup)
-        local ll, _, lr = W2.box(popup.level)
+        -- 1.2.2: the level leads the text line in the warning colour; the name has the whole width up to the edge
         local nl, _, nr = W2.frameBox(popup.name)
         local feld = nr - nl
         if feld < worst then worst = feld end
-        if not (popup.level.warn == true and nr <= ll and ll - pl >= 86 + 100 and lr - pl <= 384 - 12 + 0.5) then okAll, err = false, case .. ": Lage" end
+        local lead = (popup.line._text or ""):match("^|cff%x%x%x%x%x%x(.-)|r")
+        if not (popup.levelWarn == true and lead == popup.levelText and nr - pl <= 384 - 12 + 0.5 and feld >= 280) then okAll, err = false, case .. ": Lage" end
       end
       local n2, e2 = W2.errs(); if n2 > 0 then okAll, err = false, e2 end
     end
-    K.check(("3 %s: Stufe in Warnfarbe rechts, Name endet davor (kleinstes Namensfeld %d px)"):format(code, worst), okAll, err)
+    K.check(("3 %s: Stufe in Warnfarbe vorn in der Textzeile, Name mit ganzer Breite (kleinstes Namensfeld %d px)"):format(code, worst), okAll, err)
   end
 end
 
