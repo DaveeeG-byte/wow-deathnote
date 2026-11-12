@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.2.2 (2026-11-12)
+
+### Changed
+- Nothing overlaps any more, in all 21 languages, with long names and with full books:
+  - "How it works" scrolls with the mouse wheel; the imprint and the back button stand in a foot of their own and no longer lie over a paragraph. The House Rules sheets, the "Put on hit list" sheet and the case file of a death scroll the same way when their content is taller than the room.
+  - Long names, counts, stamp words and labels get smaller or wrap instead of being cut. Where a text still has to be shortened, a tooltip shows it whole.
+  - The alarm shows the level at the start of its text line, so a long name keeps the whole width (smaller rather than cut).
+  - The bottom row of the poster shares its width: "Strike" no longer runs into the second button.
+  - The row and sort menu takes its width from its longest entry, stays on the screen and opens away from the nearer edges.
+  - The book checks its size again when the game's resolution or UI scale changes.
+- The status line "Enemy nameplates are off" follows the nameplates at once, also when you switch them with a key while the book is open. `/dn probe` shows which event switched them.
+- The minimap button now runs through LibDBIcon-1.0 and LibDataBroker-1.1, so minimap button collectors recognise it. Its position and "Show minimap button" carry over from 1.2.1. Without the libraries DeathNote falls back to its own button.
+
+### Added
+- Embedded libraries in `DeathNote/Libs/`: LibStub, CallbackHandler-1.0, LibDataBroker-1.1 and LibDBIcon-1.0, unmodified release files (versions and licenses in `DeathNote/Libs/README.txt`).
+
+### Internal
+- Layout guard test (`tests/ui/layout_guard.lua`): builds every view in all 21 languages with the longest data and turns red on overlapping or cut text, text that leaves its view, and menus off the screen.
+- The zip check of the release pipeline now really fails on forbidden or missing files and requires the embedded libraries.
+- README, translator guide (now `TRANSLATING.md`), pipeline, test scripts and code comments are in English.
+
+### Known open
+- Hungarian: the stamp word for "pardoned" ("MEGKEGYELMEZVE") is wider than its stamp even at the smallest size; only a shorter word helps.
+- Text widths for Morpheus, Skurri, Nimrod, Cyrillic handwriting and Chinese/Korean are estimated in the tests, not measured with the game's fonts.
+- Not yet checked in the game: the new layout (scrolling, fitted texts, menus at the screen edge), the nameplate status and the new minimap button.
+
 ## 1.2.1
 
 ### Added
