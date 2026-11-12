@@ -556,16 +556,55 @@ function Store.Ranked(filter, sort)
   return out
 end
 
+-- 1.3.0 (decision 4): with the rap sheet on, the rank follows the open debt (sort "debt"), and an enemy whose
+-- standing is settled (even or ahead) has no rank at all. So rank 1, the top title (public enemy No. 1), is always an
+-- open case, and with every enemy settled there is none. With the rap sheet off: the rank of 1.2.x.
+local function settledState(e)
+  local _, _, state = ns.Ledger.Standing(e.key)
+  return state == "even" or state == "ahead"
+end
+function Store.RankOrder()
+  local Lg = ns.Ledger
+  return (Lg and Lg.Enabled and Lg.Standing and Lg.Enabled()) and "debt" or "rank"
+end
 function Store.Rank(key)
   local e = Store.Get(key)
   if not e or e.status ~= "wanted" then return nil end
   if not rankCache then
     rankCache = {}
-    local list = Store.Ranked("wanted", "rank")
-    for i = 1, #list do rankCache[list[i].key] = i end
+    local order = Store.RankOrder()
+    local list = Store.Ranked("wanted", order)
+    local n = 0
+    for i = 1, #list do
+      if not (order == "debt" and settledState(list[i])) then n = n + 1; rankCache[list[i].key] = n end
+    end
   end
   return rankCache[key]
 end
+-- The rank `key` had right before his latest revenge (one "me" less), for "public enemy down" (Humor.lua): the
+-- revenge that settles the top enemy takes his rank away, yet it is exactly the one that took down rank 1. Without the
+-- debt order a revenge never moved the rank (1.2.x): Store.Rank. Costs one pass over the book, only on a revenge.
+function Store.RankBefore(key)
+  local e = Store.Get(key)
+  if not e or e.status ~= "wanted" then return nil end
+  if Store.RankOrder() ~= "debt" then return Store.Rank(key) end
+  local mine, his = ns.Ledger.Standing(key)
+  if not mine or mine < 1 then return Store.Rank(key) end
+  mine = mine - 1
+  if not (his > mine or mine == 0) then return nil end    -- settled before as well
+  local d0 = math.max(0, his - mine)
+  local n = 1
+  for _, o in pairs(enemies) do
+    if o ~= e and o.status == "wanted" then
+      local d, open = Store.Debt(o)
+      if open and (d > d0 or (d == d0 and rankLess(o, e))) then n = n + 1 end
+    end
+  end
+  return n
+end
+-- the standing of an enemy changed (own kill, Ledger.Clear) or the rap sheet was switched: ranks anew
+ns:On("STANDING_CHANGED", function() rankCache = nil end)
+ns:On("SETTINGS_CHANGED", function(path) if path == "ledger.enabled" then rankCache = nil end end)
 
 -- Fun value in copper, deterministic.
 function Store.Bounty(e)

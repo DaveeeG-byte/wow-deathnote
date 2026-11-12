@@ -13,7 +13,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          tests/ui/final_f10_oberflaeche_messen.lua tests/ui/final_f11_dialog_alarm_sprachwechsel.lua \
          tests/ui/final_f15_sprachdatei_fehlt_kaputt.lua tests/ui/final_f17_kampf_neue_stellen.lua tests/ui/fix2.lua tests/ui/fix3.lua \
          tests/ui/layout_guard.lua tests/ui/layout_belege.lua tests/ui/layout_kit.lua tests/ui/layout_fixes.lua \
-         tests/ui/layout_red_probes.lua tests/ui/theme_probe.lua tests/ui/theme_guard.lua tests/ui/notice_first.lua tests/ui/victim_alarm.lua tests/ui/first_start.lua "$adir"/Start.lua \
+         tests/ui/layout_red_probes.lua tests/ui/theme_probe.lua tests/ui/theme_guard.lua tests/ui/notice_first.lua tests/ui/victim_alarm.lua tests/ui/first_start.lua "$adir"/Start.lua tests/ui/rapsheet.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
 done
@@ -59,6 +59,8 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     luajit tests/ui/victim_alarm.lua . || status=1
     # 1.3.0 (first start): the window for language and cover on a new installation, the chat line for everybody else
     luajit tests/ui/first_start.lua . || status=1
+    # 1.3.0: the rap sheet in the book (standing, order by open debt, fifth tab, notices, switches)
+    luajit tests/ui/rapsheet.lua . || status=1
   fi
 fi
 

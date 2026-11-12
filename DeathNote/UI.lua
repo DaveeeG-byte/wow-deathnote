@@ -459,7 +459,9 @@ local wantedData = {}
 local function ShowPardoned() return Look.Setting("ui.showPardoned", true) ~= false end
 function UX.WantedData()
   local S = Store()
-  local list = S.Ranked("wanted", state.sort) or {}
+  -- 1.3.0 (decision 4): "Rank" sorts by the open debt while the rap sheet is on (Store.RankOrder), the same order as
+  -- Store.Rank, so the numbers on the rows stay 1, 2, 3 ... and the settled ones follow without a number
+  local list = S.Ranked("wanted", state.sort == "rank" and S.RankOrder and S.RankOrder() or state.sort) or {}
   for i = #wantedData, 1, -1 do wantedData[i] = nil end
   for i = 1, #list do wantedData[i] = list[i] end
   local pard = S.Ranked("pardoned", state.sort) or {}

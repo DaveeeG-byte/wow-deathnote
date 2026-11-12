@@ -510,7 +510,8 @@ function Humor.OnRevenge(key)
     end
     if earlier then h.m.revenge1 = 0 end
   end
-  if S.Rank(key) == 1 and not h.m.nr1 then
+  -- 1.3.0: the rank before this revenge (a revenge that settles the top enemy takes his rank away)
+  if (S.RankBefore and S.RankBefore(key) or S.Rank(key)) == 1 and not h.m.nr1 then
     h.m.nr1 = now()
     h.m.revenge1 = h.m.revenge1 or h.m.nr1     -- if it was the first revenge, no further "first" comes
     d = { stamp = "nr1", quip = t.MILESTONE.nr1, milestone = true }
