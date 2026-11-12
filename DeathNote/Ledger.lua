@@ -377,18 +377,19 @@ end
 -- revenge the book recognised (own killing blow, honour): revenge minus revenge noted by hand. For the standing
 -- (own = true) without the part that came in by "Import book" (e.revengeForeign, Store.Import): foreign data is
 -- never "me". The bounty reads it all, as 1.2.x does.
-local function recognised(e, own)
+local function recognised(e, own, hand)
   if type(e) ~= "table" then return 0 end
-  local x = math.max(0, count(e.revenge) - handRevenge(e))
-  if own then x = math.max(0, x - count(e.revengeForeign)) end
-  return x
+  local x = count(e.revenge) - (hand or handRevenge(e))
+  if own and e.revengeForeign ~= nil then x = x - count(e.revengeForeign) end
+  return x > 0 and x or 0
 end
 
 -- "me" of a book entry e (or nil) and a victim v (or nil); see the head of this file
 local function mineOf(e, v, own)
   local n, pre = v and v.n or 0, v and v.pre or 0
   local hand = e and handRevenge(e) or 0
-  return math.max(n, recognised(e, own) + pre) + hand
+  local x = recognised(e, own, hand) + pre
+  return (n > x and n or x) + hand
 end
 
 local function capped(x) return math.min(x, Ledger.COUNT_MAX) end
@@ -632,8 +633,9 @@ end
 local function followBook(key)
   local S = ns.Store
   local e = S and S.Get(key)
-  local g = e and Str(e.guid)
-  local k = g and byGuid[g]
+  local g = e and e.guid
+  -- stored GUIDs are plain strings (Store keeps no secrets); nothing to do in the common case
+  local k = type(g) == "string" and byGuid[g]
   if not k or k == key or not victims[k] then return end
   local k2, be = bookKeyOf(k, victims[k])
   if k2 == key then moveVictim(k, key, be.surname); updateHook() end
