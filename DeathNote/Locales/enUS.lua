@@ -685,4 +685,12 @@ L.ALERT_LINE_STANDING = "{text} · score {score}"  -- alarm line of a wanted pla
 L.ALERT_LINE_STANDING_EVEN = "{text} · score {score}, even"  -- like ALERT_LINE_STANDING, the score is level ("2 : 2"): the debt is settled
 L.ALERT_LINE_STANDING_AHEAD = "{text} · score {score}, overpaid"  -- like ALERT_LINE_STANDING, you lead ("3 : 2"): you have taken more than he took
 -- <<< ALARM
+-- >>> START (Start.lua, House Rules row, 1.3.0) -----------------------------------------------------------------
+L.SET_THEME = "Cover"  -- [max 16] the cover (theme) of the book: stepper label in the House Rules, sheet Book, under "Language"; also the head over the covers in the first-start window
+L.START_HINT = "You can change both later in the House Rules."  -- [max 60] first-start window, foot line left of the button; "both" = language and cover; may wrap to two lines
+L.START_GO = "Go"  -- [max 16] first-start window, the one button: take language and cover and open the book
+L.START_CLOSE_TIP = "Leave it as it is"  -- [max 32] tooltip of the cross of the first-start window: closing keeps the game's language and the default cover
+L.CHAT_THEME_NEWS = "New: the book comes in other covers. House Rules, sheet Book, or /dn theme."  -- chat, once after the update for players who had the book before (they get no window)
+L.HELP_START = "/dn start  the first-start window again (language and cover)"  -- /dn help line
+-- <<< START
 end)

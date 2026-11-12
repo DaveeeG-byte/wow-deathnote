@@ -276,4 +276,9 @@ return {
   -- shares the popup line with the level in front (286 px, two lines, 11 pt, down to 9 pt before anything is cut)
   ALERT_TITLE_VICTIM = { max = 30, field = "popup title, 288 px, Skurri 13 (11 when longer), no wrap" },
   ALERT_LINE_VICTIM = { max = 56, field = "popup line after the level, 286 px, two lines, Friz 11 (10, 9 when longer)" },
+  -- 1.3.0 first start (Start.lua) and the cover row of the House Rules
+  SET_THEME = { max = 16, field = "stepper label, 112 px, Friz 11; head in the first-start window, 540 px" },
+  START_HINT = { max = 60, field = "first-start foot, about 416 px, Nimrod 11, two lines" },
+  START_GO = { max = 16, field = "button, grows from 112 px, Friz 11/10" },
+  START_CLOSE_TIP = { max = 32, field = "tooltip of the cross" },
 }

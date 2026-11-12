@@ -676,4 +676,12 @@ L.ALERT_LINE_STANDING = "{text} · score {score}"
 L.ALERT_LINE_STANDING_EVEN = "{text} · score {score}, even"
 L.ALERT_LINE_STANDING_AHEAD = "{text} · score {score}, overpaid"
 -- <<< ALARM
+-- >>> START (1.3.0): English placeholders, to be translated (keys as in enUS.lua) -----------------------------------
+L.SET_THEME = "Cover"
+L.START_HINT = "You can change both later in the House Rules."
+L.START_GO = "Go"
+L.START_CLOSE_TIP = "Leave it as it is"
+L.CHAT_THEME_NEWS = "New: the book comes in other covers. House Rules, sheet Book, or /dn theme."
+L.HELP_START = "/dn start  the first-start window again (language and cover)"
+-- <<< START
 end)

@@ -665,4 +665,12 @@ L.ALERT_LINE_STANDING = "{text} · Stand {score}"
 L.ALERT_LINE_STANDING_EVEN = "{text} · Stand {score}, quitt"
 L.ALERT_LINE_STANDING_AHEAD = "{text} · Stand {score}, überzahlt"
 -- <<< ALARM
+-- >>> START (Start.lua, 1.3.0) ---------------------------------------------------------------------------------
+L.SET_THEME = "Einband"
+L.START_HINT = "Beides lässt sich später in der Hausordnung ändern."
+L.START_GO = "Los"
+L.START_CLOSE_TIP = "So lassen"
+L.CHAT_THEME_NEWS = "Neu: das Buch gibt es in anderen Einbänden. Hausordnung, Blatt Buch, oder /dn einband."
+L.HELP_START = "/dn start  das Startfenster noch einmal (Sprache und Einband)"
+-- <<< START
 end)
