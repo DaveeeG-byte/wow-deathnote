@@ -19,6 +19,8 @@
 -- jumps at a reload. Revenge the book recognised without an own killing blow (the "pvpkills" and "honour" paths of
 -- Attribution.lua) counts for the standing through the max, but never earns repute: points come only from kills
 -- booked here. The start books nothing (DB version 4 only creates the empty structure; the repute starts at zero).
+-- Revenge that came in by "Import book" (e.revengeForeign) is foreign data: the bounty reads it like 1.2.x, the
+-- standing leaves it out. Counts read for the standing are capped at COUNT_MAX.
 --
 -- Detection (decision 7): PARTY_KILL with my GUID or my pet's as attacker is the source. The honour line
 -- (COMBATLOG_HONORGAIN of the client, made into a pattern) is the fallback when no PARTY_KILL came for that victim.
@@ -353,17 +355,21 @@ local function handRevenge(e)
   return (S and S.HandRevenge) and S.HandRevenge(e) or 0
 end
 
--- revenge the book recognised (own killing blow, honour): revenge minus revenge noted by hand
-local function recognised(e)
+-- revenge the book recognised (own killing blow, honour): revenge minus revenge noted by hand. For the standing
+-- (own = true) without the part that came in by "Import book" (e.revengeForeign, Store.Import): foreign data is
+-- never "me". The bounty reads it all, as 1.2.x does.
+local function recognised(e, own)
   if type(e) ~= "table" then return 0 end
-  return math.max(0, count(e.revenge) - handRevenge(e))
+  local x = math.max(0, count(e.revenge) - handRevenge(e))
+  if own then x = math.max(0, x - count(e.revengeForeign)) end
+  return x
 end
 
 -- "me" of a book entry e (or nil) and a victim v (or nil); see the head of this file
-local function mineOf(e, v)
+local function mineOf(e, v, own)
   local n, pre = v and v.n or 0, v and v.pre or 0
   local hand = e and handRevenge(e) or 0
-  return math.max(n, recognised(e) + pre) + hand
+  return math.max(n, recognised(e, own) + pre) + hand
 end
 
 local function capped(x) return math.min(x, Ledger.COUNT_MAX) end
@@ -375,7 +381,7 @@ local function standingBefore(key, t)
   local S = ns.Store
   local e = S and S.Get(key)
   local v = victims[key]
-  local rec = recognised(e)
+  local rec = recognised(e, true)
   local at = e and e.revengeAutoAt
   if rec > 0 and finite(at) and t - at >= 0 and t - at <= Ledger.DEDUPE then rec = rec - 1 end
   local mine = math.max(v and v.n or 0, rec + (v and v.pre or 0)) + (e and handRevenge(e) or 0)
@@ -388,15 +394,15 @@ function Ledger.Standing(key)
   if not enabled() or type(key) ~= "string" then return nil end
   local S = ns.Store
   local e = S and S.Get(key)
-  local mine = capped(mineOf(e, victims[key]))
+  local mine = capped(mineOf(e, victims[key], true))
   local his = e and capped(count(e.kills)) or 0
   local state = Ledger.StateOf(mine, his, e and e.assists, e and e.status)
   if not state then return nil end
   return mine, his, state
 end
 
--- "me" alone for the book's bounty (Store.Bounty): never below the book's revenge count, so the bounty is never
--- higher than in 1.2.x; nil while switched off
+-- "me" alone for the book's bounty (Store.Bounty): never below the book's revenge count (imported revenge
+-- included), so the bounty is never higher than in 1.2.x; nil while switched off
 function Ledger.Mine(key, e)
   if not enabled() or type(key) ~= "string" then return nil end
   if e == nil and ns.Store then e = ns.Store.Get(key) end
@@ -407,7 +413,7 @@ local STATUS_CODE = { wanted = 0, suspect = 1, pardoned = 2 }
 local function standCode(key)
   local S = ns.Store
   local e = S and S.Get(key)
-  local mine = capped(mineOf(e, victims and victims[key]))
+  local mine = capped(mineOf(e, victims and victims[key], true))
   local his = e and capped(count(e.kills)) or 0
   local st = e and (STATUS_CODE[e.status] or 0) or 3
   return (mine * 1048576 + his) * 4 + st

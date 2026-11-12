@@ -141,4 +141,65 @@ test("The book's revenge never turns into repute at the start (30 enemies with 4
   eq(ns.Ledger.Repute().total, 0); eq((ns.Ledger.Standing("Rab-Alt")), 7, "me = the book's revenge")
 end)
 
+---------------------------------------------------------------------------
+-- Import (finding 1)
+---------------------------------------------------------------------------
+local function text(n, revenge)
+  local lines = { "DEATHNOTE:1" }
+  for i = 1, n do
+    local key = "Fremd-Nr" .. string.char(65 + math.floor(i / 26)) .. string.char(65 + i % 26)
+    lines[#lines + 1] = table.concat({ "E", key, "wanted", "0", "1", "0", tostring(revenge), "1700000000", "1700000000",
+      "1700000000", "1", "ROGUE", "", "40", "", "", "", "", "", "0" }, "|")
+  end
+  return table.concat(lines, "\n")
+end
+
+test("Imported revenge never becomes repute, also after a reload (50 lines with revenge 10: rank 1)", function()
+  fresh()
+  ok(ns.Store.Import(text(50, 10)))
+  reload()
+  local r = ns.Ledger.Repute()
+  eq(r.total, 0); eq(r.tier, 1); eq(r.n, 0)
+end)
+
+test("An imported entry has no 'me' from the file; the bounty reads it as 1.2.x, before and after a reload", function()
+  fresh()
+  ok(ns.Store.Import(text(1, 4)))
+  local key = next(ns.Store.All())
+  local e = ns.Store.Get(key)
+  ok(e.imported)
+  eq(e.revengeForeign, 4)
+  eq((ns.Ledger.Standing(key)), 0, "me right after the import")
+  eq(ns.Store.Bounty(e), oldBounty(e), "bounty right after the import")
+  reload()
+  e = ns.Store.Get(key)
+  eq((ns.Ledger.Standing(key)), 0, "me after the reload")
+  eq(ns.Store.Bounty(e), oldBounty(e), "bounty after the reload")
+end)
+
+test("Own revenge on an imported entry counts above the imported part; a merge only marks what the text added", function()
+  fresh()
+  local g = seen("Grimm", "Bart", 40)
+  ns.Store.ApplyKill({ name = "Grimm", surname = "Bart", guid = g }, { t = time() - 100 }, true)
+  kill(g)
+  eq(ns.Store.Get("Grimm-Bart").revenge, 1)
+  ok(ns.Store.Import("DEATHNOTE:1\n" .. table.concat({ "E", "Grimm-Bart", "wanted", "0", "3", "0", "3", "1700000000",
+    "1700000000", "1700000000", "1", "ROGUE", "", "40", "", "", "Bart", "", "", "0" }, "|")))
+  local e = ns.Store.Get("Grimm-Bart")
+  eq(e.revenge, 3); eq(e.revengeForeign, 2, "the text added two")
+  eq(standing("Grimm-Bart"), "1:3 open", "me = my one kill")
+  eq(ns.Store.Bounty(e), oldBounty(e))
+  M.Advance(700); seen("Grimm", "Bart", 40, { guid = g }); kill(g)
+  eq(e.revenge, 4); eq(standing("Grimm-Bart"), "2:3 open")
+end)
+
+test("Counts from a broken file are capped in the standing and never become own kills", function()
+  local db = { version = 3, settings = {}, deaths = {}, enemies = { ["Viel-Zuviel"] = entry("Viel", "Zuviel", 2, 1e15) } }
+  load(db)
+  local m = ns.Ledger.Standing("Viel-Zuviel")
+  eq(m, 9999); eq(ns.Ledger.Repute().n, 0); eq(ns.Ledger.Victim("Viel-Zuviel"), nil)
+  reload()
+  eq(ns.Ledger.Repute().n, 0)
+end)
+
 M.done("ledger_fixes")

@@ -209,6 +209,11 @@ local function sanitizeEntry(key, e)
     end
     if not ok then e.revengeHandAt = nil end
   end
+  -- 1.3.0: the part of revenge that came in by "Import book" (foreign data, never "me" in the rap sheet's standing)
+  if e.revengeForeign ~= nil then
+    local fr = math.min(math.floor(num(e.revengeForeign, 0)), e.revenge)
+    e.revengeForeign = fr >= 1 and fr or nil
+  end
   if e.revengeAutoAt ~= nil and (type(e.revengeAutoAt) ~= "number" or e.revengeAutoAt ~= e.revengeAutoAt
     or e.revenge <= (e.revengeHand or 0)) then e.revengeAutoAt = nil end
   -- 1.2.1 fix: an older version recognised a revenge after these times (back to 1.2.0 and up again): its time is
@@ -1274,7 +1279,11 @@ function Store.Import(text)
     e.kills = math.max(e.kills, toCount(f[5]))
     e.suspected = math.max(e.suspected, toCount(f[6]))
     e.assists = math.max(e.assists or 0, toCount(f[20]))
+    local rev0 = e.revenge
     e.revenge = math.max(e.revenge, toCount(f[7]))
+    -- 1.3.0: what the text added to revenge is foreign data: the book counts it as before (bounty), the rap sheet's
+    -- standing does not take it as "me"
+    if e.revenge > rev0 then e.revengeForeign = math.min(e.revenge, (e.revengeForeign or 0) + e.revenge - rev0) end
     local fk = toTime(f[8]); if fk and (not e.firstKill or fk < e.firstKill) then e.firstKill = fk end
     local lk = toTime(f[9]); if lk and (not e.lastKill or lk > e.lastKill) then e.lastKill = lk end
     local lr = toTime(f[10]); if lr and (not e.lastRevenge or lr > e.lastRevenge) then e.lastRevenge = lr end
