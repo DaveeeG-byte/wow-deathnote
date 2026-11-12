@@ -379,12 +379,14 @@ local function standCode(key)
   return (mine * 1048576 + his) * 4 + st
 end
 
+-- returns true when the standing changed
 local function standingTouched(key)
-  if type(key) ~= "string" then return end
+  if type(key) ~= "string" then return false end
   local code = standCode(key)
-  if standCache[key] == code then return end
+  if standCache[key] == code then return false end
   standCache[key] = code
   if enabled() then ns:Fire("STANDING_CHANGED", key) end
+  return true
 end
 
 ---------------------------------------------------------------------------
@@ -1029,11 +1031,12 @@ function Ledger.OnPartyKill(attackerGUID, targetGUID)
   local who = (a == me and "me") or (pet and a == pet and "pet") or nil
   if not who then
     -- a group member, an own totem or guardian (the probe sees which), or anybody else
-    local ak = guidKind(a)
-    local grp = groupSize() > 1
-    who = ak == "Player" and (grp and "group" or "foreign") or "npc"
-    if c then c.att, c.attKind, c.group = who, ak, groupSize() end
-    probeCounts[who] = (probeCounts[who] or 0) + 1
+    if c then
+      local ak = guidKind(a)
+      who = ak == "Player" and (groupSize() > 1 and "group" or "foreign") or "npc"
+      c.att, c.attKind, c.group = who, ak, groupSize()
+      probeCounts[who] = (probeCounts[who] or 0) + 1
+    end
     if kind == "Player" then
       foreignKills[#foreignKills + 1] = { gt = gtime(), guid = tg }
       while #foreignKills > 8 do table.remove(foreignKills, 1) end
@@ -1266,8 +1269,7 @@ end)
 -- his kills, hand revenge, status, a new or removed entry: the standing may have changed
 ns:On("ENEMY_UPDATED", function(key)
   if not db then return end
-  standingTouched(key)
-  checkArch(key)
+  if standingTouched(key) then checkArch(key) end
 end)
 ns:On("ENEMY_REMOVED", function(key)
   if not db then return end
