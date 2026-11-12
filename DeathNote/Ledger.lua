@@ -778,13 +778,20 @@ local VSORT = {
   end,
 }
 
--- the victims as a list (the tables themselves, read only). sort: "recent" (default, newest last kill first),
--- "state" (STATE_ORDER, then recent), "points", "count", "first" (oldest first kill first), "name". The list is
--- kept until the rap sheet or the book changes.
+-- a new list with the same elements: a caller may filter or sort it without changing it for anybody else
+local function copyList(list)
+  local out = {}
+  for i = 1, #list do out[i] = list[i] end
+  return out
+end
+
+-- the victims as a list of their own for the caller (the victim tables in it are the stored ones: read only).
+-- sort: "recent" (default, newest last kill first), "state" (STATE_ORDER, then recent), "points", "count", "first"
+-- (oldest first kill first), "name". The order is kept until the rap sheet or the book changes.
 function Ledger.Victims(sort)
   if not db then return {} end
   sort = (VSORT[sort] or sort == "state") and sort or "recent"
-  if listCache[sort] then return listCache[sort] end
+  if listCache[sort] then return copyList(listCache[sort]) end
   local out = {}
   for _, v in pairs(victims) do out[#out + 1] = v end
   if sort == "state" then
@@ -798,7 +805,7 @@ function Ledger.Victims(sort)
     table.sort(out, VSORT[sort])
   end
   listCache[sort] = out
-  return out
+  return copyList(out)
 end
 
 -- the newest kills, newest first (read only). row.name is the victim's name at the kill (kept when he is struck or
@@ -806,14 +813,26 @@ end
 function Ledger.Log() return db and db.log or {} end
 
 -- { tier, path, total, next, floor, nextTier, nextPath, needle, acc, mood, share, n, counted, best, awards, bands };
--- one table, rebuilt after a change (read only).
+-- a copy for the caller (also of acc, mood, share, best, awards, bands): changing it changes nothing stored.
 --   next = points missing to the next tier (nil at the top); floor = the sum where this tier began (the rank bar runs
 --   from floor to total + next); nextTier/nextPath = the tier above and the path it would carry now (nil at the top);
 --   share = { r, e, j, s } shares of mood, 0..1 (the "Infamy (90 %)" of the rap sheet; 0 each without points)
+local function copyFlat(t)
+  local out = {}
+  for k, x in pairs(t) do out[k] = x end
+  return out
+end
+local REPUTE_TABLES = { "acc", "mood", "share", "best", "awards", "bands" }
+local function copyRepute(r)
+  local out = copyFlat(r)
+  for _, f in ipairs(REPUTE_TABLES) do out[f] = copyFlat(r[f]) end
+  return out
+end
+
 function Ledger.Repute()
   if not db then return { tier = 1, total = 0, floor = 0, next = 10, nextTier = 2, needle = 0, acc = newAcc(),
     mood = newAcc(), share = newAcc(), n = 0, counted = 0, best = {}, awards = {}, bands = {} } end
-  if reputeCache then return reputeCache end
+  if reputeCache then return copyRepute(reputeCache) end
   local sum = total(db.acc)
   local tier, nxt = Ledger.Tier(sum)
   local th = ns.Ranks and ns.Ranks.THRESHOLDS or {}
@@ -826,7 +845,7 @@ function Ledger.Repute()
     nextPath = nextTier and Ledger.Path(db.mood, path, db.counted, nextTier) or nil,
     needle = Ledger.Needle(db.mood), acc = db.acc, mood = db.mood, share = share, n = db.n, counted = db.counted,
     best = db.best, awards = db.awards, bands = db.bands }
-  return reputeCache
+  return copyRepute(reputeCache)
 end
 
 -- the name of the next rank in the active theme and language (or the given ones), nil at the top or where no

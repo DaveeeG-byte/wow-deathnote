@@ -585,7 +585,8 @@ test("Victims sorted by state, points, recent, first, count and name; the list f
   eq(keys("recent"), "Carla-Klee Bernd-Bolz Anna-Ast"); eq(keys(), keys("recent"))
   eq(keys("first"), "Anna-Ast Bernd-Bolz Carla-Klee")
   eq(keys("name"), "Anna-Ast Bernd-Bolz Carla-Klee")
-  ok(ns.Ledger.Victims("state") == ns.Ledger.Victims("state"), "kept while nothing changes")
+  local l1, l2 = ns.Ledger.Victims("state"), ns.Ledger.Victims("state")
+  ok(l1 ~= l2 and l1[1] == l2[1] and #l1 == #l2, "the same order, a list of its own for every caller")
   ns.Store.AddRevenge("Carla-Klee", true)            -- 2 : 2 even now
   eq(keys("state"), "Carla-Klee Bernd-Bolz Anna-Ast", "even before victims")
   ns.Store.SetStatus("Carla-Klee", "pardoned")

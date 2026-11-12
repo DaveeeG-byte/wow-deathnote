@@ -249,4 +249,32 @@ test("A zone change ends a request that has not started, never a duel under way"
   M.Advance(31); no(ns.Attribution.DuelFoe(g), "a request to me that never started ends at the zone change")
 end)
 
+---------------------------------------------------------------------------
+-- No shared tables: Victims and Repute give the caller its own (finding 4)
+---------------------------------------------------------------------------
+test("A caller who filters or sorts its victim list changes nobody else's", function()
+  fresh()
+  for i = 1, 3 do kill(seen("Opfer" .. i, "Nach", 40)); M.Advance(20) end
+  local mine = ns.Ledger.Victims("recent")
+  table.remove(mine, 1)
+  table.sort(mine, function(a, b) return a.key > b.key end)
+  eq(#ns.Ledger.Victims("recent"), 3)
+  eq(ns.Ledger.Victims("recent")[1].key, "Opfer3-Nach")
+end)
+
+test("A caller who changes Repute() changes no account, mark or award, also after a reload", function()
+  fresh()
+  kill(seen("Opfer", "Nach", 40))
+  local before = ns.Ledger.Repute()
+  local r = ns.Ledger.Repute()
+  r.acc.e = r.acc.e + 100; r.mood.e = 1e6; r.share.e = 7; r.best.streak = 99; r.awards.david = 1; r.bands.gelb = 50
+  r.tier = 10
+  local again = ns.Ledger.Repute()
+  eq(again.total, before.total); eq(again.tier, before.tier); eq(again.acc.e, before.acc.e)
+  eq(again.mood.e, before.mood.e); eq(again.share.e, before.share.e); eq(again.best.streak, before.best.streak)
+  eq(again.awards.david, nil); eq(again.bands.gelb, before.bands.gelb)
+  reload()
+  eq(ns.Ledger.Repute().total, before.total)
+end)
+
 M.done("ledger_fixes_e")
