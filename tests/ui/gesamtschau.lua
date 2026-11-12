@@ -252,8 +252,8 @@ check("j wieder an", ns.db.settings.alert.enabled == true and mm.icon._alpha == 
 W.step("d Taeter taucht auf", function() ns:Fire("ENEMY_SPOTTED", yac.key, nil, "nameplate") end)
 local pop = G.DeathNoteAlert
 check("d Popup mit Zahl und Beteiligung", pop:IsShown() and pop.line._text:find("^hat dich 2× getötet, war 1× beteiligt") ~= nil, pop.line._text)
--- 1.3.0: the notice is a slip of paper (style "slip"): its kicker is small red ink on paper; light red only without a surface
-local kickerRed = ns.Extras.BANNER_STYLE == "bare" and ns.Look.RED_ON_BLACK or ns.Look.RED_INK
+-- 1.3.0: the notice is a slip of paper: its kicker is small red ink on paper
+local kickerRed = ns.Look.RED_INK
 check("G20 Kopf in hellem Rot auf Schwarz", pop.title._tc[1] == ns.Look.RED_ON_BLACK[1] and G.DeathNoteBanner.kicker._tc[1] == kickerRed[1])
 ns.Alert.Dismiss(); M.FinishAnims(); M.Advance(1)
 -- G5: alarm threshold counts assists

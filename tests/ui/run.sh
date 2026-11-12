@@ -53,7 +53,7 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     luajit tests/ui/layout_red_probes.lua . || status=1
     # 1.3.0: the look comes from the theme only (test theme "probe" against the black book)
     luajit tests/ui/theme_guard.lua . || status=1
-    # 1.3.0: the on-screen notice: first appearance equals the second, calm fade, both building styles
+    # 1.3.0: the on-screen notice: first appearance equals the second, calm fade, the slip
     luajit tests/ui/notice_first.lua . || status=1
     # 1.3.0 (package C): the victim alarm and the alarm for an even or overpaid standing (alert.settled)
     luajit tests/ui/victim_alarm.lua . || status=1

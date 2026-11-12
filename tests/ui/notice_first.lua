@@ -2,7 +2,7 @@
 -- The frame is built at READY (hidden, alpha 0, textures and fonts set), every appearance starts at alpha 0 and
 -- only fades (no animation brings it above its standing alpha, no scale jump of the frame), and the first and the
 -- second notice of the same event have the same geometry, font sizes and textures.
--- Also: both building styles (Extras.BANNER_STYLE "slip" and "bare") build and show every kind of notice.
+-- Also: the slip builds and shows the notice without a dark surface, with class ink readable on paper.
 -- Use: luajit tests/ui/notice_first.lua [project folder]
 local DIR = ((arg and arg[1]) or "."):gsub("/+$", "")
 package.path = DIR .. "/tests/ui/?.lua;" .. DIR .. "/tests/?.lua;" .. package.path
@@ -13,9 +13,8 @@ local function check(name, cond, info)
   else bad = bad + 1; io.write("RED   ", name, info ~= nil and ("  -> " .. tostring(info)) or "", "\n") end
 end
 
--- a fresh world; style: building style of the notice (set right after Extras.lua loaded, before READY);
--- every alpha and scale animation the UI files create is recorded
-local function world(code, style)
+-- a fresh world; every alpha and scale animation the UI files create is recorded
+local function world(code)
   package.loaded.mock_wow, package.loaded.mock = nil, nil
   local AM = require("mock_wow")
   local BM = require("mock")
@@ -38,7 +37,6 @@ local function world(code, style)
         return S(g, from, to, dur, order)
       end
     end
-    if f == "Extras.lua" and style then ns.Extras.BANNER_STYLE = style end
   end
   AM.FireEvent("PLAYER_LOGIN")
   AM.FireEvent("PLAYER_ENTERING_WORLD")
@@ -65,7 +63,7 @@ local function snapshot(W, b)
 end
 
 ------------------------------------------------------------------------
--- 1) First against second appearance (deDE and enUS, the default style)
+-- 1) First against second appearance (deDE and enUS)
 ------------------------------------------------------------------------
 for _, code in ipairs({ "deDE", "enUS" }) do
   local W = world(code)
@@ -74,9 +72,7 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   check(code .. " notice built at READY, before any event", b ~= nil)
   if b then
     check(code .. " built notice waits hidden at alpha 0", not b:IsShown() and b:GetAlpha() == 0, b:GetAlpha())
-    if ns.Extras.BANNER_STYLE == "slip" then
-      check(code .. " slip texture set at build time", b.bg and tostring(b.bg._tex):find("slip.tga", 1, true) ~= nil, b.bg and b.bg._tex)
-    end
+    check(code .. " slip texture set at build time", b.bg and tostring(b.bg._tex):find("slip.tga", 1, true) ~= nil, b.bg and b.bg._tex)
     check(code .. " name font set at build time (19 pt)", b.name._fontSize == 19, b.name._fontSize)
   end
   ns.Store.Setting("humor", false)   -- no surprise stamp of a milestone on the first revenge
@@ -120,20 +116,20 @@ for _, code in ipairs({ "deDE", "enUS" }) do
 end
 
 ------------------------------------------------------------------------
--- 2) Both styles: every kind of notice builds, no black surface, text colours readable on the surface
+-- 2) The slip: the notice builds, no black surface, text colours readable on the surface
 ------------------------------------------------------------------------
-for _, style in ipairs({ "slip", "bare" }) do
-  local W = world("deDE", style)
+do
+  local W = world("deDE")
   local ns, G = W.ns, W.G
   local b = rawget(G, "DeathNoteBanner")
-  check(style .. ": style taken", ns.Extras.BANNER_STYLE == style and b and b.style == style, b and b.style)
+  check("slip: no other building style left", ns.Extras.BANNER_STYLE == nil and b and b.style == nil, b and b.style)
   local t = _G.time()
   local k = ns.Store.AddManual("Torvik", "Greyhammer")
   ns.Store.ApplyKill({ name = "Torvik", surname = "Greyhammer", class = "PRIEST", level = 60 }, { t = t - 100, zone = "Z" }, true)
   W.tick(30); W.settle()
   ns:Fire("REVENGE", k)
   b = rawget(G, "DeathNoteBanner")
-  check(style .. ": revenge notice shows", b and b:IsShown())
+  check("slip: revenge notice shows", b and b:IsShown())
   -- no texture of the frame is a dark fill: no cover, no colour fill below the text
   local dark = {}
   for _, f in ipairs(W.BM.frames) do
@@ -144,17 +140,12 @@ for _, style in ipairs({ "slip", "bare" }) do
       if tex:find("cover", 1, true) or f._color then dark[#dark + 1] = tex ~= "" and tex or "colour" end
     end
   end
-  check(style .. ": no cover texture and no colour fill in the notice", #dark == 0, table.concat(dark, ","))
-  check(style .. ": no backdrop edge", not (b.GetBackdrop and b:GetBackdrop()))
-  if style == "bare" then
-    local function shaded(fs) return fs._shadow and (fs._shadow[1] ~= 0 or fs._shadow[2] ~= 0) end
-    check("bare: name, kicker and line carry a shadow", shaded(b.name) and shaded(b.kicker) and shaded(b.line))
-  else
-    -- priest white becomes dark ink on paper
-    local c = b.name._tc
-    check("slip: the name is class ink, not the white of the class", c and c[1] < 0.5 and c[2] < 0.5, c and table.concat(c, ","))
-  end
+  check("slip: no cover texture and no colour fill in the notice", #dark == 0, table.concat(dark, ","))
+  check("slip: no backdrop edge", not (b.GetBackdrop and b:GetBackdrop()))
+  -- priest white becomes dark ink on paper
+  local c = b.name._tc
+  check("slip: the name is class ink, not the white of the class", c and c[1] < 0.5 and c[2] < 0.5, c and table.concat(c, ","))
 end
 
-io.write(("Notice first appearance and styles: %d green, %d red\n"):format(ok, bad))
+io.write(("Notice first appearance and slip: %d green, %d red\n"):format(ok, bad))
 os.exit(bad == 0 and 0 or 1)

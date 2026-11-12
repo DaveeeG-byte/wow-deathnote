@@ -136,11 +136,8 @@ end
 ------------------------------------------------------------------------
 -- On-screen notice (a slip from the book in the middle of the screen)
 ------------------------------------------------------------------------
--- 1.3.0: no black strip any more. Two ways to build it, chosen by one constant:
---   "slip"  a narrow strip torn out of a page (texture "slip", tinted like the paper of the theme), ink on it
---   "bare"  no surface at all: the text with a soft shadow, the stamp on top
--- Both have the same size, place, queue, click and stamp; only the surface and the text colours differ.
-Extras.BANNER_STYLE = "slip"
+-- 1.3.0: no black strip any more: a narrow strip torn out of a page (texture "slip", tinted like the paper of the
+-- theme), ink on it
 local banner
 local BANNER_W, BANNER_H, BANNER_Y = 352, 64, -310
 -- the strip of a dry remark (Humor.lua) hangs below the notice; wider than the slip: Humor fits its one line at
@@ -156,8 +153,6 @@ local guildQueue = {}     -- waiting guild notices; the own notice always goes f
 local GUILD_QUEUE_MAX = 3
 local NextGuild -- forward declaration
 
-local function Bare() return Extras.BANNER_STYLE == "bare" end
-
 -- The class colour as ink on the slip: 30 % class colour in 70 % ink keeps a hint of the hue and stays readable
 -- on paper even at 13 pt (the white of a priest becomes a dark grey; contrast guard in tests/ui/gesamtschau.lua)
 Extras.SLIP_CLASS_SHARE = 0.3
@@ -168,16 +163,8 @@ function Extras.SlipInk(rgb)
   return { rgb[1] * a + ink[1] * (1 - a), rgb[2] * a + ink[2] * (1 - a), rgb[3] * a + ink[3] * (1 - a) }
 end
 
--- Text without a surface: soft dark shadow (theme role "shadow"), as the client's own on-screen messages
-local function Shade(fs)
-  local c = Look.COLOR.shadow
-  fs:SetShadowColor(c[1], c[2], c[3], 1)
-  fs:SetShadowOffset(1, -1)
-end
-
--- colours of kicker, name and line for the chosen style
+-- colours of kicker, name and line: ink on the slip
 local function Colours()
-  if Bare() then return Look.RED_ON_BLACK, Look.BONE, Look.BONE end
   return Look.RED_INK, Look.INK, Look.INK
 end
 
@@ -187,19 +174,16 @@ local function BuildQuip()
   q:SetSize(QUIP_W, QUIP_H)
   q:SetPoint("TOP", banner, "BOTTOM", 0, -QUIP_GAP)
   local _, _, line = Colours()
-  if not Bare() then
-    local bg = q:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints()
-    Look.Skin(bg, "slip")
-    local t = Look.TINT.slip or Look.TINT.paper
-    if t then bg:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
-    q.bg = bg
-  end
+  local bg = q:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  Look.Skin(bg, "slip")
+  local t = Look.TINT.slip or Look.TINT.paper
+  if t then bg:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
+  q.bg = bg
   q.text = Look.Text(q, "body", 11, line)
   q.text:SetPoint("CENTER", 0, 0)
   q.text:SetWidth(QUIP_W - 10)
   q.text:SetWordWrap(false)
-  if Bare() then Shade(q.text) end
   q:Hide()
   banner.dnQuip = q
 end
@@ -226,7 +210,6 @@ local function BuildBanner()
   banner:EnableMouse(false)
   banner:SetAlpha(0)
   banner:Hide()
-  banner.style = Extras.BANNER_STYLE
   local kickerC, nameC, lineC = Colours()
   -- Notices after the own death can be clicked (you are dead, it disturbs no fight):
   -- left click opens the killer or the case, right click closes
@@ -248,7 +231,7 @@ local function BuildBanner()
   -- hover over a clickable notice: the kicker turns full red, a tooltip says what the click does
   banner:SetScript("OnEnter", function(self)
     if not self.open then return end
-    local c = Bare() and Look.COLOR.edgeHot or Look.RED
+    local c = Look.RED
     self.kicker:SetTextColor(c[1], c[2], c[3], 1)
     GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
     GameTooltip:SetText(L.BANNER_TIP)
@@ -259,15 +242,13 @@ local function BuildBanner()
     self.kicker:SetTextColor(c[1], c[2], c[3], 1)
     GameTooltip:Hide()
   end)
-  if not Bare() then
-    -- the slip: one texture with ragged ends that fade out; no edge, no fill around it
-    local bg = banner:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints()
-    Look.Skin(bg, "slip")
-    local t = Look.TINT.slip or Look.TINT.paper    -- a theme without its own slip tint colours it like its paper
-    if t then bg:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
-    banner.bg = bg
-  end
+  -- the slip: one texture with ragged ends that fade out; no edge, no fill around it
+  local bg = banner:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  Look.Skin(bg, "slip")
+  local t = Look.TINT.slip or Look.TINT.paper    -- a theme without its own slip tint colours it like its paper
+  if t then bg:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
+  banner.bg = bg
 
   banner.kicker = Look.Text(banner, "body", 10, kickerC)
   banner.kicker:SetPoint("TOP", 0, -7)
@@ -281,7 +262,6 @@ local function BuildBanner()
   banner.line:SetPoint("BOTTOM", 0, 7)
   banner.line:SetWidth(LINE_W)
   banner.line:SetWordWrap(false)
-  if Bare() then Shade(banner.kicker); Shade(banner.name); Shade(banner.line) end
 
   -- the stamp hangs over the top right corner
   banner.stamp = banner:CreateTexture(nil, "OVERLAY")
@@ -423,8 +403,7 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   -- with a stamp the name moves a bit to the left, so long names stay clear of it
   Extras.NameBesideStamp(banner, stampTex ~= nil)
   Look.FitText(banner.name, name, Extras.FIT_NAME)
-  local c
-  if Bare() then c = nameRGB or Look.BONE else c = nameRGB and nameRGB ~= Look.BONE and Extras.SlipInk(nameRGB) or Look.INK end
+  local c = nameRGB and nameRGB ~= Look.BONE and Extras.SlipInk(nameRGB) or Look.INK
   banner.name:SetTextColor(c[1], c[2], c[3], 1)
   if type(line) == "table" then
     if not Look.FitText(banner.line, line[1] or "", Extras.FIT_LINE) then Look.FitText(banner.line, line[2] or "", Extras.FIT_LINE) end
