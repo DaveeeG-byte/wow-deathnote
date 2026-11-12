@@ -617,4 +617,99 @@ test("Log rows keep the victim's name when he is struck; Ledger.Clear empties th
   eq(ns.Ledger.VictimCount(), 0)
 end)
 
+---------------------------------------------------------------------------
+-- Gaps the mutation run of the bug hunt found (finding 16)
+---------------------------------------------------------------------------
+test("Rounding once at the end: yellow in a group as second kill of the day = 1 honour (1.5 * 0.8 = 1.2)", function()
+  fresh()
+  local _, e = ns.Ledger.Points("gelb", { group = true, nthToday = 2 })
+  eq(e, 1)
+  local _, e3, j3 = ns.Ledger.Points("orange", { group = true, nthToday = 3 })
+  eq(e3, 1, "1 * 0.6 = 0.6"); eq(j3, 1, "1.5 * 0.6 = 0.9")
+end)
+
+test("The 24-hour window stands from the first kill (it does not slide)", function()
+  fresh()
+  local g = seen("Grimm", "Bart", 40)
+  kill(g); M.Advance(13 * 3600); seen("Grimm", "Bart", 40, { guid = g }); kill(g)
+  M.Advance(13 * 3600); seen("Grimm", "Bart", 40, { guid = g }); kill(g)   -- 26 h after the first: a new window
+  eq(ns.Ledger.Victim("Grimm-Bart").dn, 1, "third kill 26 h after the first is the first of a new window")
+  eq(ns.Ledger.Log()[1].e, 3)
+end)
+
+test("A started duel to the death that never finishes is let go after 15 min", function()
+  fresh()
+  local g = seen("Grimm", "Bart", 40)
+  _G.GetDuelerInfo = function() return g end
+  M.FireEvent("DUEL_TO_THE_DEATH_REQUESTED", "Grimm")
+  _G.GetDuelerInfo = nil
+  M.FireEvent("DUEL_INBOUNDS")
+  M.Advance(899); ok(ns.Attribution.DuelFoe(g), "held while under way")
+  M.Advance(2)
+  seen("Grimm", "Bart", 40, { guid = g })
+  ok(ns.Ledger.OnPartyKill(ME, g), "counts again after 15 min")
+end)
+
+test("The honour line (fallback on) for a player of my own faction books nothing", function()
+  fresh()
+  ns.Ledger.HONOR_FALLBACK = true
+  seen("Hordi", "Gleich", 40, { faction = "Horde" })
+  M.FireEvent("CHAT_MSG_COMBAT_HONOR_GAIN", "Hordi Gleich" .. LINE); M.Advance(3)
+  eq(ns.Ledger.Repute().n, 0)
+  seen("Ali", "Anz", 40)
+  M.FireEvent("CHAT_MSG_COMBAT_HONOR_GAIN", "Ali Anz" .. LINE); M.Advance(3)
+  eq(ns.Ledger.Repute().n, 1, "the other faction: booked")
+end)
+
+test("No old cases at any start: a book with 14 revenges and three more under 1.2.x earns nothing", function()
+  load({ version = 3, settings = {}, deaths = {}, enemies = { ["Viel-Rache"] = entry("Viel", "Rache", 14, 10) } })
+  eq(ns.Ledger.Repute().total, 0)
+  _G.DeathNoteDB.enemies["Viel-Rache"].revenge = 13
+  for _ = 1, 3 do reload() end
+  eq(ns.Ledger.Repute().total, 0); eq(ns.Ledger.Victim("Viel-Rache"), nil)
+  eq(standing("Viel-Rache"), "13:14 open")
+end)
+
+test("Fallback on: an own kill and its honour line with the first name only count once", function()
+  fresh()
+  ns.Ledger.HONOR_FALLBACK = true
+  local h = seen("Hanna", "Hut", 40)
+  kill(h); M.Advance(4)
+  M.FireEvent("CHAT_MSG_COMBAT_HONOR_GAIN", "Hanna" .. LINE); M.Advance(3)
+  eq(ns.Ledger.Repute().n, 1)
+end)
+
+---------------------------------------------------------------------------
+-- Found by the extended random run: no jump at a reload, no namesake taken by a first name
+---------------------------------------------------------------------------
+test("The book learns a victim's GUID: the victim follows at once (also when switched on again), not at the reload", function()
+  fresh()
+  M.units.x1 = { exists = false, guid = "Player-93-G1", name = "Grimm", class = "ROGUE" }
+  kill("Player-93-G1"); M.units.x1 = nil
+  ok(ns.Ledger.Victim("Grimm-Forever"))
+  ns.Store.ApplyKill({ name = "Grimm", surname = "Bart", guid = "Player-93-G1" }, { t = time() }, true)
+  eq(ns.Ledger.Victim("Grimm-Forever"), nil); eq(ns.Ledger.Victim("Grimm-Bart").n, 1)
+  eq(standing("Grimm-Bart"), "1:1 even")
+  M.Advance(30)
+  M.units.x2 = { exists = false, guid = "Player-93-H1", name = "Hanna", class = "MAGE" }
+  kill("Player-93-H1"); M.units.x2 = nil
+  ns.Store.Setting("ledger.enabled", false)
+  ns.Store.ApplyKill({ name = "Hanna", surname = "Hut", guid = "Player-93-H1" }, { t = time() }, true)
+  ok(ns.Ledger.Victim("Hanna-Forever"), "nothing moves while switched off")
+  ns.Store.Setting("ledger.enabled", true)
+  eq(ns.Ledger.Victim("Hanna-Forever"), nil, "switched on: follows"); eq(standing("Hanna-Hut"), "1:1 even")
+  reload()
+  eq(standing("Hanna-Hut"), "1:1 even"); eq(standing("Grimm-Bart"), "1:1 even")
+end)
+
+test("A first name never takes a book entry or victim that carries another GUID", function()
+  fresh()
+  ns.Store.ApplyKill({ name = "Ida", surname = "Zweit", guid = "Player-93-I2" }, { t = time() - 50 }, true)
+  M.units.x1 = { exists = false, guid = "Player-93-I1", name = "Ida", class = "ROGUE" }
+  kill("Player-93-I1"); M.units.x1 = nil
+  eq(ns.Ledger.Victim("Ida-Zweit"), nil, "not under the namesake's entry")
+  eq(standing("Ida-Zweit"), "0:1 open")
+  eq(ns.Ledger.VictimCount(), 1)
+end)
+
 M.done("ledger_fixes")
