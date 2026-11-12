@@ -579,7 +579,7 @@ local function slashTheme(rest)
     Util.Print(Fmt(L.CHAT_THEME_LIST, { themes = list }))
     return
   end
-  local id, pending = T.SetChoice(rest)
+  local id, pending = T.SetChoice(T.FromName and T.FromName(rest) or rest)
   if not id then
     Util.Print(Fmt(L.CHAT_THEME_BAD, { name = rest }))
     Util.Print(Fmt(L.CHAT_THEME_LIST, { themes = list }))

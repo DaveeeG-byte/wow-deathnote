@@ -571,6 +571,42 @@ function Locale.ApplyWords(theme, code, into)
   return n
 end
 
+-- 1.3.0: the names a player may type for a theme (/dn theme <name>): its name and its book title, in the active
+-- language and in English, lower case. Gathered while the builders are there (a few short strings, kept after them).
+Locale.themeNames = {}
+local function lowerName(s)
+  if type(s) ~= "string" then return nil end
+  s = s:gsub("^%s+", ""):gsub("%s+$", "")
+  if s == "" then return nil end
+  return s:lower()
+end
+local function gatherThemeNames(code, en, base)
+  local T = ns.Theme
+  if not (T and T.List and T.Get) then return end
+  local out = {}
+  for _, id in ipairs(T.List()) do
+    local d = T.Get(id)
+    local list, seen = {}, {}
+    local function add(s)
+      s = lowerName(s)
+      if s and not seen[s] then seen[s] = true; list[#list + 1] = s end
+    end
+    local key = d and d.nameKey
+    if type(key) == "string" then add(rawget(base, key)); add(en[key]) end
+    local wid = T.Words and T.Words(id)
+    if wid then
+      for _, c in ipairs({ code, Locale.DEFAULT }) do
+        local w = Locale.RawWords(wid, c)
+        if w then add(w.BOOK_TITLE) end
+      end
+    elseif id == T.BASE then
+      add(rawget(base, "BOOK_TITLE")); add(en.BOOK_TITLE)
+    end
+    out[id] = list
+  end
+  Locale.themeNames = out
+end
+
 -- Builds English plus the overlay of `code` into `into` (default a new table); 1.3.0: plus the words of `theme`.
 -- Returns into, own (keys the language itself delivered), total (English keys), extra (unknown keys).
 function Locale.Build(code, into, theme)
@@ -586,6 +622,7 @@ function Locale.Build(code, into, theme)
     if type(v) == "string" then into[k] = v; total = total + 1 end
   end
   if code == Locale.DEFAULT then
+    if into == L then gatherThemeNames(code, en, into) end
     Locale.themeWords = Locale.ApplyWords(theme, code, into)
     return into, total, total, 0
   end
@@ -609,6 +646,7 @@ function Locale.Build(code, into, theme)
       end
     end
   end
+  if into == L then gatherThemeNames(code, en, into) end
   Locale.themeWords = Locale.ApplyWords(theme, code, into)
   return into, own, total, extra
 end

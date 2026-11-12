@@ -161,6 +161,21 @@ function Theme.Normalize(v)
   return nil
 end
 
+-- 1.3.0 (/dn theme <name>): an id for its id, or for its name or book title in the active language or in English
+-- (any case; Locale.themeNames), else nil
+function Theme.FromName(v)
+  local id = Theme.Normalize(v)
+  if id then return id end
+  if type(v) ~= "string" or secret(v) then return nil end
+  v = v:gsub("^%s+", ""):gsub("%s+$", ""):lower()
+  local names = ns.Locale and ns.Locale.themeNames
+  if type(names) ~= "table" or v == "" then return nil end
+  for _, tid in ipairs(Theme.List()) do
+    for _, n in ipairs(names[tid] or {}) do if n == v then return tid end end
+  end
+  return nil
+end
+
 -- the stored choice if it is a registered theme, else nil
 function Theme.StoredChoice()
   local ui = settingsUI()
