@@ -615,7 +615,7 @@ function Ext.useList(L, gctx)
   gctx.bounty = L.bounty
 end
 
--- "Gildenbuch leeren": the bounties others set in this guild go
+-- "Empty guild book": the bounties others set in this guild go
 function Ext.clear(L)
   if type(L.bounty) == "table" then for k in pairs(L.bounty) do L.bounty[k] = nil end end
 end
@@ -632,7 +632,7 @@ function X.Purge(ctx, keep)
   return n
 end
 
--- releases expire after the days of "Freigaben gelten" (guild.huntExpire); bounties too. An expired own bounty of the
+-- releases expire after the days of "Calls last" (guild.huntExpire); bounties too. An expired own bounty of the
 -- logged-in char is taken back (sent); one of another own char goes quietly (its next answer says it with Y).
 local function expire()
   local age = Guild.ExpireAge and Guild.ExpireAge()
