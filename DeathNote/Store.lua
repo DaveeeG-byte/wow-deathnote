@@ -19,8 +19,11 @@ local VALID_ROLE = { kill = true, assist = true, suspect = true }
 
 local DEFAULT_SETTINGS = {
   -- sound is the master switch; soundKey/volume (1..5)/channel are read by Alert.lua (1.1.0)
+  -- 1.3.0: soundKey has no default here: a new installation stores none until the player picks one, so the alarm
+  -- plays the cover's suggestion (Look.THEME_SOUND, else "warnung"); data of an older version keep or get "warnung"
+  -- (Store.Init, repairSettings), so nothing sounds different for them
   alert = { enabled = true, sound = true, cooldown = 90, flash = true, minKills = 1, suspects = false,
-    soundKey = "warnung", volume = 3, channel = "Master",
+    volume = 3, channel = "Master",
     -- 1.3.0: alarm for an enemy whose standing is even or ahead: "always" | "quiet" (no sound) | "off";
     -- victims: alarm when an own victim shows up (read by Alert.lua)
     settled = "always", victims = false },
@@ -86,6 +89,7 @@ local SOUND_CHANNELS = { Master = true, SFX = true, Music = true, Ambience = tru
 local GUILD_VIEWS = { enemy = true, member = true, hunt = true }
 local GUILD_SOURCES = { all = true, guild = true, friends = true }
 local SETTLED_MODES = { always = true, quiet = true, off = true }
+local SOUND_OF_OLD = "warnung"   -- the alarm sound every version before 1.3.0 stored as its default
 
 -- Value repairs beyond the type (1.1.0 fields). Store.Setting itself stays a plain accessor.
 local function repairSettings(st)
@@ -95,7 +99,9 @@ local function repairSettings(st)
     a.volume = math.max(1, math.min(5, math.floor(v + 0.5)))
   end
   if not SOUND_CHANNELS[a.channel] then a.channel = DEFAULT_SETTINGS.alert.channel end
-  if a.soundKey == "" or #a.soundKey > 64 then a.soundKey = DEFAULT_SETTINGS.alert.soundKey end
+  if a.soundKey ~= nil and (type(a.soundKey) ~= "string" or a.soundKey == "" or #a.soundKey > 64) then
+    a.soundKey = SOUND_OF_OLD
+  end
   if not GUILD_VIEWS[ui.guildView] then ui.guildView = DEFAULT_SETTINGS.ui.guildView end
   if not GUILD_SOURCES[ui.guildSource] then ui.guildSource = DEFAULT_SETTINGS.ui.guildSource end
   if not SETTLED_MODES[a.settled] then a.settled = DEFAULT_SETTINGS.alert.settled end
@@ -310,6 +316,8 @@ function Store.Init()
     -- no version: a fresh DB is current, anything with content counts as version 1
     db.version = (next(db) == nil) and DB_VERSION or 1
   end
+  -- 1.3.0: data of an older version had alert.soundKey filled with "warnung"; one without it (1.0.x) gets it too
+  local fromOld = db.version < DB_VERSION
   if type(db.settings) ~= "table" then db.settings = {} end
   if db.version < 2 then
     -- the closed combat log was on by default in version 1
@@ -318,6 +326,7 @@ function Store.Init()
     db.version = 2
   end
   fillDefaults(db.settings, DEFAULT_SETTINGS)
+  if fromOld and db.settings.alert.soundKey == nil then db.settings.alert.soundKey = SOUND_OF_OLD end
   repairSettings(db.settings)
   if type(db.enemies) ~= "table" then db.enemies = {} end
   enemies = db.enemies

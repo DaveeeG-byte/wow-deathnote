@@ -355,7 +355,7 @@ function Look.SoundFile(key, level)
 end
 
 function Look.SoundChoice()
-  -- 1.3.0: without a choice the theme's suggestion (Store fills alert.soundKey at login, so this is the first moments)
+  -- 1.3.0: without a stored choice (a new installation until the player picks one) the cover's suggestion
   local key = Look.Setting("alert.soundKey", Look.THEME_SOUND or "warnung")
   local s = Look.SOUND_BY_KEY[key] or Look.SOUND_BY_KEY[Look.THEME_SOUND] or Look.SOUND_BY_KEY.warnung
   -- older setting "sound on alarm" off: counts as "no sound"
