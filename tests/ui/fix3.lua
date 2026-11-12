@@ -285,8 +285,11 @@ local guildPara
 for _, p in ipairs(ns.UI.HELP) do if p[1] == L.MANUAL_GUILD_HEAD then guildPara = p[2] end end
 check("Absatz Gilde nennt das Freigeben", guildPara and guildPara:find("zur Jagd freigeben", 1, true) ~= nil, guildPara)
 local foot = vis(ns.UI.HELP_FOOT or "\1")
-check("Impressum: eine Zeile am Fuss, ueber dem Knopf", foot and foot._wrap == false and foot._points[1][1] == "BOTTOM"
-  and foot._points[1][3] == 44, foot and foot._points[1][3])
+-- 1.2.2: in the standing foot bar of the page, above the button, at most two lines (was one line hanging at BOTTOM 44)
+check("Imprint: in the foot bar above the button, at most two lines", foot and foot._points[1][1] == "BOTTOM"
+  and foot._points[1][5] == 40 and (foot._maxl or 0) <= 2 and foot._parent and foot._parent._kind == "Frame"
+  and foot._parent._parent and foot._parent._parent.page and foot._parent == foot._parent._parent.page.foot,
+  foot and tostring(foot._points[1][5]))
 check("Impressum nennt die Fachkraefte", (ns.UI.HELP_FOOT or ""):find("Die Fachkräfte", 1, true) ~= nil)
 ns.UI.ClosePanel()
 clean("Reisszwecke und Gebrauchsanweisung")

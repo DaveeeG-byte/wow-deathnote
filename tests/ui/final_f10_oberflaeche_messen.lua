@@ -22,9 +22,10 @@ local function wide(cp)
   return (cp >= 0x1100 and cp <= 0x115F) or (cp >= 0x2E80 and cp <= 0xA4CF) or (cp >= 0xAC00 and cp <= 0xD7A3)
     or (cp >= 0xF900 and cp <= 0xFAFF) or (cp >= 0xFE30 and cp <= 0xFE4F) or (cp >= 0xFF00 and cp <= 0xFF60)
 end
-local FACT = { ["Fonts\\MORPHEUS.TTF"] = 0.5, ["Fonts\\MORPHEUS_CYR.TTF"] = 0.5, ["Fonts\\FRIZQT__.TTF"] = 0.52,
-  ["Fonts\\FRIZQT___CYR.TTF"] = 0.55, ["Fonts\\NIM_____.ttf"] = 0.45, ["Fonts\\SKURRI_CYR.TTF"] = 0.6,
-  ["Fonts\\SKURRI.TTF"] = 0.6, ["Fonts\\ARIALN.TTF"] = 0.42 }
+-- 1.2.2: factors at the wide end of the real fonts (Nimrod was 0.45, calibrated 0.55 to 0.56 on the client screenshot)
+local FACT = { ["Fonts\\MORPHEUS.TTF"] = 0.56, ["Fonts\\MORPHEUS_CYR.TTF"] = 0.60, ["Fonts\\FRIZQT__.TTF"] = 0.56,
+  ["Fonts\\FRIZQT___CYR.TTF"] = 0.58, ["Fonts\\NIM_____.ttf"] = 0.60, ["Fonts\\SKURRI_CYR.TTF"] = 0.70,
+  ["Fonts\\SKURRI.TTF"] = 0.70, ["Fonts\\ARIALN.TTF"] = 0.45 }
 local function estimate(fs)
   local t = fs._text
   if type(t) ~= "string" then return 0 end
@@ -38,7 +39,7 @@ local function estimate(fs)
       local len = b >= 0xF0 and 4 or b >= 0xE0 and 3 or b >= 0xC0 and 2 or 1
       local cp = b
       if len == 3 then cp = (b - 0xE0) * 4096 + ((line:byte(i + 1) or 128) - 128) * 64 + ((line:byte(i + 2) or 128) - 128) end
-      w = w + (wide(cp) and 1.0 or f) * size
+      w = w + (wide(cp) and 1.07 or f) * size
       i = i + len
     end
     if w > best then best = w end
@@ -258,10 +259,10 @@ local function run(code)
   local popup = rawget(G, "DeathNoteAlert")
   if popup and popup:IsShown() then
     scan("Alarm")
-    local nameW, lvlW = estimate(popup.name), estimate(popup.level)
+    local nameW, lvlW = estimate(popup.name), 0
     -- fix-3: keine Warnzeile mehr; die Stufe traegt den Abstand ("Stufe 60 (+20)") in Warnfarbe
     io.write(("  Alarm %s: Popup %dx%d, Name~%d px, Stufe~%d px (%s)\n"):format(code, popup:GetWidth(), popup:GetHeight(),
-      nameW, lvlW, tostring(popup.level._text)))
+      nameW, lvlW, tostring(popup.levelText)))
     if lvlW + 60 > popup:GetWidth() / 2 then note("LAGE", "Alarm", "Stufe nimmt mehr als die halbe Popup-Breite: " .. lvlW .. " px") end
   else
     note("LAGE", "Alarm", "Popup kam nicht")

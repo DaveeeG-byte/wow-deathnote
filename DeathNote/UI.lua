@@ -1500,7 +1500,12 @@ function UX.BuildPoster()
   E.tally:SetPoint("TOPLEFT", E.bar, "BOTTOMLEFT", 0, -4)
   E.tally:SetWidth(192)
   E.tally:SetJustifyH("LEFT")
-  E.tally:SetWordWrap(false)
+  -- 1.2.2: Kernzahl in hoechstens zwei Zeilen (vorher eine: "… · 1× beteiligt" fiel in 16 von 21 Sprachen weg),
+  -- gekuerzt: voller Text im Tooltip; der Steckbrief darunter verliert dann eine Zeile
+  E.tally:SetMaxLines(2)
+  E.tallyHit = CreateFrame("Frame", nil, E)
+  E.tallyHit:SetAllPoints(E.tally)
+  Look.TipIfCut(E.tallyHit, E.tally)
   E.info = {}
   for i = 1, INFO_LINES do
     local l = Look.Text(E, "type", 11, Look.INK)
@@ -1902,8 +1907,10 @@ end
 -- in zwei Zeilen), zeigt der Tooltip ueber dem Steckbrief alles.
 local scratchInfo, scratchTip = {}, {}
 local function SetInfo(E, info, optional)
-  local twoLines = TextWidth(E.name, 0) > 192
-  local room = twoLines and INFO_LINES - 1 or INFO_LINES
+  -- 1.2.2: echte Breite ohne Umbruch (GetStringWidth kann an der gesetzten Breite enden); Name und Kernzahl
+  -- in zwei Zeilen nehmen je eine Zeile des Steckbriefs
+  local twoLines = (Look.TextW(E.name) or 0) > 192
+  local room = INFO_LINES - (twoLines and 1 or 0) - ((Look.TextW(E.tally) or 0) > 192 and 1 or 0)
   local shown, dropped = 0, false
   -- 1.2.1: welche Zeile des Steckbriefs (Index in info) auf welcher Linie steht
   local at = E.shownOf or {}
@@ -1964,6 +1971,7 @@ ClassName = function(e)
 end
 
 local optInfo = {}
+GF.FIT_TALLY = { sizes = { 16 }, lines = 2, wrapFirst = true }
 local function FillEnemy(e)
   local E = P.enemy
   E.current = e
@@ -1972,7 +1980,7 @@ local function FillEnemy(e)
   local rank = (e.status == "wanted") and S.Rank(e.key) or nil
   E.doa:SetText(Spaced(L.POSTER_DOA))
   SetPhoto(E, e)
-  E.tally:SetText(e.status == "pardoned" and Look.Join(L.ROW_PARDONED, Look.Tally(e)) or Look.Tally(e))
+  Look.FitText(E.tally, e.status == "pardoned" and Look.Join(L.ROW_PARDONED, Look.Tally(e)) or Look.Tally(e), GF.FIT_TALLY)
 
   -- Steckbrief: "Stufe 36 · Magierin", Rasse, "Gilde: Beispielgilde", zuletzt gesehen (Rasse und Gilde fallen
   -- bei zweizeiligem Namen zuerst weg)
@@ -2107,7 +2115,7 @@ local function FillGuild(g)
   local rank = not only and GCall("Rank", g.key, GF.Src()) or nil
   E.doa:SetText(Spaced(L.POSTER_GUILDBOOK))
   SetPhoto(E, g)
-  E.tally:SetText(only and L.TALLY_MANUAL or Fmt(L.ROW_GKILLED, { kills = Look.GKills(g.kills) }))
+  Look.FitText(E.tally, only and L.TALLY_MANUAL or Fmt(L.ROW_GKILLED, { kills = Look.GKills(g.kills) }), GF.FIT_TALLY)
 
   local names = Look.ListedNames(g, scratchListed)
   local info, opt = wipe(scratchInfo), wipe(optInfo)
@@ -2262,7 +2270,7 @@ function GF.FillHunt(h)
   E.doa:SetText(Spaced(L.POSTER_HUNTLIST))
   SetPhoto(E, h)
   local n = tonumber(h.n) or 0
-  E.tally:SetText(Fmt(L.POSTER_RELEASED_N, { times = Look.Times(n) }))
+  Look.FitText(E.tally, Fmt(L.POSTER_RELEASED_N, { times = Look.Times(n) }), GF.FIT_TALLY)
   local info, opt = wipe(scratchInfo), wipe(optInfo)
   local who = Look.Join(h.level and Fmt(L.POSTER_LEVEL, { level = h.level }), ClassName(h))
   if who ~= "" then info[#info + 1] = who end
@@ -2729,6 +2737,8 @@ local function Arrow(parent, dir, onClick)
 end
 
 -- Zeile "Beschriftung      ◂ Wert ▸": Wert in Handschrift, unterstrichen; vw = Breite des Werts
+GF.FIT_LANG_HINT = { sizes = { 11, 10 }, lines = 2 }
+GF.FIT_STEP, GF.FIT_STEP_LABEL = { sizes = { 16, 13, 11 } }, { sizes = { 11, 10 } }
 local function Stepper(parent, y, label, onStep, vw)
   vw = vw or 56
   local x = 348 - 44 - vw
@@ -2736,8 +2746,8 @@ local function Stepper(parent, y, label, onStep, vw)
   l:SetPoint("TOPLEFT", 34, y - 4)
   l:SetWidth(x - 42)
   l:SetJustifyH("LEFT")
-  l:SetWordWrap(false)
-  l:SetText(label)
+  -- 1.2.2: Beschriftung und Wert werden kleiner statt gekuerzt, der volle Text steht im Tooltip
+  Look.FitText(l, label, GF.FIT_STEP_LABEL)
   local function go(d) onStep(d); UI.FillSettings() end
   local minus = Arrow(parent, -1, function() go(-1) end)
   minus:SetPoint("TOPLEFT", x, y)
@@ -2746,6 +2756,13 @@ local function Stepper(parent, y, label, onStep, vw)
   v:SetWidth(vw)
   v:SetJustifyH("CENTER")
   v:SetWordWrap(false)
+  v.hit = CreateFrame("Frame", nil, parent)
+  v.hit:SetAllPoints(v)
+  Look.TipIfCut(v.hit, v)
+  local lh = CreateFrame("Frame", nil, parent)
+  lh:SetAllPoints(l)
+  Look.TipIfCut(lh, l)
+  function v:SetValue(t) Look.FitText(self, t, GF.FIT_STEP) end
   local ul = parent:CreateTexture(nil, "ARTWORK")
   ul:SetColorTexture(C(Look.INK, 0.45))
   ul:SetHeight(1)
@@ -2901,8 +2918,7 @@ BuildSettings = function()
     S.langHint:SetPoint("TOPLEFT", 34, y - 6)
     S.langHint:SetWidth(170)
     S.langHint:SetJustifyH("LEFT")
-    S.langHint:SetWordWrap(false)
-    S.langHint:SetText(L.SET_LANG_RELOAD_HINT)
+    Look.FitText(S.langHint, L.SET_LANG_RELOAD_HINT, GF.FIT_LANG_HINT)
     S.reload = InkButton(A, L.SET_LANG_RELOAD, 132, 22, function()
       if InCombatLockdown and InCombatLockdown() then return end
       if ReloadUI then ReloadUI() end
@@ -3134,38 +3150,60 @@ BuildSettings = function()
 end
 
 -- Gebrauchsanweisung: links das gesperrte Stichwort, rechts der Absatz
+-- 1.2.2: Kopf steht, die Absaetze rollen (Mausrad, Rollbalken nur bei Bedarf), Impressum und Knopf stehen in der
+-- Fussleiste. Vorher hingen Impressum und Knopf an der Unterkante derselben Seite, auf die die Absaetze von oben
+-- flossen: in 11 von 21 Sprachen lag Text ueber Text (Spiel, deDE: Impressum ueber RUHE).
+GF.HELP_LABEL_W, GF.HELP_LABEL = 100, { sizes = { 10, 9 }, lines = 2, width = 100 }
+GF.HELP_FOOT = { sizes = { 11, 10 }, lines = 2 }
 BuildHelp = function()
   local Hp = PageLayer(RP)
   RP.help = Hp
   SheetHead(Hp, L.HEAD_HELP)
-  local prev
+  -- Fussleiste: Knopf unten, darueber das Impressum in hoechstens zwei Zeilen (Humor.lua setzt UI.HELP_FOOT, nur de/en)
+  local pg = Look.Page(Hp, { top = 58, foot = 44, w = PAGE_W, h = PAGE_H, bar = 4 })
+  Hp.page = pg
+  if type(UI.HELP_FOOT) == "string" then
+    local foot = Look.Text(pg.foot, "type", 11, Look.INK)
+    foot:SetTextColor(C(Look.INK, TONE.hint))
+    foot:SetWidth(PAGE_W - 40)
+    foot:SetJustifyH("CENTER")
+    foot:SetPoint("BOTTOM", pg.foot, "BOTTOM", 0, 40)
+    Look.FitText(foot, UI.HELP_FOOT, GF.HELP_FOOT)
+    Look.TipIfCut(pg.foot, foot)
+    pg:SetFoot(40 + math.ceil(Look.TextH(foot, 2)) + 6)
+    Hp.foot = foot
+  end
   Hp.paras = {}
   for i, p in ipairs(UI.HELP) do
-    local label = Label(Hp, p[1])
-    local text = Look.Text(Hp, "type", 11, Look.INK)
+    local label = Label(pg.body, p[1])
+    label:SetJustifyH("RIGHT")
+    label:SetWidth(GF.HELP_LABEL_W)
+    -- Stichwort: 10 pt, sonst 9 pt, sonst zwei Zeilen (nbNO, esES ragten in den Falz)
+    Look.FitText(label, label:GetText(), GF.HELP_LABEL)
+    local text = Look.Text(pg.body, "type", 11, Look.INK)
     text:SetWidth(232)
     text:SetJustifyH("LEFT")
     text:SetSpacing(1)
     text:SetText(p[2])
-    if prev then text:SetPoint("TOPLEFT", prev, "BOTTOMLEFT", 0, -7)
-    else text:SetPoint("TOPLEFT", 116, -62) end
     label:SetPoint("TOPRIGHT", text, "TOPLEFT", -10, -1)
-    label:SetJustifyH("RIGHT")
     Hp.paras[i] = { label, text }
-    prev = text
   end
-  -- 1.2.0: Impressum als eine Zeile im Hinweis-Ton ueber dem Knopf (Humor.lua setzt UI.HELP_FOOT, nur de/en)
-  if type(UI.HELP_FOOT) == "string" then
-    local foot = Look.Text(Hp, "type", 11, Look.INK)
-    foot:SetTextColor(C(Look.INK, TONE.hint))
-    foot:SetPoint("BOTTOM", 0, 44)
-    foot:SetWidth(PAGE_W - 40)
-    foot:SetWordWrap(false)
-    foot:SetText(UI.HELP_FOOT)
-    Hp.foot = foot
-  end
-  local back = InkButton(Hp, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
+  local back = InkButton(pg.foot, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
   back:SetPoint("BOTTOM", 0, 12)
+  Hp.back = back
+  GF.LayoutHelp()
+end
+
+-- Absaetze von oben stapeln (echte Hoehen) und die Hoehe des Rollbereichs setzen; beim Bau und bei jedem Oeffnen
+function GF.LayoutHelp()
+  local Hp = RP.help
+  local y = 4
+  for _, p in ipairs(Hp.paras) do
+    p[2]:ClearAllPoints()
+    p[2]:SetPoint("TOPLEFT", 116, -y)
+    y = y + math.max(Look.TextH(p[2]), Look.TextH(p[1]) + 1) + 7
+  end
+  Hp.page:Layout(y)
 end
 
 -- 1.2.0: Blatt "Zur Jagd freigeben": fuer wen (Gilde & Freunde, Gilde, Freunde) und ein kurzer Grund.
@@ -3361,13 +3399,13 @@ function UI.FillSettings()
     if cb.opt.invert then v = not v end
     cb:SetInk(v)
   end
-  S.cd:SetText(Fmt(L.SET_SECONDS, { seconds = Look.Setting("alert.cooldown", 90) or 90 }))
-  S.mk:SetText(tostring(Look.Setting("alert.minKills", 1) or 1))
-  S.size:SetText(Percent(ClampScale(tonumber(Look.Setting("ui.scale", 1)) or 1)))
-  S.asize:SetText(Percent(Look.Setting("alert.scale", 1)))
-  S.gmk:SetText(tostring(Look.GuildSetting("minKills") or 1))
+  S.cd:SetValue(Fmt(L.SET_SECONDS, { seconds = Look.Setting("alert.cooldown", 90) or 90 }))
+  S.mk:SetValue(tostring(Look.Setting("alert.minKills", 1) or 1))
+  S.size:SetValue(Percent(ClampScale(tonumber(Look.Setting("ui.scale", 1)) or 1)))
+  S.asize:SetValue(Percent(Look.Setting("alert.scale", 1)))
+  S.gmk:SetValue(tostring(Look.GuildSetting("minKills") or 1))
   local days = tonumber(Look.GuildSetting("huntExpire")) or 0
-  S.hexp:SetText(days > 0 and Fmt(L.SET_EXPIRE_DAYS, { count = days }) or L.SET_EXPIRE_NEVER)
+  S.hexp:SetValue(days > 0 and Fmt(L.SET_EXPIRE_DAYS, { count = days }) or L.SET_EXPIRE_NEVER)
   if guild then
     local h = Look.GuildHealth()
     S.gstatus:SetText(h.text)
@@ -3386,7 +3424,7 @@ function UI.FillSettings()
 
   -- Ton: "Kein Ton" ist die Stille; eingebaute Toene haben keine eigene Lautstaerke
   local sound, vol, ch = Look.SoundChoice()
-  S.tone:SetText(sound.label or L[sound.lkey])
+  S.tone:SetValue(sound.label or L[sound.lkey])
   local fixed = sound.builtin or sound.silent
   for i, bar in ipairs(S.vol.bars) do bar:SetAlpha((i <= vol and 0.85 or 0.15) * ((fixed and 0.5) or 1)) end
   S.vol:SetText("")
@@ -3420,6 +3458,7 @@ function UI.OpenPanel(which)
   RP.settings:SetShown(which == "settings")
   RP.io:SetShown(which == "export" or which == "import")
   if RP.help then RP.help:SetShown(which == "help") end
+  if which == "help" then GF.LayoutHelp(); RP.help.page:Top() end
   if which == "settings" then UI.FillSettings() end
 end
 
