@@ -30,7 +30,7 @@
 -- the send queue below carries channel and target per message.
 
 local ADDON, ns = ...
--- Texte (1.2.0): L.KEY nur in Funktionen lesen; gespeichert und gesendet wird nie Uebersetztes
+-- Texts (1.2.0): read L.KEY inside functions only; nothing translated is ever stored or sent
 local L, Fmt = ns.L, ns.F
 local Util = ns.Util
 local IsSecret = Util.IsSecret
@@ -2780,7 +2780,7 @@ local function fillHeard(out)
   end
 end
 
--- char -> "guild" | "friends" | "both": where a section of "Nach Kollege" comes from
+-- char -> "guild" | "friends" | "both": where a section of "By guildmate" comes from
 local function charSources(src)
   local out = {}
   local function mark(st, tag)
@@ -3091,7 +3091,7 @@ function Guild.Clear()
   updated()
 end
 
--- Drops every release that is not of an own char (1.2.0: "Gildenbuch leeren", "Freundesbuch leeren").
+-- Drops every release that is not of an own char (1.2.0: "Empty guild book", "Empty friends' book").
 -- cleared (1.2.0): { [key] = { [char] = release time } } remembers what was cleared, so the same
 -- release does not come back with the next answer (a newer release of that char is a new act and is taken).
 function P.ClearForeign(hunts, mine, cleared)
@@ -3185,7 +3185,7 @@ function Guild.Adopt(key)
 end
 
 ---------------------------------------------------------------------------
--- Hunt list actions (1.2.0): release ("Zur Jagd freigeben"), call off ("Jagd abblasen"), bagged
+-- Hunt list actions (1.2.0): release ("Put on hit list"), call off ("Call off the hunt"), bagged
 ---------------------------------------------------------------------------
 local function remember(tombs, key, by)
   tombs[key] = { t = now(), by = by }
