@@ -876,7 +876,6 @@ function A.OnPartyKill(attackerGUID, targetGUID)
   if not attackerGUID or not targetGUID or guidKind(targetGUID) ~= "Player" then return false end
   local me, pet = myGUID(), Str(Call(UnitGUID, "pet"))
   if attackerGUID ~= me and attackerGUID ~= pet then return false end
-  if A.DuelFoe(targetGUID) then return false end
   local key = keyForGUID(targetGUID)
   if key then return A.Revenge(key, "partykill") end
   return false
