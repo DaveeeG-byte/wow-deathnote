@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Rebuilds DeathNote's own textures (ImageMagick 7, `magick`).
 # Output: <addon folder>/Media/*.tga (DeathNote/, or the old Staatsfeind/), 32-bit RGBA, uncompressed, edges a power of two.
-# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh
+# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade]
+#   all (default) = everything; base = the black book's files; kit = the shared grey parts of the themes (g_*.tga);
+#   harbor, trade = the kit plus the files of that theme only (<id>_*.tga). The header check runs over every file.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -26,6 +28,10 @@ tga() { magick "$1" -alpha set -flip -orient BottomLeft -type TrueColorAlpha -de
 # Note: always convert grayscale intermediate images back with -colorspace sRGB, otherwise
 # ImageMagick tints the result gray. Always set -compose over after copy_opacity.
 
+WHAT="${1:-all}"
+
+# The black book (base theme "notebook") and the parts every theme shares (ink, check, edge, skull, icon, triangle)
+base_media() {
 # 1) Paper 512x512: bone white instead of western orange (centre #ebe3cc, edge #c2b493), cloudy, grain,
 #    mild vignette, two foxing spots at 15 % opacity. Overview: lighter than 1.1.0 (#ddd3b8/#a89a7c),
 #    so small text on the poster keeps 4.5:1 contrast (measured in a still rendered from the code)
@@ -194,6 +200,131 @@ for f in "$OUT"/*.tga; do magick identify -format '%f %wx%h %[channels] depth=%z
 magick -size 32x32 xc:none -fill white -stroke white -strokewidth 1.6 -draw "stroke-linejoin round" \
   -draw "polygon 10,7 25,16.5 9.5,25" -blur 0x0.5 "$TMP/tri.png"
 tga "$TMP/tri.png" "$OUT/tri.tga"
+}
+
+###########################################################################
+# 1.3.0 themes. Shared kit files are g_*.tga, the files of one theme <id>_*.tga, all flat in Media\.
+# Seed ranges: kit 100s, harbor 200s, trade 300s, so a new theme never changes an older picture.
+# Paper and page are not repeated: a theme tints paper.tga and page.tga (SetVertexColor multiplies).
+###########################################################################
+
+# Stamp frame without text: white or grey (the theme tints it, Look.TINT.stamp), worn like the black book's stamps,
+# already turned (the game turns only the text). Drawn at 512x256, saved at 256x128 with 16 alpha steps (a quarter
+# of the size in the zip, not visible at 140x70); the inner frame keeps the text area of the black book (104 px).
+# $1 output, $2 angle, $3 shape (box|cut), $4 seed, $5 grey in percent (100 = white; a darker grey gives the
+# theme's dark stamps, pardoned and suspect, from the same tint)
+frame() {
+  local out="$1" ang="$2" shape="$3" seed="$4" grey="$5"
+  local x0=46 y0=44 x1=465 y1=211 c=24 i=15
+  if [ "$shape" = box ]; then
+    # box stamp: one heavy square frame, one thin inner line
+    magick -size 512x256 xc:none -fill none -stroke white -strokewidth 13 \
+      -draw "rectangle $x0,$y0 $x1,$y1" -strokewidth 3 \
+      -draw "rectangle $((x0+i)),$((y0+i)) $((x1-i)),$((y1-i))" "$TMP/fr_mask.png"
+  else
+    # cut corners: an octagon (ship's plate), double line
+    magick -size 512x256 xc:none -fill none -stroke white -strokewidth 9 \
+      -draw "polygon $((x0+c)),$y0 $((x1-c)),$y0 $x1,$((y0+c)) $x1,$((y1-c)) $((x1-c)),$y1 $((x0+c)),$y1 $x0,$((y1-c)) $x0,$((y0+c))" \
+      -strokewidth 3 \
+      -draw "polygon $((x0+c+6)),$((y0+i)) $((x1-c-6)),$((y0+i)) $((x1-i)),$((y0+c+6)) $((x1-i)),$((y1-c-6)) $((x1-c-6)),$((y1-i)) $((x0+c+6)),$((y1-i)) $((x0+i)),$((y1-c-6)) $((x0+i)),$((y0+c+6))" \
+      "$TMP/fr_mask.png"
+  fi
+  magick -seed "$seed" -size 512x256 xc:gray50 +noise Random -colorspace gray -blur 0x0.7 -auto-level \
+      -threshold 82% -alpha copy "$TMP/fr_holes.png"
+  magick "$TMP/fr_mask.png" "$TMP/fr_holes.png" -compose DstOut -composite -blur 0x0.4 "$TMP/fr_worn.png"
+  magick -size 512x256 xc:"gray($grey%)" \( "$TMP/fr_worn.png" -alpha extract \) -alpha off -compose copy_opacity -composite \
+      -channel A -evaluate multiply 0.94 +channel -compose over -background none \
+      -virtual-pixel transparent -distort SRT "$ang" -resize 256x128 -channel A -posterize 16 +channel "$TMP/fr_out.png"
+  tga "$TMP/fr_out.png" "$out"
+}
+
+# Kit 1) Grey cover 256x256: woven cloth (fine warp and weft), grain, light embossing, darker edges. Mid grey
+#    (centre about 60 %) so a theme tints it to any darker colour: canvas, hardboard, also the photo background.
+#    Few grey levels on purpose: the file packs small in the zip.
+kit_media() {
+  magick -seed 101 -size 256x256 xc:gray50 -attenuate 1.4 +noise Gaussian -colorspace gray -blur 0x1.0 \
+    -shade 120x45 -auto-level -level 18%,86% +level 62%,92% \
+    \( -seed 102 -size 1x256 xc:gray50 +noise Random -colorspace gray -blur 0x0.6 -auto-level +level 86%,100% \
+       -scale '256x256!' \) -compose multiply -composite \
+    \( -seed 103 -size 256x1 xc:gray50 +noise Random -colorspace gray -blur 0x0.6 -auto-level +level 88%,100% \
+       -scale '256x256!' \) -compose multiply -composite \
+    \( -size 256x256 radial-gradient:white-gray62 \) -compose multiply -composite \
+    -colorspace gray -posterize 40 -colorspace sRGB -alpha off "$TMP/g_cover.png"
+  tga "$TMP/g_cover.png" "$OUT/g_cover.tga"
+}
+
+# Privateer's Ledger (harbor): stamps with cut corners in oxblood, a dagger instead of the thumbtack, brass nails
+# instead of tape. Cover, photo background, paper, page: kit and the black book's files, tinted (Themes/harbor.lua).
+theme_harbor() {
+  # 1) Stamp frames (angles as the black book: nr1 -11, rache 9, pardon -6, suspect 7, guild -9, hunt 8)
+  frame "$OUT/harbor_stamp_nr1.tga"     -11 cut 201 100
+  frame "$OUT/harbor_stamp_rache.tga"     9 cut 202 100
+  frame "$OUT/harbor_stamp_pardon.tga"   -6 cut 203 34
+  frame "$OUT/harbor_stamp_suspect.tga"   7 cut 204 46
+  frame "$OUT/harbor_stamp_guild.tga"    -9 cut 205 100
+  frame "$OUT/harbor_stamp_hunt.tga"      8 cut 206 100
+  # 2) Dagger 64x64 (shown at 28x28 in place of the thumbtack, the top 12 px above the poster): brass pommel and
+  #    guard, leather grip, a short blade that ends in a slit in the paper. Own colours, slightly turned.
+  magick -size 64x64 xc:none \
+    -fill 'rgba(0,0,0,0.45)' -draw 'polygon 31,34 39,34 37,52 34,56' -blur 0x1.6 \
+    \( -size 64x64 xc:none \
+       -fill '#2a1a10' -draw 'polygon 27,53 37,53 36,56 28,56' \
+       -fill '#8c969b' -draw 'polygon 27,31 37,31 36,52 32,55 28,52' \
+       -fill '#dfe5e8' -draw 'polygon 31,31 33,31 33,53 32,55 31,53' \
+       -fill '#5f696e' -draw 'polygon 27,31 29,31 29,52 28,52' \
+       -fill '#8a6824' -draw 'roundrectangle 15,26 49,32 3,3' \
+       -fill '#e0c070' -draw 'rectangle 18,27 46,28' \
+       -fill '#3a2418' -draw 'roundrectangle 27,9 37,27 3,3' \
+       -stroke '#6a4630' -strokewidth 1.6 -draw 'line 27,13 37,16' -draw 'line 27,18 37,21' -draw 'line 27,23 37,26' \
+       -stroke none -fill '#8a6824' -draw 'circle 32,6 32,1' -fill '#e8cc80' -draw 'circle 30,4 30,3' \) \
+    -compose over -composite -background none -virtual-pixel transparent -distort SRT '32,30 1 -12 32,32' \
+    "$TMP/harbor_dagger.png"
+  tga "$TMP/harbor_dagger.png" "$OUT/harbor_dagger.tga"
+  # 3) Nail 64x32 (in place of the tape strip, shown at 52x20 and 34x14): a round head drawn narrow so it stays round
+  #    on the wide strip; light grey, the theme tints it to brass (tint.tape). The rest of the strip stays clear.
+  magick -size 64x32 xc:none \
+    -fill 'rgba(0,0,0,0.55)' -draw 'ellipse 34,18 8,10 0,360' -blur 0x1.4 \
+    \( -size 64x32 xc:none -fill '#6e6e6e' -draw 'ellipse 32,16 7.5,9.5 0,360' \
+       -fill '#c4c4c4' -draw 'ellipse 31.5,15.5 6,7.8 0,360' \
+       -fill '#f4f4f4' -draw 'ellipse 29.5,12.5 2.2,2.8 0,360' \) -compose over -composite "$TMP/harbor_nail.png"
+  tga "$TMP/harbor_nail.png" "$OUT/harbor_nail.tga"
+}
+
+# The Workshop (trade): box stamps in stamp-pad red, a clipboard clamp instead of the thumbtack. Tape and the
+# height chart of the photo are the black book's; cover from the kit, paper and page tinted (Themes/trade.lua).
+theme_trade() {
+  # 1) Stamp frames (same angles as the black book)
+  frame "$OUT/trade_stamp_nr1.tga"     -11 box 301 100
+  frame "$OUT/trade_stamp_rache.tga"     9 box 302 100
+  frame "$OUT/trade_stamp_pardon.tga"   -6 box 303 34
+  frame "$OUT/trade_stamp_suspect.tga"   7 box 304 46
+  frame "$OUT/trade_stamp_guild.tga"    -9 box 305 100
+  frame "$OUT/trade_stamp_hunt.tga"      8 box 306 100
+  # 2) Clipboard clamp 64x64 (shown at 28x28 in place of the thumbtack, the top 12 px above the poster): steel plate
+  #    with two rivets, a lever with a hanging hole on top. Own colours.
+  magick -size 64x64 xc:none \
+    -fill 'rgba(0,0,0,0.45)' -draw 'roundrectangle 8,32 60,58 4,4' -blur 0x1.6 \
+    \( -size 64x64 xc:none \
+       -fill '#80878c' -draw 'roundrectangle 22,8 42,32 7,7' \
+       -fill '#b9c0c4' -draw 'roundrectangle 24,10 40,20 5,5' \
+       -fill none -stroke '#30363a' -strokewidth 2.2 -draw 'circle 32,17 32,13' \
+       -stroke none -fill '#8d9499' -draw 'roundrectangle 5,28 59,54 4,4' \
+       -fill '#d2d8db' -draw 'rectangle 8,30 56,34' \
+       -fill '#5f666b' -draw 'rectangle 8,48 56,52' \
+       -fill '#454b50' -draw 'circle 14,41 14,38' -draw 'circle 50,41 50,38' \
+       -fill '#c9d0d4' -draw 'circle 13,40 13,39' -draw 'circle 49,40 49,39' \) \
+    -compose over -composite "$TMP/trade_clamp.png"
+  tga "$TMP/trade_clamp.png" "$OUT/trade_clamp.tga"
+}
+
+case "$WHAT" in
+  all) base_media; kit_media; theme_harbor; theme_trade ;;
+  base) base_media ;;
+  kit) kit_media ;;
+  harbor) kit_media; theme_harbor ;;
+  trade) kit_media; theme_trade ;;
+  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade)" >&2; exit 2 ;;
+esac
 
 # Check the headers: type 2 (uncompressed), 32 bpp, descriptor 0x08, edges a power of two
 bad=0
