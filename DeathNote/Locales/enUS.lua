@@ -701,7 +701,7 @@ L.STATE_OPEN = "open"  -- [max 16] state of the score: they killed you more ofte
 L.STATE_EVEN = "even"  -- [max 16] state of the score: both sides equal
 L.STATE_AHEAD = "overpaid"  -- [max 16] state of the score: you lead
 L.STATE_VICTIM = "not in the book"  -- [max 24] victim sheet: a victim of yours who never killed you
-L.STAND_LINE = "Score {score}"  -- poster, tooltip, notice; {score} = STAND_SCORE
+L.STAND_LINE = "Score {score}"  -- poster, tooltip, notice; {score} = '1 : 2' (you : them, the same notation as the alarm)
 L.STAND_TIP = "you {mine}, them {his}"  -- tooltip that explains the score
 L.TIP_IN_RECORD = "RAP SHEET:"  -- game tooltip label over a player you killed (not in the book)
 L.TIP_RECORD_LINE = "killed by you {times}, last {time}"  -- game tooltip; {times} = '3×', {time} = '2 days ago'
@@ -726,7 +726,7 @@ L.RECORD_AWARD_AT = "awarded {time}"  -- award tooltip; {time} = date
 L.RECORD_AWARD_OPEN = "not awarded yet"  -- award tooltip
 L.RECORD_MORE = "Show more"  -- [max 19] word at the bottom right of your file: opens the list of your latest kills
 L.RECORD_BACK = "Back to file"  -- [max 19] word at the bottom right of a victim or the kill list: back to your file
-L.RECORD_CLEAR = "Clear rap sheet"  -- [max 26] button under the list of your latest kills (asks first)
+L.RECORD_CLEAR = "Clear rap sheet"  -- [max 26] button on the House Rules' sheet Rap Sheet (asks first)
 L.CONFIRM_RECORD_CLEAR = "Clear the rap sheet?\nAll victims and the list of latest kills go. Rank, points and awards stay."  -- dialog; \n = line break
 L.CONFIRM_RECORD_CLEAR_OK = "Clear"  -- [max 14] dialog button
 L.CONFIRM_VICTIM_STRIKE = "Strike {name} from the rap sheet?\nThe points you earned stay."  -- dialog; {name} = the victim

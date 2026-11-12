@@ -296,7 +296,7 @@ return {
   RECORD_AWARDS = { max = 14, field = "small label over the row of awards (letter-spaced)" },
   RECORD_MORE = { max = 19, field = "word at the bottom right of your file: opens the list of your latest kills" },
   RECORD_BACK = { max = 19, field = "word at the bottom right of a victim or the kill list: back to your file" },
-  RECORD_CLEAR = { max = 26, field = "button under the list of your latest kills (asks first)" },
+  RECORD_CLEAR = { max = 26, field = "button on the House Rules' sheet Rap Sheet, 132 to 200 px, Friz 10 (asks first)" },
   CONFIRM_RECORD_CLEAR_OK = { max = 14, field = "dialog button" },
   ACT_VICTIM_STRIKE = { max = 26, field = "button on the victim sheet (asks first)" },
   VICTIM_KILLS_LABEL = { max = 14, field = "small label over the kill lines of a victim (letter-spaced)" },
