@@ -373,8 +373,13 @@ end
 
 local lastPlay, previewHandle
 
+-- 1.3.0: the soft sound of the victim alarm and of "quiet" for an even or overpaid standing (alert.settled): this
+-- file at level 1 on the chosen channel, whatever sound and volume the player chose for the alarm
+Look.QUIET_SOUND, Look.QUIET_LEVEL = "feder", 1
+
 -- kind: "alert" (alarm, guild alarm), "revenge" (own sound of the revenge notice), "preview" (sample in the
--- house rules, not throttled, also with the main switch off). Returns what was played.
+-- house rules, not throttled, also with the main switch off), "quiet" (1.3.0: Look.QUIET_SOUND; never the loud
+-- built-in sound instead). Returns what was played.
 function Look.Alarm(kind)
   local preview = kind == "preview"
   if not preview then
@@ -387,6 +392,11 @@ function Look.Alarm(kind)
   if s.silent then return nil end                 -- "no sound" applies to the revenge notice too
   if kind == "revenge" then
     return PlayBuiltin("revenge", ch) and "revenge" or nil
+  end
+  if kind == "quiet" then
+    local ok, will = pcall(PlaySoundFile, Look.SoundFile(Look.QUIET_SOUND, Look.QUIET_LEVEL), ch)
+    if ok and not Look.Secret(will) and will ~= false then return Look.QUIET_SOUND end
+    return nil
   end
   if not s.builtin then
     local ok, will, handle = pcall(PlaySoundFile, Look.SoundFile(s.key, vol), ch)
@@ -880,11 +890,25 @@ function Look.LastPlace(e)
   if d then return Look.Place(d.zone, d.subzone) end
 end
 
+-- 1.3.0: the standing of a key as text, "me : him" ("2 : 1", the same notation in every language), followed by
+-- mine, his and the state of Ledger.Standing. nil while the rap sheet is off or holds nothing for the key.
+function Look.Score(key)
+  local Lg = ns.Ledger
+  if not (Lg and Lg.Standing) or type(key) ~= "string" or Look.Secret(key) then return nil end
+  local mine, his, state = Lg.Standing(key)
+  if type(mine) ~= "number" or type(his) ~= "number" then return nil end
+  return mine .. " : " .. his, mine, his, state
+end
+
 ------------------------------------------------------------------------
 -- Alarm
 ------------------------------------------------------------------------
 local Alert = {}
 ns.Alert = Alert
+
+-- 1.3.0: the head of the victim alarm is a show word: a theme may give it its own wording (Locale.THEME_KEYS; the
+-- words are applied at ADDON_LOADED, after every file of the TOC ran)
+if ns.Locale and type(ns.Locale.THEME_KEYS) == "table" then ns.Locale.THEME_KEYS.ALERT_TITLE_VICTIM = true end
 
 local HOLD = 12           -- seconds shown
 local W, H = 384, 108
@@ -892,24 +916,67 @@ local QUEUE_MAX = 9
 
 local ready = false
 local lastAlert = {}      -- key -> GetTime()
-local queue = {}          -- { { key = k, guild = bool }, ... }
+local lastVictim = {}     -- 1.3.0: key -> GetTime() of the last victim alarm (own cooldown, Alert.VICTIM_COOLDOWN)
+-- { { key = k, guild = bool, hunt = bool, victim = bool }, ... }; victim alarms always wait behind all others
+local queue = {}
 local current             -- key shown right now
 local currentEntry
 local currentGuild        -- true when the popup shows a guild enemy
+local currentVictim = false -- 1.3.0: true when the popup shows an own victim (victim alarm)
 local popup, button, flash
 local hideTimer
 local armedFor            -- target name the secure button points at while it is shown
 
+-- 1.3.0 victim alarm (alert.victims, off by default): someone I killed, who has a reason for revenge, shows up
+Alert.VICTIM_COOLDOWN = 600          -- seconds per victim (the alarm of the book: alert.cooldown, 90)
+Alert.VICTIM_WINDOW = 14 * 86400     -- my last kill on him at most this long ago
+
 local function InCombat() return InCombatLockdown() and true or false end
 
+-- 1.3.0: alert.settled for an even or overpaid standing: "always" | "quiet" (no edge pulse, the soft sound) | "off"
+-- (no alarm). nil for every other state, so open cases are never touched; nil too while the rap sheet is off.
+local SETTLED_STATE = { even = true, ahead = true }
+local function SettledMode(e)
+  local Lg = ns.Ledger
+  if not (Lg and Lg.State) or type(e) ~= "table" or type(e.key) ~= "string" then return nil end
+  if not SETTLED_STATE[Lg.State(e.key)] then return nil end
+  local m = Look.Setting("alert.settled", "always")
+  if m ~= "quiet" and m ~= "off" then m = "always" end
+  return m
+end
+
+-- true (and the settled mode, nil for an open case) when the alarm of the book is due for e
 local function Eligible(e)
   if not e or e.status == "pardoned" then return false end
   if not Look.Setting("alert.enabled", true) then return false end
   if e.status == "suspect" then return Look.Setting("alert.suspects", false) and true or false end
-  -- entries added by hand alert without a kill too (else /dn add would never warn)
-  if e.manual then return true end
+  -- entries added by hand alert without a kill too (else /dn add would never warn);
   -- the threshold counts killing blows and assists
-  return Look.Weight(e) >= (tonumber(Look.Setting("alert.minKills", 1)) or 1)
+  if not e.manual and Look.Weight(e) < (tonumber(Look.Setting("alert.minKills", 1)) or 1) then return false end
+  local mode = SettledMode(e)
+  if mode == "off" then return false end
+  return true, mode
+end
+
+-- 1.3.0: is the victim alarm due for key (cooldown aside)? Only with the switch on, a standing in my favour
+-- (me > him), my last kill on him within Alert.VICTIM_WINDOW, not pardoned, and not a case the alarm of the book
+-- takes (that one has precedence, never a second popup). An overpaid entry of the book under alert.settled = "off"
+-- stays silent here too. Returns the victim's table of the rap sheet.
+local function VictimEligible(key)
+  if Look.Setting("alert.victims", false) ~= true or not Look.Setting("alert.enabled", true) then return nil end
+  local Lg = ns.Ledger
+  if not (Lg and Lg.Standing and Lg.Victim) then return nil end
+  local mine, his, state = Lg.Standing(key)
+  if type(mine) ~= "number" or type(his) ~= "number" or mine <= his or state == "pardoned" then return nil end
+  local e = ns.Store and ns.Store.Get and ns.Store.Get(key)
+  if e then
+    if Eligible(e) then return nil end
+    if state == "ahead" and SettledMode(e) == "off" then return nil end
+  end
+  local v = Lg.Victim(key)
+  local last = type(v) == "table" and v.last
+  if type(last) ~= "number" or time() - last > Alert.VICTIM_WINDOW then return nil end
+  return v
 end
 
 -- Guild enemy (not on the own list): own switches guild.alert / guild.minKills;
@@ -1308,6 +1375,9 @@ function Look.LevelLine(unit, stored)
   return text, nil
 end
 
+-- 1.3.0: text key of the standing in the line of the book, per state (suspects keep the line of 1.2.2)
+local SCORE_LINE = { open = "ALERT_LINE_STANDING", even = "ALERT_LINE_STANDING_EVEN", ahead = "ALERT_LINE_STANDING_AHEAD" }
+
 -- drop (1.2.2): what gives way first when the line does not fit in two lines: 1 = the zone, 2 = also "last ..."
 local function LineFor(e, drop)
   drop = drop or 0
@@ -1329,8 +1399,21 @@ local function LineFor(e, drop)
   end
   if ago and drop < 2 then s = Fmt(L.ALERT_LINE_LAST, { text = s, time = ago }) end
   if place and place ~= L.PLACE_UNKNOWN then s = Fmt(L.ALERT_LINE_IN, { text = s, zone = place }) end
-  if (e.revenge or 0) > 0 then s = Fmt(L.ALERT_LINE_REVENGE, { text = s, times = Look.Times(e.revenge) }) end
+  -- 1.3.0: with the rap sheet the standing takes the place of "Revenge: n×" (it never gives way); without it, or for
+  -- a suspect, the line of 1.2.2
+  local score, mine, _, state = Look.Score(e.key)
+  if score and SCORE_LINE[state] then
+    if mine > 0 then s = Fmt(L[SCORE_LINE[state]], { text = s, score = score }) end
+  elseif (e.revenge or 0) > 0 then
+    s = Fmt(L.ALERT_LINE_REVENGE, { text = s, times = Look.Times(e.revenge) })
+  end
   return s
+end
+
+-- 1.3.0: the line of the victim alarm: "score 3 : 0 · killed by you, last 2 days ago"
+local function VictimLineFor(e)
+  local score = Look.Score(e.key) or "?"
+  return Fmt(L.ALERT_LINE_VICTIM, { score = score, time = Look.Ago(e.last) or L.TIME_NEVER })
 end
 
 -- Model only when the unit token really belongs to this enemy now;
@@ -1406,8 +1489,9 @@ local function OwnLine(e, drop)
   return s
 end
 
--- guild: false (own book), true (guild/friends) or "hunt" (hit list target)
+-- guild: false (own book), true (guild/friends), "hunt" (hit list target) or "victim" (1.3.0: own victim)
 local function GuildTitle(e, guild)
+  if guild == "victim" then return L.ALERT_TITLE_VICTIM end
   if guild == "hunt" then return L.ALERT_TITLE_HUNT end
   local src = SourceOf(e.key)
   if src == "friends" then return L.ALERT_TITLE_FRIENDS end
@@ -1435,7 +1519,8 @@ SetLine = function(e, guild)
   -- or the long reason, then the second name (hit list); last of all 10 pt
   -- (the guild line has nothing that gives way: it takes the last step, 10 pt and below, at once)
   for drop = 0, 2 do
-    local s = (guild == "hunt" and HuntLineFor(e, drop)) or (guild and GuildLineFor(e)) or OwnLine(e, drop)
+    local s = (guild == "victim" and VictimLineFor(e)) or (guild == "hunt" and HuntLineFor(e, drop))
+      or (guild and GuildLineFor(e)) or OwnLine(e, drop)
     local last = drop == 2 or (guild and guild ~= "hunt")
     if Look.FitText(popup.line, lead .. s, last and Look.FIT_LINE_LAST or Look.FIT_LINE) or last then break end
   end
@@ -1446,6 +1531,9 @@ local function Fill(e, unit, how, guild)
   -- 1.2.2: a long title in another language shrinks step by step instead of being cut (288 px)
   popup.title:SetWidth(W - 86 - 10)
   Look.FitText(popup.title, guild and GuildTitle(e, guild) or HeaderFor(e, rank), nr1 and Look.FIT_TITLE_NR1 or Look.FIT_TITLE)
+  -- 1.3.0: the victim alarm is a calmer note: its head in the cover's writing colour instead of red
+  local tc = guild == "victim" and Look.COLOR.onCover or Look.COLOR.accentOnCover
+  popup.title:SetTextColor(tc[1], tc[2], tc[3], tc[4] or 1)
   SetName(e)
   popup.name:SetTextColor(Look.ClassRGB(e.class))
   -- Level at the front of the text line (1.2.2; before: right of the name, it took up to 132 px from it),
@@ -1473,9 +1561,12 @@ local function Fill(e, unit, how, guild)
 end
 
 local currentHunt = false   -- 1.2.0: the popup shows a hit list target
-local function Show(e, unit, how, silent, guild)
+-- quiet (1.3.0): no edge pulse and the soft sound (Look.Alarm("quiet")); always so for a victim (guild = "victim")
+local function Show(e, unit, how, silent, guild, quiet)
   if not popup then Build() end
-  current, currentEntry, currentGuild = e.key, e, guild and true or false
+  currentVictim = guild == "victim"
+  if currentVictim then quiet = true end
+  current, currentEntry, currentGuild = e.key, e, (guild and not currentVictim) and true or false
   currentHunt = guild == "hunt"
   local nr1 = Fill(e, unit, how, guild)
   popup.outAnim:Stop()
@@ -1490,8 +1581,12 @@ local function Show(e, unit, how, silent, guild)
   Guard()
   SetHint()
   if not silent then
-    Look.Alarm("alert")
-    if Look.Setting("alert.flash", true) then Flash(nr1) end
+    if quiet then
+      Look.Alarm("quiet")
+    else
+      Look.Alarm("alert")
+      if Look.Setting("alert.flash", true) then Flash(nr1) end
+    end
   end
   if hideTimer then hideTimer:Cancel() end
   hideTimer = C_Timer.NewTimer(HOLD, function() hideTimer = nil; Dismiss() end)
@@ -1516,10 +1611,17 @@ local function ShowNext()
         Show(g, UnitFor(q.key, nil), "other", false, q.hunt and "hunt" or true)
         return
       end
+    elseif q.victim then
+      local e = VictimEligible(q.key) and ns.Ledger.AsEntry(q.key)
+      if e then
+        Show(e, UnitFor(q.key, nil), "other", false, "victim")
+        return
+      end
     else
       local e = ns.Store.Get(q.key)
-      if e and Eligible(e) then
-        Show(e, UnitFor(q.key, nil), "other")
+      local ok, mode = Eligible(e)
+      if ok then
+        Show(e, UnitFor(q.key, nil), "other", false, nil, mode == "quiet")
         return
       end
     end
@@ -1531,15 +1633,16 @@ Finish = function()
   popup:Hide()
   popup:SetAlpha(1)
   popup.model:ClearModel()
-  current, currentEntry, currentGuild, currentHunt = nil, nil, false, false
+  current, currentEntry, currentGuild, currentHunt, currentVictim = nil, nil, false, false, false
   DisarmButton()
   if #queue > 0 then C_Timer.After(0.4, ShowNext) end
 end
 
-local function Queued(key)
-  for i = 1, #queue do if queue[i].key == key then return true end end
-  return false
+local function QueueIndex(key)
+  for i = 1, #queue do if queue[i].key == key then return i end end
+  return nil
 end
+local function Queued(key) return QueueIndex(key) ~= nil end
 
 -- shared cooldown per key; true = an alarm would be due now
 local function Due(key)
@@ -1562,39 +1665,64 @@ end
 function Alert.Silence(key)
   if type(key) ~= "string" or Look.Secret(key) then return end
   Mark(key)
+  lastVictim[key] = GetTime()
   for i = #queue, 1, -1 do if queue[i].key == key then table.remove(queue, i) end end
   if current == key then Dismiss() else UpdateMore() end
 end
 
-local function Enqueue(key, guild, hunt)
-  if #queue >= QUEUE_MAX then return false end
-  queue[#queue + 1] = { key = key, guild = guild, hunt = hunt }
+-- 1.3.0: victim alarms wait behind every other alarm. Another alarm goes in front of the first waiting victim and,
+-- when the queue is full, pushes the last waiting victim out (its cooldown is given back); a victim alarm only
+-- takes a free place at the end.
+local function Enqueue(key, guild, hunt, victim)
+  if #queue >= QUEUE_MAX then
+    if victim then return false end
+    local last
+    for i = #queue, 1, -1 do if queue[i].victim then last = i; break end end
+    if not last then return false end
+    lastVictim[queue[last].key] = nil
+    table.remove(queue, last)
+  end
+  local at = #queue + 1
+  if not victim then
+    for i = 1, #queue do if queue[i].victim then at = i; break end end
+  end
+  table.insert(queue, at, { key = key, guild = guild, hunt = hunt, victim = victim })
   UpdateMore()
   return true
+end
+
+-- 1.3.0: the popup shows a victim, now another alarm takes the same player: the popup turns into that alarm
+-- (silently, like the guild alarm that becomes the alarm of the book)
+local function TakeOver(e, unit, how, guild)
+  currentVictim, currentGuild, currentHunt, currentEntry = false, guild and true or false, guild == "hunt", e
+  Fill(e, UnitFor(e.key, unit), how, guild)
+  ArmButton(); Guard(); SetHint()
 end
 
 function Alert.Spotted(key, unit, how)
   if not ready or type(key) ~= "string" or Look.Secret(key) then return end
   local e = ns.Store.Get(key)
-  if not Eligible(e) then return end
-  -- one key, one popup; the own list goes before the guild list
+  local ok, mode = Eligible(e)
+  if not ok then return end
+  -- one key, one popup; the own list goes before the guild list (and before the victim alarm)
   if current == key then
-    if currentGuild then
-      currentGuild, currentEntry = false, e
-      Fill(e, UnitFor(key, unit), how, false)
-      ArmButton(); Guard(); SetHint()
-    end
+    if currentGuild or currentVictim then TakeOver(e, unit, how, false) end
     return
   end
-  for i = 1, #queue do if queue[i].key == key then queue[i].guild = false; return end end
+  local qi = QueueIndex(key)
+  if qi then
+    if not queue[qi].victim then queue[qi].guild = false; return end
+    table.remove(queue, qi)       -- a waiting victim alarm gives way to the alarm of the book
+  end
   if not Due(key) then return end
   if OnBanner(key) then Mark(key); return end
-  if current then
+  -- a victim alarm on the screen gives way at once (never the other way round)
+  if current and not currentVictim then
     if Enqueue(key, false) then Mark(key) end
     return
   end
   Mark(key)
-  Show(e, UnitFor(key, unit), how)
+  Show(e, UnitFor(key, unit), how, false, nil, mode == "quiet")
 end
 
 -- Guild enemy (1.2.0: or a killer from the friends' book) who is not on my list;
@@ -1604,15 +1732,43 @@ function Alert.GuildSpotted(key, unit, how, kind)
   local hunt = kind == "hunt"
   local g = hunt and Look.GCall("Hunt", key, "all") or Look.GCall("Get", key, "all")
   if not EligibleGuild(g, hunt) then return end
-  if current == key or Queued(key) then return end
+  if current == key then
+    if currentVictim then TakeOver(g, unit, how, hunt and "hunt" or true) end
+    return
+  end
+  local qi = QueueIndex(key)
+  if qi then
+    if not queue[qi].victim then return end
+    table.remove(queue, qi)
+  end
   if not Due(key) then return end
   if OnBanner(key) then Mark(key); return end
-  if current then
+  if current and not currentVictim then
     if Enqueue(key, true, hunt) then Mark(key) end
     return
   end
   Mark(key)
   Show(g, UnitFor(key, unit), how, false, hunt and "hunt" or true)
+end
+
+-- 1.3.0: an own victim in sight (VICTIM_SPOTTED of Ledger.lua; only while alert.victims is on and there are
+-- victims). Own cooldown of Alert.VICTIM_COOLDOWN per victim; never in front of another alarm.
+function Alert.VictimSpotted(key, unit, how)
+  if not ready or type(key) ~= "string" or Look.Secret(key) then return end
+  if current == key or Queued(key) then return end
+  local now = GetTime()
+  local last = lastVictim[key]
+  if last and now - last < Alert.VICTIM_COOLDOWN and now >= last then return end
+  if not VictimEligible(key) then return end
+  if OnBanner(key) then lastVictim[key] = now; return end
+  if current then
+    if Enqueue(key, false, false, true) then lastVictim[key] = now end
+    return
+  end
+  local e = ns.Ledger.AsEntry(key)
+  if not e then return end
+  lastVictim[key] = now
+  Show(e, UnitFor(key, unit), how, false, "victim")
 end
 
 -- 1.2.0: does the popup show or hold this player right now? (new release in sight: alarm instead of a chat line)
@@ -1644,18 +1800,40 @@ end
 ns:On("READY", function()
   ready = true
   wipe(lastAlert)
+  wipe(lastVictim)
 end)
 
 ns:On("ENEMY_SPOTTED", function(key, unit, how) Alert.Spotted(key, unit, how) end)
 ns:On("GUILD_ENEMY_SPOTTED", function(key, unit, how, kind) Alert.GuildSpotted(key, unit, how, kind) end)
+ns:On("VICTIM_SPOTTED", function(key, unit, how) Alert.VictimSpotted(key, unit, how) end)
 ns:On("TEST_ALERT", function() Alert.Test() end)
+
+-- 1.3.0: the victim on the screen changed (his kill, a book entry, the standing): when the book takes him now, the
+-- popup becomes its alarm; when the victim alarm no longer holds, it closes; else the line follows
+local function RefreshVictim()
+  local e = ns.Store.Get(current)
+  if e and Eligible(e) then TakeOver(e, nil, popup.how, false); return end
+  local v = VictimEligible(current) and ns.Ledger.AsEntry(current)
+  if not v then Dismiss(); return end
+  currentEntry = v
+  SetLine(v, "victim")
+end
 
 ns:On("ENEMY_UPDATED", function(key)
   if not current or key ~= current or currentGuild then return end
+  if currentVictim then RefreshVictim(); return end
   local e = ns.Store.Get(key)
   if not e then Dismiss(); return end
   currentEntry = e
   SetLine(e, false)
+end)
+
+-- 1.3.0 (Ledger.lua): my kill on him, his kill on me, a hand revenge: the standing in the line follows
+ns:On("STANDING_CHANGED", function(key)
+  if not current or key ~= current or currentGuild then return end
+  if currentVictim then RefreshVictim(); return end
+  local e = ns.Store.Get(key)
+  if e then currentEntry = e; SetLine(e, false) end
 end)
 
 ns:On("GUILD_UPDATED", function()
@@ -1671,6 +1849,7 @@ end)
 ns:On("ENEMY_REKEYED", function(old, new)
   if type(old) ~= "string" or type(new) ~= "string" or old == new then return end
   if lastAlert[old] then lastAlert[new] = lastAlert[old]; lastAlert[old] = nil end
+  if lastVictim[old] then lastVictim[new] = lastVictim[old]; lastVictim[old] = nil end
   for i = 1, #queue do if queue[i].key == old and not queue[i].guild then queue[i].key = new end end
   if current == old and not currentGuild then current = new end
   -- the same player at most once: take doubles out of the queue (old and new key) and the
@@ -1683,7 +1862,8 @@ ns:On("ENEMY_REKEYED", function(old, new)
   end
   UpdateMore()
   if current == new and not currentGuild then
-    local e = ns.Store.Get(new)
+    local e
+    if currentVictim then e = ns.Ledger and ns.Ledger.AsEntry(new) else e = ns.Store.Get(new) end
     if e then currentEntry = e end
     if popup and popup:IsShown() then
       SetName(currentEntry)
