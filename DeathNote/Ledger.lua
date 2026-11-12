@@ -254,7 +254,7 @@ local victims        -- db.victims
 local byGuid = {}    -- guid -> key (victims)
 local nVictims, nPlaceholders = 0, 0
 local standCache = {} -- book key -> code of the last standing seen (STANDING_CHANGED fires on a change)
-local listCache       -- sort -> sorted victim list (Ledger.Victims), emptied by every change
+local listCache = {}  -- sort -> sorted victim list (Ledger.Victims), emptied by every change
 local reputeCache
 local quiet = false   -- true while Ledger.Init runs: no events at the start
 
@@ -441,7 +441,7 @@ end
 -- returns true when the standing changed
 local function standingTouched(key)
   if type(key) ~= "string" then return false end
-  listCache = {}
+  if next(listCache) then listCache = {} end
   local code = standCode(key)
   if standCache[key] == code then return false end
   standCache[key] = code
@@ -474,7 +474,7 @@ end
 local function dropVictim(key)
   local v = victims[key]
   if not v then return end
-  listCache = {}
+  if next(listCache) then listCache = {} end
   if v.guid and byGuid[v.guid] == key then byGuid[v.guid] = nil end
   if v.surname == nil then nPlaceholders = nPlaceholders - 1 end
   victims[key] = nil
@@ -529,7 +529,7 @@ local function addVictim(key, info)
   victims[key] = v
   nVictims = nVictims + 1
   if v.surname == nil then nPlaceholders = nPlaceholders + 1 end
-  listCache = {}
+  if next(listCache) then listCache = {} end
   return v
 end
 
@@ -1154,7 +1154,8 @@ local function book(info, opts)
   end
   remember(gt, Str(info.guid), key, firstOf(info.name))
   capVictims(key)
-  reputeCache, listCache = nil, {}
+  reputeCache = nil
+  if next(listCache) then listCache = {} end
   local mine1, his1, state1 = Ledger.Standing(key)
   row.state = state1
   if c then
