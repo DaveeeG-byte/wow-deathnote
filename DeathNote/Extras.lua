@@ -24,17 +24,20 @@ Extras.Spaced = Spaced
 -- Stamp of the notice: German shows the images as in 1.1.0, every other language the empty frame
 -- (same look) with the text from the language table on top, turned like the image (degrees, ImageMagick
 -- clockwise). FontString:SetRotation is used only where it exists (as in Details/Libs/DF/fw.lua).
+-- rgb: the theme's stamp ink (Look.STAMP_INK[1], filled in place by the theme)
 local STAMPS = {
-  nr1   = { img = "nr1",   key = "STAMP_NR1",     ang = -11, rgb = { 0.69, 0.04, 0.04 } },
-  rache = { img = "rache", key = "STAMP_REVENGE", ang = 9,   rgb = { 0.69, 0.04, 0.04 } },
-  hunt  = { img = "hunt",  key = "STAMP_HUNT",    ang = 8,   rgb = { 0.69, 0.04, 0.04 } },
+  nr1   = { img = "nr1",   key = "STAMP_NR1",     ang = -11, rgb = Look.STAMP_INK[1] },
+  rache = { img = "rache", key = "STAMP_REVENGE", ang = 9,   rgb = Look.STAMP_INK[1] },
+  hunt  = { img = "hunt",  key = "STAMP_HUNT",    ang = 8,   rgb = Look.STAMP_INK[1] },
 }
 Extras.STAMPS = STAMPS
 local function StampImage(kind)
   local st = STAMPS[kind]
   if not st then return nil end
-  if not ns.Locale or ns.Locale.code == "deDE" then return Look.TEX[st.img], nil, st end
-  return Look.MEDIA .. "stamp_" .. st.img .. "_blank.tga", L[st.key], st
+  -- 1.3.0: the picture with burnt-in text only where the theme has one (the black book, German)
+  local baked = Look.StampTex(st.img)
+  if baked and (not ns.Locale or ns.Locale.code == "deDE") then return baked, nil, st end
+  return Look.StampTex(st.img, true), L[st.key], st
 end
 
 ------------------------------------------------------------------------
@@ -46,7 +49,7 @@ local function TooltipText(e)
   local rv = tonumber(e.revenge) or 0
   local s = Look.Join(e.status == "pardoned" and L.TIP_PARDONED or nil, Look.Tally(e),
                       rank and Fmt(L.TIP_RANK, { rank = rank }), rv > 0 and Fmt(L.TIP_REVENGE, { times = Look.Times(rv) }))
-  return "|cffe03020" .. L.TIP_IN_BOOK .. "|r |cffd8c8a8" .. s .. "|r"
+  return Look.HEX.tipLabel .. L.TIP_IN_BOOK .. "|r " .. Look.HEX.tipText .. s .. "|r"
 end
 
 -- Unit token of the tooltip: GetUnit, else through the GUID of the tooltip data; secrets drop out
@@ -75,25 +78,25 @@ local function OnTooltipUnit(tt, data)
   -- Hit list target (1.2.0): a line of its own, also when he is in the own book
   local h = Look.HasGuild() and Look.GCall("Hunt", key, "all")
   if type(h) == "table" and type(h.names) == "table" and #h.names > 0 then
-    tt:AddLine("|cffe03020" .. L.TIP_HUNT .. "|r |cffd8c8a8" .. Fmt(L.HUNT_LINE_BY, { names = Look.NameList(h.names, 2) }) .. "|r")
+    tt:AddLine(Look.HEX.tipLabel .. L.TIP_HUNT .. "|r " .. Look.HEX.tipText .. Fmt(L.HUNT_LINE_BY, { names = Look.NameList(h.names, 2) }) .. "|r")
   end
   local e = ns.Store.Get(key)
   if not e then
     -- Guild enemy (1.2.0: or a killer from the friends' book) who is not (yet) in the own book
     local g = Look.HasGuild() and Look.GCall("Get", key, "all")
     if type(g) == "table" and (g.kills or 0) > 0 then
-      tt:AddLine("|cffe03020" .. L.TIP_GUILDBOOK .. "|r |cffd8c8a8" .. Fmt(L.GUILD_LINE_KILLED_GUILD, { kills = Look.GKills(g.kills) }) .. "|r")
+      tt:AddLine(Look.HEX.tipLabel .. L.TIP_GUILDBOOK .. "|r " .. Look.HEX.tipText .. Fmt(L.GUILD_LINE_KILLED_GUILD, { kills = Look.GKills(g.kills) }) .. "|r")
     elseif type(g) == "table" and Look.ListedOnly(g) then
       local names = Look.ListedNames(g, tipNames)
       if #names > 0 then
-        tt:AddLine("|cffb05040" .. L.TIP_GUILDBOOK .. "|r |cffd8c8a8" .. Fmt(L.TIP_LISTED_BY, { names = Look.NameList(names, 2) }) .. "|r")
+        tt:AddLine(Look.HEX.tipListed .. L.TIP_GUILDBOOK .. "|r " .. Look.HEX.tipText .. Fmt(L.TIP_LISTED_BY, { names = Look.NameList(names, 2) }) .. "|r")
       end
     end
     return
   end
   tt:AddLine(TooltipText(e))
   local note = Look.NoteOf(e)
-  if note ~= "" then tt:AddLine("|cffa89878" .. Fmt(L.TIP_NOTE, { note = note }) .. "|r", nil, nil, nil, true) end
+  if note ~= "" then tt:AddLine(Look.HEX.tipNote .. Fmt(L.TIP_NOTE, { note = note }) .. "|r", nil, nil, nil, true) end
 end
 
 local hooked = false
@@ -162,12 +165,12 @@ local function BuildBanner()
   banner:SetBackdropBorderColor(Look.RED[1], Look.RED[2], Look.RED[3], 1)
   local bg = banner:CreateTexture(nil, "BACKGROUND")
   bg:SetPoint("TOPLEFT", 2, -2); bg:SetPoint("BOTTOMRIGHT", -2, 2)
-  Look.Tex(bg, Look.TEX.cover, 0.06, 0.05, 0.05, 1)
+  Look.Skin(bg, "cover", "coverDark")
   bg:SetTexCoord(0, 1, 0.3, 0.6)
 
   banner.kicker = Look.Text(banner, "body", 11, Look.RED_ON_BLACK)
   banner.kicker:SetPoint("TOP", 0, -8)
-  banner.name = Look.Text(banner, "hand", 26, Look.BONE)
+  banner.name = Look.Text(banner, "head", 26, Look.BONE)
   banner.name:SetPoint("TOP", 0, -26)
   banner.name:SetWidth(380)
   banner.name:SetWordWrap(false)
@@ -183,7 +186,7 @@ local function BuildBanner()
   banner.stamp:SetAlpha(0.95)
   banner.stamp:Hide()
   -- 1.2.0: stamp text for every language except German (on the empty frame)
-  banner.stampText = Look.Text(banner, "title", 13, { 0.69, 0.04, 0.04 })
+  banner.stampText = Look.Text(banner, "title", 13, Look.STAMP_INK[1])
   banner.stampText:SetPoint("CENTER", banner.stamp, "CENTER", 0, 0)
   banner.stampText:SetWidth(96)
   banner.stampText:SetJustifyH("CENTER")
@@ -306,7 +309,7 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   banner.nameAnim:Stop(); banner.nameAnim:Play()
   banner.stampTextAnim:Stop()
   if stampTex then
-    Look.Tex(banner.stamp, stampTex, 0.6, 0.1, 0.1, 0.5)
+    Look.StampSkin(banner.stamp, stampTex, "stampNotice")
     banner.stamp:Show()
     banner.stampAnim:Play()
   else
