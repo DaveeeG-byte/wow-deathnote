@@ -71,7 +71,8 @@ local REALM = "Forever"   -- the mock's realm: placeholders are "Name-Forever"
 --   buffered with another GUID;
 --   a death by, or my PARTY_KILL on, a player the tracker knows by first name only (or not at all) and the book not
 --   by his GUID, while "Name-<realm>" is listed with another GUID;
---   an honour line naming a first name only while my target is such a surnameless namesake.
+--   an honour line naming a first name only while my target is such a surnameless namesake;
+--   two surnameless units of one first name with two GUIDs in sight at once.
 local function plainOf(name) return name .. "-" .. REALM end
 local function otherListed(ns, name, guid)
   local e = ns.Store.Get(plainOf(name))
@@ -85,8 +86,22 @@ local function namesakeUnit(ns, u)
   if r and r.guid and r.guid ~= u.guid then return u.name end
   return nil
 end
+-- two surnameless units of one first name with two GUIDs in sight at once (1.2.2 shares one tracker record between
+-- them and the reading order decides: the fault of the report of fixer C)
+local function twoInSight(taint)
+  local seen = {}
+  for k, u in pairs(M.units) do
+    if (k:find("^nameplate") or k == "target" or k == "focus" or k == "mouseover") and u.exists and u.isPlayer
+      and u.name and u.guid and not u.surname then
+      if seen[u.name] and seen[u.name] ~= u.guid then taint[u.name] = true end
+      seen[u.name] = u.guid
+    end
+  end
+end
+
 local function namesakeStep(ns, x, att, name, guid, tok, withSur, taint)
   local function mark(n) if n and not taint[n] then taint[n] = true end end
+  if x <= 60 then twoInSight(taint) end
   if x <= 22 then
     -- the plate this step adds
     mark(namesakeUnit(ns, { exists = true, isPlayer = true, name = name, guid = guid, surname = withSur or nil }))
