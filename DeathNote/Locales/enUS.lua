@@ -693,4 +693,82 @@ L.START_CLOSE_TIP = "Leave it as it is"  -- [max 32] tooltip of the cross of the
 L.CHAT_THEME_NEWS = "New: the book comes in other covers. House Rules, sheet Book, or /dn theme."  -- chat, once after the update for players who had the book before (they get no window)
 L.HELP_START = "/dn start  the first-start window again (language and cover)"  -- /dn help line
 -- <<< START
+-- >>> RECORD (UI.lua, Extras.lua: the rap sheet in the book, 1.3.0) ---------------------------------------------------
+L.TAB_RECORD = "Rap Sheet"  -- [max 16] tab 5 (appears with your first own kill): your own killing blows on players and your repute
+L.STAMP_QUITT = "EVEN"  -- [max 16] stamp on the poster: the score is even (you killed them as often as they killed you)
+L.STAMP_OVERPAID = "OVERPAID"  -- [max 16] stamp on the poster: you killed them more often than they killed you
+L.STATE_OPEN = "open"  -- [max 16] state of the score: they killed you more often (or nothing settled yet)
+L.STATE_EVEN = "even"  -- [max 16] state of the score: both sides equal
+L.STATE_AHEAD = "overpaid"  -- [max 16] state of the score: you lead
+L.STATE_VICTIM = "not in the book"  -- [max 24] victim sheet: a victim of yours who never killed you
+L.STAND_SCORE = "{mine} : {his}"  -- [max 9] the score, always 'you : them'; {mine} = your killing blows on them, {his} = theirs on you. Keep the order
+L.STAND_LINE = "Score {score}"  -- poster, tooltip, notice; {score} = STAND_SCORE
+L.STAND_TIP = "you {mine}, them {his}"  -- tooltip that explains the score
+L.TIP_IN_RECORD = "RAP SHEET:"  -- game tooltip label over a player you killed (not in the book)
+L.TIP_RECORD_LINE = "killed by you {times}, last {time}"  -- game tooltip; {times} = '3×', {time} = '2 days ago'
+L.RECORD_HEAD = "Your File"  -- [max 20] head of the index card with your rank (big handwriting, 26 pt)
+L.RECORD_LOG_HEAD = "Latest Kills"  -- [max 20] head of the list of your latest kills
+L.RECORD_NEXT = "{points} more to {rank}"  -- under the rank bar; {points} = number, {rank} = name or line of the next rank
+L.RECORD_TOP = "Top rank reached."  -- under the rank bar at rank 10
+L.RECORD_BAR_TIP = "{total} of {goal} points"  -- tooltip of the rank bar
+L.RECORD_NEEDLE_LOW = "ruthless"  -- [max 12] left end of the needle scale
+L.RECORD_NEEDLE_HIGH = "honourable"  -- [max 12] right end of the needle scale
+L.RECORD_NEEDLE_TIP = "The needle: honour and protection against infamy. Hunt does not move it."  -- tooltip of the needle
+L.RECORD_KILLS = "Kills: {kills} · Victims: {victims}"  -- number line on your file
+L.RECORD_BEST = "Best: {list}"  -- line on your file; {list} = the parts below joined with ' · '
+L.RECORD_BEST_GAP = "+{count} levels"  -- best mark: the biggest level gap of a kill
+L.RECORD_BEST_STREAK = "streak {count}"  -- best mark: kills in a row without dying
+L.RECORD_BEST_QUICK = "fastest payback {time}"  -- best mark; {time} = DUR_* below
+L.DUR_SECONDS = "{count} s"  -- a duration in seconds
+L.DUR_MINUTES = "{count} min"  -- a duration in minutes
+L.DUR_HOURS = "{count} h"  -- a duration in hours
+L.RECORD_AWARDS = "AWARDS"  -- [max 14] small label over the row of awards (letter-spaced)
+L.RECORD_AWARD_AT = "awarded {time}"  -- award tooltip; {time} = date
+L.RECORD_AWARD_OPEN = "not awarded yet"  -- award tooltip
+L.RECORD_MORE = "Show more"  -- [max 19] word at the bottom right of your file: opens the list of your latest kills
+L.RECORD_BACK = "Back to file"  -- [max 19] word at the bottom right of a victim or the kill list: back to your file
+L.RECORD_CLEAR = "Clear rap sheet"  -- [max 26] button under the list of your latest kills (asks first)
+L.CONFIRM_RECORD_CLEAR = "Clear the rap sheet?\nAll victims and the list of latest kills go. Rank, points and awards stay."  -- dialog; \n = line break
+L.CONFIRM_RECORD_CLEAR_OK = "Clear"  -- [max 14] dialog button
+L.CONFIRM_VICTIM_STRIKE = "Strike {name} from the rap sheet?\nThe points you earned stay."  -- dialog; {name} = the victim
+L.ACT_VICTIM_STRIKE = "Strike from rap sheet"  -- [max 26] button on the victim sheet (asks first)
+L.VICTIM_KILLED = "killed by you {times}"  -- victim sheet; {times} = '3×'
+L.VICTIM_POINTS = "Points earned: {points}"  -- victim sheet
+L.VICTIM_SCENE = "Scene: {zone}, {time}"  -- victim sheet: where and when you last killed them; {zone} from the game, {time} = '2 hrs ago'
+L.VICTIM_KILLS_LABEL = "YOUR KILLS"  -- [max 14] small label over the kill lines of a victim (letter-spaced)
+L.KILL_TAG_REVENGE = "payback"  -- [max 14] tag at the right of a kill line: they had killed you more often
+L.KILL_TAG_KICK = "while down"  -- [max 14] tag at the right of a kill line: the same player again within 10 minutes (no points)
+L.KILL_TAG_GROUP = "group"  -- [max 14] tag at the right of a kill line: killed in a group (half honour and hunt)
+L.BAND_GRAU = "grey"  -- [max 12] level colour of a victim as the game shows it: far below you
+L.BAND_GRUEN = "green"  -- [max 12] level colour: below you
+L.BAND_GELB = "yellow"  -- [max 12] level colour: about your level
+L.BAND_ORANGE = "orange"  -- [max 12] level colour: above you
+L.BAND_ROT = "red"  -- [max 12] level colour: far above you
+L.BAND_SCHAEDEL = "skull"  -- [max 12] level colour: skull, unknown level far above you
+L.BAND_UNBEKANNT = "unknown"  -- [max 12] level colour not known (killed without seeing the level)
+L.RECORD_POINTS = "+{points} {path}"  -- points of one kill; {path} = PATH_* word
+L.RECORD_NO_POINTS = "no points"  -- a kill that earned nothing
+L.RECORD_BANDS = "By level colour"  -- tooltip head over the kills per level colour
+L.TIP_PATH_R = "Infamy: kills of greys and greens."  -- tooltip of the accounts line
+L.TIP_PATH_E = "Honour: kills of players about your level, payback."  -- tooltip of the accounts line
+L.TIP_PATH_J = "Hunt: kills of higher levels, hit list targets, bounties."  -- tooltip of the accounts line
+L.TIP_PATH_S = "Protection: kills of players who killed guildmates or friends."  -- tooltip of the accounts line
+L.SORT_STATE = "Score"  -- [max 14] sort of the rap sheet: open scores first
+L.SORT_COUNT = "Kills"  -- [max 14] sort of the rap sheet: most killed first
+L.SORT_POINTS = "Points"  -- [max 14] sort of the rap sheet: most points first
+L.CHAT_OWN_KILL = "Rap sheet: {name}, {level} ({band}). {points}."  -- chat after your own killing blow; {level} = 'Level 34', {band} = BAND_*, {points} = '+3 Honour' or RECORD_NO_POINTS
+L.CHAT_PATH = "New path: {path}. Rank: {rank}."  -- chat when your path changes; {rank} = name or line of the rank
+L.BANNER_RANK = "NEW RANK"  -- [max 24] head of the notice when your rank rises
+L.BANNER_AWARD = "AWARD"  -- [max 24] head of the notice for an award
+L.OPT_LEDGER = "Keep a rap sheet"  -- [max 44] check box: book your own kills (off: nothing is booked, tab and score disappear, the data stays)
+L.OPT_LEDGER_CHAT = "Report own kills in the chat"  -- [max 44] check box
+L.OPT_VICTIMS = "Warn when a victim of yours shows up"  -- [max 44] check box (off by default)
+L.SET_SETTLED = "Alarm when the score is settled"  -- [max 34] stepper label: alarm for killers you are even with or lead
+L.SET_SETTLED_ALWAYS = "as usual"  -- [max 10] stepper value: alarm as for everyone
+L.SET_SETTLED_QUIET = "quiet"  -- [max 10] stepper value: the popup without sound
+L.SET_SETTLED_OFF = "never"  -- [max 10] stepper value: no alarm
+L.MANUAL_RECORD_HEAD = "RAP SHEET"  -- [max 14] keyword of the help paragraph
+L.MANUAL_RECORD = "Your own killing blows on players. Poster and list show the score 'you : them': open, even or overpaid; rank 1 is always an open case. Each kill earns points on four accounts; they make your rank and your path. The tab appears with your first kill. House Rules, sheet Book: switch it off."  -- help paragraph, 232 px wide, wraps
+L.POSTER_LAST_SEEN_IN = "Last seen: {zone}, {time}"  -- fact line; {zone} = zone from the game, {time} = '2 hrs ago' (shorter POSTER_LAST_SEEN when it does not fit)
+-- <<< RECORD
 end)
