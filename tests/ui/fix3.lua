@@ -276,7 +276,7 @@ ns.UI.ShowEnemy(k); tick()
 check("Trockene Bemerkungen aus: Reisszwecke nicht klickbar", pin and not pin:IsShown())
 ns.Store.Setting("humor", true)
 ns.UI.OpenPanel("help"); tick()
-check("Gebrauchsanweisung: acht Absaetze", #ns.UI.HELP == 8, #ns.UI.HELP)
+check("Gebrauchsanweisung: neun Absaetze (1.3.0: rap sheet)", #ns.UI.HELP == 9, #ns.UI.HELP)
 local heads = {}
 for _, p in ipairs(ns.UI.HELP) do heads[#heads + 1] = p[1] end
 check("kein Absatz JAGD, kein IMPRESSUM", not table.concat(heads, ","):find("JAGD", 1, true) and not table.concat(heads, ","):find("IMPRESSUM", 1, true),

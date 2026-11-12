@@ -759,7 +759,7 @@ L.SET_SETTLED_ALWAYS = "as usual"
 L.SET_SETTLED_QUIET = "quiet"
 L.SET_SETTLED_OFF = "never"
 L.MANUAL_RECORD_HEAD = "RAP SHEET"
-L.MANUAL_RECORD = "Your own killing blows on players. Poster and list show the score 'you : them': open, even or overpaid; rank 1 is always an open case. Each kill earns points on four accounts; they make your rank and your path. The tab appears with your first kill. House Rules, sheet Rap Sheet: switch it off."
+L.MANUAL_RECORD = "Your own killing blows on players. Poster and list show the score 'you : them': open, even or overpaid. Rank 1 is always open. Kills earn points for your rank."
 L.POSTER_LAST_SEEN_IN = "Last seen: {zone}, {time}"
 L.SHEET_RECORD = "Rap Sheet"
 -- <<< RECORD

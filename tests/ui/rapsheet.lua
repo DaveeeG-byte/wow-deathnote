@@ -171,4 +171,143 @@ do
   check("off: tooltip without the score", not tip:find(L.STAND_LINE:gsub(" {score}", ""), 1, true), tip)
 end
 
+------------------------------------------------------------------------
+-- The fifth tab: comes with the first own kill and stays; off with the rap sheet; round trips without new objects
+------------------------------------------------------------------------
+local function tab(id) for _, f in ipairs(BM.frames) do if f.id == id and f.mark and f._scripts and f._scripts.OnClick then return f end end end
+local function click(f, b) f._scripts.OnClick(f, b or "LeftButton"); K.tick() end
+local function record() return poster() and poster().record end
+for _, code in ipairs({ "deDE", "enUS" }) do
+  world(code)
+  local L = ns.L
+  killsMe("Olaf", "Offen", 2)
+  open()
+  check(code .. ": no own kill: no fifth tab", not tab("record"):IsShown())
+  local shownBefore = 0
+  for _, t in ipairs(rawget(G, "DeathNoteFrame").tabs) do if t:IsShown() then shownBefore = shownBefore + 1 end end
+  iKill("Olaf", "Offen", 1)
+  K.tick()
+  check(code .. ": the first own kill brings the tab (book open, no rebuild)", tab("record"):IsShown())
+  -- the five tabs stay inside the row (x = 184 to 704) and do not overlap
+  local F = rawget(G, "DeathNoteFrame")
+  local last, inside = nil, true
+  for _, t in ipairs(F.tabs) do
+    if t:IsShown() then
+      local l, _, r = BM.RectUI(t)
+      local fl = BM.RectUI(F)
+      if l - fl < 183.5 or r - fl > 704.5 or (last and l < last - 0.5) then inside = false end
+      last = r
+    end
+  end
+  check(code .. ": five tabs fit the row", inside)
+  click(tab("record"))
+  local R = record()
+  check(code .. ": the file shows", R and R:IsShown() and R.file:IsShown())
+  local created = BM.created
+  -- victim sheet and back, log and back, sort, other tabs, close and open
+  local row
+  for _, f in ipairs(BM.frames) do if f.item and f.under and f:IsVisible() and f.item.key == "Olaf-Offen" then row = f end end
+  click(row)
+  check(code .. ": click on a victim shows its sheet", R.vic:IsShown() and not R.file:IsShown())
+  check(code .. ": the victim sheet names him", (R.vic.head._text or "") == "Olaf Offen", R.vic.head._text)
+  click(row)
+  check(code .. ": a second click goes back to the file", R.file:IsShown() and not R.vic:IsShown())
+  click(R.file.word)
+  check(code .. ": Show more: the latest kills", R.log:IsShown() and R.log.lines[1]:IsShown())
+  click(R.log.word)
+  check(code .. ": back to the file", R.file:IsShown())
+  for i = 1, 500 do
+    click(tab(i % 2 == 0 and "record" or "wanted"))
+    if i % 50 == 0 then click(row); click(R.file:IsShown() and R.file.word or R.log.word) end
+  end
+  ns:Fire("TOGGLE_UI"); K.tick(); ns:Fire("TOGGLE_UI"); K.tick()
+  check(code .. ": 500 tab changes and views: no new objects", BM.created == created, BM.created - created)
+  -- an own kill while the tab is open: the page follows (same objects)
+  click(tab("record"))
+  local before = BM.created
+  iKill("Grete", "Gast", 1); K.tick()
+  local found = false
+  for _, f in ipairs(BM.frames) do if f.item and f.under and f:IsVisible() and f.item.key == "Grete-Gast" then found = true end end
+  check(code .. ": an own kill shows up in the open list at once", found)
+  check(code .. ": ...without new objects", BM.created == before, BM.created - before)
+  -- sort menu of the tab
+  local sortBtn
+  for _, f in ipairs(BM.frames) do if f.arrow and f.ul and f._scripts and f._scripts.OnClick then sortBtn = f end end
+  click(sortBtn)
+  local menu = rawget(G, "DeathNoteMenu")
+  local items = {}
+  for _, b in ipairs(menu.items) do if b:IsShown() then items[#items + 1] = b.text._text end end
+  check(code .. ": sort menu of the rap sheet", #items == 5 and items[5]:find(L.SORT_NAME, 1, true), table.concat(items, "|"))
+  menu.items[5]._scripts.OnClick(menu.items[5]); K.tick()
+  check(code .. ": sorted by name", ns.Store.Setting("ui.recordSort") == "name")
+  -- clear: the tab stays (the rank keeps the count), the list is empty, the file is there
+  ns.Ledger.Clear(); K.tick()
+  check(code .. ": after clearing, the tab stays and shows the file", tab("record"):IsShown() and R.file:IsShown())
+  -- the rap sheet off: no tab, back to Wanted
+  ns.Store.Setting("ledger.enabled", false); K.tick()
+  check(code .. ": rap sheet off: tab gone, Wanted again", not tab("record"):IsShown() and tab("wanted").mark:IsShown())
+  ns.Store.Setting("ledger.enabled", true); K.tick()
+  check(code .. ": no errors (tab)", #AM.errors == 0 and #BM.violations == 0, AM.errors[1] or BM.violations[1])
+end
+
+------------------------------------------------------------------------
+-- Notices: a chat line after an own kill, a notice for a new rank and an award (never in combat)
+------------------------------------------------------------------------
+do
+  world("deDE")
+  local L = ns.L
+  local chat = {}
+  ns.Util.Print = function(t) chat[#chat + 1] = tostring(t) end
+  iKill("Fritz", "Frech", 1)
+  local line
+  for _, c in ipairs(chat) do if c:find("Fritz Frech", 1, true) then line = c end end
+  check("chat line after an own kill", line and line:find(L.BAND_GELB, 1, true), table.concat(chat, " / "))
+  local b = rawget(G, "DeathNoteBanner")
+  check("first kill: the award notice (First Entry)", b and b:IsShown() and b.name._text == ns.Humor.Award("first_entry"), b and b.name._text)
+  K.settle(); AM.Advance(30); K.settle()
+  ns.Store.Setting("ledger.chat", false)
+  local n = #chat
+  iKill("Fritz", "Frech", 1, 10)   -- a grey one
+  check("ledger.chat off: no chat line", #chat == n, chat[#chat])
+  -- rank notice waits for the end of combat
+  BM.combat = true; _G.InCombatLockdown = function() return true end; rawset(G, "InCombatLockdown", function() return true end)
+  K.settle()
+  ns:Fire("REPUTE_RANK", 3, "e", 2, nil); K.tick()
+  check("no rank notice in combat", not b:IsShown() or b.name._text ~= ns.Ranks.Title(3, "e"))
+  BM.combat = false; _G.InCombatLockdown = function() return false end; rawset(G, "InCombatLockdown", function() return false end)
+  AM.FireEvent("PLAYER_REGEN_ENABLED"); K.tick()
+  check("after combat: the rank notice", b:IsShown() and b.name._text == ns.Ranks.Title(3, "e"), b.name._text)
+  K.settle()
+  check("no errors (notices)", #AM.errors == 0 and #BM.violations == 0, AM.errors[1] or BM.violations[1])
+end
+
+------------------------------------------------------------------------
+-- House Rules, sheet Rap Sheet: the switches write their settings
+------------------------------------------------------------------------
+do
+  world("enUS")
+  iKill("Fritz", "Frech", 1)
+  open()
+  ns.UI.OpenPanel("settings"); K.tick()
+  local RPf
+  for _, f in ipairs(BM.frames) do if f.settings and f.help ~= nil or (f.settings and f.io) then RPf = f end end
+  local S = RPf.settings
+  S.tabs[4]._scripts.OnClick(S.tabs[4]); K.tick()
+  check("sheet 4 shows", S.pageR:IsShown())
+  local want = { ["ledger.enabled"] = true, ["ledger.chat"] = true, ["alert.victims"] = true }
+  for _, cb in ipairs(S.checks) do
+    if want[cb.opt.path] then
+      local before = ns.Store.Setting(cb.opt.path)
+      cb:SetChecked(not cb:GetChecked()); cb._scripts.OnClick(cb); K.tick()
+      check("switch writes " .. cb.opt.path, ns.Store.Setting(cb.opt.path) == not before, tostring(ns.Store.Setting(cb.opt.path)))
+      cb:SetChecked(not cb:GetChecked()); cb._scripts.OnClick(cb); K.tick()
+    end
+  end
+  S.settled.plus._scripts.OnClick(S.settled.plus); K.tick()
+  check("settled: as usual -> quiet", ns.Store.Setting("alert.settled") == "quiet", ns.Store.Setting("alert.settled"))
+  S.settled.plus._scripts.OnClick(S.settled.plus); S.settled.plus._scripts.OnClick(S.settled.plus); K.tick()
+  check("settled: round trip", ns.Store.Setting("alert.settled") == "always")
+  check("no errors (house rules)", #AM.errors == 0 and #BM.violations == 0, AM.errors[1] or BM.violations[1])
+end
+
 K.done("rap sheet in the book")

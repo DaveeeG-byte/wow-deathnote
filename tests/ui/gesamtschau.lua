@@ -82,7 +82,7 @@ W.step("erstes Oeffnen, leer", W.open)
 local F = G.DeathNoteFrame
 local labels = {}
 for _, t in ipairs(F.tabs) do labels[#labels + 1] = t.label end
-check("IA vier Reiter: Gesucht, Zu klären, Todesjournal, Gilde", table.concat(labels, "|") == "Gesucht|Zu klären|Todesjournal|Gilde", table.concat(labels, "|"))
+check("IA vier Reiter: Gesucht, Zu klären, Todesjournal, Gilde (1.3.0: der fuenfte, Strafregister, erst mit dem ersten eigenen Kill)", table.concat(labels, "|") == "Gesucht|Zu klären|Todesjournal|Gilde|Strafregister" and not F.tabs[5]:IsShown(), table.concat(labels, "|"))
 check("IA kein Reiter Verdächtig/Begnadigt", not W.text("Verdächtig") and not W.text("Begnadigt  "))
 -- Scenario a / G26: the empty first tab says what the book does
 check("a/G26 Leerzustand erklaert das Buch", W.text("Wer dich in der offenen Welt tötet, steht danach hier. Von selbst.", true) ~= nil)
@@ -90,10 +90,10 @@ check("a Reiter ohne Zahl, wenn leer", F.tabs[1].text._text == "Gesucht" and F.t
 check("G4 Knopf ? links neben dem Zahnrad", F.help and F.help.text._text == "?" and F.help._points[1][3] == "LEFT")
 W.step("G4 ? oeffnet die Gebrauchsanweisung", function() W.click(F.help) end)
 local UI = ns.UI
-check("G4 Gebrauchsanweisung mit 8 Absaetzen (fix-3: Jagd im Absatz Gilde)", W.text("Gebrauchsanweisung", true) ~= nil and #UI.HELP == 8)
+check("G4 Gebrauchsanweisung mit 9 Absaetzen (fix-3: Jagd im Absatz Gilde; 1.3.0: Strafregister)", W.text("Gebrauchsanweisung", true) ~= nil and #UI.HELP == 9)
 local words = 0
 for _, p in ipairs(UI.HELP) do for _ in (p[1] .. " " .. p[2]):gmatch("%S+") do words = words + 1 end end
-check("G4 hoechstens 180 Woerter", words <= 180, words)
+check("G4 hoechstens 200 Woerter (1.3.0: 180 plus der Absatz Strafregister)", words <= 200, words)
 for _, p in ipairs(UI.HELP) do check("G4 Absatz sichtbar: " .. p[1], W.text(p[2], true) ~= nil) end
 check("G4 Hover: Tooltip So geht das Buch", (function()
   G.GameTooltip._text = nil
@@ -581,7 +581,7 @@ do
   end
   W.ns.MakeGuild(3, { members = 2 })
   W.step("lange Sprache: Buch oeffnen", function() W.open() end)
-  local tabs = W.all(function(f) return f._kind == "Button" and f.id and f.mark and f.text and f._parent == W.G.DeathNoteFrame end)
+  local tabs = W.all(function(f) return f._kind == "Button" and f.id and f.mark and f.text and f._parent == W.G.DeathNoteFrame and f:IsShown() end)   -- 1.3.0: the fifth tab only with own kills
   table.sort(tabs, function(a, b) return L1(a) < L1(b) end)
   local Fx = W.G.DeathNoteFrame
   local ok, last = #tabs >= 4, nil

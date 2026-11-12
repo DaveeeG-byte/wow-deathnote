@@ -747,7 +747,7 @@ L.SET_SETTLED_ALWAYS = "wie immer"  -- [max 10]
 L.SET_SETTLED_QUIET = "leise"  -- [max 10]
 L.SET_SETTLED_OFF = "gar nicht"  -- [max 10]
 L.MANUAL_RECORD_HEAD = "STRAFREGISTER"  -- [max 14]
-L.MANUAL_RECORD = "Deine eigenen Todesstöße an Spielern. Plakat und Liste zeigen den Stand „du : er“: offen, quitt oder überzahlt; Rang 1 ist immer ein offener Fall. Jeder Kill bringt Punkte auf vier Konten, daraus werden Rang und Weg. Der Reiter erscheint mit dem ersten Kill. Hausordnung, Blatt Register: abschalten."
+L.MANUAL_RECORD = "Deine eigenen Todesstöße an Spielern. Plakat und Liste zeigen den Stand „du : er“: offen, quitt oder überzahlt. Rang 1 ist immer offen. Kills bringen Punkte für deinen Rang."
 L.POSTER_LAST_SEEN_IN = "Zuletzt gesehen: {zone}, {time}"
 L.SHEET_RECORD = "Register"  -- [max 14]
 -- <<< RECORD

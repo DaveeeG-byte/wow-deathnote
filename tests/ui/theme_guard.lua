@@ -57,6 +57,8 @@ local function settle() BM.Advance(13); BM.FinishAnims(); BM.Advance(1); BM.Fini
 
 -- the views of the layout guard, in one fixed order (both runs build the same objects in the same order)
 local function views(ns)
+  -- 1.3.0: the same random stream in every run (the dry remarks draw from it; more draws came with the rap sheet)
+  math.randomseed(1300)
   local P = ns.Guild.Proto
   tick(30); settle(); AM.Advance(120)
   local function gmsg(text, from) AM.FireEvent("CHAT_MSG_ADDON", "DeathNote", text, "GUILD", from or "Kollege-Forever") end
@@ -120,6 +122,37 @@ local function views(ns)
   ns:Fire("GUILD_ENEMY_SPOTTED", "ZielB-Wunderkammer", nil, "other", "hunt"); tick(); settle()
   ns:Fire("HUNT_BAGGED", "ZielA-Wunderkammer", "Kollege Langername", _G.time(), "guild"); tick(); settle()
   ns:Fire("REVENGE", k1); tick(); settle()
+  -- 1.3.0 rap sheet: own kills (one in the book, so poster and row show the standing), every award, the fifth tab with
+  -- the file, the latest kills, a victim sheet, the House Rules' sheet 4, the rank notice
+  local me = AM.units.player.guid
+  for i, x in ipairs({ { "Maximilianus", "Wunderkammer", 60 }, { "Wilmwardwulf", "Mummelwammer", 1 } }) do
+    local g = "Player-1-" .. x[1]:sub(1, 1) .. x[2]:sub(1, 1) .. i
+    AM.AddEnemy("nameplate1", { name = x[1], surname = x[2], level = x[3], guid = g, class = "MAGE" })
+    AM.FireEvent("NAME_PLATE_UNIT_ADDED", "nameplate1")
+    AM.FireEvent("PARTY_KILL", me, g); AM.Advance(700)
+  end
+  local db = ns.Ledger.DB()
+  for _, a in ipairs(ns.Ledger.AWARDS) do db.awards[a.id] = t - 60 end
+  ns:Fire("REPUTE_RANK", 3, "e", 2, nil); tick(0.5); settle()
+  ns:Fire("TOGGLE_UI"); tick(); settle()
+  ns.UI.ShowEnemy(k1); tick(); settle()
+  tab("record")
+  local P
+  for _, f in ipairs(BM.frames) do if f.record and f.enemy then P = f end end
+  if P and P.record then
+    P.record.file.word._scripts.OnClick(P.record.file.word); tick()
+    P.record.log.word._scripts.OnClick(P.record.log.word); tick()
+    for _, f in ipairs(BM.frames) do
+      if f.item and f.under and f:IsVisible() and f.item.key == "Wilmwardwulf-Mummelwammer" then f._scripts.OnClick(f, "LeftButton"); break end
+    end
+    tick()
+  end
+  ns.UI.OpenPanel("settings"); tick()
+  local RP2
+  for _, f in ipairs(BM.frames) do if f.release ~= nil and f.settings then RP2 = f end end
+  if RP2 and RP2.settings and RP2.settings.tabs[4] then RP2.settings.tabs[4]._scripts.OnClick(RP2.settings.tabs[4]); tick() end
+  ns.UI.ClosePanel(); tick()
+  ns:Fire("TOGGLE_UI"); tick()
   local j = { t = _G.time(), kind = "pvp", sure = true, counted = true, killerKey = k2, candidates = {} }
   ns.Store.RecordDeath(j)
   ns:Fire("DEATH_RECORDED", j, k2); tick(); settle()

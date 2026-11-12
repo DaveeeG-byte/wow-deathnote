@@ -767,7 +767,7 @@ L.SET_SETTLED_ALWAYS = "as usual"  -- [max 10] stepper value: alarm as for every
 L.SET_SETTLED_QUIET = "quiet"  -- [max 10] stepper value: the popup without sound
 L.SET_SETTLED_OFF = "never"  -- [max 10] stepper value: no alarm
 L.MANUAL_RECORD_HEAD = "RAP SHEET"  -- [max 14] keyword of the help paragraph
-L.MANUAL_RECORD = "Your own killing blows on players. Poster and list show the score 'you : them': open, even or overpaid; rank 1 is always an open case. Each kill earns points on four accounts; they make your rank and your path. The tab appears with your first kill. House Rules, sheet Rap Sheet: switch it off."  -- help paragraph, 232 px wide, wraps
+L.MANUAL_RECORD = "Your own killing blows on players. Poster and list show the score 'you : them': open, even or overpaid. Rank 1 is always open. Kills earn points for your rank."  -- help paragraph, 232 px wide, wraps
 L.POSTER_LAST_SEEN_IN = "Last seen: {zone}, {time}"  -- fact line; {zone} = zone from the game, {time} = '2 hrs ago' (shorter POSTER_LAST_SEEN when it does not fit)
 L.SHEET_RECORD = "Rap Sheet"  -- [max 14] fourth sheet of the House Rules: the rap sheet's switches
 -- <<< RECORD

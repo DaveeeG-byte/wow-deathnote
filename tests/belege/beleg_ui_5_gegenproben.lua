@@ -206,7 +206,7 @@ for _, code in ipairs(K.CODES) do
   local limit = Hp.foot and (490 - 44 - 11) or (490 - 34)
   local footOk = not Hp.foot or K.estimate(Hp.foot) <= 380 - 40
   K.check(("4 %s: %d Absaetze, %d Zeilen (hoechstens %d), Luft %d px bis %s"):format(code, #Hp.paras, lines, maxl, limit - low, Hp.foot and "Fusszeile" or "Knopf"),
-    #Hp.paras == 8 and limit - low >= 12 and footOk and ((code == "deDE" or code == "enUS") == (Hp.foot ~= nil)), limit - low)
+    #Hp.paras == 9 and limit - low >= 12 and footOk and ((code == "deDE" or code == "enUS") == (Hp.foot ~= nil)), limit - low)
   local n, e = W.errs(); K.check("4 " .. code .. ": keine Fehler", n == 0, e)
 end
 

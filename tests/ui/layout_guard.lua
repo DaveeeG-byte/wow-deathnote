@@ -309,7 +309,7 @@ local function run(code)
   end
   ns.UI.OpenPanel("settings"); tick(); settle()
   local S = RP and RP.settings
-  for i = 1, 3 do
+  for i = 1, 4 do      -- 1.3.0: sheet 4, the rap sheet
     if S and S.tabs[i] and S.tabs[i]:IsShown() then
       S.tabs[i]._scripts.OnClick(S.tabs[i]); tick()
       scan("house rules " .. i, F)
@@ -370,6 +370,49 @@ local function run(code)
     local d = rawget(G, "DeathNoteStart")
     if d and d:IsShown() then scan("first start", d); page("first start", d.page, false); d:Hide(); tick()
     else note("PAGE", "first start", nil, "window did not come") end
+  end
+  -- 1.3.0 rap sheet: own kills (long names, one in the book), the highest rank with the longest title of the language
+  -- (infamy path, rank 10), every award, best marks; the fifth tab, the file, the latest kills, a victim sheet
+  do
+    local Lg = ns.Ledger
+    local me = AM.units.player.guid
+    local function kill(name, surname, level, times)
+      local g = "Player-93-" .. name .. surname
+      AM.AddEnemy("nameplate1", { name = name, surname = surname, level = level, guid = g, class = "WARLOCK", guild = "Die Wuchtwaldwallwaechter" })
+      AM.FireEvent("NAME_PLATE_UNIT_ADDED", "nameplate1")
+      for _ = 1, times do AM.FireEvent("PARTY_KILL", me, g); AM.Advance(700) end
+    end
+    local db = Lg.DB()
+    db.acc.r, db.mood.r, db.counted = 2000, 2000, 40
+    for _, a in ipairs(Lg.AWARDS) do db.awards[a.id] = t - 3600 end
+    db.best.gap, db.best.streak, db.best.quick = 12, 27, 3700
+    kill("Maximilianus", "Wunderkammer", 60, 3)
+    kill("Wilmwardwulf", "Mummelwammer", 1, 6)
+    for i = 1, 12 do kill("Bartholomaeus" .. string.char(64 + i), "Donnerschlagbringer", 40 + i, 1) end
+    tick(0.5)
+    local bn = rawget(G, "DeathNoteBanner")
+    if bn and bn:IsShown() then scan("banner rank", bn) else note("PAGE", "banner rank", nil, "no rank notice") end
+    settle()
+    ns:Fire("TOGGLE_UI"); tick(); settle()
+    for _, f in ipairs(BM.frames) do
+      if f.id == "record" and f._scripts and f._scripts.OnClick then f._scripts.OnClick(f, "LeftButton"); break end
+    end
+    tick(); settle()
+    local P
+    for _, f in ipairs(BM.frames) do if f.record and f.enemy then P = f end end
+    local R = P and P.record
+    if not (R and R.file and R.file:IsShown()) then note("PAGE", "rap sheet", nil, "own file not shown")
+    else
+      scan("rap sheet file", F); page("rap sheet file", R.file.page)
+      R.file.word._scripts.OnClick(R.file.word); tick()
+      scan("rap sheet log", F); page("rap sheet log", R.log.page)
+      R.log.word._scripts.OnClick(R.log.word); tick()
+      for _, f in ipairs(BM.frames) do
+        if f.item and f.under and f:IsVisible() and f.item.key == "Maximilianus-Wunderkammer" then f._scripts.OnClick(f, "LeftButton"); break end
+      end
+      tick()
+      scan("rap sheet victim", F); page("rap sheet victim", R.vic.page)
+    end
   end
   -- sizes only from the scale
   local SIZE_OK = {}

@@ -143,7 +143,7 @@ do
   W.tick(12); W.settle()
   ns.Guild.SetBounty(key, 500); W.tick(1); W.zeigen(key)
   local seen = false
-  for _, fs in ipairs(W.info()) do if fs._text:find(vorn(L.POSTER_LAST_SEEN), 1, true) then seen = true end end
+  for _, fs in ipairs(W.info()) do if fs._text:find(vorn(L.POSTER_LAST_SEEN), 1, true) or fs._text:find(vorn(L.POSTER_LAST_SEEN_IN), 1, true) then seen = true end end
   K.check("5 N1: mit Kopfgeld bleibt 'zuletzt gesehen'", seen)
   K.check("5 N1: der Tooltip ueber dem Steckbrief zeigt die Kopfgeld-Zeile", E.infoHit:IsShown() and table.concat(E.infoHit.tip or {}, "|"):find(vorn(L.POSTER_BOUNTY_MINE) ~= "" and "500" or "500", 1, true) ~= nil)
   -- Grimm Bart with race, guild and bounty: bounty line before the profile tooltip

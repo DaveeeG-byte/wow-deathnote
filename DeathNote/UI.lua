@@ -5696,7 +5696,7 @@ end)
 ns:On("ENEMY_UPDATED", RequestRefresh)
 -- 1.3.0 rap sheet: an own kill, a new standing, rank, path or award, the rap sheet emptied (also while switched off)
 for _, ev in ipairs({ "OWN_KILL", "STANDING_CHANGED", "REPUTE_RANK", "REPUTE_PATH", "AWARD" }) do ns:On(ev, RequestRefresh) end
-ns:On("LEDGER_CLEARED", function() state.rsel = nil; RequestRefresh() end)
+ns:On("LEDGER_CLEARED", function() state.rsel, state.rview = nil, "file"; RequestRefresh() end)
 ns:On("DEATH_RECORDED", RequestRefresh)
 ns:On("REVENGE", RequestRefresh)
 ns:On("GUILD_UPDATED", function() mv.dirty = true; gpart.src = nil; RequestRefresh() end)
