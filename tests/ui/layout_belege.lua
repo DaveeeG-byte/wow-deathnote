@@ -32,7 +32,7 @@ local function settle() BM.Advance(13); BM.FinishAnims(); BM.Advance(1); BM.Fini
 local function find(pred) for _, f in ipairs(BM.frames) do if pred(f) then return f end end end
 
 ------------------------------------------------------------------------
--- Nr. 5 (list sub line), 13 (menu width), 19 (rank), 17 (tab with a four-digit count), 18 (placeholder),
+-- Nr. 5 (list sub line), 13 (menu width), 18 (placeholder),
 -- 30 (tooltip first line wraps), 31 (scale events)
 ------------------------------------------------------------------------
 do
@@ -46,14 +46,7 @@ do
   local row = find(function(f) return f.item and f.item.key == k and f.sub end)
   check("5 list: a cut sub line drops 'seen' and keeps the whole line for the tooltip",
     row and row.subFull ~= nil and row.sub._text ~= row.subFull and not row.sub:IsTruncated(), row and row.sub._text)
-  -- 19: rank 128 shrinks inside its 32 px
-  local r1 = find(function(f) return f.rank and f.sub and f:IsVisible() end)
-  if r1 then
-    if ns.Look.FitText then ns.Look.FitText(r1.rank, "128.", { sizes = { 19, 16, 13 } }) else r1.rank:SetText("128.") end
-    local l = BM.RectUI(r1.rank)
-    local rl = BM.RectUI(r1)
-    check("19 rank 128. stays inside the row", l and rl and l >= rl - 1, l and rl and (l - rl))
-  end
+  -- 19: on the addon's own path in tests/ui/layout_red_probes.lua (130 wanted, the list at its end)
   -- 13: menu as wide as its longest entry, at most 252
   local F = rawget(G, "DeathNoteFrame")
   local long = "Maximilianus Wunderkammer-Langername"
@@ -66,17 +59,7 @@ do
   for _, b in ipairs(items) do if b:IsShown() then need = math.max(need, BM.Unbounded(b.text) or 0) end end
   check("13 menu: every entry fits its button", items[1] and need <= items[1]._w - 8 + 0.5 or need == 0, need .. " / " .. tostring(items[1] and items[1]._w))
   menu.blocker._scripts.OnClick(menu.blocker)
-  -- 17: four-digit count
-  local tab = find(function(f) return f.id == "wanted" and f.label and f._kind == "Button" end)
-  if tab then
-    local real = ns.UI and nil
-    tab.text:SetText(tab.label .. "  " .. "1234")
-    local w = BM.Unbounded(tab.text)
-    -- what UpdateTabs does after setting the counts
-    local LT = nil
-    for _, f in ipairs(BM.frames) do if f.tabs and f == F then LT = true end end
-    ns.UI.Refresh(); tick()
-  end
+  -- 17: four-digit count in a tab: tests/ui/layout_red_probes.lua (it checks the tab text against its field)
   -- 18: placeholder no wider than the search field
   local sb = find(function(f) return f._kind == "EditBox" and f.ph end)
   check("18 placeholder has the width of the search field", sb and sb.ph._wset and sb.ph._w <= sb._w, sb and tostring(sb.ph._wset))
@@ -95,7 +78,7 @@ end
 
 ------------------------------------------------------------------------
 -- Nr. 15 (imprint in two lines), 16 (popup title ladder), 9 (bounty next to the revenge stamp),
--- 21 (killer name), 23 (release words), 24 (sheet head), 29 (hunt word), 25/26 (banner), 27 (quip)
+-- 23 (release words), 29 (hunt word), 25/26 (banner), 27 (quip)
 ------------------------------------------------------------------------
 do
   local ns = world("enUS")
@@ -134,11 +117,10 @@ do
     local _, _, hr = BM.RectUI(E.hunt)
     check("29 hunt word ends before the profile", hr - el <= 137, hr - el)
   end
-  -- 24 and 23: release sheet head and words
+  -- 23: release words
   ns.UI.OpenRelease(k); tick()
   local R = find(function(f) return f.release and f.settings end).release
-  local head = find(function(f) return f._kind == "FontString" and f._text == ns.L.REL_HEAD and f:IsVisible() end)
-  check("24 sheet head fits the 320 px rule", head and BM.Unbounded(head) <= 340.5, head and BM.Unbounded(head))
+  -- 24: against the rule itself (320 px) in tests/ui/layout_red_probes.lua and tests/ui/layout_fixes.lua (B09)
   local rl = BM.RectUI(R)
   local last = R.tabs[#R.tabs]
   local _, _, tr = BM.RectUI(last)
@@ -148,11 +130,7 @@ end
 do
   local ns = world("itIT")
   ns:Fire("TOGGLE_UI"); tick(); settle()
-  -- 21: killer name in the case file
-  local D = find(function(f) return f.killer and f.cands end)
-  if D and ns.Look.FitText then ns.Look.FitText(D.killer.text, "Maximilianus Wunderkammer", { sizes = { 26, 22, 19 } })
-  elseif D then D.killer.text:SetText("Maximilianus Wunderkammer") end
-  check("21 killer name whole or with tooltip", D and (not D.killer.text:IsTruncated() or D.killer.text.tipOwner ~= nil))
+  -- 21: on the addon's own path (a death, the case file opened from the journal) in tests/ui/layout_red_probes.lua
   -- 25/26: banner name and line
   local P = ns.Guild.Proto
   AM.FireEvent("CHAT_MSG_ADDON", "DeathNote", P.EncodeKill({ key = "Maximilianus-Wunderkammer", display = "Maximilianus Wunderkammer",

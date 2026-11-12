@@ -259,11 +259,15 @@ local function run(code)
   local popup = rawget(G, "DeathNoteAlert")
   if popup and popup:IsShown() then
     scan("Alarm")
-    local nameW, lvlW = estimate(popup.name), 0
+    -- 1.2.2: the level leads the text line; its width measured in the font of the line
+    local nameW = estimate(popup.name)
+    local lvlW = popup.levelText and estimate({ _text = popup.levelText, _fontSize = popup.line._fontSize, _font = popup.line._font }) or 0
     -- fix-3: no warning line any more; the level carries the difference ("Level 60 (+20)") in warning colour
     io.write(("  Alarm %s: Popup %dx%d, Name~%d px, Stufe~%d px (%s)\n"):format(code, popup:GetWidth(), popup:GetHeight(),
       nameW, lvlW, tostring(popup.levelText)))
     if lvlW + 60 > popup:GetWidth() / 2 then note("LAGE", "Alarm", "Stufe nimmt mehr als die halbe Popup-Breite: " .. lvlW .. " px") end
+    -- (after the colour code "|cffrrggbb": the level text starts at character 11)
+    if popup.levelText and (popup.line._text or ""):find(popup.levelText, 1, true) ~= 11 then note("LAGE", "Alarm", "level missing at the front of the text line") end
   else
     note("LAGE", "Alarm", "Popup kam nicht")
   end
