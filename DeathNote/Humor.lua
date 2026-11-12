@@ -408,7 +408,9 @@ local function Apply(banner, d)
       fs:Show()
       if banner.stampTextAnim then banner.stampTextAnim:Stop(); banner.stampTextAnim:Play() end
     end
-    if banner.name then banner.name:ClearAllPoints(); banner.name:SetPoint("TOP", -24, -26) end
+    -- 1.3.0: the notice places its name next to the stamp itself (its layout lives in Extras.lua)
+    if ns.Extras and ns.Extras.NameBesideStamp then ns.Extras.NameBesideStamp(banner, true)
+    elseif banner.name then banner.name:ClearAllPoints(); banner.name:SetPoint("TOP", -24, -26) end
   end
   Humor.applied = d       -- for tests
   return true

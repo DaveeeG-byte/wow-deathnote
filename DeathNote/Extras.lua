@@ -116,29 +116,106 @@ local function HookTooltip()
 end
 
 ------------------------------------------------------------------------
--- On-screen notice (wanted strip in the middle of the screen)
+-- On-screen notice (a slip from the book in the middle of the screen)
 ------------------------------------------------------------------------
+-- 1.3.0: no black strip any more. Two ways to build it, chosen by one constant:
+--   "slip"  a narrow strip torn out of a page (texture "slip", tinted like the paper of the theme), ink on it
+--   "bare"  no surface at all: the text with a soft shadow, the stamp on top
+-- Both have the same size, place, queue, click and stamp; only the surface and the text colours differ.
+Extras.BANNER_STYLE = "slip"
 local banner
-local BANNER_W, BANNER_H, BANNER_Y = 480, 92, -310
+local BANNER_W, BANNER_H, BANNER_Y = 352, 64, -310
+-- the strip of a dry remark (Humor.lua) hangs below the notice; wider than the slip: Humor fits its one line at
+-- 11 or 10 pt, and the longest remark needs about 420 px at 10 pt (the ends of the slip fade, so it reads narrower)
+local QUIP_GAP, QUIP_H, QUIP_W = 2, 22, 440
+-- the stamp keeps its size of 1.2.2 (120 x 60: the longest stamp words of the 21 languages need its 96 px of text)
+-- and sits on the right end of the slip, over its top edge (red ink on paper, readable on any ground)
+local STAMP_W, STAMP_H, STAMP_X, STAMP_Y = 120, 60, 16, 14
+local NAME_W, NAME_W_STAMP, NAME_X_STAMP = 300, 232, -36    -- name next to the stamp: shifted left, narrower
+local NAME_Y, LINE_W = -20, 300
+Extras.BANNER_SIZE = { w = BANNER_W, h = BANNER_H, quip = QUIP_GAP + QUIP_H }
 local guildQueue = {}     -- waiting guild notices; the own notice always goes first
 local GUILD_QUEUE_MAX = 3
 local NextGuild -- forward declaration
 
--- Black strip with a blood red edge; the name appears as if freshly written into the book
+local function Bare() return Extras.BANNER_STYLE == "bare" end
+
+-- The class colour as ink on the slip: 30 % class colour in 70 % ink keeps a hint of the hue and stays readable
+-- on paper even at 13 pt (the white of a priest becomes a dark grey; contrast guard in tests/ui/gesamtschau.lua)
+Extras.SLIP_CLASS_SHARE = 0.3
+function Extras.SlipInk(rgb)
+  local ink = Look.INK
+  if type(rgb) ~= "table" then return { ink[1], ink[2], ink[3] } end
+  local a = Extras.SLIP_CLASS_SHARE
+  return { rgb[1] * a + ink[1] * (1 - a), rgb[2] * a + ink[2] * (1 - a), rgb[3] * a + ink[3] * (1 - a) }
+end
+
+-- Text without a surface: soft dark shadow (theme role "shadow"), as the client's own on-screen messages
+local function Shade(fs)
+  local c = Look.COLOR.shadow
+  fs:SetShadowColor(c[1], c[2], c[3], 1)
+  fs:SetShadowOffset(1, -1)
+end
+
+-- colours of kicker, name and line for the chosen style
+local function Colours()
+  if Bare() then return Look.RED_ON_BLACK, Look.BONE, Look.BONE end
+  return Look.RED_INK, Look.INK, Look.INK
+end
+
+-- The quip strip of Humor.lua: built here in the style of the notice (Humor.lua takes banner.dnQuip as it is)
+local function BuildQuip()
+  local q = CreateFrame("Frame", nil, banner)
+  q:SetSize(QUIP_W, QUIP_H)
+  q:SetPoint("TOP", banner, "BOTTOM", 0, -QUIP_GAP)
+  local _, _, line = Colours()
+  if not Bare() then
+    local bg = q:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints()
+    Look.Skin(bg, "slip")
+    local t = Look.TINT.slip or Look.TINT.paper
+    if t then bg:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
+    q.bg = bg
+  end
+  q.text = Look.Text(q, "body", 11, line)
+  q.text:SetPoint("CENTER", 0, 0)
+  q.text:SetWidth(QUIP_W - 10)
+  q.text:SetWordWrap(false)
+  if Bare() then Shade(q.text) end
+  q:Hide()
+  banner.dnQuip = q
+end
+
+-- The name next to the stamp (also called by Humor.lua for its surprise stamp)
+function Extras.NameBesideStamp(b, beside)
+  b = b or banner
+  if not (b and b.name) then return end
+  b.name:ClearAllPoints()
+  b.name:SetPoint("TOP", beside == false and 0 or NAME_X_STAMP, NAME_Y)
+  b.name:SetWidth(beside == false and NAME_W or NAME_W_STAMP)
+  -- a name fitted before (Humor's stamp comes after the notice) is fitted again to the new width
+  if b.name.fit and type(b.name.full) == "string" then Look.FitText(b.name, b.name.full, Extras.FIT_NAME) end
+end
+
+-- Built once (at READY, see the end of the file): textures and fonts are set long before the first notice,
+-- so the first notice looks like every later one
 local function BuildBanner()
-  banner = CreateFrame("Frame", "DeathNoteBanner", UIParent, "BackdropTemplate")
+  banner = CreateFrame("Frame", "DeathNoteBanner", UIParent)
   banner:SetSize(BANNER_W, BANNER_H)
   banner:SetPoint("TOP", UIParent, "TOP", 0, BANNER_Y)   -- below the alarm popup (moves above it only when there is no room below, see further down)
   banner:SetClampedToScreen(true)
   banner:SetFrameStrata("HIGH")
   banner:EnableMouse(false)
+  banner:SetAlpha(0)
   banner:Hide()
+  banner.style = Extras.BANNER_STYLE
+  local kickerC, nameC, lineC = Colours()
   -- Notices after the own death can be clicked (you are dead, it disturbs no fight):
   -- left click opens the killer or the case, right click closes
   -- Stop() does not fire OnFinished in the client: clean up after a click ourselves, else the click
   -- state stays and waiting guild notices never get their turn
   local function Dismiss(self)
-    self.anim:Stop(); self:Hide()
+    self.inAnim:Stop(); self.anim:Stop(); self:Hide(); self:SetAlpha(0)
     self.open, self.key, self.guild = nil, nil, false
     self:EnableMouse(false)
     if GameTooltip and GameTooltip.IsOwned and GameTooltip:IsOwned(self) then GameTooltip:Hide() end
@@ -150,63 +227,82 @@ local function BuildBanner()
     Dismiss(self)
     if mouse ~= "RightButton" then open() end
   end)
+  -- hover over a clickable notice: the kicker turns full red, a tooltip says what the click does
   banner:SetScript("OnEnter", function(self)
     if not self.open then return end
-    self:SetBackdropBorderColor(Look.RED_ON_BLACK[1], Look.RED_ON_BLACK[2], Look.RED_ON_BLACK[3], 1)
+    local c = Bare() and Look.COLOR.edgeHot or Look.RED
+    self.kicker:SetTextColor(c[1], c[2], c[3], 1)
     GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
     GameTooltip:SetText(L.BANNER_TIP)
     GameTooltip:Show()
   end)
   banner:SetScript("OnLeave", function(self)
-    self:SetBackdropBorderColor(Look.RED[1], Look.RED[2], Look.RED[3], 1)
+    local c = Colours()
+    self.kicker:SetTextColor(c[1], c[2], c[3], 1)
     GameTooltip:Hide()
   end)
-  banner:SetBackdrop({ edgeFile = Look.TEX.white, edgeSize = 2 })
-  banner:SetBackdropBorderColor(Look.RED[1], Look.RED[2], Look.RED[3], 1)
-  local bg = banner:CreateTexture(nil, "BACKGROUND")
-  bg:SetPoint("TOPLEFT", 2, -2); bg:SetPoint("BOTTOMRIGHT", -2, 2)
-  Look.Skin(bg, "cover", "coverDark")
-  bg:SetTexCoord(0, 1, 0.3, 0.6)
+  if not Bare() then
+    -- the slip: one texture with ragged ends that fade out; no edge, no fill around it
+    local bg = banner:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints()
+    Look.Skin(bg, "slip")
+    local t = Look.TINT.slip or Look.TINT.paper    -- a theme without its own slip tint colours it like its paper
+    if t then bg:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
+    banner.bg = bg
+  end
 
-  banner.kicker = Look.Text(banner, "body", 11, Look.RED_ON_BLACK)
-  banner.kicker:SetPoint("TOP", 0, -8)
-  banner.name = Look.Text(banner, "head", 26, Look.BONE)
-  banner.name:SetPoint("TOP", 0, -26)
-  banner.name:SetWidth(380)
+  banner.kicker = Look.Text(banner, "body", 10, kickerC)
+  banner.kicker:SetPoint("TOP", 0, -7)
+  banner.kicker:SetWidth(LINE_W)
+  banner.kicker:SetWordWrap(false)
+  banner.name = Look.Text(banner, "head", 19, nameC)
+  banner.name:SetPoint("TOP", 0, NAME_Y)
+  banner.name:SetWidth(NAME_W)
   banner.name:SetWordWrap(false)
-  banner.line = Look.Text(banner, "body", 11, Look.BONE)
-  banner.line:SetPoint("BOTTOM", 0, 10)
-  banner.line:SetWidth(440)
+  banner.line = Look.Text(banner, "body", 10, lineC)
+  banner.line:SetPoint("BOTTOM", 0, 7)
+  banner.line:SetWidth(LINE_W)
   banner.line:SetWordWrap(false)
+  if Bare() then Shade(banner.kicker); Shade(banner.name); Shade(banner.line) end
 
   -- the stamp hangs over the top right corner
   banner.stamp = banner:CreateTexture(nil, "OVERLAY")
-  banner.stamp:SetSize(120, 60)
-  banner.stamp:SetPoint("TOPRIGHT", banner, "TOPRIGHT", 26, 18)
+  banner.stamp:SetSize(STAMP_W, STAMP_H)
+  banner.stamp:SetPoint("TOPRIGHT", banner, "TOPRIGHT", STAMP_X, STAMP_Y)
   banner.stamp:SetAlpha(0.95)
   banner.stamp:Hide()
-  -- 1.2.0: stamp text for every language except German (on the empty frame)
-  banner.stampText = Look.Text(banner, "title", 13, Look.STAMP_INK[1])
+  -- stamp text for every language except German (on the empty frame)
+  banner.stampText = Look.Text(banner, "title", 11, Look.STAMP_INK[1])
   banner.stampText:SetPoint("CENTER", banner.stamp, "CENTER", 0, 0)
-  banner.stampText:SetWidth(96)
+  banner.stampText:SetWidth(STAMP_W - 24)
   banner.stampText:SetJustifyH("CENTER")
   banner.stampText:SetMaxLines(2)   -- (Extras.FitStamp sets the lines per text)
   banner.stampText:Hide()
+  BuildQuip()
 
+  -- Calm in and out, alpha only, never more opaque than the standing notice: the frame waits at alpha 0,
+  -- fades in (0.3 s), then a second group stays 4.5 s and fades out (0.8 s). Each group ends on its final
+  -- alpha, set by hand as well (clients without SetToFinalAlpha), so no frame flashes at full alpha.
+  local gi = banner:CreateAnimationGroup()
+  Look.AlphaAnim(gi, 0, 1, 0.3, 1)
   local g = banner:CreateAnimationGroup()
-  Look.AlphaAnim(g, 0, 1, 0.25, 1)
-  Look.ScaleAnim(g, 1.15, 1, 0.3, 1)
-  Look.AlphaAnim(g, 1, 0, 0.8, 2, 4.5)   -- stay 4.5 s, then fade out
+  Look.AlphaAnim(g, 1, 0, 0.8, 1, 4.5)   -- stay 4.5 s, then fade out
+  if gi.SetToFinalAlpha then gi:SetToFinalAlpha(true) end
   if g.SetToFinalAlpha then g:SetToFinalAlpha(true) end   -- no flash at alpha 1 at the end
+  gi:SetScript("OnFinished", function()
+    banner:SetAlpha(1)
+    g:Play()
+  end)
   g:SetScript("OnFinished", function()
     banner:Hide()
+    banner:SetAlpha(0)
     banner.open = nil
     banner:EnableMouse(false)
     banner.guild = false
     banner.key = nil
     if #guildQueue > 0 then C_Timer.After(0.4, NextGuild) end
   end)
-  banner.anim = g
+  banner.inAnim, banner.anim = gi, g
 
   -- Name: keep it invisible for a moment, then fade in (alpha jumps back to 1 afterwards)
   local ng = banner.name:CreateAnimationGroup()
@@ -214,22 +310,32 @@ local function BuildBanner()
   Look.AlphaAnim(ng, 0, 1, 0.7, 2)
   banner.nameAnim = ng
 
-  -- the stamp follows with a thud
+  -- the stamp follows with a soft thud (a little larger than its place, never more opaque)
   local sg = banner.stamp:CreateAnimationGroup()
   Look.AlphaAnim(sg, 0, 0, 0.6, 1)
-  Look.AlphaAnim(sg, 0, 1, 0.08, 2)
-  Look.ScaleAnim(sg, 1.8, 1, 0.12, 2)
+  Look.AlphaAnim(sg, 0, 0.95, 0.1, 2)
+  Look.ScaleAnim(sg, 1.25, 1, 0.14, 2)
   banner.stampAnim = sg
   local tg = banner.stampText:CreateAnimationGroup()
   Look.AlphaAnim(tg, 0, 0, 0.6, 1)
-  Look.AlphaAnim(tg, 0, 1, 0.08, 2)
+  Look.AlphaAnim(tg, 0, 0.95, 0.1, 2)
   banner.stampTextAnim = tg
+
+  -- measure once while hidden: every size of the ladders on a sample, so the fonts are set up before the
+  -- first notice (the client measures a font string the same whether shown or not)
+  local sample = "Mmmmmmmm Wwwwwwww"
+  for _, p in ipairs({ { banner.name, Extras.FIT_NAME }, { banner.line, Extras.FIT_LINE }, { banner.stampText, Extras.FIT_STAMP } }) do
+    local fs, sizes = p[1], p[2].sizes
+    for i = #sizes, 1, -1 do Look.Font(fs, fs.fontKind, sizes[i], fs.fontFlags); fs:SetText(sample); pcall(fs.GetStringWidth, fs) end
+    fs:SetText("")
+  end
 end
+Extras.BuildBanner = function() if not banner then BuildBanner() end return banner end
 
 -- The notice never lies on the alarm popup: when they overlap (larger alarm, moved popup), the notice
 -- moves below the popup, and when there is no room there, above it.
 -- All in UIParent units; both hang on UIParent, so its scale (e.g. 0.6) cancels out.
-local GAP, STAMP_TOP = 10, 18
+local GAP, STAMP_TOP = 10, STAMP_Y
 function Extras.PlaceBanner()
   if not banner then return end
   local W, H = UIParent:GetWidth(), UIParent:GetHeight()
@@ -238,8 +344,8 @@ function Extras.PlaceBanner()
   if ns.Alert and ns.Alert.Rect then l, b, r, t = ns.Alert.Rect() end
   if type(W) == "number" and type(H) == "number" and not Look.Secret(W) and not Look.Secret(H) and l then
     local bl, br = W / 2 - BANNER_W / 2, W / 2 + BANNER_W / 2
-    -- the strip of a dry remark hangs below the message (Humor.lua: 4 below, 22 high)
-    local strip = (ns.Humor and ns.Humor.On and ns.Humor.On()) and 26 or 0
+    -- the strip of a dry remark hangs below the message
+    local strip = (ns.Humor and ns.Humor.On and ns.Humor.On()) and (QUIP_GAP + QUIP_H) or 0
     local bt = H + BANNER_Y + STAMP_TOP
     local bb = H + BANNER_Y - BANNER_H - strip
     if l < br and r > bl and b < bt and t > bb then
@@ -268,13 +374,13 @@ end
 
 -- open: function for the click (only notices after the own death), else not clickable.
 -- kicker is the unspaced text (1.2.0, spacing happens here); stamp: kind from STAMPS or nil
--- 1.2.2: the name steps 26, 22, 19 pt (380 px, 340 px next to the stamp); the line steps 11, 10 pt, and a line
+-- 1.3.0: the name steps 19, 16, 13 pt (300 px, 232 px next to the stamp); the line steps 10, 9 pt, and a line
 -- given as { full, short } falls back to the short one (zone left out) before it would be cut;
--- the stamp text steps 13, 11, 9 pt on up to two lines (a long single word no longer runs out of the frame)
-Extras.FIT_NAME, Extras.FIT_LINE = { sizes = { 26, 22, 19 } }, { sizes = { 11, 10 } }
-Extras.FIT_STAMP = { sizes = { 13, 11, 9 }, lines = 2, wrapFirst = true }
--- 1.2.2: no tooltip on the stamp (the notice may come in combat, mouse off): a third line at 9 pt before the client
--- cuts ("JAVNI / NEPRIJATELJ / BR. 1" in hrHR; three lines of 9 pt are about 30 px in the 60 px stamp)
+-- the stamp text steps 11, 10, 9 pt on up to two lines, then three lines at 9 pt (no tooltip on the stamp:
+-- the notice may come in combat, mouse off; "JAVNI / NEPRIJATELJ / BR. 1" in hrHR)
+Extras.FIT_NAME, Extras.FIT_LINE = { sizes = { 19, 16, 13 } }, { sizes = { 10, 9 } }
+Extras.FIT_KICKER = { sizes = { 10, 9 } }
+Extras.FIT_STAMP = { sizes = { 11, 10, 9 }, lines = 2, wrapFirst = true }
 Extras.FIT_STAMP_LAST = { sizes = { 9 }, lines = 3 }
 function Extras.FitStamp(fs, text)
   return Look.FitText(fs, text, Extras.FIT_STAMP) or Look.FitText(fs, text, Extras.FIT_STAMP_LAST)
@@ -283,29 +389,33 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   local stampTex, stampText, st = StampImage(stamp)
   kicker = Spaced(kicker)
   if not banner then BuildBanner() end
+  -- the frame waits invisible: alpha 0 before it is shown, the fade brings it to 1
+  banner.inAnim:Stop()
+  banner.anim:Stop()
+  banner.stampAnim:Stop()
+  banner:SetAlpha(0)
   banner.guild = guild and true or false
   banner.key = key
   banner.kind = stamp
   banner.open = open
   banner:EnableMouse(open ~= nil)
-  banner.kicker:SetText(kicker)
+  local kc = Colours()
+  banner.kicker:SetTextColor(kc[1], kc[2], kc[3], 1)
+  Look.FitText(banner.kicker, kicker, Extras.FIT_KICKER)
   -- with a stamp the name moves a bit to the left, so long names stay clear of it
-  banner.name:ClearAllPoints()
-  banner.name:SetPoint("TOP", stampTex and -24 or 0, -26)
-  banner.name:SetWidth(stampTex and 340 or 380)
+  Extras.NameBesideStamp(banner, stampTex ~= nil)
   Look.FitText(banner.name, name, Extras.FIT_NAME)
-  local c = nameRGB or Look.BONE
+  local c
+  if Bare() then c = nameRGB or Look.BONE else c = nameRGB and nameRGB ~= Look.BONE and Extras.SlipInk(nameRGB) or Look.INK end
   banner.name:SetTextColor(c[1], c[2], c[3], 1)
   if type(line) == "table" then
     if not Look.FitText(banner.line, line[1] or "", Extras.FIT_LINE) then Look.FitText(banner.line, line[2] or "", Extras.FIT_LINE) end
   else
     Look.FitText(banner.line, line or "", Extras.FIT_LINE)
   end
-  banner.anim:Stop()
-  banner.stampAnim:Stop()
-  banner:SetAlpha(1)
+  Extras.PlaceBanner()
   banner:Show()
-  banner.anim:Play()
+  banner.inAnim:Play()
   banner.nameAnim:Stop(); banner.nameAnim:Play()
   banner.stampTextAnim:Stop()
   if stampTex then
@@ -325,7 +435,6 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   else
     banner.stampText:Hide()
   end
-  Extras.PlaceBanner()
   -- one event, one window: no alarm popup for the same player next to it
   if key then Silence(key) end
   if ns.Humor then pcall(ns.Humor.OnBanner, banner, stamp, key, guild) end -- Humor: remark and stamp for the notice
@@ -382,7 +491,7 @@ end
 -- 1.2.1: a revenge noted by hand was taken back: if its notice is still up, it goes away
 local function OnRevengeUndone(key)
   if not (banner and banner:IsShown() and banner.key == key and banner.kind == "rache") then return end
-  banner.anim:Stop(); banner:Hide()
+  banner.inAnim:Stop(); banner.anim:Stop(); banner:Hide(); banner:SetAlpha(0)
   banner.open, banner.key, banner.kind, banner.guild = nil, nil, nil, false
   banner:EnableMouse(false)
   if #guildQueue > 0 then C_Timer.After(0.4, NextGuild) end
@@ -499,6 +608,8 @@ end
 ns:On("READY", function()
   ready = true
   HookTooltip()
+  -- 1.3.0: build the notice now, hidden, so its first appearance equals every later one
+  if not banner then BuildBanner() end
 end)
 ns:On("DEATH_RECORDED", OnDeath)
 ns:On("REVENGE", OnRevenge)
