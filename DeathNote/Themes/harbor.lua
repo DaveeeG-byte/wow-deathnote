@@ -53,6 +53,7 @@ ns.Theme.Register("harbor", {
     paper   = "#eef0dc",           -- mean #bab28d
     tape    = "#e3bd62",           -- brass
     stamp   = "#8a1818",           -- oxblood
+    slip    = "#fcfcf4",           -- the notice slip lighter than the poster (class ink of the name keeps 4.5:1)
   },
   stamp = {
     -- frames without text in every language (also German): the text comes from the theme's words

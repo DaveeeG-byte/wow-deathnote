@@ -10,7 +10,7 @@ ns.Theme.Register("trade", {
   nameKey = "THEME_TRADE",
   -- Palette: ballpoint blue ink, stamp-pad red, warm brown board, amber on the cover
   color = {
-    ink           = "#15203a",
+    ink           = "#0e1628",     -- ballpoint blue, dark enough for the class ink on the notice slip
     accent        = "#a81c1c",
     accentSmall   = "#8a1414",
     accentOnCover = "#ffcf70",
@@ -29,7 +29,7 @@ ns.Theme.Register("trade", {
     edgeHot       = "#ffcf70",
     edgeNr1       = "#d83a2a",
     skullTint     = "#2a3038",
-    skullFaint    = "#15203ab3",
+    skullFaint    = "#0e1628b3",
     coinTint      = "#9a7a3ae6",
     stampInk      = "#a81c1c",
     stampDark     = "#390a0a",     -- pardoned (the frame is grey 34 % under the same tint)
@@ -47,6 +47,7 @@ ns.Theme.Register("trade", {
     page  = "#f6f0c0",             -- mean #d0c38d, yellow carbon paper
     paper = "#f8f3e6",             -- mean #c2b594, index card
     stamp = "#a81c1c",
+    slip  = "#fffadc",             -- the notice slip: light carbon yellow (the page tint is too dark for class ink)
   },
   stamp = {
     -- frames without text in every language (also German): the text comes from the theme's words
