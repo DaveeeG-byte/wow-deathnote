@@ -678,26 +678,39 @@ function UX.BuildMenu()
   menu:SetScript("OnShow", function(self) self:Raise() end)
 end
 
+-- 1.2.2: Breite aus dem laengsten Eintrag (148 bis 252 px, darueber 9 pt), am Schirm geklemmt und von der
+-- Maus weg aufgeklappt (rechts der Mitte nach links, in der unteren Haelfte nach oben)
+GF.MENU_W0, GF.MENU_W1 = 148, 252
 local function OpenMenu(spec, fallbackAnchor)
   if not menu then UX.BuildMenu() end
   local n = math.min(#spec, GF.MENU_MAX)
+  local need = GF.MENU_W0
+  for i = 1, n do
+    local t = menu.items[i].text
+    if t.small then Look.Font(t, "body", 10); t.small = nil end
+    t:SetText(spec[i][1])
+    need = math.max(need, math.ceil((Look.TextW(t) or 0) + 16))
+  end
+  local bw = math.min(GF.MENU_W1, need)
   for i = 1, GF.MENU_MAX do
     local b, s = menu.items[i], spec[i]
     if s and i <= n then
       local fn = s[2]
+      b:SetWidth(bw); b.text:SetWidth(bw - 8)
       b:SetLabel(s[1]); b.fn = function() HideMenu(); fn() end; b:Show()
     else
       b:Hide()
     end
   end
-  menu:SetSize(156, 8 + n * 22 - 2)
+  menu:SetSize(bw + 8, 8 + n * 22 - 2)
   menu:ClearAllPoints()
   local s = menu:GetEffectiveScale()
   local x, y = GetCursorPosition()
   if type(x) == "number" and type(y) == "number" and type(s) == "number" and s > 0
      and not Look.Secret(x) and not Look.Secret(y) and not Look.Secret(s) then
-    menu:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x / s + 2, y / s - 2)
+    Look.KeepOnScreen(menu, x / s + 2, y / s - 2)
   else
+    menu:SetClampedToScreen(true)
     menu:SetPoint("TOPLEFT", fallbackAnchor, "RIGHT", -40, 0)
   end
   menu.blocker:Show()
@@ -802,8 +815,9 @@ local function RowEnter(row)
     Tip(row, row.tipFn(row.item))
   elseif row.full then
     Tip(row, type(row.full) == "table" and row.full or { row.full })
-  elseif Truncated(row.name) then
-    Tip(row, { row.name:GetText() or "" })
+  elseif Truncated(row.name) or row.subFull then
+    -- 1.2.2: gekuerzter Name oder Untertext: beides ganz
+    Tip(row, { row.name:GetText() or "", row.subFull })
   end
 end
 
@@ -820,6 +834,7 @@ function UX.MakeRow(parent, i)
   r.rank = Look.Text(r, "hand", 19, Look.INK)
   r.rank:SetPoint("TOPRIGHT", r, "TOPLEFT", 32, -1)
   r.rank:SetJustifyH("RIGHT")
+  r.rank:SetWidth(32)          -- 1.2.2: "128." wird kleiner statt links aus der Zeile zu ragen
   r.skull = r:CreateTexture(nil, "ARTWORK")
   r.skull:SetSize(18, 18)
   r.skull:SetPoint("TOPLEFT", 12, -2)
@@ -927,7 +942,9 @@ local function SetRow(r, name, sub, mark, tone, markInk)
   local t = ROW_TONE[tone] or ROW_TONE.normal
   r.name:SetText(name or "")
   r.name:SetTextColor(C(t[1], t[2]))
-  r.sub:SetText(sub or "")
+  -- 1.2.2: sub darf eine Liste sein (voll, dann kuerzer): die erste, die ganz passt; gekuerzt steht sie im Tooltip
+  local full = type(sub) == "table" and sub[1] or sub
+  r.sub:SetText(full or "")
   r.sub:SetTextColor(C(Look.INK, TONE.sub))
   r.mark:SetText(mark or "")
   if markInk then r.mark:SetTextColor(C(Look.INK, TONE.sub)) else r.mark:SetTextColor(C(Look.RED_INK)) end
@@ -939,11 +956,19 @@ local function SetRow(r, name, sub, mark, tone, markInk)
     r.sub:SetPoint("BOTTOMLEFT", r.subX or 42, -1)
     r.sub:SetPoint("RIGHT", -inset, 0)
   end
+  if type(sub) == "table" then
+    for i = 2, #sub do
+      if not Truncated(r.sub) then break end
+      r.sub:SetText(sub[i])
+    end
+  end
+  r.subFull = (full and (Truncated(r.sub) or r.sub:GetText() ~= full)) and full or nil
   r.full, r.tipFn = nil, nil
 end
 
+GF.FIT_RANK = { sizes = { 19, 16, 13 } }
 local function SetRank(r, rank, text)
-  r.rank:SetText(text or (rank and (rank .. ".")) or "")
+  Look.FitText(r.rank, text or (rank and (rank .. ".")) or "", GF.FIT_RANK)
   r.rank:SetTextColor(C(rank == 1 and Look.RED or Look.INK))
 end
 
@@ -968,7 +993,11 @@ function UX.BindEnemyRow(r, e)
   local sub
   if pardoned then sub = Look.Join(L.ROW_PARDONED, Look.Tally(e))
   elseif suspect then sub = Look.Join(L.ROW_SUSPECT, DeedWhere(Look.LastDeed(e)))
-  else sub = Look.Join(Look.Tally(e), UX.Seen(e)) end
+  else
+    -- "gesehen vor …" weicht zuerst, wenn die Zeile nicht passt
+    local tally = Look.Tally(e)
+    sub = { Look.Join(tally, UX.Seen(e)), tally }
+  end
   local rv = tonumber(e.revenge) or 0
   SetRow(r, Look.Name(e), sub, rv > 0 and Fmt(L.MARK_REVENGE, { times = Look.Times(rv) }) or nil,
          (rank == 1 and "red") or (pardoned and "pale") or "normal")
@@ -1036,9 +1065,12 @@ function UX.BindGuildRow(r, g, pos)
   else
     -- 1.2.1: wie oft ihn Kollegen oder Freunde fuer andere erledigt haben (Gesamtzahl)
     local av = tonumber(GCall("AvengedTotal", g.key)) or 0
-    sub = Look.Join(Fmt(L.ROW_GKILLED, { kills = Look.GKills(g.kills) }), Look.Count(g.victimCount, L.ROW_VICTIMS),
-                    av > 0 and Fmt(L.ROW_AVENGED, { times = Look.Times(av) }),
-                    type(g.lastVictim) == "string" and g.lastVictim ~= "" and Fmt(L.ROW_LAST, { text = Look.First(g.lastVictim) }))
+    -- 1.2.2: passt die Zeile nicht, weicht zuerst das letzte Opfer, dann "gerächt" (ganz im Tooltip der Zeile)
+    local killed, victims = Fmt(L.ROW_GKILLED, { kills = Look.GKills(g.kills) }), Look.Count(g.victimCount, L.ROW_VICTIMS)
+    local avt = av > 0 and Fmt(L.ROW_AVENGED, { times = Look.Times(av) })
+    sub = { Look.Join(killed, victims, avt,
+                      type(g.lastVictim) == "string" and g.lastVictim ~= "" and Fmt(L.ROW_LAST, { text = Look.First(g.lastVictim) })),
+            Look.Join(killed, victims, avt), Look.Join(killed, victims) }
   end
   -- kleines Zeichen: steht schon im eigenen Buch
   local mine = g.mine or Store().Get(g.key)

@@ -517,8 +517,15 @@ end
 function Look.KeepOnScreen(frame, x, y)
   frame:SetClampedToScreen(true)
   if type(x) ~= "number" or type(y) ~= "number" or Look.Secret(x) or Look.Secret(y) then return end
+  -- screen size in the units of the frame (x, y are given in them, like cursor / effective scale)
   local w, h = UIParent:GetWidth(), UIParent:GetHeight()
-  if type(w) ~= "number" or type(h) ~= "number" or Look.Secret(w) or Look.Secret(h) then w, h = nil, nil end
+  local us, fs = UIParent:GetEffectiveScale(), frame:GetEffectiveScale()
+  if type(w) ~= "number" or type(h) ~= "number" or Look.Secret(w) or Look.Secret(h) or type(us) ~= "number"
+     or type(fs) ~= "number" or Look.Secret(us) or Look.Secret(fs) or fs <= 0 then
+    w, h = nil, nil
+  else
+    w, h = w * us / fs, h * us / fs
+  end
   local right = w and x > w / 2
   local low = h and y < h / 2
   local p = (low and "BOTTOM" or "TOP") .. (right and "RIGHT" or "LEFT")
