@@ -70,7 +70,8 @@ local REALM = "Forever"   -- the mock's realm: placeholders are "Name-Forever"
 --   a surnameless unit in sight (a plate, the target; a death re-reads them all) whose "Name-<realm>" is listed or
 --   buffered with another GUID;
 --   a death by, or my PARTY_KILL on, a player the tracker knows by first name only (or not at all) and the book not
---   by his GUID, while "Name-<realm>" is listed with another GUID;
+--   by his GUID, while "Name-<realm>" is listed with another GUID; my PARTY_KILL on a GUID whose tracker record
+--   stands under a key the book lists with another GUID;
 --   an honour line naming a first name only while my target is such a surnameless namesake;
 --   two surnameless units of one first name with two GUIDs in sight at once.
 local function plainOf(name) return name .. "-" .. REALM end
@@ -109,6 +110,9 @@ local function namesakeStep(ns, x, att, name, guid, tok, withSur, taint)
     if att <= 4 then
       local r = ns.Tracker.ByGUID(guid)
       if (not r or not r.surname) and otherListed(ns, name, guid) then mark(name) end
+      -- the tracker's record of this GUID stands under a key the book lists with another GUID
+      local re = r and ns.Store.Get(r.key)
+      if re and type(re.guid) == "string" and re.guid ~= guid then mark(name); mark(re.name) end
     end
   elseif x <= 40 then
     local t = M.units.target
