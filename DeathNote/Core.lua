@@ -438,7 +438,7 @@ end
 -- 1.2.0: the lines come from the language table (HELP_*), in the active language; ns.HELP is built
 -- at activation. The German subcommands stay valid forever, the English ones work in every language.
 local HELP_KEYS = { "HELP_TOGGLE", "HELP_ADD", "HELP_DEL", "HELP_QUIET", "HELP_TEST", "HELP_GUILD", "HELP_FRIENDS",
-  "HELP_SYNC", "HELP_HUNT", "HELP_CALLOFF", "HELP_BOUNTY", "HELP_LANG", "HELP_PROBE", "HELP_PROBE_COMBATLOG", "HELP_DEBUG",
+  "HELP_SYNC", "HELP_HUNT", "HELP_CALLOFF", "HELP_BOUNTY", "HELP_LANG", "HELP_THEME", "HELP_PROBE", "HELP_PROBE_COMBATLOG", "HELP_DEBUG",
   "HELP_HELP", "HELP_SILENT_ZONES" }
 ns.HELP_KEYS = HELP_KEYS
 local HELP = {}
@@ -551,6 +551,33 @@ local function slashLang(rest)
     return
   end
   Util.Print(Fmt(pending and L.CHAT_LANG_RELOAD or L.CHAT_LANG_SET, { lang = nameOf(c) }))
+end
+
+-- /dn theme [id] (1.3.0): shows the covers or stores one (works after /reload, like the language)
+local function slashTheme(rest)
+  local T = ns.Theme
+  if not (T and T.List) then return end
+  local function nameOf(id)
+    local d = T.Get(id)
+    local key = d and d.nameKey
+    local n = type(key) == "string" and rawget(L, key) or nil
+    return (type(n) == "string" and n ~= "" and n or id) .. " (" .. id .. ")"
+  end
+  local all = {}
+  for _, id in ipairs(T.List()) do all[#all + 1] = nameOf(id) end
+  local list = table.concat(all, ", ")
+  if rest == "" then
+    Util.Print(Fmt(L.CHAT_THEME_CURRENT, { theme = nameOf(T.Resolve(T.StoredChoice())) }))
+    Util.Print(Fmt(L.CHAT_THEME_LIST, { themes = list }))
+    return
+  end
+  local id, pending = T.SetChoice(rest)
+  if not id then
+    Util.Print(Fmt(L.CHAT_THEME_BAD, { name = rest }))
+    Util.Print(Fmt(L.CHAT_THEME_LIST, { themes = list }))
+    return
+  end
+  Util.Print(Fmt(pending and L.CHAT_THEME_RELOAD or L.CHAT_THEME_SET, { theme = nameOf(id) }))
 end
 
 function ns.HandleSlash(msg)
@@ -694,6 +721,8 @@ function ns.HandleSlash(msg)
     slashBounty(rest)
   elseif cmd == "lang" or cmd == "sprache" or cmd == "language" then
     slashLang(rest)
+  elseif cmd == "theme" or cmd == "einband" or cmd == "cover" then
+    slashTheme(rest)
   elseif cmd == "hilfe" or cmd == "help" or cmd == "?" then
     if #HELP == 0 then buildHelp() end
     for i = 1, #HELP do Util.Print(HELP[i]) end

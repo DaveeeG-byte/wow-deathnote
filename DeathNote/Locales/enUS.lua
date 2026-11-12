@@ -147,6 +147,7 @@ L.HELP_SYNC     = "/dn sync  sync guild book and friends' book now"
 L.HELP_HUNT     = "/dn hunt <Name [Surname]>  put on the hit list (no name: show the hit list)"
 L.HELP_CALLOFF  = "/dn calloff <Name [Surname]>  call off your own hunt"
 L.HELP_LANG     = "/dn lang <code>  language of the book (enUS, deDE, frFR ...), after /reload"
+L.HELP_THEME = "/dn theme <name>  cover of the book, after /reload"  -- 1.3.0: /dn theme, the cover (theme) of the book; the ids stay English
 L.HELP_PROBE    = "/dn probe  troubleshooting: what the game tells the book"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  troubleshooting, also test the combat log"
 L.HELP_DEBUG    = "/dn debug  troubleshooting: log every death in detail (on/off)"
@@ -196,6 +197,12 @@ L.CHAT_LANG_LIST    = "Codes: {codes}"
 L.CHAT_LANG_BAD     = "Unknown language: {code}"
 L.CHAT_LANG_SET     = "Language: {lang}."
 L.CHAT_LANG_RELOAD  = "Language: {lang}. Takes effect after /reload."
+L.CHAT_THEME_CURRENT = "Cover now: {theme}. Change: /dn theme <name>"  -- 1.3.0: /dn theme; {theme} = name of the cover and its id, e.g. "The Black Book (notebook)"
+L.CHAT_THEME_LIST = "Covers: {themes}"  -- 1.3.0: /dn theme; {themes} = "The Black Book (notebook), ..."
+L.CHAT_THEME_BAD = "Unknown cover: {name}"  -- 1.3.0: /dn theme with an unknown id; {name} = what the player typed
+L.CHAT_THEME_SET = "Cover: {theme}."  -- 1.3.0: /dn theme <id>, already active
+L.CHAT_THEME_RELOAD = "Cover: {theme}. Takes effect after /reload."  -- 1.3.0: /dn theme <id>, active after /reload (as CHAT_LANG_RELOAD)
+L.THEME_NOTEBOOK = "The Black Book"  -- 1.3.0: name of the first cover (theme "notebook", the black book as it always was)
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "The book is ready. Whoever kills you in the open world is in it afterwards. Open it with /dn or the minimap button."
