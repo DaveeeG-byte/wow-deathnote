@@ -625,6 +625,66 @@ local function OnNewHunt(count, key, by, src, one, list)
   ChatNew(#rest, rest[1].key, rest[1].by, rest[1].src, same)
 end
 
+------------------------------------------------------------------------
+-- 1.3.0 rap sheet: a chat line after an own kill (switch ledger.chat), notices for a new rank and an award. The notices
+-- are data for the notice above (kicker, name, line); its look stays its own. They never come in combat (they wait
+-- for its end, like the greeting) and queue behind a notice on screen.
+------------------------------------------------------------------------
+local noticeWait = {}
+function Extras.Notice(kicker, name, line)
+  if type(name) ~= "string" or name == "" then return end
+  if InCombatLockdown and InCombatLockdown() then
+    if #noticeWait < GUILD_QUEUE_MAX then noticeWait[#noticeWait + 1] = { kicker, name, line } end
+    return
+  end
+  Later(function(k, n, l) Banner(k, n, nil, l or "", nil, false, nil, nil) end, kicker, name, line)
+end
+ns:RegisterEvent("PLAYER_REGEN_ENABLED", function()
+  if #noticeWait == 0 then return end
+  local w = noticeWait
+  noticeWait = {}
+  for i = 1, #w do Extras.Notice(w[i][1], w[i][2], w[i][3]) end
+end)
+
+-- "Rap sheet: Grimm Bart, Level 34 (yellow). +3 Honour."
+local function OnOwnKill(key, row)
+  if not ready or type(row) ~= "table" or Look.Setting("ledger.chat", true) == false then return end
+  if not (Look.KillPoints and Look.BandWord and ns.Util and ns.Util.Print) then return end
+  local level = type(row.vl) == "number" and Fmt(L.POSTER_LEVEL, { level = row.vl }) or L.ALERT_LEVEL_UNKNOWN
+  ns.Util.Print(Fmt(L.CHAT_OWN_KILL, { name = tostring(row.name or "?"), level = level, band = Look.BandWord(row.band),
+    points = Look.KillPoints(row) }))
+end
+
+local rankAt
+local function OnRank(tier, path)
+  if not ready or not ns.Ranks then return end
+  rankAt = GetTime()
+  local Rk = ns.Ranks
+  local named = Rk.Name(tier, path) ~= nil
+  Extras.Notice(L.BANNER_RANK, Rk.Title(tier, path), named and Fmt(L.REPUTE_LINE, { tier = tier, path = Rk.PathWord(path) }) or nil)
+end
+
+-- a new path without a new rank: a chat line (the rank's name changes with it from rank 3 on)
+local function OnPath(path, oldPath, tier)
+  if not ready or not ns.Ranks or type(path) ~= "string" or Look.Setting("ledger.chat", true) == false then return end
+  if rankAt and GetTime() == rankAt then return end      -- came with a new rank: the notice says it
+  if ns.Util and ns.Util.Print then
+    ns.Util.Print(Fmt(L.CHAT_PATH, { path = ns.Ranks.PathWord(path), rank = ns.Ranks.Title(tier, path) }))
+  end
+end
+
+-- the award's name and condition live in Humor.lua (German and English); other languages have no awards to show
+local function OnAward(id)
+  if not ready or not (ns.Humor and ns.Humor.Award) then return end
+  local name, cond = ns.Humor.Award(id)
+  if name then Extras.Notice(L.BANNER_AWARD, name, cond) end
+end
+
+ns:On("OWN_KILL", OnOwnKill)
+ns:On("REPUTE_RANK", OnRank)
+ns:On("REPUTE_PATH", OnPath)
+ns:On("AWARD", OnAward)
+
 ns:On("READY", function()
   ready = true
   HookTooltip()

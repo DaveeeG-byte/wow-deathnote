@@ -106,6 +106,21 @@ local TEXTS = {
       thanks = "Gern geschehen. Das Buch nimmt kein Trinkgeld, nur Namen.",
     },
     PIN = "Die Reißzwecke hat gekündigt. Das Plakat hält sich aus Trotz.",
+    -- 1.3.0 rap sheet: awards (name, condition) and a few remarks for a new rank or an award
+    AWARD = {
+      first_entry = { "Erster Eintrag", "Der erste eigene Kill an einem Spieler." },
+      receipt     = { "Quittung", "Zum ersten Mal einen Stand selbst auf quitt gebracht." },
+      david       = { "David", "Einen Roten oder Schädel ohne Gruppe erlegt." },
+      same_day    = { "Noch am selben Tag", "Rache binnen 24 Stunden nach seinem Kill." },
+      arch_enemy  = { "Erzfeind", "Stand 5 : 5 mit demselben Gegner." },
+      patience    = { "Geduld", "Zehnmal vom selben getötet und dann doch gerächt." },
+    },
+    RANK = {
+      "Das Buch korrigiert deinen Titel. Mit Bleistift, vorsichtshalber.",
+      "Befördert. Eine Feier gibt es nicht, nur einen neuen Eintrag.",
+      "Neuer Rang. Die Akte wird dicker.",
+    },
+    MEDAL = { "Ein Orden. Das Buch hat ihn selbst geprägt.", "Abgeheftet unter: Verdienste." },
     APRIL_SUB = "Gesucht wegen wiederholten Sterbens.",
     APRIL_HINT = "Kopfgeld: die nächste Reparaturrechnung.",
   },
@@ -186,6 +201,20 @@ local TEXTS = {
       thanks = "You're welcome. The book takes no tips. Only names.",
     },
     PIN = "The pin has quit. The poster stays up out of spite.",
+    AWARD = {
+      first_entry = { "First Entry", "Your first own kill of a player." },
+      receipt     = { "Receipt", "The first score you settled yourself." },
+      david       = { "David", "A red or skull kill without a group." },
+      same_day    = { "Same-Day Service", "Payback within 24 hours of their kill." },
+      arch_enemy  = { "Arch-Enemy", "A score of 5 : 5 with the same enemy." },
+      patience    = { "Patience", "Killed ten times by the same one, and paid back after all." },
+    },
+    RANK = {
+      "The book updates your title. In pencil, just in case.",
+      "Promoted. There is no party, only a new entry.",
+      "New rank. The file gets thicker.",
+    },
+    MEDAL = { "An award. The book minted it itself.", "Filed under: merits." },
     APRIL_SUB = "Wanted for repeated dying.",
     APRIL_HINT = "Bounty: your next repair bill.",
   },
@@ -198,7 +227,8 @@ Humor.COMMANDS = COMMANDS
 -- How often (0..1). Fixed occasions (milestones, 5th/10th/20th/50th/100th death by the same one) always come.
 -- 1.2.0: rarer (before: revenge 0.5, level 0.6, night 0.4, taken down 0.5, pardon 0.5, empty book 0.5) and
 -- at most one random remark per QUIET seconds across all occasions; the 3rd death is no occasion any more
-Humor.CHANCE = { revenge = 0.2, lowbie = 0.2, night = 0.15, pve = 0.25, bagged = 0.15, pardon = 0.2, empty = 0.2 }
+Humor.CHANCE = { revenge = 0.2, lowbie = 0.2, night = 0.15, pve = 0.25, bagged = 0.15, pardon = 0.2, empty = 0.2,
+  rank = 0.5, award = 0.5 }   -- 1.3.0 rap sheet: a remark after a new rank or an award
 Humor.QUIET = 600
 local REGULAR_AT = { [5] = true, [10] = true, [20] = true, [50] = true, [100] = true }
 local LOWBIE_GAP = 10              -- killer at least this many levels below you
@@ -739,7 +769,34 @@ if ns.Locale and ns.Locale.OnActivate then
   end)
 end
 
+------------------------------------------------------------------------
+-- 1.3.0 rap sheet: names of the awards (German and English only, whatever the switch: the file of the book shows
+-- them; other languages show no awards), and a dry remark in the chat after a new rank or an award (switch, chance,
+-- the common quiet time)
+------------------------------------------------------------------------
+function Humor.Award(id)
+  local t = T()
+  local a = t and t.AWARD and t.AWARD[id]
+  if not a then return nil end
+  return a[1], a[2]
+end
+local function Remark(kind, pool)
+  if not On() or not Roll(kind) then return end
+  local t = T()
+  local list = t and t[pool]
+  if type(list) ~= "table" or #list == 0 then return end
+  local i = Humor.random(#list)
+  if #list > 1 and i == last[pool] then i = i % #list + 1 end
+  last[pool] = i
+  Say(list[i])
+  Hush()
+end
+function Humor.OnRank() Remark("rank", "RANK") end
+function Humor.OnAward() Remark("award", "MEDAL") end
+
 ns:On("READY", Humor.OnReady)
+ns:On("REPUTE_RANK", function() Humor.OnRank() end)
+ns:On("AWARD", function() Humor.OnAward() end)
 ns:On("DEATH_RECORDED", Humor.OnDeath)
 ns:On("REVENGE", Humor.OnRevenge)
 ns:On("ENEMY_STATUS", Humor.OnStatus)
