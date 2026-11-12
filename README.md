@@ -213,7 +213,7 @@ The path is the biggest account of a sliding value (each kill: value × 0.98 + p
 rank 3; another account takes over only when it is 15 % bigger. Ranks 1 and 2 have one name for all paths, ranks 3 to
 10 one per path and per cover, in German and English (`Ranks.NAMES`); other languages show "Rank 6 · Path: Honour".
 The needle runs from −100 (ruthless) to +100 (honourable): 100 × (Honour + Protection − Infamy) / sum of the sliding
-values; Hunt does not move it.
+values. Hunt pushes it to neither side, but it counts in the sum and so draws the needle towards the middle.
 
 **Awards and bests.** Six awards (two hidden until earned; names and conditions in `Humor.lua`, German and English)
 and three bests: the biggest level gap of a kill, the longest streak of kills without dying, the fastest payback.

@@ -51,10 +51,11 @@ jobs:
           zip=$(find .release -maxdepth 1 -name '*.zip' 2>/dev/null | sort | head -1) || zip=""
           if [ -z "$zip" ]; then
             # The packager deliberately builds nothing on a branch push whose HEAD already carries a tag
-            # ("Found future tag ..., not packaging."): the tag run packages that commit. Same test as the packager.
+            # ("Found future tag ..., not packaging."): the tag run packages that commit. Only a release tag (v*)
+            # counts here, because only that starts a tag run; with any other tag nothing would check this commit.
             future_tag=""
             if [ "$GITHUB_EVENT_NAME" = "push" ] && [[ "$GITHUB_REF" == refs/heads/* ]]; then
-              future_tag=$(git tag --points-at HEAD 2>/dev/null | paste -sd ' ') || future_tag=""
+              future_tag=$(git tag --points-at HEAD --list 'v*' 2>/dev/null | paste -sd ' ') || future_tag=""
             fi
             if [ -n "$future_tag" ]; then
               echo "No zip on purpose: HEAD carries the tag(s) ${future_tag}; the run for the tag packages and checks it."
