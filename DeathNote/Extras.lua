@@ -631,20 +631,28 @@ end
 -- for its end, like the greeting) and queue behind a notice on screen.
 ------------------------------------------------------------------------
 local noticeWait = {}
+local function Holding() return ns.Start and ns.Start.Holding and ns.Start.Holding() end
 function Extras.Notice(kicker, name, line)
   if type(name) ~= "string" or name == "" then return end
-  if InCombatLockdown and InCombatLockdown() then
+  -- in combat, or while the first-start dialog of a new installation has not been answered: later
+  if (InCombatLockdown and InCombatLockdown()) or Holding() then
     if #noticeWait < GUILD_QUEUE_MAX then noticeWait[#noticeWait + 1] = { kicker, name, line } end
     return
   end
   Later(function(k, n, l) Banner(k, n, nil, l or "", nil, false, nil, nil) end, kicker, name, line)
 end
-ns:RegisterEvent("PLAYER_REGEN_ENABLED", function()
-  if #noticeWait == 0 then return end
+local function FlushNotices()
+  if #noticeWait == 0 or Holding() then return end
   local w = noticeWait
   noticeWait = {}
   for i = 1, #w do Extras.Notice(w[i][1], w[i][2], w[i][3]) end
-end)
+end
+ns:RegisterEvent("PLAYER_REGEN_ENABLED", FlushNotices)
+-- the first-start dialog has asked: Start.lua builds the notice then (Extras.BuildBanner); waiting notices follow
+do
+  local build = Extras.BuildBanner
+  if build then Extras.BuildBanner = function(...) local b = build(...); FlushNotices(); return b end end
+end
 
 -- "Rap sheet: Grimm Bart, Level 34 (yellow). +3 Honour."
 local function OnOwnKill(key, row)

@@ -282,6 +282,26 @@ do
 end
 
 ------------------------------------------------------------------------
+-- New installation: while the first-start dialog has not been answered (Start.Holding), no notice; it follows the
+-- answer (Start.lua builds the notice then through Extras.BuildBanner). An own kill meanwhile throws no error.
+------------------------------------------------------------------------
+do
+  world("enUS")
+  local held = true
+  ns.Start = { Holding = function() return held end }
+  iKill("Fritz", "Frech", 1)
+  local b = rawget(G, "DeathNoteBanner")
+  check("first start open: no award notice", not (b and b:IsShown()))
+  held = false
+  ns.Extras.BuildBanner(); K.tick()
+  b = rawget(G, "DeathNoteBanner")
+  check("after the answer: the waiting award notice", b and b:IsShown() and b.name._text == ns.Humor.Award("first_entry"), b and b.name._text)
+  K.settle()
+  ns.Start = nil
+  check("no errors (first start)", #AM.errors == 0 and #BM.violations == 0, AM.errors[1] or BM.violations[1])
+end
+
+------------------------------------------------------------------------
 -- House Rules, sheet Rap Sheet: the switches write their settings
 ------------------------------------------------------------------------
 do
