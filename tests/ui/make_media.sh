@@ -218,23 +218,25 @@ frame() {
   local x0=46 y0=44 x1=465 y1=211 c=24 i=15
   if [ "$shape" = box ]; then
     # box stamp: one heavy square frame, one thin inner line
-    magick -size 512x256 xc:none -fill none -stroke white -strokewidth 13 \
-      -draw "rectangle $x0,$y0 $x1,$y1" -strokewidth 3 \
+    magick -size 512x256 xc:none -fill none -stroke white -strokewidth 16 \
+      -draw "rectangle $x0,$y0 $x1,$y1" -strokewidth 5 \
       -draw "rectangle $((x0+i)),$((y0+i)) $((x1-i)),$((y1-i))" "$TMP/fr_mask.png"
   else
     # cut corners: an octagon (ship's plate), double line
-    magick -size 512x256 xc:none -fill none -stroke white -strokewidth 9 \
+    magick -size 512x256 xc:none -fill none -stroke white -strokewidth 13 \
       -draw "polygon $((x0+c)),$y0 $((x1-c)),$y0 $x1,$((y0+c)) $x1,$((y1-c)) $((x1-c)),$y1 $((x0+c)),$y1 $x0,$((y1-c)) $x0,$((y0+c))" \
-      -strokewidth 3 \
+      -strokewidth 5 \
       -draw "polygon $((x0+c+6)),$((y0+i)) $((x1-c-6)),$((y0+i)) $((x1-i)),$((y0+c+6)) $((x1-i)),$((y1-c-6)) $((x1-c-6)),$((y1-i)) $((x0+c+6)),$((y1-i)) $((x0+i)),$((y1-c-6)) $((x0+i)),$((y0+c+6))" \
       "$TMP/fr_mask.png"
   fi
   magick -seed "$seed" -size 512x256 xc:gray50 +noise Random -colorspace gray -blur 0x0.7 -auto-level \
       -threshold 82% -alpha copy "$TMP/fr_holes.png"
   magick "$TMP/fr_mask.png" "$TMP/fr_holes.png" -compose DstOut -composite -blur 0x0.4 "$TMP/fr_worn.png"
-  magick -size 512x256 xc:"gray($grey%)" \( "$TMP/fr_worn.png" -alpha extract \) -alpha off -compose copy_opacity -composite \
-      -channel A -evaluate multiply 0.94 +channel -compose over -background none \
-      -virtual-pixel transparent -distort SRT "$ang" -resize 256x128 -channel A -posterize 16 +channel "$TMP/fr_out.png"
+  # turn and shrink the coverage only, then cut the faint fringe and keep 16 steps; the colour is one flat grey
+  magick "$TMP/fr_worn.png" -alpha extract -background black -virtual-pixel black \
+      -distort SRT "$ang" -resize 256x128 -level 6%,100% -posterize 16 -evaluate multiply 0.94 "$TMP/fr_alpha.png"
+  magick -size 256x128 xc:"gray($grey%)" "$TMP/fr_alpha.png" -alpha off -compose copy_opacity -composite \
+      -compose over "$TMP/fr_out.png"
   tga "$TMP/fr_out.png" "$out"
 }
 
