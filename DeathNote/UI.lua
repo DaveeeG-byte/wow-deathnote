@@ -1748,14 +1748,20 @@ function UX.BuildPoster()
   D.when:SetPoint("TOPRIGHT", -24, -28)
   D.when:SetJustifyH("RIGHT")
   Rule(D, -52, 24, 24, 0.7)
-  D.info = Look.Text(D, "type", 11, Look.INK)
+  -- 1.2.2: unter dem Kopf rollt die Akte (gleiche Koordinaten wie vorher), die Quellenzeile steht im Fuss
+  D.page = Look.Page(D, { top = 54, foot = 46, w = 352, h = 452 })
+  local Ds = CreateFrame("Frame", nil, D.page.body)
+  Ds:SetPoint("TOPLEFT", D.page.body, "TOPLEFT", 0, 54)
+  Ds:SetSize(352, 452)
+  D.sheet = Ds
+  D.info = Look.Text(Ds, "type", 11, Look.INK)
   D.info:SetPoint("TOPLEFT", 24, -62)
   D.info:SetWidth(304)
   D.info:SetJustifyH("LEFT")
   D.info:SetSpacing(3)
-  D.killLabel = Look.Text(D, "body", 10, Look.RED_INK)
+  D.killLabel = Look.Text(Ds, "body", 10, Look.RED_INK)
   D.killLabel:SetPoint("TOPLEFT", D.info, "BOTTOMLEFT", 0, -16)
-  D.killer = CreateFrame("Button", nil, D)
+  D.killer = CreateFrame("Button", nil, Ds)
   D.killer:SetSize(304, 32)
   D.killer:SetPoint("TOPLEFT", D.killLabel, "BOTTOMLEFT", 0, -2)
   D.killer.text = Look.Text(D.killer, "hand", 26, Look.INK)
@@ -1767,35 +1773,35 @@ function UX.BuildPoster()
   D.killer:SetScript("OnClick", function(self)
     if self.key and Store().Get(self.key) then UI.ShowEnemy(self.key) end
   end)
-  D.note = Look.Text(D, "type", 11, Look.INK)
+  D.note = Look.Text(Ds, "type", 11, Look.INK)
   D.note:SetPoint("TOPLEFT", D.killer, "BOTTOMLEFT", 0, -2)
   D.note:SetWidth(304)
   D.note:SetJustifyH("LEFT")
   D.note:SetTextColor(C(Look.INK, TONE.sub))
   -- Mittaeter: anklickbare Namen in Handschrift
-  D.assistLabel = Label(D, L.CASE_ASSISTS)
+  D.assistLabel = Label(Ds, L.CASE_ASSISTS)
   D.assistLabel:SetPoint("TOPLEFT", D.note, "BOTTOMLEFT", 0, -14)
   D.assists = {}
   for i = 1, GF.ASSIST_MAX do
-    local b = WordButton(D, "", "hand", 16, TONE.ink)
+    local b = WordButton(Ds, "", "hand", 16, TONE.ink)
     b:SetSize(304, 20)
     if i == 1 then b:SetPoint("TOPLEFT", D.assistLabel, "BOTTOMLEFT", 0, -2)
     else b:SetPoint("TOPLEFT", D.assists[i - 1], "BOTTOMLEFT", 0, 0) end
     b:SetScript("OnClick", function(self) if self.key and Store().Get(self.key) then UI.ShowEnemy(self.key) end end)
     D.assists[i] = b
   end
-  D.candLabel = Label(D, L.CASE_PICK)
+  D.candLabel = Label(Ds, L.CASE_PICK)
   D.candLabel:SetPoint("TOPLEFT", D.note, "BOTTOMLEFT", 0, -14)
   D.cands = {}
   for i = 1, GF.CAND_MAX do
-    local b = InkButton(D, "", 148, 22)
+    local b = InkButton(Ds, "", 148, 22)
     local col, row = (i - 1) % 2, math.floor((i - 1) / 2)
     b:SetPoint("TOPLEFT", D.candLabel, "BOTTOMLEFT", col * 156, -6 - row * 28)
     b:HookScript("OnEnter", CandEnter)
     b:HookScript("OnLeave", CandLeave)
     D.cands[i] = b
   end
-  D.source = Look.Text(D, "type", 11, Look.INK)
+  D.source = Look.Text(D.page.foot, "type", 11, Look.INK)
   D.source:SetPoint("BOTTOMLEFT", 24, 18)
   D.source:SetWidth(304)
   D.source:SetJustifyH("LEFT")
@@ -2492,6 +2498,12 @@ local function FillDeath(d, index)
   end
   -- nur bei Verdacht steht dabei, worauf er beruht
   D.source:SetText(d.source == "suspect" and L.CASE_SOURCE_SUSPECT or "")
+  -- Hoehe der Akte aus dem Stapel: Ort, Taeter, Notiz, dann Kandidaten oder Mittaeter
+  local y = 62 + Look.TextH(D.info, #info) + 16 + 12 + 2 + 32 + 2 + Look.TextH(D.note, 2)
+  if nc > 0 then y = y + 14 + 12 + 6 + math.ceil(math.min(nc, GF.CAND_MAX) / 2) * 28
+  elseif na > 0 then y = y + 14 + 12 + 2 + math.min(na, GF.ASSIST_MAX) * 20 end
+  D.page:Layout(math.ceil(y + 6 - 54))
+  if D.ref ~= d then D.ref = d; D.page:Top() end
 end
 
 -- Journal, Zu klaeren und Gilde: Enter sucht nur, traegt nie ein
