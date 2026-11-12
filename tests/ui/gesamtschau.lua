@@ -252,7 +252,9 @@ check("j wieder an", ns.db.settings.alert.enabled == true and mm.icon._alpha == 
 W.step("d Taeter taucht auf", function() ns:Fire("ENEMY_SPOTTED", yac.key, nil, "nameplate") end)
 local pop = G.DeathNoteAlert
 check("d Popup mit Zahl und Beteiligung", pop:IsShown() and pop.line._text:find("^hat dich 2× getötet, war 1× beteiligt") ~= nil, pop.line._text)
-check("G20 Kopf in hellem Rot auf Schwarz", pop.title._tc[1] == ns.Look.RED_ON_BLACK[1] and G.DeathNoteBanner.kicker._tc[1] == ns.Look.RED_ON_BLACK[1])
+-- 1.3.0: the notice is a slip of paper (style "slip"): its kicker is small red ink on paper; light red only without a surface
+local kickerRed = ns.Extras.BANNER_STYLE == "bare" and ns.Look.RED_ON_BLACK or ns.Look.RED_INK
+check("G20 Kopf in hellem Rot auf Schwarz", pop.title._tc[1] == ns.Look.RED_ON_BLACK[1] and G.DeathNoteBanner.kicker._tc[1] == kickerRed[1])
 ns.Alert.Dismiss(); M.FinishAnims(); M.Advance(1)
 -- G5: alarm threshold counts assists
 ns.Store.Setting("alert.minKills", 3); M.Advance(300)
@@ -476,6 +478,13 @@ for _, id in ipairs(themes) do
     return { c[1] * t[1], c[2] * t[2], c[3] * t[3] }
   end
   local page, paper, cover = surface("page"), surface("paper"), surface("cover")
+  local slip
+  do
+    local c = tga(Th.Pick(id, "tex", "slip"))
+    local t = Th.ParseColor(Th.Pick(id, "tint", "slip")) or Th.ParseColor(Th.Pick(id, "tint", "paper")) or { 1, 1, 1 }
+    slip = { c[1] * t[1], c[2] * t[2], c[3] * t[3] }
+  end
+  local share = ns.Extras.SLIP_CLASS_SHARE
   local tf = col("tabFill")
   local tabbg = mix(tf, cover, tf[4] or 1)
   local bf = col("btnFill")
@@ -496,6 +505,13 @@ for _, id in ipairs(themes) do
     -- 1.3.0 (themes concept, test idea 2): text on an ink button and full ink on the page
     { "Schrift auf Knopf", BONE, mix(bf, page, bf[4] or 1), 4.5 },
     { "Tinte auf Seite", INK, page, 4.5 },
+    -- 1.3.0: the on-screen notice as a slip of paper (texture "slip", tinted like the paper when it has no own tint):
+    -- line and name in ink, kicker in small red, the name in class ink (brightest class colours: white, yellow)
+    { "notice slip: ink", INK, slip, 4.5 },
+    { "notice slip: small red kicker", RED_INK, slip, 4.5 },
+    { "notice slip: name in class ink (white)", mix({ 1, 1, 1 }, INK, share), slip, 4.5 },
+    { "notice slip: name in class ink (yellow)", mix({ 1, 0.96, 0.41 }, INK, share), slip, 4.5 },
+    { "notice slip: remark in ink", INK, slip, 4.5 },
   }
   for _, p in ipairs(PAIRS) do
     local r = ratio(p[2], p[3])
