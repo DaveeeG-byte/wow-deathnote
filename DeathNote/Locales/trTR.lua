@@ -142,6 +142,7 @@ L.HELP_SYNC = "/dn sync  lonca defterini ve arkadaş defterini şimdi eşitle"
 L.HELP_HUNT = "/dn hunt <İsim [Soyad]>  av listesine koy (isimsiz: av listesini göster)"
 L.HELP_CALLOFF = "/dn calloff <İsim [Soyad]>  kendi av çağrını iptal et"
 L.HELP_LANG = "/dn lang <kod>  defterin dili (enUS, deDE, frFR ...), /reload sonrası"
+L.HELP_THEME = "/dn theme <ad>  defterin kapağı, /reload sonrası"
 L.HELP_PROBE = "/dn probe  sorun giderme: oyun deftere ne söylüyor"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  sorun giderme, savaş kaydını da test et"
 L.HELP_DEBUG = "/dn debug  sorun giderme: her ölümü ayrıntılı kaydet (aç/kapat)"
@@ -191,6 +192,12 @@ L.CHAT_LANG_LIST = "Kodlar: {codes}"
 L.CHAT_LANG_BAD = "Bilinmeyen dil: {code}"
 L.CHAT_LANG_SET = "Dil: {lang}."
 L.CHAT_LANG_RELOAD = "Dil: {lang}. /reload sonrası geçerli."
+L.CHAT_THEME_CURRENT = "Kapak şimdi: {theme}. Değiştir: /dn theme <ad>"
+L.CHAT_THEME_LIST = "Kapaklar: {themes}"
+L.CHAT_THEME_BAD = "Bilinmeyen kapak: {name}"
+L.CHAT_THEME_SET = "Kapak: {theme}."
+L.CHAT_THEME_RELOAD = "Kapak: {theme}. /reload sonrası geçerli."
+L.THEME_NOTEBOOK = "Kara Defter"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Defter hazır. Açık dünyada seni öldüren herkes sonra burada yazılı olur. /dn ya da mini harita düğmesiyle aç."
@@ -407,6 +414,8 @@ L.MARK_BOTH = "LONCA ÜYESİ, ARKADAŞ"  -- [max 20]
 L.MARK_TAKEN_DOWN = "AVLANDI {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ÖLÜ YA DA DİRİ"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "SUÇLAR"  -- [max 14]
 L.POSTER_NOTE = "NOT"  -- [max 8]
 L.POSTER_BOUNTY = "KELLE PARASI"  -- [max 12]

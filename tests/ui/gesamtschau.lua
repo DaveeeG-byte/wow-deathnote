@@ -441,9 +441,12 @@ for body in code["UI.lua"]:gmatch("\n[%w ]-function [%w%.]-Bind%w+%(.-\nend") do
 end
 check("Waechter G33: Bind-Funktionen gefunden", binds >= 6, binds)
 check("Waechter G33: Unterzeilen mit Look.Join, kein doppelter Trenner", not code["UI.lua"]:find('"  ·  "', 1, true) and not code["Extras.lua"]:find('"  ·  "', 1, true))
--- Contrast: defined colour pairs against the averaged textures (centre of the writing area)
-local function tga(name)
-  local s = readAll(MEDIA .. "/" .. name .. ".tga")
+-- Contrast: defined colour pairs against the averaged textures (centre of the writing area).
+-- 1.3.0: for every registered theme (Theme.List): texture of the theme times its tint, colours of the theme.
+local cache = {}
+local function tga(file)
+  if cache[file] then return cache[file] end
+  local s = readAll(MEDIA .. "/" .. file)
   local w = s:byte(13) + s:byte(14) * 256
   local h = s:byte(15) + s:byte(16) * 256
   local off = 18 + s:byte(1)
@@ -454,32 +457,50 @@ local function tga(name)
       b, g, r, n = b + s:byte(i + 1), g + s:byte(i + 2), r + s:byte(i + 3), n + 1
     end
   end
-  return { r / n / 255, g / n / 255, b / n / 255 }
+  cache[file] = { r / n / 255, g / n / 255, b / n / 255 }
+  return cache[file]
 end
 local function lin(c) return c <= 0.04045 and c / 12.92 or ((c + 0.055) / 1.055) ^ 2.4 end
 local function L(c) return 0.2126 * lin(c[1]) + 0.7152 * lin(c[2]) + 0.0722 * lin(c[3]) end
 local function mix(fg, bg, a) return { fg[1] * a + bg[1] * (1 - a), fg[2] * a + bg[2] * (1 - a), fg[3] * a + bg[3] * (1 - a) } end
 local function ratio(a, b) local x, y = L(a), L(b); return (math.max(x, y) + 0.05) / (math.min(x, y) + 0.05) end
-local Lk = ns.Look
-local page, paper, cover = tga("page"), tga("paper"), tga("cover")
-local tabbg = mix({ 1, 1, 1 }, cover, 0.05)
-local PAIRS = {
-  { "Tinte Untertext auf Seite", mix(Lk.INK, page, Lk.TONE.sub), page, 4.5 },
-  { "Tinte Untertext auf Plakat", mix(Lk.INK, paper, Lk.TONE.sub), paper, 4.5 },
-  { "Etikett auf Plakat", mix(Lk.INK, paper, Lk.TONE.label), paper, 4.5 },
-  { "Hinweis auf Seite", mix(Lk.INK, page, Lk.TONE.hint), page, 4.5 },
-  { "Rot klein auf Plakat", Lk.RED_INK, paper, 4.5 },
-  { "Rot klein auf Seite", Lk.RED_INK, page, 4.5 },
-  { "Rot gross auf Seite", Lk.RED, page, 3 },
-  { "blasser Name (19 pt) auf Seite", mix(Lk.INK, page, Lk.TONE.hand), page, 3 },
-  { "Rot auf Schwarz", Lk.RED_ON_BLACK, cover, 4.5 },
-  { "Rot auf Reiter", Lk.RED_ON_BLACK, tabbg, 4.5 },
-  { "Reiter inaktiv", Lk.TAB_OFF, tabbg, 4.5 },
-  { "Knochenweiss auf Schwarz", Lk.BONE, cover, 4.5 },
-}
-for _, p in ipairs(PAIRS) do
-  local r = ratio(p[2], p[3])
-  check(("Waechter Kontrast %s >= %.1f"):format(p[1], p[4]), r >= p[4], ("%.2f:1"):format(r))
+local Th = ns.Theme
+local themes = Th.List()
+check("Waechter Kontrast: Themes registriert", #themes >= 1 and Th.Known("notebook"), table.concat(themes, ","))
+for _, id in ipairs(themes) do
+  local function col(role) return Th.Color(role, id) end
+  local function tone(role) return Th.Pick(id, "tone", role) end
+  -- texture of the theme times its tint (white = none)
+  local function surface(key)
+    local c, t = tga(Th.Pick(id, "tex", key)), Th.ParseColor(Th.Pick(id, "tint", key)) or { 1, 1, 1 }
+    return { c[1] * t[1], c[2] * t[2], c[3] * t[3] }
+  end
+  local page, paper, cover = surface("page"), surface("paper"), surface("cover")
+  local tf = col("tabFill")
+  local tabbg = mix(tf, cover, tf[4] or 1)
+  local bf = col("btnFill")
+  local INK, RED, RED_INK, RED_ON_BLACK, BONE, TAB_OFF = col("ink"), col("accent"), col("accentSmall"), col("accentOnCover"), col("onCover"), col("tabOff")
+  local PAIRS = {
+    { "Tinte Untertext auf Seite", mix(INK, page, tone("sub")), page, 4.5 },
+    { "Tinte Untertext auf Plakat", mix(INK, paper, tone("sub")), paper, 4.5 },
+    { "Etikett auf Plakat", mix(INK, paper, tone("label")), paper, 4.5 },
+    { "Hinweis auf Seite", mix(INK, page, tone("hint")), page, 4.5 },
+    { "Rot klein auf Plakat", RED_INK, paper, 4.5 },
+    { "Rot klein auf Seite", RED_INK, page, 4.5 },
+    { "Rot gross auf Seite", RED, page, 3 },
+    { "blasser Name (19 pt) auf Seite", mix(INK, page, tone("hand")), page, 3 },
+    { "Rot auf Schwarz", RED_ON_BLACK, cover, 4.5 },
+    { "Rot auf Reiter", RED_ON_BLACK, tabbg, 4.5 },
+    { "Reiter inaktiv", TAB_OFF, tabbg, 4.5 },
+    { "Knochenweiss auf Schwarz", BONE, cover, 4.5 },
+    -- 1.3.0 (themes concept, test idea 2): text on an ink button and full ink on the page
+    { "Schrift auf Knopf", BONE, mix(bf, page, bf[4] or 1), 4.5 },
+    { "Tinte auf Seite", INK, page, 4.5 },
+  }
+  for _, p in ipairs(PAIRS) do
+    local r = ratio(p[2], p[3])
+    check(("Waechter Kontrast [%s] %s >= %.1f"):format(id, p[1], p[4]), r >= p[4], ("%.2f:1"):format(r))
+  end
 end
 
 -- Final hunt 1.1.0: stamps sit on a layer ABOVE the wanted photo (child frames cover every region of

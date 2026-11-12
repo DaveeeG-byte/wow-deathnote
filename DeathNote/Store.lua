@@ -29,8 +29,9 @@ local DEFAULT_SETTINGS = {
   -- guildMore (1.2.0): true = House Rules, sheet Guild shows its second page "More"; absent = closed
   -- minimap: hide and angle (own button, read by 1.2.1 too); minimapPos (1.2.2, LibDBIcon) has no default here,
   -- repairSettings derives it from angle
+  -- theme (1.3.0): id of the cover (Theme.lua), read at ADDON_LOADED; an unknown id falls back to "notebook" there
   ui = { scale = 1, sort = "rank", minimap = { hide = false, angle = 215 }, guildView = "enemy", guildCollapsed = {},
-    guildSource = "all" },
+    guildSource = "all", theme = "notebook" },
   -- 1.3.0 (Ledger.lua): enabled = keep the rap sheet (off: nothing is booked, the data stays); chat = a chat line
   -- after an own kill (written by the book)
   ledger = { enabled = true, chat = true },

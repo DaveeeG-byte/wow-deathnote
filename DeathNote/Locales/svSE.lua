@@ -137,6 +137,7 @@ L.HELP_SYNC     = "/dn sync  synka guildboken och vänboken nu"
 L.HELP_HUNT     = "/dn hunt <Namn [Efternamn]>  utlys jakt (utan namn: visa jaktlistan)"
 L.HELP_CALLOFF  = "/dn calloff <Namn [Efternamn]>  blås av din egen jakt"
 L.HELP_LANG     = "/dn lang <kod>  bokens språk (enUS, deDE, svSE ...), efter /reload"
+L.HELP_THEME = "/dn theme <namn>  bokens pärm, efter /reload"
 L.HELP_PROBE    = "/dn probe  felsökning: vad spelet berättar för boken"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  felsökning, testa även stridsloggen"
 L.HELP_DEBUG    = "/dn debug  felsökning: logga varje död i detalj (på/av)"
@@ -186,6 +187,12 @@ L.CHAT_LANG_LIST    = "Koder: {codes}"
 L.CHAT_LANG_BAD     = "Okänt språk: {code}"
 L.CHAT_LANG_SET     = "Språk: {lang}."
 L.CHAT_LANG_RELOAD  = "Språk: {lang}. Gäller efter /reload."
+L.CHAT_THEME_CURRENT = "Pärm nu: {theme}. Ändra: /dn theme <namn>"
+L.CHAT_THEME_LIST = "Pärmar: {themes}"
+L.CHAT_THEME_BAD = "Okänd pärm: {name}"
+L.CHAT_THEME_SET = "Pärm: {theme}."
+L.CHAT_THEME_RELOAD = "Pärm: {theme}. Gäller efter /reload."
+L.THEME_NOTEBOOK = "Den svarta boken"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Boken är redo. Den som dödar dig i öppna världen hamnar i den. Öppna den med /dn eller minimap-knappen."
@@ -397,6 +404,8 @@ L.MARK_BOTH = "GUILDKOMPIS, VÄN"  -- [max 20]
 L.MARK_TAKEN_DOWN = "FÄLLD {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "DÖD ELLER LEVANDE"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "DÅD"  -- [max 14]
 L.POSTER_NOTE = "NOTERING"  -- [max 8]
 L.POSTER_BOUNTY = "BELÖNING"  -- [max 12]

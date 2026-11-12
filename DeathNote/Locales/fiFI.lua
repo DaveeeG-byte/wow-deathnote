@@ -138,6 +138,7 @@ L.HELP_SYNC     = "/dn sync  synkronoi kiltakirja ja kaverikirja nyt"
 L.HELP_HUNT     = "/dn hunt <Nimi [Sukunimi]>  julista jahti (ilman nimeä: näytä tappolista)"
 L.HELP_CALLOFF  = "/dn calloff <Nimi [Sukunimi]>  peru oma jahtisi"
 L.HELP_LANG     = "/dn lang <koodi>  kirjan kieli (enUS, deDE, fiFI ...), voimaan /reload-komennon jälkeen"
+L.HELP_THEME = "/dn theme <nimi>  kirjan kansi, voimaan /reload-komennon jälkeen"
 L.HELP_PROBE    = "/dn probe  vianetsintä: mitä peli kertoo kirjalle"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  vianetsintä, testaa myös taisteluloki"
 L.HELP_DEBUG    = "/dn debug  vianetsintä: kirjaa jokainen kuolema tarkasti (päälle/pois)"
@@ -187,6 +188,12 @@ L.CHAT_LANG_LIST    = "Koodit: {codes}"
 L.CHAT_LANG_BAD     = "Tuntematon kieli: {code}"
 L.CHAT_LANG_SET     = "Kieli: {lang}."
 L.CHAT_LANG_RELOAD  = "Kieli: {lang}. Voimaan /reload-komennon jälkeen."
+L.CHAT_THEME_CURRENT = "Kansi nyt: {theme}. Vaihda: /dn theme <nimi>"
+L.CHAT_THEME_LIST = "Kannet: {themes}"
+L.CHAT_THEME_BAD = "Tuntematon kansi: {name}"
+L.CHAT_THEME_SET = "Kansi: {theme}."
+L.CHAT_THEME_RELOAD = "Kansi: {theme}. Voimaan /reload-komennon jälkeen."
+L.THEME_NOTEBOOK = "Musta kirja"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Kirja on valmiina. Jokainen, joka tappaa sinut avoimessa maailmassa, päätyy siihen. Avaa se komennolla /dn tai minikartan napista."
@@ -398,6 +405,8 @@ L.MARK_BOTH = "KILTALAINEN, KAVERI"  -- [max 20]
 L.MARK_TAKEN_DOWN = "KAADETTU {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "KUOLLEENA TAI ELÄVÄNÄ"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "TEOT"  -- [max 14]
 L.POSTER_NOTE = "MUISTIO"  -- [max 8]
 L.POSTER_BOUNTY = "PALKKIO"  -- [max 12]

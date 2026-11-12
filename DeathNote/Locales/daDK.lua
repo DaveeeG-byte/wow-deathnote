@@ -137,6 +137,7 @@ L.HELP_SYNC     = "/dn sync  synkroniser guildbogen og vennebogen nu"
 L.HELP_HUNT     = "/dn hunt <Navn [Efternavn]>  udlys jagt (uden navn: vis jagtlisten)"
 L.HELP_CALLOFF  = "/dn calloff <Navn [Efternavn]>  afblæs din egen jagt"
 L.HELP_LANG     = "/dn lang <kode>  bogens sprog (enUS, deDE, daDK ...), efter /reload"
+L.HELP_THEME = "/dn theme <navn>  bogens bind, efter /reload"
 L.HELP_PROBE    = "/dn probe  fejlsøgning: hvad spillet fortæller bogen"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  fejlsøgning, test også kamploggen"
 L.HELP_DEBUG    = "/dn debug  fejlsøgning: log hver død i detaljer (til/fra)"
@@ -186,6 +187,12 @@ L.CHAT_LANG_LIST    = "Koder: {codes}"
 L.CHAT_LANG_BAD     = "Ukendt sprog: {code}"
 L.CHAT_LANG_SET     = "Sprog: {lang}."
 L.CHAT_LANG_RELOAD  = "Sprog: {lang}. Gælder efter /reload."
+L.CHAT_THEME_CURRENT = "Bind nu: {theme}. Skift: /dn theme <navn>"
+L.CHAT_THEME_LIST = "Bind: {themes}"
+L.CHAT_THEME_BAD = "Ukendt bind: {name}"
+L.CHAT_THEME_SET = "Bind: {theme}."
+L.CHAT_THEME_RELOAD = "Bind: {theme}. Gælder efter /reload."
+L.THEME_NOTEBOOK = "Den sorte bog"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Bogen ligger klar. Den, der dræber dig i den åbne verden, ender i den. Åbn den med /dn eller minimap-knappen."
@@ -397,6 +404,8 @@ L.MARK_BOTH = "GUILDKAMMERAT, VEN"  -- [max 20]
 L.MARK_TAKEN_DOWN = "NEDLAGT {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "DØD ELLER LEVENDE"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "UGERNINGER"  -- [max 14]
 L.POSTER_NOTE = "NOTE"  -- [max 8]
 L.POSTER_BOUNTY = "DUSØR"  -- [max 12]

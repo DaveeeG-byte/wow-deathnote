@@ -134,6 +134,7 @@ L.HELP_SYNC     = "/dn sync  Gildenbuch und Freundesbuch jetzt abgleichen"
 L.HELP_HUNT     = "/dn jagd <Name [Nachname]>  zur Jagd freigeben (ohne Name: die Abschussliste)"
 L.HELP_CALLOFF  = "/dn abblasen <Name [Nachname]>  eigene Freigabe zurücknehmen"
 L.HELP_LANG     = "/dn sprache <Kennung>  Sprache des Buchs (deDE, enUS, frFR ...), nach /reload"
+L.HELP_THEME = "/dn einband <Name>  Einband des Buchs, nach /reload"
 L.HELP_PROBE    = "/dn probe  Fehlersuche: was das Spiel dem Buch verrät"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  Fehlersuche, dazu das Kampflog prüfen"
 L.HELP_DEBUG    = "/dn debug  Fehlersuche: jeden Tod genau mitschreiben (an/aus)"
@@ -182,6 +183,12 @@ L.CHAT_LANG_LIST    = "Kennungen: {codes}"
 L.CHAT_LANG_BAD     = "Unbekannte Sprache: {code}"
 L.CHAT_LANG_SET     = "Sprache: {lang}."
 L.CHAT_LANG_RELOAD  = "Sprache: {lang}. Gilt nach /reload."
+L.CHAT_THEME_CURRENT = "Einband jetzt: {theme}. Ändern: /dn einband <Name>"
+L.CHAT_THEME_LIST = "Einbände: {themes}"
+L.CHAT_THEME_BAD = "Unbekannter Einband: {name}"
+L.CHAT_THEME_SET = "Einband: {theme}."
+L.CHAT_THEME_RELOAD = "Einband: {theme}. Gilt nach /reload."
+L.THEME_NOTEBOOK = "Das schwarze Buch"
 
 -- First contact -----------------------------------------------------------------------------------
 L.WELCOME = "Das Buch liegt bereit. Wer dich in der offenen Welt tötet, steht danach drin. Aufschlagen mit /dn oder am Minimap-Knopf."
@@ -392,6 +399,8 @@ L.MARK_BOTH = "KOLLEGE, FREUND"  -- [max 20]
 L.MARK_TAKEN_DOWN = "ERLEGT {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "DEAD OR ALIVE"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "TATEN"  -- [max 14]
 L.POSTER_NOTE = "NOTIZ"  -- [max 8]
 L.POSTER_BOUNTY = "KOPFGELD"  -- [max 12]

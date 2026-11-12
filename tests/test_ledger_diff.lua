@@ -23,7 +23,11 @@ assert(os.execute('mkdir -p "' .. OLD .. '" && git -C "' .. ROOT .. '" archive '
 OLD = OLD .. "/DeathNote/"
 assert(io.open(OLD .. "Store.lua"), "git archive " .. BASE .. " (needs the repository)")
 local OLDFILES = {}
-for _, f in ipairs(M.FILES) do if f ~= "Ranks.lua" and f ~= "Ledger.lua" then OLDFILES[#OLDFILES + 1] = f end end
+-- only the files 1.2.2 has (it knows neither the rap sheet nor the theme core)
+for _, f in ipairs(M.FILES) do
+  local h = io.open(OLD .. f)
+  if h then h:close(); OLDFILES[#OLDFILES + 1] = f end
+end
 
 local ME = "Player-93-0000AAAA"
 local NAMES = { "Grimm", "Anna", "Bernd", "Carla", "Dora", "Edda", "Fritz", "Gerd" }

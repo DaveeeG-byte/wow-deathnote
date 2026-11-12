@@ -138,6 +138,7 @@ L.HELP_SYNC = "/dn sync  синхронизировать книгу гильд�
 L.HELP_HUNT = "/dn hunt <Имя [Фамилия]>  объявить охоту (без имени: показать список на отстрел)"
 L.HELP_CALLOFF = "/dn calloff <Имя [Фамилия]>  отменить свою заявку на охоту"
 L.HELP_LANG = "/dn lang <код>  язык книги (enUS, deDE, ruRU ...), после /reload"
+L.HELP_THEME = "/dn theme <имя>  обложка книги, после /reload"
 L.HELP_PROBE = "/dn probe  диагностика: что игра сообщает книге"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  диагностика, заодно проверить журнал боя"
 L.HELP_DEBUG = "/dn debug  диагностика: подробно записывать каждую смерть (вкл./выкл.)"
@@ -187,6 +188,12 @@ L.CHAT_LANG_LIST = "Коды: {codes}"
 L.CHAT_LANG_BAD = "Неизвестный язык: {code}"
 L.CHAT_LANG_SET = "Язык: {lang}."
 L.CHAT_LANG_RELOAD = "Язык: {lang}. Вступит в силу после /reload."
+L.CHAT_THEME_CURRENT = "Обложка сейчас: {theme}. Сменить: /dn theme <имя>"
+L.CHAT_THEME_LIST = "Обложки: {themes}"
+L.CHAT_THEME_BAD = "Неизвестная обложка: {name}"
+L.CHAT_THEME_SET = "Обложка: {theme}."
+L.CHAT_THEME_RELOAD = "Обложка: {theme}. Вступит в силу после /reload."
+L.THEME_NOTEBOOK = "Чёрная книга"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Книга готова. Кто убьёт тебя в открытом мире, окажется в ней. Открыть: /dn или кнопка у миникарты."
@@ -403,6 +410,8 @@ L.MARK_BOTH = "СОГИЛЬДИЕЦ, ДРУГ"  -- [max 20]
 L.MARK_TAKEN_DOWN = "ЦЕЛЬ УБИТА {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ЖИВЫМ ИЛИ МЁРТВЫМ"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "ЗЛОДЕЯНИЯ"  -- [max 14]
 L.POSTER_NOTE = "ЗАМЕТКА"  -- [max 8]
 L.POSTER_BOUNTY = "НАГРАДА"  -- [max 12]

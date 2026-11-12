@@ -205,12 +205,13 @@ local LOWBIE_GAP = 10              -- killer at least this many levels below you
 local CLEAN_DAYS = 30
 local EMPTY_HOLD = 30              -- seconds: the remark of the empty book stays while you look at it
 local PENDING_MAX_AGE = 120        -- seconds: waiting notice (taken down, in the queue)
--- Stamp: empty frame (Media/stamp_<frame>_blank.tga), angle as in the image, ink
+-- Stamp: empty frame of the theme (Look.StampTex(<frame>, true)), angle as in the image; the ink is the theme's
+-- stamp ink (Look.STAMP_INK[1]; 1.2.0: red like the others, dark was invisible on black)
 local STAMP_FRAME = {
-  regular  = { "rache",   7,   { 0.69, 0.04, 0.04 } },   -- 1.2.0: red like the others (dark was invisible on black)
-  revenge1 = { "rache",   9,   { 0.69, 0.04, 0.04 } },
-  nr1      = { "nr1",     -11, { 0.69, 0.04, 0.04 } },
-  pro      = { "hunt",    8,   { 0.69, 0.04, 0.04 } },
+  regular  = { "rache",   7 },
+  revenge1 = { "rache",   9 },
+  nr1      = { "nr1",     -11 },
+  pro      = { "hunt",    8 },
 }
 Humor.STAMP_FRAME = STAMP_FRAME
 
@@ -317,7 +318,9 @@ Humor.Pick = Pick
 
 local function Say(text)
   if type(text) ~= "string" or text == "" then return end
-  if Util and Util.Print then Util.Print("|cffa89878" .. text .. "|r") end
+  -- the quiet note colour of the theme (Look.HEX; without the look files straight from the theme)
+  local hex = ns.Look and ns.Look.HEX and ns.Look.HEX.tipNote or (ns.Theme and ns.Theme.HexOf("tipNote")) or ""
+  if Util and Util.Print then Util.Print(hex .. text .. "|r") end
   Humor.said = text      -- for tests: the last line
 end
 
@@ -367,7 +370,8 @@ local function QuipStrip(banner)
   q:SetPoint("TOP", banner, "BOTTOM", 0, -4)
   local bg = q:CreateTexture(nil, "BACKGROUND")
   bg:SetAllPoints()
-  bg:SetColorTexture(0.06, 0.05, 0.05, 0.85)
+  local c = Look.COLOR.quipFill
+  bg:SetColorTexture(c[1], c[2], c[3], c[4] or 1)
   q.text = Look.Text(q, "body", 11, Look.BONE)
   q.text:SetPoint("CENTER", 0, 0)
   q.text:SetWidth(430)
@@ -389,7 +393,7 @@ local function Apply(banner, d)
   local f = d.stamp and STAMP_FRAME[d.stamp]
   local t = T()
   if f and t and banner.stamp then
-    Look.Tex(banner.stamp, Look.MEDIA .. "stamp_" .. f[1] .. "_blank.tga", 0.6, 0.1, 0.1, 0.5)
+    Look.StampSkin(banner.stamp, Look.StampTex(f[1], true), "stampNotice")
     banner.stamp:Show()
     if banner.stampAnim then banner.stampAnim:Stop(); banner.stampAnim:Play() end
     local fs = banner.stampText
@@ -398,7 +402,8 @@ local function Apply(banner, d)
       -- lines, then three at 9 pt), through Look.FitText: the field was fitted for the regular stamp word just
       -- before, plain SetText kept that state
       if ns.Extras and ns.Extras.FitStamp then ns.Extras.FitStamp(fs, t.STAMP[d.stamp]) else Look.FitText(fs, t.STAMP[d.stamp], FIT_STAMP) end
-      fs:SetTextColor(f[3][1], f[3][2], f[3][3], 0.95)
+      local ink = Look.STAMP_INK[1]
+      fs:SetTextColor(ink[1], ink[2], ink[3], 0.95)
       if fs.SetRotation then pcall(fs.SetRotation, fs, math.rad(-f[2])) end
       fs:Show()
       if banner.stampTextAnim then banner.stampTextAnim:Stop(); banner.stampTextAnim:Play() end

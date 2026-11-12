@@ -139,6 +139,7 @@ L.HELP_SYNC = "/dn sync  zsynchronizuj teraz księgę gildii i księgę znajomyc
 L.HELP_HUNT = "/dn hunt <Imię [Nazwisko]>  ogłoś polowanie (bez imienia: pokaż listę do odstrzału)"
 L.HELP_CALLOFF = "/dn calloff <Imię [Nazwisko]>  odwołaj własne zgłoszenie"
 L.HELP_LANG = "/dn lang <kod>  język księgi (enUS, deDE, plPL ...), po /reload"
+L.HELP_THEME = "/dn theme <nazwa>  okładka księgi, po /reload"
 L.HELP_PROBE = "/dn probe  diagnostyka: co gra mówi księdze"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  diagnostyka, do tego test dziennika walki"
 L.HELP_DEBUG = "/dn debug  diagnostyka: zapisuj szczegółowo każdy zgon (wł./wył.)"
@@ -188,6 +189,12 @@ L.CHAT_LANG_LIST = "Kody: {codes}"
 L.CHAT_LANG_BAD = "Nieznany język: {code}"
 L.CHAT_LANG_SET = "Język: {lang}."
 L.CHAT_LANG_RELOAD = "Język: {lang}. Zadziała po /reload."
+L.CHAT_THEME_CURRENT = "Okładka teraz: {theme}. Zmiana: /dn theme <nazwa>"
+L.CHAT_THEME_LIST = "Okładki: {themes}"
+L.CHAT_THEME_BAD = "Nieznana okładka: {name}"
+L.CHAT_THEME_SET = "Okładka: {theme}."
+L.CHAT_THEME_RELOAD = "Okładka: {theme}. Zadziała po /reload."
+L.THEME_NOTEBOOK = "Czarna księga"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Księga gotowa. Kto zabije cię w otwartym świecie, trafi do niej. Otwórz ją przez /dn albo przycisk przy minimapie."
@@ -404,6 +411,8 @@ L.MARK_BOTH = "Z GILDII, ZNAJOMY"  -- [max 20]
 L.MARK_TAKEN_DOWN = "UPOLOWANO {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ŻYWY LUB MARTWY"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "CZYNY"  -- [max 14]
 L.POSTER_NOTE = "NOTATKA"  -- [max 8]
 L.POSTER_BOUNTY = "NAGRODA"  -- [max 12]

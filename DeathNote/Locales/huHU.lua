@@ -141,6 +141,7 @@ L.HELP_SYNC = "/dn sync  a céhkönyv és a baráti könyv egyeztetése most"
 L.HELP_HUNT = "/dn hunt <Név [Vezetéknév]>  vadászat kiírása (név nélkül: a halállista)"
 L.HELP_CALLOFF = "/dn calloff <Név [Vezetéknév]>  a saját vadászatod lefújása"
 L.HELP_LANG = "/dn lang <kód>  a könyv nyelve (enUS, deDE, frFR ...), /reload után"
+L.HELP_THEME = "/dn theme <név>  a könyv borítója, /reload után"
 L.HELP_PROBE = "/dn probe  hibakeresés: mit árul el a játék a könyvnek"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  hibakeresés, a harcnapló vizsgálatával"
 L.HELP_DEBUG = "/dn debug  hibakeresés: minden halál részletes naplózása (be/ki)"
@@ -190,6 +191,12 @@ L.CHAT_LANG_LIST = "Kódok: {codes}"
 L.CHAT_LANG_BAD = "Ismeretlen nyelv: {code}"
 L.CHAT_LANG_SET = "Nyelv: {lang}."
 L.CHAT_LANG_RELOAD = "Nyelv: {lang}. /reload után lép életbe."
+L.CHAT_THEME_CURRENT = "Borító most: {theme}. Módosítás: /dn theme <név>"
+L.CHAT_THEME_LIST = "Borítók: {themes}"
+L.CHAT_THEME_BAD = "Ismeretlen borító: {name}"
+L.CHAT_THEME_SET = "Borító: {theme}."
+L.CHAT_THEME_RELOAD = "Borító: {theme}. /reload után lép életbe."
+L.THEME_NOTEBOOK = "A fekete könyv"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "A könyv készen áll. Aki megöl a nyílt világban, utána benne lesz. Kinyitás: /dn vagy a minitérkép-gomb."
@@ -406,6 +413,8 @@ L.MARK_BOTH = "CÉHTÁRS, BARÁT"  -- [max 20]
 L.MARK_TAKEN_DOWN = "LETERÍTVE {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ÉLVE VAGY HALVA"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "TETTEK"  -- [max 14]
 L.POSTER_NOTE = "JEGYZET"  -- [max 8]
 L.POSTER_BOUNTY = "VÉRDÍJ"  -- [max 12]

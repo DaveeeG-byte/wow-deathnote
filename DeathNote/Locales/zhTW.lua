@@ -140,6 +140,7 @@ L.HELP_SYNC = "/dn sync  立即同步公會記仇本和好友記仇本"
 L.HELP_HUNT = "/dn hunt <名字 [姓氏]>  列入追殺名單（不帶名字：顯示追殺名單）"
 L.HELP_CALLOFF = "/dn calloff <名字 [姓氏]>  撤銷你自己的追殺令"
 L.HELP_LANG = "/dn lang <代碼>  記仇本的語言（enUS、deDE、frFR ...），/reload後生效"
+L.HELP_THEME = "/dn theme <名稱>  記仇本的封面，/reload後生效"
 L.HELP_PROBE = "/dn probe  排除問題：遊戲告訴了記仇本什麼"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  排除問題，同時檢查戰鬥紀錄"
 L.HELP_DEBUG = "/dn debug  排除問題：詳細記下每一次死亡（開/關）"
@@ -189,6 +190,12 @@ L.CHAT_LANG_LIST = "代碼：{codes}"
 L.CHAT_LANG_BAD = "未知語言：{code}"
 L.CHAT_LANG_SET = "語言：{lang}。"
 L.CHAT_LANG_RELOAD = "語言：{lang}。/reload後生效。"
+L.CHAT_THEME_CURRENT = "目前封面：{theme}。變更：/dn theme <名稱>"
+L.CHAT_THEME_LIST = "封面列表：{themes}"
+L.CHAT_THEME_BAD = "未知封面：{name}"
+L.CHAT_THEME_SET = "封面：{theme}。"
+L.CHAT_THEME_RELOAD = "封面：{theme}。/reload後生效。"
+L.THEME_NOTEBOOK = "黑色記仇本"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "記仇本已準備好。在野外殺死你的人，之後都會記在上面。用/dn或小地圖按鈕打開。"
@@ -405,6 +412,8 @@ L.MARK_BOTH = "公會成員、好友"  -- [max 20]
 L.MARK_TAKEN_DOWN = "已擊殺{times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "生死不論"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "罪行"  -- [max 14]
 L.POSTER_NOTE = "備註"  -- [max 8]
 L.POSTER_BOUNTY = "賞金"  -- [max 12]

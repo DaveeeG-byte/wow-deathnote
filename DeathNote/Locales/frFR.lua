@@ -133,6 +133,7 @@ L.HELP_SYNC     = "/dn sync  synchroniser maintenant le carnet de guilde et celu
 L.HELP_HUNT     = "/dn hunt <Prénom [Nom]>  ouvrir la chasse (sans nom : afficher la liste de chasse)"
 L.HELP_CALLOFF  = "/dn calloff <Prénom [Nom]>  arrêter ta propre chasse"
 L.HELP_LANG     = "/dn lang <code>  langue du carnet (enUS, deDE, frFR ...), après /reload"
+L.HELP_THEME = "/dn theme <nom>  couverture du carnet, après /reload"
 L.HELP_PROBE    = "/dn probe  dépannage : ce que le jeu révèle au carnet"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  dépannage, avec test du journal de combat"
 L.HELP_DEBUG    = "/dn debug  dépannage : noter chaque mort en détail (activé/désactivé)"
@@ -181,6 +182,12 @@ L.CHAT_LANG_LIST    = "Codes : {codes}"
 L.CHAT_LANG_BAD     = "Langue inconnue : {code}"
 L.CHAT_LANG_SET     = "Langue : {lang}."
 L.CHAT_LANG_RELOAD  = "Langue : {lang}. Effective après /reload."
+L.CHAT_THEME_CURRENT = "Couverture actuelle : {theme}. Changer : /dn theme <nom>"
+L.CHAT_THEME_LIST = "Couvertures : {themes}"
+L.CHAT_THEME_BAD = "Couverture inconnue : {name}"
+L.CHAT_THEME_SET = "Couverture : {theme}."
+L.CHAT_THEME_RELOAD = "Couverture : {theme}. Effective après /reload."
+L.THEME_NOTEBOOK = "Le Carnet noir"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Le carnet est prêt. Qui te tue en monde ouvert y figure ensuite. Ouvre-le avec /dn ou le bouton de la minicarte."
@@ -391,6 +398,8 @@ L.MARK_BOTH = "GUILDE, AMI"  -- [max 20]
 L.MARK_TAKEN_DOWN = "ABATTU {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "MORT OU VIF"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "MÉFAITS"  -- [max 14]
 L.POSTER_NOTE = "NOTE"  -- [max 8]
 L.POSTER_BOUNTY = "PRIME"  -- [max 12]

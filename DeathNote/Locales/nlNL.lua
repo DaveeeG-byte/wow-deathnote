@@ -137,6 +137,7 @@ L.HELP_SYNC     = "/dn sync  guildboek en vriendenboek nu synchroniseren"
 L.HELP_HUNT     = "/dn hunt <Naam [Achternaam]>  op de dodenlijst zetten (zonder naam: dodenlijst tonen)"
 L.HELP_CALLOFF  = "/dn calloff <Naam [Achternaam]>  je eigen jacht afblazen"
 L.HELP_LANG     = "/dn lang <code>  taal van het boek (enUS, deDE, nlNL ...), na /reload"
+L.HELP_THEME = "/dn theme <naam>  kaft van het boek, na /reload"
 L.HELP_PROBE    = "/dn probe  probleemoplossing: wat het spel het boek vertelt"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  probleemoplossing, ook de combatlog testen"
 L.HELP_DEBUG    = "/dn debug  probleemoplossing: elke dood uitgebreid loggen (aan/uit)"
@@ -186,6 +187,12 @@ L.CHAT_LANG_LIST    = "Codes: {codes}"
 L.CHAT_LANG_BAD     = "Onbekende taal: {code}"
 L.CHAT_LANG_SET     = "Taal: {lang}."
 L.CHAT_LANG_RELOAD  = "Taal: {lang}. Werkt na /reload."
+L.CHAT_THEME_CURRENT = "Kaft nu: {theme}. Wijzigen: /dn theme <naam>"
+L.CHAT_THEME_LIST = "Kaften: {themes}"
+L.CHAT_THEME_BAD = "Onbekende kaft: {name}"
+L.CHAT_THEME_SET = "Kaft: {theme}."
+L.CHAT_THEME_RELOAD = "Kaft: {theme}. Werkt na /reload."
+L.THEME_NOTEBOOK = "Het zwarte boek"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Het boek ligt klaar. Wie je in de open wereld doodt, staat er daarna in. Open het met /dn of de minimapknop."
@@ -397,6 +404,8 @@ L.MARK_BOTH = "GUILDGENOOT, VRIEND"  -- [max 20]
 L.MARK_TAKEN_DOWN = "GEVELD {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "DOOD OF LEVEND"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "DADEN"  -- [max 14]
 L.POSTER_NOTE = "NOTITIE"  -- [max 8]
 L.POSTER_BOUNTY = "PREMIE"  -- [max 12]

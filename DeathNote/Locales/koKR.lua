@@ -140,6 +140,7 @@ L.HELP_SYNC = "/dn sync  길드 수첩과 친구 수첩을 지금 동기화"
 L.HELP_HUNT = "/dn hunt <이름 [성]>  척살 명단에 올리기 (이름 없이: 척살 명단 보기)"
 L.HELP_CALLOFF = "/dn calloff <이름 [성]>  내 척살령 철회"
 L.HELP_LANG = "/dn lang <코드>  수첩 언어 (enUS, deDE, frFR ...), /reload 후 적용"
+L.HELP_THEME = "/dn theme <이름>  수첩 표지, /reload 후 적용"
 L.HELP_PROBE = "/dn probe  문제 해결: 게임이 수첩에 알려 주는 것"
 L.HELP_PROBE_COMBATLOG = "/dn probe combatlog  문제 해결, 전투 기록도 검사"
 L.HELP_DEBUG = "/dn debug  문제 해결: 모든 죽음을 자세히 기록 (켜기/끄기)"
@@ -189,6 +190,12 @@ L.CHAT_LANG_LIST = "코드: {codes}"
 L.CHAT_LANG_BAD = "알 수 없는 언어: {code}"
 L.CHAT_LANG_SET = "언어: {lang}."
 L.CHAT_LANG_RELOAD = "언어: {lang}. /reload 후 적용."
+L.CHAT_THEME_CURRENT = "현재 표지: {theme}. 변경: /dn theme <이름>"
+L.CHAT_THEME_LIST = "표지 목록: {themes}"
+L.CHAT_THEME_BAD = "알 수 없는 표지: {name}"
+L.CHAT_THEME_SET = "표지: {theme}."
+L.CHAT_THEME_RELOAD = "표지: {theme}. /reload 후 적용."
+L.THEME_NOTEBOOK = "검은 수첩"
 
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "수첩이 준비됐다. 필드에서 너를 죽인 자는 그 뒤로 여기에 적힌다. /dn이나 미니맵 버튼으로 연다."
@@ -405,6 +412,8 @@ L.MARK_BOTH = "길드원, 친구"  -- [max 20]
 L.MARK_TAKEN_DOWN = "처치 {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "생사 불문"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "범행"  -- [max 14]
 L.POSTER_NOTE = "메모"  -- [max 8]
 L.POSTER_BOUNTY = "현상금"  -- [max 12]
