@@ -371,4 +371,143 @@ test("Store: info of another GUID never lands on an entry with a GUID, unless bo
   eq(f.guid, "Player-93-NEU", "a full name with a new GUID is still taken (as in 1.2.x)")
 end)
 
+---------------------------------------------------------------------------
+-- Gaps of the mutation run (finding 6): REPUTE_RANK only on a tier change, the surname of another GUID, pre on a
+-- merge
+---------------------------------------------------------------------------
+test("A path change without a tier change fires REPUTE_PATH, never REPUTE_RANK", function()
+  fresh(20)
+  local same, pathOnly, tierBefore = 0, 0, nil
+  ns:On("REPUTE_RANK", function(tier, _, oldTier) if tier == oldTier then same = same + 1 end end)
+  ns:On("REPUTE_PATH", function(_, _, tier) if tier == tierBefore then pathOnly = pathOnly + 1 end end)
+  for i = 1, 3 do tierBefore = ns.Ledger.Repute().tier; kill(seen("Hoch" .. i, "Nach", 35)); M.Advance(20) end
+  M.units.player.level = 60
+  for i = 1, 12 do tierBefore = ns.Ledger.Repute().tier; kill(seen("Grau" .. i, "Nach", 20)); M.Advance(20) end
+  ok(pathOnly >= 1, "a path change without a tier change came (" .. pathOnly .. ")")
+  eq(same, 0, "REPUTE_RANK with tier == oldTier")
+end)
+
+test("A full name that belongs to another GUID's victim is no key for this GUID (seen with that full name)", function()
+  fresh()
+  local a = seen("Gerd", "Groll", 40, { guid = "Player-93-A" })
+  kill(a); M.Advance(60)
+  -- another GUID shows the same full name (a name taken again): never booked onto A's victim
+  local b = seen("Gerd", "Groll", 40, { guid = "Player-93-B" })
+  kill(b)
+  eq(ns.Ledger.VictimCount(), 2)
+  local v = ns.Ledger.Victim("Gerd-Groll")
+  eq(v.guid, a); eq(v.n, 1)
+end)
+
+test("A first name never lands on a victim of another GUID under a book entry without GUID", function()
+  fresh()
+  local a = seen("Gerd", "Groll", 40, { guid = "Player-93-A" })
+  kill(a); M.Advance(60)
+  ns.Store.AddManual("Gerd", "Groll")                    -- the book lists him by hand, without GUID
+  firstNameOnly("Gerd", { ["Player-93-C"] = true })
+  kill("Player-93-C")                                    -- another Gerd, never seen: the first name only
+  _G.GetPlayerInfoByGUID = nil
+  eq(ns.Ledger.Victim("Gerd-Groll").n, 1, "A's victim")
+  eq(ns.Ledger.VictimCount(), 2)
+end)
+
+test("Two victims of one player merge with their kills before he was listed (pre adds up)", function()
+  fresh()
+  local g = "Player-93-0000C3"
+  local db = _G.DeathNoteDB
+  db.enemies["Gerd-Forever"] = { name = "Gerd", realm = "Forever", guid = g, kills = 1, assists = 0, suspected = 0,
+    revenge = 1, revengeAutoAt = time() - 5000, status = "wanted", manual = false, note = "", sightings = 0, deaths = {} }
+  local L = db.ledger
+  L.victims["Gerd-Forever"] = { key = "Gerd-Forever", name = "Gerd", realm = "Forever", n = 1, pre = 1, pts = 3, dn = 1 }
+  L.victims["Gerd-Groll"] = { key = "Gerd-Groll", name = "Gerd", surname = "Groll", guid = g, n = 1, pre = 1, pts = 3,
+    dn = 1 }
+  reload()
+  eq(ns.Ledger.VictimCount(), 1)
+  local v = ns.Ledger.Victim("Gerd-Forever")
+  eq(v.n, 2); eq(v.pre, 2); eq(v.guid, g); eq(v.surname, "Groll")
+  eq(standing("Gerd-Forever"), "3:1 ahead", "max(2 kills, 1 revenge + 2 before he was listed)")
+end)
+
+---------------------------------------------------------------------------
+-- More gaps found by the mutation run of these fixes
+---------------------------------------------------------------------------
+test("A full name the book lists with another GUID is no key for a GUID the tracker saw with it", function()
+  fresh()
+  -- B seen as "Gerd Groll" while nobody is listed; then A, never seen, kills me and the recap names him in full
+  local b = seen("Gerd", "Groll", 40, { guid = "Player-93-B" })
+  M.units.x1 = { exists = false, guid = "Player-93-A", name = "Gerd", class = "ROGUE" }
+  dieBy("Player-93-A", "Gerd Groll")
+  M.units.x1 = nil
+  eq(ns.Store.Get("Gerd-Groll").guid, "Player-93-A", "the book lists Gerd Groll with GUID A")
+  M.Advance(10); kill(b)                                 -- my kill on B, whom the tracker knows as Gerd Groll
+  eq(ns.Ledger.Victim("Gerd-Groll"), nil, "no victim of B under A's book key")
+  eq(standing("Gerd-Groll"), "0:1 open")
+end)
+
+test("A hand entry of a first name taken by a namesake's full name: the other GUID's victim stays", function()
+  fresh()
+  firstNameOnly("Gerd", { [A] = true })
+  ns.Store.AddManual("Gerd")                             -- by hand, first name only, no GUID
+  kill(A)                                                -- A never seen: joined with the hand entry by name
+  _G.GetPlayerInfoByGUID = nil
+  eq(ns.Ledger.Victim("Gerd-Forever").guid, A)
+  M.Advance(60); seen("Gerd", "Bolz", 40, { guid = B })   -- B takes the hand entry with his full name and GUID
+  eq(ns.Store.ByGUID(B), "Gerd-Bolz")
+  eq(ns.Ledger.Victim("Gerd-Bolz"), nil, "A's victim does not follow B's entry")
+  eq(ns.Ledger.Victim("Gerd-Forever").guid, A)
+end)
+
+test("The check at start: a victim under a key the book lists with another GUID steps aside", function()
+  fresh()
+  firstNameOnly("Gerd", { [B] = true })
+  kill(B)
+  _G.GetPlayerInfoByGUID = nil
+  local db = _G.DeathNoteDB
+  db.enemies["Gerd-Forever"] = { name = "Gerd", realm = "Forever", guid = A, kills = 1, assists = 0, suspected = 0,
+    revenge = 0, status = "wanted", manual = false, note = "", sightings = 0, deaths = {} }
+  reload()
+  eq(ns.Ledger.Victim("Gerd-Forever"), nil)
+  eq(ns.Ledger.Victim("Gerd-Forever#93-0000B2").guid, B)
+end)
+
+-- G2 seen without surname before anybody is listed; then G1, never seen, kills me: the book lists G1 under the
+-- plain key the tracker gave G2
+local function namesakeFirst()
+  fresh()
+  M.AddEnemy("nameplate2", { name = "Gerd", level = 58, guid = G2 })
+  M.FireEvent("NAME_PLATE_UNIT_ADDED", "nameplate2")
+  eq(ns.Tracker.ByGUID(G2).key, "Gerd-Forever")
+  M.units.x1 = { exists = false, guid = G1, name = "Gerd", class = "ROGUE" }
+  dieBy(G1, "Gerd")
+  M.units.x1 = nil
+  eq(ns.Store.Get("Gerd-Forever").guid, G1)
+end
+
+test("The listed one seen later takes the tracker's plain key from the namesake", function()
+  namesakeFirst()
+  M.Advance(2)
+  M.AddEnemy("nameplate1", { name = "Gerd", level = 34, guid = G1 })
+  M.FireEvent("NAME_PLATE_UNIT_ADDED", "nameplate1")
+  eq(ns.Tracker.ByGUID(G1) and ns.Tracker.ByGUID(G1).key, "Gerd-Forever")
+  eq(ns.Tracker.ByGUID(G2) and ns.Tracker.ByGUID(G2).key, "Gerd-Forever#93-G2")
+end)
+
+test("My kill on a namesake the tracker holds under the listed one's plain key is no revenge", function()
+  namesakeFirst()
+  M.Advance(2); kill(G2)
+  eq(ns.Store.Get("Gerd-Forever").revenge, 0)
+end)
+
+test("A namesake who targeted me stands in the journal under the plain key, never the tracker's own key", function()
+  local key, e = listedG1()
+  M.AddEnemy("nameplate2", { name = "Gerd", level = 58, guid = G2, target = "player" })
+  M.FireEvent("NAME_PLATE_UNIT_ADDED", "nameplate2")
+  M.recap = nil
+  M.FireEvent("PLAYER_DEAD"); M.Advance(5)
+  local j = ns.Store.Deaths()[1]
+  local text = table.concat(j.candidates or {}, " ")
+  no(text:find("#", 1, true), "candidates: " .. text)
+  eq(e.kills, 1, "no kill of the listed one")
+end)
+
 M.done("ledger_fixes_e")
