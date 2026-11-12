@@ -31,7 +31,10 @@ jobs:
 
       - name: Tests
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq luajit lua5.1 >/dev/null
+          set -eo pipefail
+          # One command per line: under set -e a failing command left of "&&" does not stop the script.
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq luajit lua5.1 >/dev/null
           bash tests/run.sh
           STRICT=1 luajit tests/test_locales.lua
 
@@ -42,14 +45,21 @@ jobs:
 
       - name: Check zip
         run: |
-          set -e
+          # Every refusal is an explicit "exit 1": a command negated with "!" never stops a script under set -e.
+          set -eo pipefail
           zip=$(ls .release/*.zip | head -1)
           echo "Zip: $zip"
           unzip -l "$zip" | tail -n +4 | awk '{print $4}' > contents.txt
-          grep -qx 'DeathNote/DeathNote.toc' contents.txt
-          grep -qx 'DeathNote/Core.lua' contents.txt
-          ! grep -q -E '(^|/)tests/|^DeathNote/DeathNote/|\.github|\.pkgmeta|(^|/)TRANSLATING\.md$' contents.txt
-          ! grep -v -E '^DeathNote/|^$|^-+$|^Name$' contents.txt | grep -q .
+          for need in DeathNote/DeathNote.toc DeathNote/Core.lua DeathNote/Libs/embeds.xml \
+                      DeathNote/Libs/LibDBIcon-1.0/LibDBIcon-1.0.lua; do
+            if ! grep -qx "$need" contents.txt; then echo "Missing in zip: $need"; exit 1; fi
+          done
+          if grep -E '(^|/)tests/|^DeathNote/DeathNote/|\.github|\.pkgmeta|(^|/)TRANSLATING\.md$' contents.txt; then
+            echo "Forbidden files in zip (listed above)"; exit 1
+          fi
+          if grep -v -E '^DeathNote/|^$|^-+$|^Name$' contents.txt; then
+            echo "Files outside the DeathNote folder in zip (listed above)"; exit 1
+          fi
           echo "Files: $(grep -c '^DeathNote/' contents.txt)"
 
       - uses: actions/upload-artifact@v4
