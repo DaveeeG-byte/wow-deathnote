@@ -1,24 +1,24 @@
 local ADDON, ns = ...
 
--- Das Notizbuch: schwarzer Ledereinband, links eine linierte Seite mit den handschriftlich
--- eingetragenen Namen, rechts das eingeklebte Fahndungsplakat des Gewaehlten.
--- Vier Reiter: Gesucht, Zu klaeren, Todesjournal, Gilde (1.2.0: Gilde & Freunde, mit Abschussliste);
--- dazu "?" (Gebrauchsanweisung) und das
--- Zahnrad (Hausordnung). Wird erst beim ersten TOGGLE_UI gebaut; die Zeilen kommen aus einem festen Pool.
+-- The notebook: black leather cover, on the left a ruled page with the names written in by hand,
+-- on the right the wanted poster of the selected one, pasted in.
+-- Four tabs: Wanted, Unsolved, Death Log, Guild (1.2.0: Guild & Friends, with the hit list);
+-- plus "?" (manual) and the
+-- cog (house rules). Built on the first TOGGLE_UI; the rows come from a fixed pool.
 
 local Look = ns.Look
--- Texte (1.2.0): L.KEY nur in Funktionen lesen, die nach ADDON_LOADED laufen; Fmt fuellt {platzhalter}
+-- Texts (1.2.0): read L.KEY only in functions that run after ADDON_LOADED; Fmt fills {placeholders}
 local L, Fmt = ns.L, ns.F
 local UI = {}
 ns.UI = UI
--- 1.2.0: selten gerufene Helfer und feste Tabellen ohne eigenen lokalen Namen (Luft bis zur Grenze von 200
--- lokalen Namen je Datei; tests/test_grenzen.lua wacht darueber)
+-- 1.2.0: rarely called helpers and fixed tables without a local name of their own (keeps room below the limit of
+-- 200 local names per file; tests/test_grenzen.lua guards it)
 local UX = {}
 
 local W, H = 800, 548
 local PAGE_W, PAGE_H = 380, 490
 local ROWS, ROW_H, ROW_TOP = 9, 44, -42
-local LINE_H = 22                 -- Linienabstand der linken Seite: Name auf der ersten, Untertext auf der zweiten
+local LINE_H = 22                 -- line spacing of the left page: name on the first line, subtext on the second
 local DEATH_LINES = 6
 local INFO_LINES = 4
 local TONE = Look.TONE
@@ -31,32 +31,32 @@ UX.FILTERS = {
 }
 UX.SORTS = { "rank", "recent", "name", "seen" }
 UX.GSORTS = { "rank", "recent", "name" }
-local SORT_LABEL = { rank = "SORT_RANK", recent = "SORT_RECENT", name = "SORT_NAME", seen = "SORT_SEEN" }   -- Schluessel
--- Leerzustaende: gross, klein, ganz klein (nur der erste Reiter erklaert, was das Buch tut)
--- je Zustand: Schluessel-Stamm und Zahl der Zeilen (STAMM_HEAD, _SUB, _HINT in der Sprachtabelle)
+local SORT_LABEL = { rank = "SORT_RANK", recent = "SORT_RECENT", name = "SORT_NAME", seen = "SORT_SEEN" }   -- locale keys
+-- Empty states: large, small, very small (only the first tab explains what the book does)
+-- per state: key stem and number of lines (STEM_HEAD, _SUB, _HINT in the locale table)
 local EMPTY = {
   wanted = { "EMPTY_WANTED", 3 }, open = { "EMPTY_OPEN", 1 }, journal = { "EMPTY_JOURNAL", 2 },
   noguild = { "EMPTY_NOGUILD", 2 }, guildoff = { "EMPTY_GUILDOFF", 2 }, guildnil = { "EMPTY_GUILDNIL", 2 },
   guildquiet = { "EMPTY_GUILDQUIET", 2 },
-  -- 1.2.0: Freunde, beide Quellen zusammen, Abschussliste
+  -- 1.2.0: friends, both sources together, hit list
   friendsoff = { "EMPTY_FRIENDSOFF", 2 }, friendsnil = { "EMPTY_FRIENDSNIL", 2 }, friendsquiet = { "EMPTY_FRIENDSQUIET", 2 },
   nobody = { "EMPTY_NOBODY", 3 }, sharednil = { "EMPTY_SHAREDNIL", 2 }, sharedquiet = { "EMPTY_SHAREDQUIET", 2 },
   hunt = { "EMPTY_HUNT", 3 }, search = { "EMPTY_SEARCH", 2 }, searchro = { "EMPTY_SEARCHRO", 2 },
 }
-local EXPORT_WARN = 100 * 1024     -- ab hier wird "Buch sichern" in der EditBox zaeh
--- Gildenbuch: nur Eintraege, an denen ein Kollege (1.2.0: oder Freund) beteiligt ist; je Quelle
+local EXPORT_WARN = 100 * 1024     -- above this, "Back up the book" gets sluggish in the EditBox
+-- Guild book: only entries a guildmate (1.2.0: or friend) took part in; per source
 local FOREIGN = { all = { foreign = true, source = "all" }, guild = { foreign = true, source = "guild" },
                   friends = { foreign = true, source = "friends" } }
--- 1.2.0: Helfer fuer Gilde & Freunde und die Abschussliste in einer Tabelle (UI.lua ist an der Grenze
--- von 200 lokalen Namen je Datei)
+-- 1.2.0: helpers for Guild & Friends and the hit list in one table (UI.lua is at the limit
+-- of 200 local names per file)
 local GF = { SOURCES = { { "all", "SRC_ALL" }, { "guild", "SRC_GUILD" }, { "friends", "SRC_FRIENDS" } },
              STAMP_W = 140, STAMP_H = 70, MENU_MAX = 6, CAND_MAX = 6, ASSIST_MAX = 4,
-             WHY_ROW = 24,    -- Grund in der Zeile der Abschussliste hoechstens so viele Zeichen (dann "…")
-             -- 1.2.1: Muenze am Taeter mit Kopfgeld (Client-Textur, belegt in Details und Auctionator), Sekunden fuer
-             -- "Rueckgaengig" nach "Rache vermerken", Auslober bzw. Raecher je Zeile (dann "und n weitere")
+             WHY_ROW = 24,    -- reason in a hit list row: at most this many characters (then "…")
+             -- 1.2.1: coin on a killer with a bounty (client texture, also used by Details and Auctionator), seconds
+             -- of "Undo" after "Note revenge", bounty posters or avengers per row (then "and n more")
              COIN = "Interface\\MoneyFrame\\UI-GoldIcon", UNDO_SECONDS = 8, UNDO_LOCK = 0.5 }
 
--- Gebrauchsanweisung ("?"): jeder Absatz beschreibt, was wirklich gebaut ist (Abnahmespiegel)
+-- Manual ("?"): every paragraph describes what is really built (acceptance mirror)
 UX.HELP = {
   { "MANUAL_BOOK_HEAD", "MANUAL_BOOK" },
   { "MANUAL_WANTED_HEAD", "MANUAL_WANTED" },
@@ -67,7 +67,7 @@ UX.HELP = {
   { "MANUAL_SHARE_HEAD", "MANUAL_SHARE" },
   { "MANUAL_QUIET_HEAD", "MANUAL_QUIET" },
 }
--- UI.HELP: dieselben Absaetze als Texte der aktiven Sprache (gefuellt bei der Aktivierung)
+-- UI.HELP: the same paragraphs as texts of the active language (filled on activation)
 UI.HELP = {}
 if ns.Locale and ns.Locale.OnActivate then
   ns.Locale.OnActivate(function()
@@ -75,16 +75,16 @@ if ns.Locale and ns.Locale.OnActivate then
   end)
 end
 
-local F            -- Hauptfenster
-local LP, RP       -- linke und rechte Seite
-local P            -- Plakat (auf der rechten Seite)
+local F            -- main window
+local LP, RP       -- left and right page
+local P            -- poster (on the right page)
 local rows = {}
-local data = {}    -- aktuelle Liste (Feinde, Tode, offene Faelle oder Gildenfeinde), ggf. nach Suche gefiltert
-local dataIdx      -- nur Journal mit Suche: Position in der ungefilterten Liste
--- Auswahl je Reiter: selected (Gesucht, Schluessel), osel (Zu klaeren: Journal-Eintrag oder Schluessel),
--- deathRef (Todesjournal: der Eintrag selbst), gselected/gmember (Gilde), hselected (Abschussliste)
--- gview: Gilde "enemy" (nach Taeter), "member" (nach Kollege) oder "hunt" (Abschussliste, 1.2.0)
--- gsource: Quelle im vierten Reiter "all" | "guild" | "friends" (1.2.0); viewPicked: Ansicht selbst gewaehlt
+local data = {}    -- current list (enemies, deaths, open cases or guild enemies), filtered by the search if any
+local dataIdx      -- journal with search only: position in the unfiltered list
+-- Selection per tab: selected (Wanted, key), osel (Unsolved: journal entry or key),
+-- deathRef (Death Log: the entry itself), gselected/gmember (Guild), hselected (hit list)
+-- gview: guild "enemy" (by killer), "member" (by guildmate) or "hunt" (hit list, 1.2.0)
+-- gsource: source in the fourth tab "all" | "guild" | "friends" (1.2.0); viewPicked: view chosen by the user
 local state = { filter = "wanted", sort = "rank", gsort = "rank", offset = 0, selected = nil, osel = nil,
                 gselected = nil, death = nil, deathRef = nil, panel = nil, query = "", spage = 1,
                 gview = "enemy", gmember = nil, gsource = "all", hselected = nil, viewPicked = false,
@@ -99,21 +99,21 @@ local function Set(path, v) if ns.Store and ns.Store.Setting then ns.Store.Setti
 local function C(t, a) return t[1], t[2], t[3], a or t[4] or 1 end
 local GCall = Look.GCall
 local function HasGuild() return Look.HasGuild() end
--- "Nach Kollege" gibt es nur, wenn die Logik ns.Guild.ByMember liefert
+-- "By guildmate" exists only when the logic provides ns.Guild.ByMember
 local function HasMemberView() return Look.HasGuild() and type(ns.Guild.ByMember) == "function" end
 local function MemberView() return state.filter == "guild" and state.gview == "member" and HasMemberView() end
--- 1.2.0: Freundesbuch (Friends.lua) und Abschussliste (Guild.Hunts) gibt es nur mit der neuen Logik
+-- 1.2.0: friends' book (Friends.lua) and hit list (Guild.Hunts) exist only with the new logic
 function GF.HasFriends() return HasGuild() and type(ns.Friends) == "table" end
 function GF.HasHunts() return HasGuild() and type(ns.Guild.Hunts) == "function" end
 function GF.HuntView() return state.filter == "guild" and state.gview == "hunt" and GF.HasHunts() end
--- 1.2.0: die Quellenwahl gibt es nur, wenn es beide Quellen wirklich gibt (GF.Survey); sonst gilt "Alle"
+-- 1.2.0: the source choice exists only when both sources really exist (GF.Survey); otherwise "All" applies
 function GF.Src() return GF.HasFriends() and (GF.both == false and "all" or state.gsource) or "guild" end
 function GF.FriendsOn()
   if not GF.HasFriends() or type(ns.Friends.Enabled) ~= "function" then return false end
   local ok, v = pcall(ns.Friends.Enabled)
   return ok and v == true
 end
--- teilt die gewaehlte Quelle gerade etwas? (Gilde: in einer Gilde; Freunde: Teilen mit Freunden an)
+-- is the chosen source sharing anything right now? (guild: in a guild; friends: sharing with friends on)
 function GF.SrcOn(src)
   src = src or GF.Src()
   local g = GCall("Name") ~= nil
@@ -121,10 +121,10 @@ function GF.SrcOn(src)
   if src == "friends" then return GF.FriendsOn() end
   return g or GF.FriendsOn()
 end
-local AnyCollapsed, SetAllMembers -- vorwaerts (Gilde nach Kollege)
+local AnyCollapsed, SetAllMembers -- forward declaration (guild by guildmate)
 
 ------------------------------------------------------------------------
--- Bausteine
+-- Building blocks
 ------------------------------------------------------------------------
 local function Rule(parent, y, x1, x2, alpha)
   local t = parent:CreateTexture(nil, "ARTWORK")
@@ -135,14 +135,14 @@ local function Rule(parent, y, x1, x2, alpha)
   return t
 end
 
--- gesperrtes Etikett: "T A T E N"
+-- letter-spaced label: "D E E D S"
 local function Spaced(s)
   local out = {}
   for ch in tostring(s):gmatch("[%z\1-\127\194-\244][\128-\191]*") do out[#out + 1] = ch == " " and "  " or ch end
   return table.concat(out, " ")
 end
 
--- Etikett auf Papier (10 pt, gesperrt); red = rot (kleine rote Schrift)
+-- label on paper (10 pt, letter-spaced); red = red (small red print)
 local function Label(parent, text, red)
   local fs = Look.Text(parent, "body", 10, red and Look.RED_INK or Look.INK)
   if not red then fs:SetTextColor(C(Look.INK, TONE.label)) end
@@ -150,7 +150,7 @@ local function Label(parent, text, red)
   return fs
 end
 
--- Knopf: schwarz, knochenweisse Schrift, blutrote Kante; Text bleibt im Knopf
+-- Button: black, bone-white text, blood-red edge; the text stays inside the button
 local function InkButton(parent, text, w, h, onClick)
   local b = CreateFrame("Button", nil, parent, "BackdropTemplate")
   w, h = w or 104, h or 22
@@ -183,7 +183,7 @@ local function InkButton(parent, text, w, h, onClick)
   return b
 end
 
--- Wort-Knopf auf Papier (Handschrift oder Akte): Hover faerbt rot, sonst nichts bewegt sich
+-- Word button on paper (handwriting or file font): hover turns it red, nothing else moves
 local function WordButton(parent, text, kind, size, tone)
   local b = CreateFrame("Button", nil, parent)
   b.text = Look.Text(b, kind or "hand", size or 13, Look.INK)
@@ -199,8 +199,8 @@ local function WordButton(parent, text, kind, size, tone)
   return b
 end
 
--- Wort-Reiter (Blaetter der Hausordnung, Kanal, Ansicht der Gilde): aktives Wort volle Tinte mit roter
--- Unterkante, die anderen blasser. Ein Baustein fuer alle Wort-Umschalter.
+-- Word tabs (sheets of the house rules, channel, guild view): the active word in full ink with a red
+-- underline, the others paler. One building block for all word toggles.
 local function WordTab(parent, text, w, onClick)
   local t = CreateFrame("Button", nil, parent)
   t:SetSize(w or 90, 20)
@@ -223,7 +223,7 @@ local function WordTab(parent, text, w, onClick)
   return t
 end
 
--- Kaestchen mit Tintenrand, gesetzt = handgezeichnetes Kreuz; die Beschriftung ist Teil der Klickflaeche
+-- Box with an ink border, checked = hand-drawn cross; the label is part of the click area
 function UX.InkCheck(parent, label, width)
   local cb = CreateFrame("CheckButton", nil, parent)
   cb:SetSize(width or 300, 20)
@@ -269,7 +269,7 @@ function UX.Shadow(frame, dx, dy, a)
   return s
 end
 
--- Klebestreifen schraeg ueber eine Ecke
+-- tape strip at an angle across a corner
 local function Tape(frame, corner, rot, dx)
   local t = frame:CreateTexture(nil, "OVERLAY", nil, 6)
   t:SetSize(52, 20)
@@ -279,7 +279,7 @@ local function Tape(frame, corner, rot, dx)
   return t
 end
 
--- kleines Tinten-Dreieck (tri.tga zeigt nach rechts; rot = Drehung im Bogenmass)
+-- small ink triangle (tri.tga points right; rot = rotation in radians)
 local function Tri(parent, size, rot)
   local t = parent:CreateTexture(nil, "ARTWORK")
   t:SetSize(size, size)
@@ -289,7 +289,7 @@ local function Tri(parent, size, rot)
   return t
 end
 
--- Fahndungsfoto ohne Farbfleck: entsaettigt und papierfarben getoent
+-- mugshot without a colour spot: desaturated and tinted like paper
 local function MugIcon(tex)
   tex:SetDesaturated(true)
   tex:SetVertexColor(0.85, 0.80, 0.70, 1)
@@ -306,14 +306,14 @@ local function NameOfKey(key, fallback)
   return fallback or key or "?"
 end
 
--- Breite einer Schrift (Secret-Schutz, Rueckfall auf eine Schaetzung)
+-- width of a text (secret guard, falls back to an estimate)
 local function TextWidth(fs, guess)
   local w = fs.GetStringWidth and fs:GetStringWidth()
   if type(w) ~= "number" or Look.Secret(w) then return guess or 140 end
   return w
 end
 
--- Breite fuer Unter-/Durchstreichen nach der Textlaenge
+-- width for underline/strike-through from the text length
 local function InkWidth(fs)
   return math.max(40, math.min(300, TextWidth(fs, 140) + 10))
 end
@@ -327,7 +327,7 @@ function UX.Thousands(n)
   return out
 end
 
--- Kopfgeld auf ganze Goldstuecke: "328 GOLD", unter 1 Gold "50 SILBER"
+-- bounty in whole gold pieces: "328 GOLD", below 1 gold "50 SILVER"
 local function GoldText(copper)
   copper = tonumber(copper) or 0
   local g = math.floor(copper / 10000)
@@ -337,7 +337,7 @@ local function GoldText(copper)
   return Fmt(L.BOUNTY_GOLD, { count = 0 })
 end
 
--- FontString wirklich abgeschnitten? (mit Secret-Schutz, wie in Details)
+-- is the FontString really truncated? (with secret guard, as in Details)
 local function Truncated(fs)
   if not fs.IsTruncated then return false end
   local ok, v = pcall(fs.IsTruncated, fs)
@@ -348,12 +348,12 @@ end
 local function Tip(owner, lines, anchor)
   if type(lines) ~= "table" or not lines[1] then return end
   GameTooltip:SetOwner(owner, anchor or "ANCHOR_RIGHT")
-  GameTooltip:SetText(lines[1], Look.BONE[1], Look.BONE[2], Look.BONE[3], 1, true)   -- 1.2.2: lange erste Zeile bricht um
+  GameTooltip:SetText(lines[1], Look.BONE[1], Look.BONE[2], Look.BONE[3], 1, true)   -- 1.2.2: a long first line wraps
   for i = 2, #lines do GameTooltip:AddLine(lines[i], 0.82, 0.80, 0.75, true) end
   GameTooltip:Show()
 end
 
--- Name in eine offene Chat-Eingabe einfuegen (nur wenn der Nutzer selbst eine offen hat; nie senden)
+-- insert a name into an open chat input (only if the user has one open; never send)
 function UX.InsertIntoChat(text)
   if type(text) ~= "string" or text == "" then return false end
   local util = ChatFrameUtil
@@ -372,25 +372,25 @@ function UX.Shift()
   return ok and not Look.Secret(v) and v and true or false
 end
 
--- Rueckfrage: ein Muster fuer alles Zerstoerende (StaticPopup)
+-- Confirmation: one pattern for everything destructive (StaticPopup)
 UX.CONFIRM = {
   DEATHNOTE_DELETE = { "CONFIRM_DELETE", "CONFIRM_DELETE_OK",
                        function(_, key) if key then Store().Remove(key) end end },
   DEATHNOTE_GUILD_CLEAR = { "CONFIRM_GUILD_CLEAR", "CONFIRM_GUILD_CLEAR_OK",
                             function() GCall("Clear"); UI.Refresh() end },
-  -- 1.2.0: Freundesbuch leeren (mit seiner Abschussliste), alle eigenen Freigaben abblasen
+  -- 1.2.0: empty the friends' book (with its hit list), call off all own calls
   DEATHNOTE_FRIENDS_CLEAR = { "CONFIRM_FRIENDS_CLEAR", "CONFIRM_GUILD_CLEAR_OK",
                               function() if ns.Friends and ns.Friends.Clear then ns.Friends.Clear() end UI.Refresh() end },
   DEATHNOTE_CALLOFF_ALL = { "CONFIRM_CALLOFF_ALL", "CONFIRM_CALLOFF_ALL_OK",
                             function() GCall("CallOffAll"); UI.Refresh() end },
-  -- 1.2.0: Freund ohne Nachnamen auf der Liste: Bindung an den vollen Namen loesen (seine Daten gehen mit)
+  -- 1.2.0: friend without surname on the list: release the link to the full name (their data goes with it)
   DEATHNOTE_TIE_LOOSE = { "CONFIRM_TIE_LOOSE", "ACT_TIE_LOOSE",
                           function(_, list) if ns.Friends and ns.Friends.Unbind then ns.Friends.Unbind(list) end UI.Refresh() end },
 }
 function UX.RegisterConfirms()
   for which, c in pairs(UX.CONFIRM) do
     StaticPopupDialogs[which] = {
-      -- StaticPopup setzt den Namen ueber %s ein: {name} wird dazu, jedes andere % verdoppelt
+      -- StaticPopup inserts the name via %s: {name} becomes that, every other % is doubled
       text = Fmt((L[c[1]]:gsub("%%", "%%%%")), { name = "%s" }), button1 = L[c[2]], button2 = L.CONFIRM_CANCEL,
       OnAccept = c[3],
       timeout = 0, whileDead = true, hideOnEscape = true,
@@ -400,11 +400,11 @@ end
 local function Confirm(which, text, data) StaticPopup_Show(which, text, nil, data) end
 
 ------------------------------------------------------------------------
--- Daten der Reiter
+-- Tab data
 ------------------------------------------------------------------------
 local function IsCase(item) return type(item) == "table" and item.status == nil and item.kind ~= nil end
 
--- offene Faelle: Store.OpenCases (Logik), sonst selbst aus dem Journal
+-- open cases: Store.OpenCases (logic), otherwise built from the journal here
 local fallbackCases = {}
 local function OpenCases()
   local S = Store()
@@ -422,7 +422,7 @@ local function OpenCases()
   return fallbackCases, #fallbackCases
 end
 
--- Zeitpunkt eines Eintrags in "Zu klaeren": Fall = Todeszeit, Verdacht = letzte Tat
+-- time of an entry in "Unsolved": case = time of death, suspicion = latest deed
 local function OpenTime(item)
   if IsCase(item) then return tonumber(item.t) or 0 end
   local d = Look.LastDeed(item)
@@ -434,7 +434,7 @@ local function OpenLess(a, b)
   return tostring(a.key or a.t) < tostring(b.key or b.t)
 end
 
--- Zu klaeren: offene Faelle und echte Verdachtsfaelle, neueste zuerst (wiederverwendete Tabelle)
+-- Unsolved: open cases and real suspects, newest first (reused table)
 local openData = {}
 function UX.OpenData()
   for i = #openData, 1, -1 do openData[i] = nil end
@@ -454,7 +454,7 @@ local function Counts()
   return w or 0, s or 0, p or 0, o or 0
 end
 
--- Gesucht: Gesuchte, dahinter die Begnadigten (abschaltbar ueber das Sortiermenue)
+-- Wanted: the wanted, behind them the pardoned (can be switched off in the sort menu)
 local wantedData = {}
 local function ShowPardoned() return Look.Setting("ui.showPardoned", true) ~= false end
 function UX.WantedData()
@@ -470,8 +470,8 @@ function UX.WantedData()
   return wantedData
 end
 
--- Gildenbuch nach Taeter: nur Eintraege mit Kollegen, reine Hand-Eintraege ans Ende.
--- Neu sortiert/gefiltert nur, wenn die Liste der Logik wechselt.
+-- Guild book by killer: only entries with guildmates, pure manual entries at the end.
+-- Sorted/filtered again only when the logic's list changes.
 local gpart = { src = nil, n = -1, out = {}, res = nil }
 local function GuildEnemies(sort)
   local src = GF.Src()
@@ -479,7 +479,7 @@ local function GuildEnemies(sort)
   if type(list) ~= "table" then return {} end
   if gpart.src == list and gpart.n == #list then return gpart.res end
   gpart.src, gpart.n = list, #list
-  -- liefert die Logik den vierten Zaehler (fremde), filtert sie selbst; sonst hier filtern
+  -- if the logic provides the fourth counter (foreign), it filters itself; otherwise filter here
   local _, _, _, foreign = GCall("Count", src)
   local trusted = type(foreign) == "number"
   local need, seen = false, false
@@ -506,7 +506,7 @@ function UX.GuildCount()
   return #GuildEnemies("rank")
 end
 
--- Kollegen (1.2.0: und Freunde) mit DeathNote, je nach Quelle
+-- Guildmates (1.2.0: and friends) with DeathNote, depending on the source
 local function MemberCount()
   local src = GF.Src()
   local n = 0
@@ -521,10 +521,10 @@ local function MemberCount()
   return n
 end
 
--- Abschussliste der gewaehlten Quelle (Zeilen der Logik, nicht veraendern)
--- 1.2.0: was der vierte Reiter zeigen soll, einmal je Neuaufbau: beide Quellen (Gilde und ein Freund mit
--- DeathNote), niemand zum Teilen (keine Gilde, kein Freund auf der Liste), Abschussliste sinnvoll (es gibt
--- Freigaben, oder man legt gerade eine an)
+-- Hit list of the chosen source (rows of the logic, do not modify)
+-- 1.2.0: what the fourth tab should show, once per rebuild: both sources (guild and a friend with
+-- DeathNote), nobody to share with (no guild, no friend on the list), hit list worthwhile (there are
+-- calls, or one is being created right now)
 function GF.Survey()
   local g = GCall("Name") ~= nil and GCall("Enabled") ~= false
   local fOn = GF.FriendsOn()
@@ -536,8 +536,8 @@ function GF.Survey()
     total = ok and tonumber(t) or 0
   end
   GF.both = GF.HasFriends() and GCall("Name") ~= nil and fN > 0
-  -- "niemand" nur ohne Ziele auf der Abschussliste: Freigaben (auch eigene) halten Ansichten, Statuszeile und
-  -- Abgleichen erreichbar, auch mit beiden Teilen-Schaltern aus (Alarm und Anzeige folgen demselben Zustand)
+  -- "nobody" only without targets on the hit list: calls (own ones too) keep views, status line and
+  -- sync reachable, even with both share switches off (alarm and display follow the same state)
   local hunts = (tonumber((GCall("HuntCount", "all"))) or 0) > 0 or (tonumber((GCall("OwnReleaseCount"))) or 0) > 0
   GF.nobody = not g and (not fOn or (total == 0 and fN == 0)) and not hunts
   GF.hunts = GF.HasHunts() and ((tonumber(GCall("HuntCount", "all")) or 0) > 0 or state.panel == "release")
@@ -551,9 +551,9 @@ function GF.Hunts()
 end
 
 ------------------------------------------------------------------------
--- Aktionen je Eintrag (Plakat-Knoepfe und Rechtsklick-Menue)
+-- Actions per entry (poster buttons and right-click menu)
 ------------------------------------------------------------------------
--- Plakat: zwei Knoepfe; Streichen steht nur im Menue und als kleines Wort unten am Plakat
+-- Poster: two buttons; strike out is only in the menu and as a small word at the bottom of the poster
 local function EnemySpec(e)
   local key = e.key
   local S = Store()
@@ -574,7 +574,7 @@ local function EnemySpec(e)
   }
 end
 
--- 1.2.1: "Rache vermerken"; gleich danach fuer einige Sekunden "Rueckgaengig" auf demselben Knopf (ein Timer, kein Ticker)
+-- 1.2.1: "Note revenge"; right after it "Undo" on the same button for a few seconds (one timer, no ticker)
 function GF.RevengeAct(key)
   local u = GF.undo
   if u and u.key == key then return { L.ACT_UNDO, GF.UndoRevenge } end
@@ -584,7 +584,7 @@ function GF.NoteRevenge(key)
   local S = Store()
   local e = S.Get(key)
   if not e then return end
-  -- 1.2.1 fix: ein zweiter Klick derselben Rache (Doppelklick, zweimal im selben Bild) zaehlt nicht noch einmal
+  -- 1.2.1 fix: a second click on the same revenge (double click, twice in the same frame) does not count again
   if GF.undo and GF.undo.key == key then return end
   local prev = e.lastRevenge
   local u = { key = key, prev = prev, at = GetTime() }
@@ -596,7 +596,7 @@ function GF.NoteRevenge(key)
 end
 function GF.UndoRevenge()
   local u = GF.undo
-  -- 1.2.1 fix: "Rueckgaengig" nimmt erst nach einer kurzen Sperre an (der zweite Klick eines Doppelklicks trifft sonst)
+  -- 1.2.1 fix: "Undo" only accepts after a short lock (otherwise the second click of a double click hits it)
   if u and u.at and GetTime() - u.at < GF.UNDO_LOCK then return end
   GF.undo = nil
   local S = Store()
@@ -607,7 +607,7 @@ end
 local function MenuSpec(e)
   local spec = EnemySpec(e)
   local out = { spec[1], spec[2], { L.ACT_STRIKE, function() UI.ConfirmDelete(e.key) end } }
-  -- 1.2.1: von Hand vermerkte Rache wieder abziehen (die vom Buch erkannte bleibt)
+  -- 1.2.1: take back a revenge noted by hand (the one the book detected stays)
   local S = Store()
   local u = GF.undo
   if S.HandRevenge and (tonumber(S.HandRevenge(e)) or 0) > 0 and not (u and u.key == e.key) then
@@ -616,7 +616,7 @@ local function MenuSpec(e)
   return out
 end
 
--- Gilde: nichts Zerstoerendes, nur uebernehmen bzw. das eigene Plakat aufschlagen
+-- Guild: nothing destructive, only take over or open the own poster
 local function GuildSpec(g)
   local key = g.key
   if Store().Get(key) then
@@ -629,8 +629,8 @@ local function GuildSpec(g)
   end } }
 end
 
--- Abschussliste (1.2.0): eigene Freigabe zuruecknehmen oder freigeben ("Zur Jagd freigeben" oeffnet
--- das Blatt mit Ziel und Grund); "abblasen" nimmt nur die eigene Freigabe zurueck.
+-- Hit list (1.2.0): take back an own call or post one ("Put on hit list" opens
+-- the sheet with target and reason); "call off" only takes back the own call.
 function GF.Released(key)
   local g, f = GCall("Released", key)
   return (g or f) and true or false
@@ -650,7 +650,7 @@ function GF.MenuWithHunt(spec, key)
 end
 
 ------------------------------------------------------------------------
--- Menue (Rechtsklick und Sortierung): eine Spalte schwarzer Knoepfe an der Maus
+-- Menu (right click and sorting): one column of black buttons at the mouse
 ------------------------------------------------------------------------
 local function HideMenu() if menu then menu:Hide(); menu.blocker:Hide() end end
 
@@ -661,7 +661,7 @@ function UX.BuildMenu()
   menu:SetBackdropColor(0.05, 0.045, 0.045, 0.97)
   menu:SetBackdropBorderColor(0.45, 0.04, 0.04, 1)
   menu:Hide()
-  -- Klick irgendwo sonst ins Buch schliesst das Menue
+  -- a click anywhere else in the book closes the menu
   local bl = CreateFrame("Button", nil, F)
   bl:SetAllPoints(F)
   bl:SetFrameStrata("DIALOG")
@@ -678,8 +678,8 @@ function UX.BuildMenu()
   menu:SetScript("OnShow", function(self) self:Raise() end)
 end
 
--- 1.2.2: Breite aus dem laengsten Eintrag (148 bis 252 px, darueber 9 pt), am Schirm geklemmt und von der
--- Maus weg aufgeklappt (rechts der Mitte nach links, in der unteren Haelfte nach oben)
+-- 1.2.2: width from the longest entry (148 to 252 px, beyond that 9 pt), clamped to the screen and opened
+-- away from the mouse (right of the middle to the left, in the lower half upwards)
 GF.MENU_W0, GF.MENU_W1 = 148, 252
 local function OpenMenu(spec, fallbackAnchor)
   if not menu then UX.BuildMenu() end
@@ -717,7 +717,7 @@ local function OpenMenu(spec, fallbackAnchor)
   menu:Show()
 end
 
--- 1.2.0: Kopfzeile eines Freundes ohne Nachnamen auf der Liste (Nach Kollege): wer ist es, Bindung loesen
+-- 1.2.0: head row of a friend without surname on the list (By guildmate): who it is, release the link
 function GF.TieMenu(row)
   local t = row.item.m and row.item.m.tie
   if type(t) ~= "table" or not ns.Friends then return false end
@@ -733,13 +733,13 @@ function GF.TieMenu(row)
 end
 
 ------------------------------------------------------------------------
--- Zeilen der linken Seite
+-- Rows of the left page
 ------------------------------------------------------------------------
-local Refresh, BindRows, ShowRight -- vorwaerts
-local ClassName -- vorwaerts (Klassenname im Wortlaut des Buchs)
-local ToggleMember -- vorwaerts
+local Refresh, BindRows, ShowRight -- forward declaration
+local ClassName -- forward declaration (class name in the book's wording)
+local ToggleMember -- forward declaration
 
--- Gildeneintrag hinter einer Zeile (Kindzeile nach Kollege oder Zeile nach Taeter)
+-- guild entry behind a row (child row by guildmate or row by killer)
 local function GuildItem(item)
   if item.wrap then
     if item.head then return nil end
@@ -751,7 +751,7 @@ end
 local function SelectRow(row)
   if not row.item then return end
   if row.item.wrap then
-    if row.item.head then return end               -- Kopfzeile ist kein Taeter
+    if row.item.head then return end               -- a head row is not a killer
     state.gselected, state.gmember = row.item.r.key, row.item.m.name
   elseif state.filter == "journal" then
     state.death, state.deathRef = row.index, row.item
@@ -777,15 +777,15 @@ function UX.RowMenu(row, anchor)
   local spec
   if GF.HuntView() then
     spec = GF.HuntSpec(item)
-    -- alle eigenen Freigaben abblasen (mit Rueckfrage). 1.2.0: im Zeilenmenue einer eigenen Freigabe,
-    -- wenn es mehr als eine gibt (der Sortierknopf, an dem es hing, ist in der Abschussliste nicht zu sehen)
+    -- call off all own calls (with confirmation). 1.2.0: in the row menu of an own call when there is
+    -- more than one (the sort button it hung on is not visible in the hit list)
     if GF.Released(item.key) and (tonumber(GCall("OwnReleaseCount")) or 0) > 1 then
       spec[#spec + 1] = { L.ACT_CALLOFF_ALL, function() Confirm("DEATHNOTE_CALLOFF_ALL") end }
     end
   elseif state.filter == "guild" then spec = GF.MenuWithHunt(GuildSpec(item), item.key)
   elseif item.status == "wanted" then spec = GF.MenuWithHunt(MenuSpec(item), item.key)
   else spec = MenuSpec(item) end
-  -- 1.2.1: Kopfgeld ausloben (eigene Gesuchte und Verdaechtige, Gilde, Freunde, Abschussliste; dieselbe Regel wie am Plakat)
+  -- 1.2.1: post a bounty (own wanted and suspects, guild, friends, hit list; the same rule as on the poster)
   if GF.MayBounty(item) then
     spec[#spec + 1] = { L.ACT_BOUNTY, function() GF.EditBounty(item.key) end }
   end
@@ -816,7 +816,7 @@ local function RowEnter(row)
   elseif row.full then
     Tip(row, type(row.full) == "table" and row.full or { row.full })
   elseif Truncated(row.name) or row.subFull then
-    -- 1.2.2: gekuerzter Name oder Untertext: beides ganz
+    -- 1.2.2: truncated name or subtext: both in full
     Tip(row, { row.name:GetText() or "", row.subFull })
   end
 end
@@ -830,11 +830,11 @@ function UX.MakeRow(parent, i)
   hl:SetAllPoints()
   hl:SetColorTexture(C(Look.INK, 0.06))
 
-  -- Rang und Name stehen auf der ersten Linie, der Untertext auf der zweiten
+  -- rank and name stand on the first line, the subtext on the second
   r.rank = Look.Text(r, "hand", 19, Look.INK)
   r.rank:SetPoint("TOPRIGHT", r, "TOPLEFT", 32, -1)
   r.rank:SetJustifyH("RIGHT")
-  r.rank:SetWidth(32)          -- 1.2.2: "128." wird kleiner statt links aus der Zeile zu ragen
+  r.rank:SetWidth(32)          -- 1.2.2: "128." gets smaller instead of sticking out of the row on the left
   r.skull = r:CreateTexture(nil, "ARTWORK")
   r.skull:SetSize(18, 18)
   r.skull:SetPoint("TOPLEFT", 12, -2)
@@ -862,7 +862,7 @@ function UX.MakeRow(parent, i)
   r.icon:SetSize(16, 16)
   r.icon:SetPoint("TOPRIGHT", -8, -3)
   MugIcon(r.icon)
-  -- 1.2.1: kleine Muenze links vom Klassensymbol, wenn auf den Taeter ein Kopfgeld ausgelobt ist (ruhig, entsaettigt)
+  -- 1.2.1: small coin left of the class icon when a bounty is posted on the killer (quiet, desaturated)
   r.coin = r:CreateTexture(nil, "ARTWORK")
   r.coin:SetSize(11, 11)
   r.coin:SetPoint("TOPRIGHT", -28, -6)
@@ -871,7 +871,7 @@ function UX.MakeRow(parent, i)
   r.coin:SetVertexColor(0.55, 0.45, 0.25, 0.9)
   r.coin:Hide()
 
-  -- Unterstrichen = gewaehlt, durchgestrichen = begnadigt
+  -- underlined = selected, struck through = pardoned
   r.under = r:CreateTexture(nil, "OVERLAY")
   r.under:SetHeight(8)
   r.under:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", -4, 4)
@@ -886,7 +886,7 @@ function UX.MakeRow(parent, i)
   r.strike:SetTexCoord(1, 0, 0, 1)
   r.strike:Hide()
 
-  -- Gilde nach Kollege: Kopfzeile mit Dreieck, blassem Band und Zaehler rechts oben
+  -- guild by guildmate: head row with triangle, pale band and counter at the top right
   r.band = r:CreateTexture(nil, "BACKGROUND")
   r.band:SetPoint("TOPLEFT", 0, 1); r.band:SetPoint("BOTTOMRIGHT", 0, -1)
   r.band:SetColorTexture(C(Look.INK, 0.07))
@@ -913,7 +913,7 @@ function UX.MakeRow(parent, i)
   return r
 end
 
--- Zeilenart umstellen (nur bei Wechsel: Anker und Schrift neu setzen)
+-- switch the row kind (only on change: set anchors and font anew)
 local function SetRowMode(r, mode)
   if r.mode == mode then return end
   r.mode = mode
@@ -929,20 +929,20 @@ local function SetRowMode(r, mode)
   if head then r.icon:Hide(); r.strike:Hide(); r.skull:Hide(); r.rank:SetText(""); r.coin:Hide() end
 end
 
--- Toene einer Zeile: normal, rot (Rang 1, Taeter unklar), blass (begnadigt, nur von Hand, zaehlt nicht)
+-- tones of a row: normal, red (rank 1, killer unknown), pale (pardoned, manual only, does not count)
 local ROW_TONE = {
   normal = { Look.INK, TONE.ink },
   red    = { Look.RED, TONE.ink },
   pale   = { Look.INK, TONE.hand },
 }
 
--- Eine Zeile fuellen: Name, Untertext, Marke rechts unten (rot oder Tinte), Ton.
--- Der Untertext reicht bis an die Marke, ohne Marke fast bis an den Rand.
+-- Fill one row: name, subtext, mark at the bottom right (red or ink), tone.
+-- The subtext reaches up to the mark, without a mark almost to the edge.
 local function SetRow(r, name, sub, mark, tone, markInk)
   local t = ROW_TONE[tone] or ROW_TONE.normal
   r.name:SetText(name or "")
   r.name:SetTextColor(C(t[1], t[2]))
-  -- 1.2.2: sub darf eine Liste sein (voll, dann kuerzer): die erste, die ganz passt; gekuerzt steht sie im Tooltip
+  -- 1.2.2: sub may be a list (full, then shorter): the first that fits whole; when truncated it is in the tooltip
   local full = type(sub) == "table" and sub[1] or sub
   r.sub:SetText(full or "")
   r.sub:SetTextColor(C(Look.INK, TONE.sub))
@@ -978,7 +978,7 @@ function UX.Seen(e)
   return ago and Fmt(L.ROW_SEEN, { time = ago }) or L.ROW_NOT_SEEN
 end
 
--- Ort und Zeitpunkt der neuesten Tat
+-- place and time of the latest deed
 local function DeedWhere(d)
   if not d then return nil end
   return Look.Join(Look.When(d.t), Look.Place(d.zone, d.subzone))
@@ -994,7 +994,7 @@ function UX.BindEnemyRow(r, e)
   if pardoned then sub = Look.Join(L.ROW_PARDONED, Look.Tally(e))
   elseif suspect then sub = Look.Join(L.ROW_SUSPECT, DeedWhere(Look.LastDeed(e)))
   else
-    -- "gesehen vor …" weicht zuerst, wenn die Zeile nicht passt
+    -- "seen … ago" goes first when the row does not fit
     local tally = Look.Tally(e)
     sub = { Look.Join(tally, UX.Seen(e)), tally }
   end
@@ -1006,12 +1006,12 @@ function UX.BindEnemyRow(r, e)
   GF.Coin(r, e.key)
   r.under:SetShown((state.filter == "open" and state.osel or state.selected) == e.key)
   r.under:SetWidth(InkWidth(r.name))
-  -- durchgestrichen nur, wer begnadigt ist; Rache steht rechts als Vermerk
+  -- struck through only when pardoned; revenge stands on the right as a note
   r.strike:SetShown(pardoned)
   r.strike:SetWidth(InkWidth(r.name))
 end
 
--- Fall ohne Taeter (Zu klaeren): rot, mit Zahl der Kandidaten
+-- case without a killer (Unsolved): red, with the number of candidates
 function UX.BindCaseRow(r, d)
   SetRowMode(r, "normal")
   SetRank(r, nil)
@@ -1047,12 +1047,12 @@ function UX.BindDeathRow(r, d, index)
   r.under:SetWidth(InkWidth(r.name))
 end
 
-local listedNames = {}   -- Arbeitstabelle fuer listedBy-Namen
+local listedNames = {}   -- work table for listedBy names
 
 function UX.BindGuildRow(r, g, pos)
   SetRowMode(r, "normal")
   local only = Look.ListedOnly(g)
-  local rank = not only and (GCall("Rank", g.key, GF.Src()) or (state.gsort == "rank" and pos)) or nil   -- 1.2.0: Rang der gewaehlten Quelle
+  local rank = not only and (GCall("Rank", g.key, GF.Src()) or (state.gsort == "rank" and pos)) or nil   -- 1.2.0: rank in the chosen source
   r.skull:Hide()
   r.strike:Hide()
   SetRank(r, rank)
@@ -1063,16 +1063,16 @@ function UX.BindGuildRow(r, g, pos)
     local names = Look.ListedNames(g, listedNames)
     sub = #names > 0 and Fmt(L.ROW_LISTED_BY, { names = Look.NameList(names, 2) }) or L.TALLY_MANUAL
   else
-    -- 1.2.1: wie oft ihn Kollegen oder Freunde fuer andere erledigt haben (Gesamtzahl)
+    -- 1.2.1: how often guildmates or friends took him down for others (total)
     local av = tonumber(GCall("AvengedTotal", g.key)) or 0
-    -- 1.2.2: passt die Zeile nicht, weicht zuerst das letzte Opfer, dann "gerächt" (ganz im Tooltip der Zeile)
+    -- 1.2.2: if the row does not fit, the last victim goes first, then "avenged" (in full in the row's tooltip)
     local killed, victims = Fmt(L.ROW_GKILLED, { kills = Look.GKills(g.kills) }), Look.Count(g.victimCount, L.ROW_VICTIMS)
     local avt = av > 0 and Fmt(L.ROW_AVENGED, { times = Look.Times(av) })
     sub = { Look.Join(killed, victims, avt,
                       type(g.lastVictim) == "string" and g.lastVictim ~= "" and Fmt(L.ROW_LAST, { text = Look.First(g.lastVictim) })),
             Look.Join(killed, victims, avt), Look.Join(killed, victims) }
   end
-  -- kleines Zeichen: steht schon im eigenen Buch
+  -- small sign: already in the own book
   local mine = g.mine or Store().Get(g.key)
   SetRow(r, Look.Name(g), sub, mine and L.MARK_IN_BOOK or nil, (rank == 1 and "red") or (only and "pale") or "normal", true)
   GF.Coin(r, g.key)
@@ -1081,7 +1081,7 @@ function UX.BindGuildRow(r, g, pos)
 end
 
 ------------------------------------------------------------------------
--- Gilde nach Kollege: eine flache Liste aus Kopf- und Kindzeilen im selben Zeilen-Pool
+-- Guild by guildmate: a flat list of head and child rows in the same row pool
 ------------------------------------------------------------------------
 function UX.BindMemberHead(r, w)
   SetRowMode(r, "head")
@@ -1094,7 +1094,7 @@ function UX.BindMemberHead(r, w)
   else
     r.right:SetText("")
   end
-  -- Name darf bis an den Zaehler reichen
+  -- the name may reach up to the counter
   local inset = math.floor(math.max(48, TextWidth(r.right, 96) + 18))
   if r.nameInset ~= inset then
     r.nameInset = inset
@@ -1108,12 +1108,12 @@ function UX.BindMemberHead(r, w)
   elseif m.tie and m.tie.conflict then sub = L.MEMBER_CONFLICT
   elseif empty then sub = L.MEMBER_NOTHING
   else local last = m.lastDeath and Look.Ago(m.lastDeath); sub = last and Fmt(L.MEMBER_LAST_DIED, { time = last }) or "" end
-  -- 1.2.0: erkennbar, ob Freund (1.2.0: nur in "Alle")
+  -- 1.2.0: show whether it is a friend (only in "All")
   local srcMark = not m.me and GF.SrcMark(m.src) or nil
   SetRow(r, Look.First(m.name), sub, m.me and L.MARK_YOU or srcMark, "normal", srcMark ~= nil)
   if Look.First(m.name) ~= tostring(m.name) then r.full = tostring(m.name) end
   r.tri:SetShown(not empty)
-  -- zu: Spitze nach rechts, auf: nach unten
+  -- closed: tip to the right, open: downwards
   r.tri:SetRotation(w.open and -1.5708 or 0)
   r.under:Hide()
 end
@@ -1144,17 +1144,17 @@ function UX.BindMemberChild(r, w)
   r.under:SetWidth(InkWidth(r.name))
 end
 
--- Abschussliste (1.2.0): Name mit Klassensymbol, darunter wer freigegeben hat und seit wann;
--- rechts der Erlegt-Zaehler bzw. die Zahl der Freigaben
+-- Hit list (1.2.0): name with class icon, below it who posted the call and since when;
+-- on the right the taken-down counter or the number of calls
 function GF.SrcMark(src)
-  -- 1.2.0: nur in "Alle", und nur beim Freund (Kollege ist der Normalfall und bleibt ohne Zeichen)
+  -- 1.2.0: only in "All", and only for a friend (a guildmate is the normal case and gets no sign)
   if GF.Src() ~= "all" then return nil end
   if src == "friends" then return L.MARK_FRIEND end
   if src == "both" then return L.MARK_BOTH end
   return nil
 end
 
--- Tooltip einer Zeile der Abschussliste: alles, auch der lange Grund und alle Namen
+-- tooltip of a hit list row: everything, including the long reason and all names
 function GF.HuntTip(h)
   local names = type(h.names) == "table" and h.names or {}
   local n = tonumber(h.n) or #names
@@ -1181,14 +1181,14 @@ function GF.BindHuntRow(r, h)
   r.strike:Hide()
   Look.ClassIcon(r.icon, h.class)
   r.icon:Show()
-  -- 1.2.0: zweite Zeile mit drei Angaben: wer freigegeben hat (ausgeblendet: das), der Grund gekuerzt,
-  -- zuletzt gesehen bzw. seit wann; rechts der Erlegt-Zaehler. Stufe und alles andere: Plakat und Tooltip.
+  -- 1.2.0: second line with three facts: who posted the call (hidden: that), the reason truncated,
+  -- last seen or since when; on the right the taken-down counter. Level and everything else: poster and tooltip.
   local names = type(h.names) == "table" and h.names or {}
   local ls = type(h.lastSeen) == "table" and h.lastSeen or nil
   local seen = ls and Look.Ago(ls.t)
   local why = type(h.why) == "string" and h.why ~= "" and h.why or nil
   if why then
-    -- Zeichen zaehlen, nicht Bytes (kyrillisch und CJK sonst viel kuerzer); Schnitt immer an einer Zeichengrenze
+    -- count characters, not bytes (Cyrillic and CJK would be much shorter otherwise); always cut at a character boundary
     local n, cut = 0, nil
     for pos in why:gmatch("()[^\128-\191]") do
       n = n + 1
@@ -1203,7 +1203,7 @@ function GF.BindHuntRow(r, h)
   local mark = bag > 0 and Fmt(L.MARK_TAKEN_DOWN, { times = Look.Times(bag) }) or nil
   SetRow(r, Look.Name(h), sub, mark, h.hidden and "pale" or "normal", false)
   GF.Coin(r, h.key)
-  r.tipFn = GF.HuntTip          -- Tooltip erst beim Zeigen bauen (Neuaufbau bleibt billig)
+  r.tipFn = GF.HuntTip          -- build the tooltip only when shown (rebuilds stay cheap)
   r.under:SetShown(state.hselected == h.key)
   r.under:SetWidth(InkWidth(r.name))
 end
@@ -1236,9 +1236,9 @@ BindRows = function()
 end
 
 ------------------------------------------------------------------------
--- Rechte Seite: Plakat, Todesakte, Leerzustand
+-- Right page: poster, death file, empty state
 ------------------------------------------------------------------------
--- Tooltip-Inhalt erst beim Zeigen bauen (nicht bei jedem Neuaufbau der Liste)
+-- build the tooltip content only when shown (not on every rebuild of the list)
 local function DeedEnter(self)
   if self.tipItem and self.tipFn then Tip(self, self.tipFn(self.tipItem)) end
 end
@@ -1250,18 +1250,18 @@ local function CandLeave(self)
   if self.tip then GameTooltip:Hide() end
 end
 
--- Stempel (1.2.0): Deutsch zeigt die Bilder mit eingebranntem Text (wie 1.1.0); jede andere Sprache den
--- textlosen Rahmen (gleicher Winkel, Farbe, Abnutzung) und den Text aus der Sprachtabelle darueber.
--- je Stempel: Schluessel, Winkel aus make_media.sh (Grad, ImageMagick im Uhrzeigersinn), Tinte
+-- Stamps (1.2.0): German shows the images with burnt-in text (as 1.1.0); every other language the
+-- textless frame (same angle, colour, wear) with the text from the locale table on top.
+-- per stamp: key, angle from make_media.sh (degrees, ImageMagick clockwise), ink
 GF.STAMPS = { nr1 = { "STAMP_NR1", -11, 1 }, guild = { "STAMP_GUILD_NR1", -9, 1 }, rache = { "STAMP_REVENGE", 9, 1 },
               pardon = { "STAMP_PARDONED", -6, 2 }, suspect = { "STAMP_SUSPECT", 7, 3 }, hunt = { "STAMP_HUNT", 8, 1 } }
 GF.STAMP_INK = { { 0.69, 0.04, 0.04 }, { 0.12, 0.106, 0.098 }, { 0.18, 0.165, 0.153 } }   -- #b00a0a #1e1b19 #2e2a27
-GF.STAMP_TEXT_W = 104       -- Innenrahmen des Stempels bei 140x70 px
+GF.STAMP_TEXT_W = 104       -- inner frame of the stamp at 140x70 px
 GF.FIT_STAMP = { sizes = { 16, 13, 11, 9 }, lines = 2, wrapFirst = 2 }
 
 function GF.StampLabel(layer, tex)
   local fs = Look.Text(layer, "title", 16, GF.STAMP_INK[1])
-  -- (eigene Ebene ueber dem Foto; der Rahmen ist innen leer, die Schrift bleibt sichtbar)
+  -- (own layer above the photo; the frame is empty inside, the text stays visible)
   fs:SetPoint("CENTER", tex, "CENTER", 0, 0)
   fs:SetWidth(GF.STAMP_TEXT_W)
   fs:SetJustifyH("CENTER")
@@ -1271,7 +1271,7 @@ function GF.StampLabel(layer, tex)
   tex.label = fs
 end
 
--- Stempelbild setzen; id = Name in Look.TEX (nr1, guild, rache, pardon, suspect, hunt)
+-- set the stamp image; id = name in Look.TEX (nr1, guild, rache, pardon, suspect, hunt)
 function GF.Stamp(tex, id)
   local s, fs = GF.STAMPS[id], tex.label
   local code = ns.Locale and ns.Locale.code
@@ -1284,8 +1284,8 @@ function GF.Stamp(tex, id)
   local text = L[s[1]]
   if fs.text ~= text then
     fs.text = text
-    -- eine Zeile in 16 pt, sonst eine oder zwei Zeilen in 13, 11, 9 pt (1.2.2: auch ein einzelnes zu breites Wort
-    -- und eine dritte Zeile werden kleiner statt abgeschnitten)
+    -- one line at 16 pt, otherwise one or two lines at 13, 11, 9 pt (1.2.2: a single word that is too wide
+    -- and a third line also get smaller instead of being cut)
     Look.FitText(fs, text, GF.FIT_STAMP)
   end
   local c = GF.STAMP_INK[s[3]]
@@ -1301,10 +1301,10 @@ function GF.ShowStamp(tex, on)
 end
 
 ------------------------------------------------------------------------
--- Kopfgeld und "gerächt" (1.2.1): ausgelobt von wem, eigene Eingabe am Plakat, Raecher fuer andere
+-- Bounty and "avenged" (1.2.1): posted by whom, own input on the poster, avengers for others
 ------------------------------------------------------------------------
 function GF.CanBounty() return type(ns.Guild) == "table" and type(ns.Guild.SetBounty) == "function" end
--- 1.2.1 fix: eine Regel fuer Menue und Plakat: nicht auf Begnadigte, ausser um das eigene zurueckzunehmen
+-- 1.2.1 fix: one rule for menu and poster: not on the pardoned, except to take back one's own
 function GF.MayBounty(item)
   if not GF.CanBounty() or type(item) ~= "table" or type(item.key) ~= "string" then return false end
   return item.status ~= "pardoned" or GCall("OwnBounty", item.key) ~= nil
@@ -1312,21 +1312,21 @@ end
 function GF.Coin(r, key) r.coin:SetShown(GCall("HasBounty", key) == true) end
 function GF.Gold(g) return Fmt(L.MONEY_GOLD, { count = UX.Thousands(g) }) end
 
--- Zeilen { char, g, own, mine } und Summe in Gold
+-- rows { char, g, own, mine } and the sum in gold
 function GF.BountyRows(key)
   local rows, sum = GCall("Bounties", key)
   if type(rows) ~= "table" then return {}, 0 end
   return rows, tonumber(sum) or 0
 end
 
--- der erste Name, bei mehreren "+n" (1.2.1 fix: kurz, die Zeile bleibt in 192 px; alle stehen im Tooltip)
+-- the first name, with several "+n" (1.2.1 fix: short, the line stays within 192 px; all are in the tooltip)
 function GF.FirstPlus(first, n)
   if n <= 1 then return first end
   return Fmt(L.NAMES_PLUS, { name = first, count = n - 1 })
 end
 
--- eine Zeile fuer den Steckbrief: "500g, ausgelobt von dir" / "... von Anna" / "Kopfgeld 700g: Anna +2"
--- (cut: der gekuerzte erste Name, wenn die Zeile sonst zu breit ist)
+-- one line for the poster: "500g, posted by you" / "... by Anna" / "Bounty 700g: Anna +2"
+-- (cut: the truncated first name when the line would be too wide otherwise)
 function GF.BountyLine(rows, sum, cut)
   if #rows == 0 then return nil end
   if #rows == 1 then
@@ -1334,12 +1334,12 @@ function GF.BountyLine(rows, sum, cut)
     if r.mine then return Fmt(L.POSTER_BOUNTY_MINE, { gold = GF.Gold(r.g) }) end
     return Fmt(L.POSTER_BOUNTY_BY, { gold = GF.Gold(r.g), name = cut or Look.First(r.char) })
   end
-  -- mehrere: die Summe, der groesste Auslober und wie viele noch (Betraege je Auslober im Tooltip der Zeile)
+  -- several: the sum, the largest poster and how many more (amounts per poster in the line's tooltip)
   return Fmt(L.POSTER_BOUNTY_MANY, { gold = GF.Gold(sum), names = GF.FirstPlus(cut or Look.First(rows[1].char), #rows) })
 end
 
--- 1.2.1 fix: eine Zeile, die breiter als ihre 192 px ist, kuerzt den ersten Namen ("Annabel… +3"); alle stehen im
--- Tooltip der Zeile. make(cut) baut die Zeile mit dem gekuerzten Namen.
+-- 1.2.1 fix: a line wider than its 192 px truncates the first name ("Annabel… +3"); all are in the line's
+-- tooltip. make(cut) builds the line with the truncated name.
 function GF.Fit(fs, first, make)
   if type(first) ~= "string" or TextWidth(fs, 0) <= 192 then return end
   local chars = {}
@@ -1350,7 +1350,7 @@ function GF.Fit(fs, first, make)
   end
 end
 
--- Tooltip: jeder Auslober mit Betrag (hoechstens 20, dann "und n weitere"), darunter wie man setzt
+-- Tooltip: every poster with amount (at most 20, then "and n more"), below it how to set one
 function GF.BountyTip(rows)
   local t = { Spaced(L.POSTER_BOUNTY) }
   for i = 1, math.min(#rows, 20) do t[#t + 1] = tostring(rows[i].char) .. ": " .. GF.Gold(rows[i].g) end
@@ -1359,7 +1359,7 @@ function GF.BountyTip(rows)
   return t
 end
 
--- "Gerächt von Anna 2×" / "Gerächt von Anna +2" (alle mit ihren Zahlen im Tooltip)
+-- "Avenged by Anna 2×" / "Avenged by Anna +2" (all with their counts in the tooltip)
 function GF.AvengedText(rows, cut)
   local first = cut or Look.First(rows[1].char)
   if #rows == 1 then first = first .. " " .. Look.Times(rows[1].n) end
@@ -1379,8 +1379,8 @@ function GF.AvengedTip(rows)
   return t
 end
 
--- unsichtbare Flaeche ueber einer Zeile des Steckbriefs (Kopfgeld: Tooltip mit allen, Klick: eigenes festlegen;
--- gerächt: Tooltip mit allen). Faellt die Zeile weg, zeigt der Tooltip ueber dem Steckbrief alles.
+-- invisible area over a line of the poster details (bounty: tooltip with everyone, click: set your own;
+-- avenged: tooltip with everyone). If the line is dropped, the tooltip over the details shows everything.
 function GF.PlaceLineHit(E, hit, idx, tip)
   local shown = idx and E.shownOf and E.shownOf[idx]
   if not shown then hit.tip = nil; hit:Hide(); return end
@@ -1403,7 +1403,7 @@ function GF.PlaceBountyLine(E, idx, rows, aidx, arows, sum)
   end
 end
 
--- Eingabe am Platz des grossen Werts: Enter setzt, leer oder 0 nimmt zurueck, Esc oder Fokus weg bricht ab
+-- input in place of the large value: Enter sets, empty or 0 takes back, Esc or losing focus cancels
 function GF.EditBounty(key)
   local E = P and P.enemy
   if not (E and GF.CanBounty() and type(key) == "string" and E.current and E.current.key == key and E:IsVisible()) then return end
@@ -1413,7 +1413,7 @@ function GF.EditBounty(key)
   local g = GCall("OwnBounty", key)
   ed:SetText(g and tostring(g) or "")
   E.bounty:Hide()
-  E.bountyHit:Hide()     -- 1.2.1 fix: die Klickflaeche liegt sonst ueber dem Feld
+  E.bountyHit:Hide()     -- 1.2.1 fix: otherwise the click area lies over the field
   ed:Show()
   ed:SetFocus()
   ed:HighlightText()
@@ -1452,7 +1452,7 @@ function GF.EndBounty(ed, save)
   UI.Refresh()
 end
 
--- am Ende jedes Plakats: offene Eingabe nur fuer genau diesen Taeter (sonst abbrechen), Wert sonst sichtbar
+-- at the end of every poster: an open input only for exactly this killer (otherwise cancel), else the value is visible
 function GF.BountySlot(E, key)
   local ed = E.bountyEdit
   if ed:IsShown() and ed.key ~= key then ed.key = nil; ed:ClearFocus(); ed:Hide() end
@@ -1474,21 +1474,21 @@ function UX.BuildPoster()
   P.pin:SetSize(28, 28)
   P.pin:SetPoint("TOP", 0, 12)
   Look.Tex(P.pin, Look.TEX.pin, 0.7, 0.05, 0.05, 1)
-  if ns.Humor then pcall(ns.Humor.Pin, P, P.pin) end -- Humor: Reisszwecke (ein Fehler dort kostet nur die Zwecke)
+  if ns.Humor then pcall(ns.Humor.Pin, P, P.pin) end -- Humor: thumbtack (an error there only costs the thumbtack)
   P.tapes = { Tape(P, "BOTTOMLEFT", 0.6), Tape(P, "BOTTOMRIGHT", -0.55) }
-  P.card = Tape(P, "TOPLEFT", 0.75)            -- Karteikarte (Akte): Klebestreifen statt Reisszwecke
+  P.card = Tape(P, "TOPLEFT", 0.75)            -- index card (file): tape instead of a thumbtack
   P.card:Hide()
 
-  -- Taeter-Plakat (auch fuer das Gildenbuch)
+  -- killer poster (also for the guild book)
   local E = CreateFrame("Frame", nil, P)
   E:SetAllPoints()
   P.enemy = E
-  -- 1.2.1: Rechtsklick aufs Plakat: dasselbe Menue wie an der Zeile (Rache abziehen, Kopfgeld ausloben ...)
+  -- 1.2.1: right click on the poster: the same menu as on the row (take back revenge, post a bounty ...)
   E:EnableMouse(true)
   E:SetScript("OnMouseUp", function(self, mouse)
     if mouse == "RightButton" and type(self.current) == "table" and self.current.key then UX.RowMenu({ item = self.current }, self) end
   end)
-  -- das Plakat nimmt die Maus: Ziehen mit links bewegt weiter das Buch (wie ueberall sonst)
+  -- the poster takes the mouse: dragging with the left button still moves the book (as everywhere else)
   E:RegisterForDrag("LeftButton")
   E:SetScript("OnDragStart", function() local f = F and F:GetScript("OnDragStart"); if f then f(F) end end)
   E:SetScript("OnDragStop", function() local f = F and F:GetScript("OnDragStop"); if f then f(F) end end)
@@ -1519,9 +1519,9 @@ function UX.BuildPoster()
   E.portrait:SetPoint("CENTER", 0, -3)
   E.portrait:Hide()
   Tape(photo, "TOPLEFT", 0.7)
-  Tape(photo, "TOPRIGHT", -0.7, -10)     -- etwas eingerueckt: der Name daneben bleibt frei
+  Tape(photo, "TOPRIGHT", -0.7, -10)     -- slightly indented: the name next to it stays clear
 
-  -- Name (hoechstens 2 Zeilen), Klassenbalken, die Kernzahl in Handschrift, darunter der Steckbrief
+  -- name (at most 2 lines), class bar, the key number in handwriting, below it the poster details
   E.name = Look.Text(E, "hand", 19, Look.INK)
   E.name:SetPoint("TOPLEFT", 140, -86)
   E.name:SetWidth(192)
@@ -1534,8 +1534,8 @@ function UX.BuildPoster()
   E.tally:SetPoint("TOPLEFT", E.bar, "BOTTOMLEFT", 0, -4)
   E.tally:SetWidth(192)
   E.tally:SetJustifyH("LEFT")
-  -- 1.2.2: Kernzahl in hoechstens zwei Zeilen (vorher eine: "… · 1× beteiligt" fiel in 16 von 21 Sprachen weg),
-  -- gekuerzt: voller Text im Tooltip; der Steckbrief darunter verliert dann eine Zeile
+  -- 1.2.2: key number in at most two lines (before: one, "… · 1× involved" dropped out in 16 of 21 languages),
+  -- truncated: full text in the tooltip; the details below then lose one line
   E.tally:SetMaxLines(2)
   E.tallyHit = CreateFrame("Frame", nil, E)
   E.tallyHit:SetAllPoints(E.tally)
@@ -1551,7 +1551,7 @@ function UX.BuildPoster()
     E.info[i] = l
   end
 
-  -- unsichtbare Flaechen: "Im Buch von: …" bzw. der ganze Steckbrief, wenn Zeilen fehlen
+  -- invisible areas: "In the book of: …" or the whole details when lines are missing
   E.listHit = CreateFrame("Button", nil, E)
   E.listHit:SetSize(200, 13)
   E.listHit:SetScript("OnEnter", CandEnter)
@@ -1559,11 +1559,11 @@ function UX.BuildPoster()
   E.listHit:Hide()
   E.infoHit = CreateFrame("Button", nil, E)
   E.infoHit:SetPoint("TOPLEFT", E.info[1], "TOPLEFT", 0, 0)
-  E.infoHit:SetSize(200, 60)    -- 1.2.2: ueber alle vier Zeilen (vorher 30 px, die unteren Zeilen hatten keinen Tooltip)
+  E.infoHit:SetSize(200, 60)    -- 1.2.2: over all four lines (before 30 px, the lower lines had no tooltip)
   E.infoHit:SetScript("OnEnter", CandEnter)
   E.infoHit:SetScript("OnLeave", CandLeave)
   E.infoHit:Hide()
-  -- voller Name und alle Opfer im Tooltip (lange Namen werden gekuerzt)
+  -- full name and all victims in the tooltip (long names are truncated)
   E.nameHit = CreateFrame("Button", nil, E)
   E.nameHit:SetPoint("TOPLEFT", E.name, "TOPLEFT", 0, 0)
   E.nameHit:SetSize(192, 22)
@@ -1573,7 +1573,7 @@ function UX.BuildPoster()
   E.bountyLabel = Look.Text(E, "body", 10, Look.RED_INK)
   E.bounty = Look.Text(E, "hand", 22, Look.INK)
   E.bountySize = 22
-  -- 1.2.1: Klick aufs Kopfgeld (eigenes Plakat): eigenes Kopfgeld ausloben; Tooltip mit allen Auslobern
+  -- 1.2.1: click on the bounty (own poster): post your own bounty; tooltip with all posters
   E.bountyHit = CreateFrame("Button", nil, E)
   E.bountyHit:SetSize(150, 40)
   E.bountyHit:SetPoint("TOP", E.bountyLabel, "TOP", 0, 2)
@@ -1613,8 +1613,8 @@ function UX.BuildPoster()
   E.fileLabel = Label(E, "")
   E.fileLabel:SetPoint("TOPLEFT", 20, -256)
   Rule(E, -267, 20, 20, 0.45)
-  -- Taten als kleine Frames: voller Text und Mittaeter im Tooltip. Rechts die Rolle ("beteiligt",
-  -- "Verdacht") als eigene Spalte, damit sie nie abgeschnitten wird; gekuerzt wird der Ort.
+  -- deeds as small frames: full text and accomplices in the tooltip. On the right the role ("involved",
+  -- "suspect") as a column of its own so it is never cut; the place gets truncated instead.
   E.lines = {}
   for i = 1, DEATH_LINES do
     local b = CreateFrame("Button", nil, E)
@@ -1638,8 +1638,8 @@ function UX.BuildPoster()
   E.noteLabel = Label(E, "")
   E.noteLabel:SetPoint("TOPLEFT", 20, -381)
   local note = CreateFrame("EditBox", nil, E)
-  -- 1.2.0: Breite nach dem Etikett (Sprache). 1.2.0: zwei Anker an derselben Oberkante (vorher LEFT plus
-  -- RIGHT: zwei senkrechte Mitten, die sich um rund 100 px widersprachen)
+  -- 1.2.0: width from the label (language). 1.2.0: two anchors on the same top edge (before LEFT plus
+  -- RIGHT: two vertical centres that disagreed by about 100 px)
   note:SetPoint("TOPLEFT", E.noteLabel, "TOPRIGHT", 8, 4)
   note:SetPoint("TOPRIGHT", E, "TOPRIGHT", -20, -377)
   note:SetHeight(18)
@@ -1667,7 +1667,7 @@ function UX.BuildPoster()
     self:ClearFocus()
   end)
   E.note = note
-  -- 1.2.2: laengere Notiz als das Feld zeigt: ganz im Tooltip (gemessen beim Zeigen mit einer unsichtbaren Schrift)
+  -- 1.2.2: note longer than the field shows: in full in the tooltip (measured on show with an invisible font string)
   note.measure = Look.Text(E, "hand", 13, Look.INK)
   note.measure:Hide()
   note:SetScript("OnEnter", function(self)
@@ -1678,7 +1678,7 @@ function UX.BuildPoster()
     if w and type(fw) == "number" and not Look.Secret(fw) and w > fw - 2 then Tip(self, { t }); self.tipped = true end
   end)
   note:SetScript("OnLeave", function(self) if self.tipped then self.tipped = nil; GameTooltip:Hide() end end)
-  -- Gildenplakat: statt der Notiz die Opfer
+  -- guild poster: the victims instead of the note
   E.victims = Look.Text(E, "hand", 13, Look.INK)
   E.victims:SetPoint("TOPLEFT", E.noteLabel, "TOPRIGHT", 8, 2)
   E.victims:SetPoint("TOPRIGHT", E, "TOPRIGHT", -20, -379)
@@ -1694,16 +1694,16 @@ function UX.BuildPoster()
   E.victimsHit:Hide()
   E.victims.tipOwner = E.victimsHit
 
-  -- Stempel (vorgedrehte Texturen). Nr. 1 / Begnadigt / Verdacht auf der unteren Fotohaelfte,
-  -- Rache neben dem Kopfgeld: kein Stempel liegt auf Text.
-  -- Eigene Ebene UEBER dem Foto: das Foto ist ein Kind-Frame, und Regionen eines Kind-Frames liegen im
-  -- Client immer ueber denen des Eltern-Frames, gleich welche Zeichenebene. Ohne diese Ebene verschwindet
-  -- der Stempel hinter dem Foto.
+  -- Stamps (pre-rotated textures). No. 1 / Pardoned / Suspect on the lower half of the photo,
+  -- revenge next to the bounty: no stamp lies on text.
+  -- Own layer ABOVE the photo: the photo is a child frame, and regions of a child frame are always drawn
+  -- above those of the parent frame in the client, whatever the draw layer. Without this layer the stamp
+  -- disappears behind the photo.
   local SL = CreateFrame("Frame", nil, E)
   SL:SetAllPoints(E)
   SL:SetFrameLevel(photo:GetFrameLevel() + 3)
   E.stampLayer = SL
-  -- 1.2.0: je Stempel ein Schriftzug fuer die Fassung ohne eingebrannten Text (alle Sprachen ausser Deutsch)
+  -- 1.2.0: one font string per stamp for the version without burnt-in text (all languages except German)
   E.stampNr1 = SL:CreateTexture(nil, "OVERLAY", nil, 3)
   E.stampNr1:SetSize(GF.STAMP_W, GF.STAMP_H)
   E.stampNr1:SetPoint("TOPLEFT", photo, "TOPLEFT", -22, -54)
@@ -1722,8 +1722,8 @@ function UX.BuildPoster()
   E.racheCount:SetPoint("LEFT", E.stampRache, "RIGHT", -6, -8)
   if E.racheCount.SetRotation then pcall(E.racheCount.SetRotation, E.racheCount, 0.16) end
 
-  -- Fussreihe des Plakats (1.2.2): zwei Knoepfe links, "Streichen" rechts; die Breiten werden verteilt (Wort zuerst,
-  -- 64 bis 120 px, die Knoepfe teilen sich den Rest bis 108 px), kein Wort waechst in den Nachbarknopf
+  -- Poster foot row (1.2.2): two buttons on the left, "Strike out" on the right; the widths are shared out (word first,
+  -- 64 to 120 px, the buttons share the rest up to 108 px), no word grows into the neighbouring button
   E.strike = WordButton(E, L.ACT_STRIKE, "hand", 13)
   E.strike:SetPoint("BOTTOMRIGHT", -20, 11)
   local sw = math.max(64, math.min(120, math.ceil((Look.TextW(E.strike.text) or 60) + 4)))
@@ -1738,7 +1738,7 @@ function UX.BuildPoster()
     E.buttons[i]:SetPoint("BOTTOMLEFT", 20 + (i - 1) * (bw + 8), 10)
   end
   E.strike:SetScript("OnClick", function(self) Look.Sound("click"); if self.key then UI.ConfirmDelete(self.key) end end)
-  -- 1.2.0: "Zur Jagd freigeben" / "Jagd abblasen" als Wort unter dem Foto (eigene Gesuchte, Gilde, Freunde)
+  -- 1.2.0: "Put on hit list" / "Call off the hunt" as a word below the photo (own wanted, guild, friends)
   E.hunt = WordButton(E, "", "hand", 13)
   E.hunt:SetPoint("TOPLEFT", 20, -193)
   E.hunt:SetSize(120, 18)
@@ -1749,7 +1749,7 @@ function UX.BuildPoster()
   end)
   E.hunt:Hide()
 
-  -- Todesakte (Journal, Zu klaeren): Karteikarte, links buendig
+  -- death file (journal, Unsolved): index card, left aligned
   local D = CreateFrame("Frame", nil, P)
   D:SetAllPoints()
   D:Hide()
@@ -1761,7 +1761,7 @@ function UX.BuildPoster()
   D.when:SetPoint("TOPRIGHT", -24, -28)
   D.when:SetJustifyH("RIGHT")
   Rule(D, -52, 24, 24, 0.7)
-  -- 1.2.2: unter dem Kopf rollt die Akte (gleiche Koordinaten wie vorher), die Quellenzeile steht im Fuss
+  -- 1.2.2: below the head the file scrolls (same coordinates as before), the source line stands in the foot
   D.page = Look.Page(D, { top = 54, foot = 46, w = 352, h = 452 })
   local Ds = CreateFrame("Frame", nil, D.page.body)
   Ds:SetPoint("TOPLEFT", D.page.body, "TOPLEFT", 0, 54)
@@ -1782,7 +1782,7 @@ function UX.BuildPoster()
   D.killer.text:SetWidth(304)
   D.killer.text:SetJustifyH("LEFT")
   D.killer.text:SetWordWrap(false)
-  Look.TipIfCut(D.killer, D.killer.text)   -- 1.2.2: 26, 22, 19 pt, dann Tooltip
+  Look.TipIfCut(D.killer, D.killer.text)   -- 1.2.2: 26, 22, 19 pt, then tooltip
   D.killer:SetScript("OnClick", function(self)
     if self.key and Store().Get(self.key) then UI.ShowEnemy(self.key) end
   end)
@@ -1791,7 +1791,7 @@ function UX.BuildPoster()
   D.note:SetWidth(304)
   D.note:SetJustifyH("LEFT")
   D.note:SetTextColor(C(Look.INK, TONE.sub))
-  -- Mittaeter: anklickbare Namen in Handschrift
+  -- accomplices: clickable names in handwriting
   D.assistLabel = Label(Ds, L.CASE_ASSISTS)
   D.assistLabel:SetPoint("TOPLEFT", D.note, "BOTTOMLEFT", 0, -14)
   D.assists = {}
@@ -1820,7 +1820,7 @@ function UX.BuildPoster()
   D.source:SetJustifyH("LEFT")
   D.source:SetTextColor(C(Look.INK, TONE.sub))
 
-  -- Leerzustand: von Hand auf die leere rechte Seite geschrieben
+  -- empty state: written by hand on the empty right page
   local X = CreateFrame("Frame", nil, RP)
   X:SetAllPoints()
   X:Hide()
@@ -1843,18 +1843,18 @@ function UX.BuildPoster()
   xs:SetVertexColor(0.2, 0.18, 0.16, 0.7)
 end
 
--- Leerzustand der rechten Seite: ein Muster fuer alle Reiter
+-- empty state of the right page: one pattern for all tabs
 local function ShowEmpty(kind)
   local t = EMPTY[kind] or EMPTY.wanted
   RP.empty.big:SetText(L[t[1] .. "_HEAD"])
   RP.empty.small:SetText(t[2] >= 2 and L[t[1] .. "_SUB"] or "")
   RP.empty.tiny:SetText(t[2] >= 3 and L[t[1] .. "_HINT"] or "")
-  if kind == "wanted" and ns.Humor then pcall(ns.Humor.EmptyWanted, RP.empty) end -- Humor: leeres Buch, 1. April
+  if kind == "wanted" and ns.Humor then pcall(ns.Humor.EmptyWanted, RP.empty) end -- Humor: empty book, 1 April
   P:Hide()
   RP.empty:Show()
 end
 
--- zwei Knoepfe nebeneinander links unten (rechts davon steht das Wort "Streichen")
+-- two buttons side by side at the bottom left (the word "Strike out" stands to their right)
 local function ConfigButtons(E, spec)
   for i = 1, 2 do
     local b, s = E.buttons[i], spec[i]
@@ -1862,7 +1862,7 @@ local function ConfigButtons(E, spec)
   end
 end
 
--- gueltiges Unit-Token fuer das Portraet (Tracker zuerst, sonst Ziel/Mouseover)
+-- valid unit token for the portrait (tracker first, otherwise target/mouseover)
 function UX.PortraitUnitFor(key)
   if ns.Tracker and ns.Tracker.UnitFor then
     local ok, u = pcall(ns.Tracker.UnitFor, key)
@@ -1875,10 +1875,10 @@ function UX.PortraitUnitFor(key)
   end
 end
 
-UX.ROLE_TAG = { assist = "ROLE_ASSIST", suspect = "ROLE_SUSPECT" }   -- Schluessel
+UX.ROLE_TAG = { assist = "ROLE_ASSIST", suspect = "ROLE_SUSPECT" }   -- locale key
 
--- Tatzeile: "11.11. 01:01 · Siegel des Befehls · Die ungezähmte Küste" (Wichtiges zuerst, Ort zuletzt);
--- eigener Char nur, wenn es ein anderer war. Die Rolle steht rechts daneben.
+-- Deed line: "11.11. 01:01 · Seal of Command · The Untamed Coast" (important first, place last);
+-- own character only if it was a different one. The role stands to the right of it.
 function UX.DeathLine(d)
   local me = Look.Me()
   local who = (d.me and d.me ~= me) and ("(" .. Look.First(d.me) .. ")") or nil
@@ -1903,12 +1903,12 @@ function UX.DeathTip(d)
   return t
 end
 
--- Gilden-Tat: "12.11. 21:04 · Grom'gol · Anna"
+-- guild deed: "12.11. 21:04 · Grom'gol · Anna"
 function UX.GuildDeedLine(d)
   return Look.Join(Look.When(d.t), Look.Place(d.zone), Look.First(d.victim))
 end
 
--- "Opfer: Anna Beispiel (Stufe 34)"
+-- "Victim: Anna Beispiel (level 34)"
 function GF.VictimLine(name, level)
   if level then return Fmt(L.TIP_VICTIM_LEVEL, { name = name, level = level }) end
   return Fmt(L.TIP_VICTIM, { name = name })
@@ -1936,7 +1936,7 @@ local function FillLines(E, list, lineFn, tipFn, emptyText)
     end
     b.text:SetText(text)
     b.tag:SetText(tag or "")
-    -- Platz fuer die Rolle rechts nach ihrer Breite; der Ort davor wird notfalls gekuerzt
+    -- room for the role on the right by its width; the place before it gets truncated if needed
     local w = tag and math.floor(312 - TextWidth(b.tag, 60) - 10) or 312
     if b.tagged ~= w then
       b.tagged = w
@@ -1946,7 +1946,7 @@ local function FillLines(E, list, lineFn, tipFn, emptyText)
 end
 
 local function SetPhoto(E, e)
-  -- Reisszwecke (Osterei) nur mit "Trockene Bemerkungen" an und nur, wo die Zwecke zu sehen ist
+  -- thumbtack (easter egg) only with "Dry remarks" on and only where the thumbtack is visible
   if P.dnPin then P.dnPin:SetShown(P.pin:IsShown() and ns.Humor and ns.Humor.On() or false) end
   E.name:SetText(Look.Name(e))
   E.nameHit.tip = Truncated(E.name) and { Look.Name(e) } or nil
@@ -1962,21 +1962,21 @@ local function SetPhoto(E, e)
   if not pok then Look.ClassIcon(E.icon, e.class); MugIcon(E.icon) end
 end
 
--- Steckbrief: hoechstens so viele Zeilen, wie unter den Namen passen. Faellt eine Zeile weg (langer Name
--- in zwei Zeilen), zeigt der Tooltip ueber dem Steckbrief alles.
+-- Poster details: at most as many lines as fit below the name. If a line drops out (long name
+-- in two lines), the tooltip over the details shows everything.
 local scratchInfo, scratchTip = {}, {}
 local function SetInfo(E, info, optional)
-  -- 1.2.2: echte Breite ohne Umbruch (GetStringWidth kann an der gesetzten Breite enden); Name und Kernzahl
-  -- in zwei Zeilen nehmen je eine Zeile des Steckbriefs
+  -- 1.2.2: real width without wrapping (GetStringWidth can end at the set width); a name and key number
+  -- in two lines each take one line from the details
   local twoLines = (Look.TextW(E.name) or 0) > 192
   local room = INFO_LINES - (twoLines and 1 or 0) - ((Look.TextW(E.tally) or 0) > 192 and 1 or 0)
   local shown, dropped = 0, false
-  -- 1.2.1: welche Zeile des Steckbriefs (Index in info) auf welcher Linie steht
+  -- 1.2.1: which line of the details (index in info) stands on which ruled line
   local at = E.shownOf or {}
   E.shownOf = at
   for k in pairs(at) do at[k] = nil end
   for i = 1, #info do
-    -- 1.2.0: optionale Zeilen (Rasse, Gilde) weichen immer, wenn sonst eine spaetere Zeile keinen Platz haette
+    -- 1.2.0: optional lines (race, guild) always give way when a later line would otherwise have no room
     if shown < room and not (optional[i] and #info - i + shown >= room) then
       shown = shown + 1
       E.info[shown]:SetText(info[i])
@@ -1986,7 +1986,7 @@ local function SetInfo(E, info, optional)
     end
   end
   for i = shown + 1, INFO_LINES do E.info[i]:SetText("") end
-  -- 1.2.2: auch eine gekuerzte Zeile (Ellipse) zeigt den ganzen Steckbrief im Tooltip
+  -- 1.2.2: a truncated line (ellipsis) also shows the whole details in the tooltip
   for i = 1, shown do if not dropped and Truncated(E.info[i]) then dropped = true end end
   for i = 1, INFO_LINES do E.info[i].tipOwner = dropped and E.infoHit or nil end
   if dropped then
@@ -2001,15 +2001,14 @@ local function SetInfo(E, info, optional)
   end
 end
 
--- Kopfgeld ab vier Stellen ("2.875 GOLD") einen Grad kleiner, sonst stoesst es an den Rache-Stempel
--- 1.2.2: Kopfgeld in der Stufenleiter 22, 19, 16 (ab vier Stellen ab 19) nach der gemessenen Breite; mit
--- Rache-Stempel bis zum Stempelrahmen (124 px), sonst die Plakatbreite
+-- Bounty: font size ladder 22, 19, 16 pt, from four digits ("2.875 GOLD") 19, 16, 13 pt (1.2.2), picked by the
+-- measured width; with a revenge stamp up to the stamp frame (124 px), otherwise the poster width (300 px)
 GF.FIT_BOUNTY, GF.FIT_BOUNTY_BIG = { sizes = { 22, 19, 16 } }, { sizes = { 19, 16, 13 } }
 local function SetBounty(E, text, big)
   E.bountyText, E.bountyFit = text, big and GF.FIT_BOUNTY_BIG or GF.FIT_BOUNTY
 end
 
--- Kopfgeld-Block; mit Rache-Stempel rueckt er nach links, der Stempel steht daneben
+-- bounty block; with a revenge stamp it moves to the left, the stamp stands next to it
 local function PlaceBounty(E, shifted)
   local x = shifted and -62 or 0
   E.bountyLabel:ClearAllPoints()
@@ -2023,8 +2022,8 @@ end
 
 ClassName = function(e)
   if e.classLoc then return e.classLoc end
-  -- Gildeneintraege tragen nur das Klassen-Token: steht derselbe Taeter im eigenen Buch, gilt dessen
-  -- Wortlaut ("Magierin"), damit dieselbe Person ueberall gleich heisst
+  -- Guild entries only carry the class token: if the same killer is in the own book, its wording
+  -- ("Magierin") applies, so the same person is called the same everywhere
   local S = ns.Store
   local own = e.key and S and S.Get and S.Get(e.key)
   if type(own) == "table" and type(own.classLoc) == "string" and own.class == e.class then return own.classLoc end
@@ -2045,26 +2044,26 @@ local function FillEnemy(e)
   SetPhoto(E, e)
   Look.FitText(E.tally, e.status == "pardoned" and Look.Join(L.ROW_PARDONED, Look.Tally(e)) or Look.Tally(e), GF.FIT_TALLY)
 
-  -- Steckbrief: "Stufe 36 · Magierin", Rasse, "Gilde: Beispielgilde", zuletzt gesehen (Rasse und Gilde fallen
-  -- bei zweizeiligem Namen zuerst weg)
+  -- Details: "Level 36 · Mage", race, "Guild: Beispielgilde", last seen (race and guild drop out
+  -- first with a two-line name)
   local info, opt = wipe(scratchInfo), wipe(optInfo)
   local cls = ClassName(e)
   local who = Look.Join(e.level and Fmt(L.POSTER_LEVEL, { level = e.level }), cls)
   if who ~= "" then info[#info + 1] = who end
-  -- 1.2.0: begnadigt, Verdacht oder Rang 1 und zugleich auf der Abschussliste (der Stempel zeigt es dann nicht).
-  -- 1.2.0: gleich nach der Stufe, vor Rasse und Gilde (die weichen zuerst), damit die Zeile immer zu sehen ist
+  -- 1.2.0: pardoned, suspect or rank 1 and on the hit list at the same time (the stamp does not show it then).
+  -- 1.2.0: right after the level, before race and guild (they give way first), so the line is always visible
   if e.status ~= "wanted" or rank == 1 then
     local h = GF.HasHunts() and GCall("Hunt", e.key, "all")
     if type(h) == "table" then
       local names = type(h.names) == "table" and h.names or {}
-      -- 1.2.2: "Anna +2" wie beim Kopfgeld (die Zeile passt in 192 px; alle Namen zeigt die Abschussliste)
+      -- 1.2.2: "Anna +2" as with the bounty (the line fits in 192 px; the hit list shows all names)
       info[#info + 1] = Fmt(L.POSTER_ON_HUNTLIST, { names = #names > 0 and GF.FirstPlus(Look.First(names[1]), #names) or Look.NameList(names, 2) })
     end
   end
   if e.raceLoc or e.race then info[#info + 1] = e.raceLoc or e.race; opt[#info] = true end
   if e.guild and e.guild ~= "" then info[#info + 1] = Fmt(L.POSTER_GUILD, { guild = e.guild }); opt[#info] = true end
-  -- 1.2.1: ausgelobtes Kopfgeld und "gerächt von" als Zeilen. Weichen, wenn der Platz fehlt (zuerst Rasse, dann Gilde,
-  -- dann das Kopfgeld, dessen Summe gross daneben steht, dann "gerächt von"); "zuletzt gesehen" bleibt immer.
+  -- 1.2.1: posted bounty and "avenged by" as lines. They give way when room is short (race first, then guild,
+  -- then the bounty, whose sum stands large next to it, then "avenged by"); "last seen" always stays.
   local brows, bsum = GF.BountyRows(e.key)
   local bline = GF.BountyLine(brows, bsum)
   local bidx, aidx
@@ -2079,7 +2078,7 @@ local function FillEnemy(e)
 
   local rv = tonumber(e.revenge) or 0
   E.bountyLabel:SetText(Spaced(L.POSTER_BOUNTY))
-  -- 1.2.1: ausgelobt: gross die Summe in roter Tinte; sonst der Wert des Buchs wie bisher
+  -- 1.2.1: posted: the sum large in red ink; otherwise the book's value as before
   if bsum > 0 then
     SetBounty(E, GoldText(bsum * 10000), bsum >= 1000)
     E.bounty:SetTextColor(C(Look.RED_INK))
@@ -2102,14 +2101,14 @@ local function FillEnemy(e)
   E.victims:Hide()
   E.victimsHit:Hide()
   E.note:Show()
-  -- anderer Eintrag, waehrend das Feld Fokus hat: erst unter dem alten Schluessel speichern
+  -- another entry while the field has focus: save under the old key first
   if E.note.key ~= e.key and E.note:HasFocus() then E.note:ClearFocus() end
   E.note.key = e.key
   if not E.note:HasFocus() then E.note:SetText(Look.NoteOf(e)) end
 
   if rank == 1 then GF.Stamp(E.stampNr1, "nr1") end
   GF.ShowStamp(E.stampNr1, rank == 1)
-  -- VERDACHT nur fuer echte Verdachtsfaelle (Beteiligte sind Gesuchte)
+  -- SUSPECT only for real suspicion cases (those involved are wanted)
   if e.status == "pardoned" then
     GF.Stamp(E.stampOther, "pardon"); GF.ShowStamp(E.stampOther, true)
   elseif e.status == "suspect" then
@@ -2124,7 +2123,7 @@ local function FillEnemy(e)
   E.strike.key = e.key
   E.strike:Show()
 
-  -- Knoepfe (mit ihren Closures) nur neu, wenn sich Eintrag oder Status geaendert haben
+  -- rebuild buttons (with their closures) only when entry or status changed
   local sig = "e\0" .. e.key .. "\0" .. tostring(e.status) .. (GF.undo and GF.undo.key == e.key and "\0u" or "")
   if E.specSig ~= sig then
     E.specSig = sig
@@ -2132,7 +2131,7 @@ local function FillEnemy(e)
   end
 end
 
--- 1.2.0: Stempel ZUR JAGD FREIGEGEBEN auf dem Platz der anderen Stempel (Nr. 1 hat Vorrang)
+-- 1.2.0: stamp ON THE HIT LIST in the place of the other stamps (No. 1 takes precedence)
 function GF.HuntStamp(E, key, nr1)
   local h = not nr1 and GF.HasHunts() and GCall("Hunt", key, "all")
   if type(h) == "table" then
@@ -2143,15 +2142,15 @@ function GF.HuntStamp(E, key, nr1)
   end
 end
 
--- Wort unter dem Foto: freigeben oder die eigene Freigabe abblasen (key = nil: verstecken).
--- 1.2.0: nur, wenn kein Stempel auf dem Foto steht (der laege auf dem Wort); sonst steht die Aktion
--- nur im Zeilenmenue. Erst nach den Stempeln rufen.
+-- Word below the photo: post a call or call off the own one (key = nil: hide).
+-- 1.2.0: only when no stamp is on the photo (it would lie on the word); otherwise the action is
+-- only in the row menu. Call after the stamps.
 function GF.SetHuntWord(E, key)
   E.hunt.hide = nil
   if key and (E.stampNr1:IsShown() or E.stampOther:IsShown()) then key = nil end
   if not key or not GF.HasHunts() then E.hunt.key = nil; E.hunt:Hide(); return end
   E.hunt.key = key
-  -- 1.2.2: hoechstens bis vor den Steckbrief (x = 136), sonst kleiner, dann Tooltip
+  -- 1.2.2: at most up to the details (x = 136), otherwise smaller, then tooltip
   E.hunt:SetWidth(116)
   E.hunt.text:SetWidth(116)
   Look.FitText(E.hunt.text, GF.Released(key) and L.ACT_CALLOFF or L.ACT_RELEASE, GF.FIT_STRIKE)
@@ -2159,11 +2158,11 @@ function GF.SetHuntWord(E, key)
   E.hunt:Show()
 end
 
--- Eintragung von Hand: "Bert · 12.11. 21:04"
+-- manual entry: "Bert · 12.11. 21:04"
 local function ListedLine(x) return Look.Join(Look.First(x[1]), Look.When(x[2])) end
 local function ListedTip(x) return { tostring(x[1]), Fmt(L.TIP_LISTED_AT, { time = Look.When(x[2]) }) } end
 
--- "Gesehen vor 2 Std. von Anna" (by = wer ihn gesehen hat, darf fehlen)
+-- "Seen 2 hrs ago by Anna" (by = who saw him, may be missing)
 function GF.SeenBy(ago, by)
   if type(by) == "string" and by ~= "" then return Fmt(L.POSTER_SEEN_BY, { time = ago, name = Look.First(by) }) end
   return Fmt(L.POSTER_SEEN, { time = ago })
@@ -2172,9 +2171,9 @@ end
 local scratchListed = {}
 UX.scratchPairs = {}
 
--- Gildenbuch: gleiches Plakat, Opferzahl statt Kopfgeld, Taten "Datum · Ort · Opfer".
--- Nur von Hand Eingetragene: kein Nr.-1-Stempel, "VON HAND EINGETRAGEN" statt Opferzahl, statt
--- der Taten die Eintragungen (wer, wann).
+-- Guild book: same poster, number of victims instead of bounty, deeds "date · place · victim".
+-- Only entered by hand: no No. 1 stamp, "ENTERED BY HAND" instead of the victim count, the
+-- entries (who, when) instead of the deeds.
 local function FillGuild(g)
   local E = P.enemy
   E.current = g
@@ -2188,7 +2187,7 @@ local function FillGuild(g)
   local info, opt = wipe(scratchInfo), wipe(optInfo)
   local who = Look.Join(g.level and Fmt(L.POSTER_LEVEL, { level = g.level }), ClassName(g))
   if who ~= "" then info[#info + 1] = who end
-  -- Nr. 1 und zugleich auf der Abschussliste: der Stempel zeigt Nr. 1, die Freigabe steht als Zeile (wie im eigenen Buch)
+  -- No. 1 and on the hit list at the same time: the stamp shows No. 1, the call stands as a line (as in the own book)
   if rank == 1 then
     local h = GF.HasHunts() and GCall("Hunt", g.key, "all")
     if type(h) == "table" then
@@ -2202,8 +2201,8 @@ local function FillGuild(g)
     listLine = #info
     opt[#info] = true
   end
-  -- 1.2.1: ausgelobtes Kopfgeld und "gerächt von" als Zeilen (die Opferzahl behaelt ihren Platz); fehlt der Platz,
-  -- weichen "im Buch von", das Kopfgeld und "gerächt von" in dieser Folge, "zuletzt gesehen" bleibt
+  -- 1.2.1: posted bounty and "avenged by" as lines (the victim count keeps its place); when room is short,
+  -- "in the book of", the bounty and "avenged by" give way in this order, "last seen" stays
   local brows, bsum = GF.BountyRows(g.key)
   local bline = GF.BountyLine(brows, bsum)
   local bidx, aidx
@@ -2219,7 +2218,7 @@ local function FillGuild(g)
   end
   SetInfo(E, info, opt)
   GF.PlaceBountyLine(E, bidx, brows, aidx, arows, bsum)
-  -- Tooltip mit allen Namen, wenn gekuerzt (mehr als zwei, Vornamen, oder zu breit)
+  -- tooltip with all names when truncated (more than two, first names, or too wide)
   local listAt = listLine and E.shownOf[listLine]
   if listAt and (#names > 2 or Truncated(E.info[listAt]) or Look.First(names[1]) ~= names[1]) then
     E.listHit.tip = { L.TIP_IN_BOOK_OF, table.concat(names, ", ") }
@@ -2235,7 +2234,7 @@ local function FillGuild(g)
     E.bountyLabel:SetText(Spaced(L.POSTER_REMARK))
     SetBounty(E, L.POSTER_BY_HAND, true)
   else
-    -- 1.2.0: Zahl der Opfer ohne Rolle (Kollege oder Freund), das Etikett OPFER steht nur einmal (unten)
+    -- 1.2.0: number of victims without a role (guildmate or friend), the label VICTIMS appears only once (below)
     E.bountyLabel:SetText("")
     SetBounty(E, Look.Count(g.victimCount, L.ROW_VICTIMS), false)
   end
@@ -2246,7 +2245,7 @@ local function FillGuild(g)
   GF.BountySlot(E, g.key)
 
   if only then
-    -- wer ihn wann eingetragen hat, aelteste zuerst
+    -- who entered him and when, oldest first
     local list = UX.scratchPairs
     for i = #list, 1, -1 do list[i] = nil end
     for i = 1, #names do list[i] = { names[i], g.listedBy[names[i]] } end
@@ -2257,7 +2256,7 @@ local function FillGuild(g)
     FillLines(E, type(g.deeds) == "table" and g.deeds or {}, UX.GuildDeedLine, UX.GuildDeedTip, L.POSTER_NO_DEEDS_SENT)
   end
 
-  -- Opfer nach Anzahl, mit Vornamen
+  -- victims by count, with first names
   local list = {}
   if type(g.victims) == "table" then
     for name, n in pairs(g.victims) do list[#list + 1] = { name, tonumber(n) or 0 } end
@@ -2297,7 +2296,7 @@ local function FillGuild(g)
   end
 end
 
--- Abschussliste (1.2.0): Plakat mit Freigaben (wer, wann, Grund), Erlegt-Zaehler, Stempel
+-- Hit list (1.2.0): poster with calls (who, when, reason), taken-down counter, stamp
 function GF.HuntSpec(h)
   local key = h.key
   local second
@@ -2316,7 +2315,7 @@ function GF.HuntSpec(h)
   return { GF.HuntAction(key), second, GF.HideAction(key) }
 end
 
--- 1.2.0: fremde Freigabe fuer mich ausblenden (kein Alarm, blass am Ende der Liste) bzw. zurueckholen
+-- 1.2.0: hide someone else's call for me (no alarm, pale at the end of the list) or bring it back
 function GF.HideAction(key)
   if GCall("HuntHidden", key) then
     return { L.ACT_HUNT_SHOW, function() GCall("HideHunt", key, false); UI.Refresh() end }
@@ -2345,7 +2344,7 @@ function GF.FillHunt(h)
   if type(h.why) == "string" and h.why ~= "" then info[#info + 1] = Fmt(L.HUNT_REASON, { reason = h.why }) end
   local names = type(h.names) == "table" and h.names or {}
   if #names > 0 then info[#info + 1] = Fmt(L.POSTER_RELEASED_BY, { names = Look.NameList(names, 2) }); opt[#info] = true end
-  -- 1.2.1: ausgelobtes Kopfgeld und "gerächt von" vor dem Gesehen; fehlt der Platz, weichen sie nach "freigegeben von"
+  -- 1.2.1: posted bounty and "avenged by" before the sighting; when room is short they give way after "called by"
   local brows, bsum = GF.BountyRows(h.key)
   local bline = GF.BountyLine(brows, bsum)
   local bidx, aidx
@@ -2379,8 +2378,8 @@ function GF.FillHunt(h)
   local taken = lb and Fmt(L.POSTER_TAKEN_BY, { name = Look.First(lb.by), time = Look.Ago(lb.t) }) or L.POSTER_TAKEN_NOBODY
   E.victims:SetText(taken)
   E.victims:Show()
-  -- 1.2.2: der ganze Satz mit vollem Namen und Zeitpunkt immer im Tooltip (gekuerzt bei langen Vornamen und dem
-  -- breiten Etikett in ruRU/ukUA; ob gekuerzt, weiss bei zwei Ankern nur der Client)
+  -- 1.2.2: the whole sentence with full name and time always in the tooltip (truncated with long first names and the
+  -- wide label in ruRU/ukUA; with two anchors only the client knows whether it is truncated)
   E.victimsHit.tip = { lb and Fmt(L.POSTER_TAKEN_BY, { name = tostring(lb.by), time = Look.When(lb.t) }) or taken }
   E.victimsHit:Show()
   GF.ShowStamp(E.stampNr1, false)
@@ -2390,8 +2389,8 @@ function GF.FillHunt(h)
   E.racheCount:Hide()
   E.strike.key = nil
   E.strike:Hide()
-  -- 1.2.0: kein Wort unter dem Foto (der Stempel ZUR JAGD FREIGEGEBEN laege darauf); "Für mich
-  -- ausblenden" steht im Zeilenmenue
+  -- 1.2.0: no word below the photo (the stamp ON THE HIT LIST would lie on it); "Hide for
+  -- me" is in the row menu
   E.hunt.key, E.hunt.hide = nil, nil
   E.hunt:Hide()
   local sig = "h\0" .. h.key .. "\0" .. (Store().Get(h.key) and "1" or "0") .. (GF.Released(h.key) and "1" or "0")
@@ -2402,7 +2401,7 @@ function GF.FillHunt(h)
   end
 end
 
--- Mittaeter eines Todes: aus der Tat beim Taeter (others), sonst die Kandidaten ohne den Taeter
+-- accomplices of a death: from the deed at the killer (others), otherwise the candidates without the killer
 local assistScratch = {}
 function UX.AssistsOf(d)
   local out = wipe(assistScratch)
@@ -2457,7 +2456,7 @@ local function FillDeath(d, index)
     D.note:SetText(L.CASE_DARK)
   end
 
-  -- Taeter festlegen (offen oder nur Verdacht), sonst die Beteiligten
+  -- set the killer (open or suspicion only), otherwise those involved
   local showC = (d.kind == "pvp") and d.sure ~= true and #cands > 0 and Store().AssignDeath ~= nil
   D.candLabel:SetShown(showC)
   local nc = showC and #cands or 0
@@ -2465,7 +2464,7 @@ local function FillDeath(d, index)
     local b, key = D.cands[i], showC and cands[i]
     b.tip = nil
     if i == GF.CAND_MAX and nc > GF.CAND_MAX then
-      -- mehr Kandidaten als Knoepfe: der letzte nennt den Rest im Tooltip
+      -- more candidates than buttons: the last one names the rest in the tooltip
       local rest = { L.TIP_MORE_CANDIDATES }
       for k = GF.CAND_MAX, nc do rest[#rest + 1] = (NameOfKey(cands[k])) end
       b:SetLabel(Fmt(L.MORE_LINE, { count = nc - GF.CAND_MAX + 1 }))
@@ -2474,7 +2473,7 @@ local function FillDeath(d, index)
       b:Show()
     elseif key then
       b:SetLabel((NameOfKey(key)))
-      -- Position erst beim Klick suchen: ein neuer Tod dazwischen verschiebt das Journal
+      -- look up the position only on click: a new death in between shifts the journal
       b.fn = function()
         local list = Store().Deaths() or {}
         local at = index
@@ -2506,9 +2505,9 @@ local function FillDeath(d, index)
       b:Hide()
     end
   end
-  -- nur bei Verdacht steht dabei, worauf er beruht
+  -- only for suspicion does it say what it is based on
   D.source:SetText(d.source == "suspect" and L.CASE_SOURCE_SUSPECT or "")
-  -- Hoehe der Akte aus dem Stapel: Ort, Taeter, Notiz, dann Kandidaten oder Mittaeter
+  -- height of the file from the stack: place, killer, note, then candidates or accomplices
   local y = 62 + Look.TextH(D.info, #info) + 16 + 12 + 2 + 32 + 2 + Look.TextH(D.note, 2)
   if nc > 0 then y = y + 14 + 12 + 6 + math.ceil(math.min(nc, GF.CAND_MAX) / 2) * 28
   elseif na > 0 then y = y + 14 + 12 + 2 + math.min(na, GF.ASSIST_MAX) * 20 end
@@ -2516,7 +2515,7 @@ local function FillDeath(d, index)
   if D.ref ~= d then D.ref = d; D.page:Top() end
 end
 
--- Journal, Zu klaeren und Gilde: Enter sucht nur, traegt nie ein
+-- Journal, Unsolved and Guild: Enter only searches, never adds an entry
 local function SearchOnly() return state.filter ~= "wanted" end
 
 local function EmptyKind()
@@ -2544,7 +2543,7 @@ local function EmptyKind()
   return state.filter
 end
 
--- Karteikarte (Akte) oder Plakat: Reisszwecke nur am Plakat, Klebestreifen an der Karte
+-- index card (file) or poster: thumbtack only on the poster, tape on the card
 local function PosterMode(card)
   P.pin:SetShown(not card)
   if card and P.dnPin then P.dnPin:Hide() end
@@ -2563,7 +2562,7 @@ function UX.ShowCaseOrEnemy(item, index)
   end
 end
 
--- true, wenn ShowRight eine Auswahl erst setzen musste (dann die Zeilen einmal nachziehen)
+-- true if ShowRight had to set a selection first (then refresh the rows once)
 local picked = false
 ShowRight = function()
   if state.panel then return end
@@ -2573,7 +2572,7 @@ ShowRight = function()
   if n == 0 then
     ShowEmpty(EmptyKind())
   elseif state.filter == "journal" then
-    -- Auswahl ist der Eintrag selbst; die Position folgt ihm, wenn neue Tode davor rutschen
+    -- the selection is the entry itself; the position follows it when new deaths slide in before it
     local pos
     if state.deathRef then
       for i = 1, n do if data[i] == state.deathRef then pos = i; break end end
@@ -2602,7 +2601,7 @@ ShowRight = function()
     end
     UX.ShowCaseOrEnemy(item, index or 1)
   elseif MemberView() then
-    -- gewaehlte Kindzeile (im selben Abschnitt), sonst derselbe Taeter woanders, sonst der erste
+    -- selected child row (in the same section), otherwise the same killer elsewhere, otherwise the first
     local g, first
     for i = 1, n do
       local w = data[i]
@@ -2620,7 +2619,7 @@ ShowRight = function()
     if not entry then
       local w = first
       if not w then
-        -- alles zugeklappt: erster Taeter des ersten Abschnitts
+        -- everything collapsed: first killer of the first section
         for i = 1, n do
           local m = data[i].m
           local r1 = type(m.rows) == "table" and m.rows[1]
@@ -2665,9 +2664,9 @@ ShowRight = function()
 end
 
 ------------------------------------------------------------------------
--- Groesse des Buchs: nie groesser als der Schirm, nie kleiner als lesbar
+-- Book size: never larger than the screen, never smaller than readable
 ------------------------------------------------------------------------
--- Bildpunkte je UI-Einheit (nil, wenn der Client es nicht verraet)
+-- pixels per UI unit (nil if the client does not tell)
 local function PxPerUnit()
   if not GetPhysicalScreenSize then return nil end
   local ok, _, ph = pcall(GetPhysicalScreenSize)
@@ -2676,14 +2675,14 @@ local function PxPerUnit()
   return ph / uh
 end
 
--- groesste Stufe, bei der das Buch (mit Rand) noch auf den Schirm passt
+-- largest scale at which the book (with margin) still fits on the screen (at most 150 %)
 function UX.MaxScale()
   local w, h = UIParent:GetWidth(), UIParent:GetHeight()
   if type(w) ~= "number" or type(h) ~= "number" or Look.Secret(w) or Look.Secret(h) or w <= 0 or h <= 0 then return 1.5 end
   return math.min(1.5, h / (H + 12), w / (W + 20))
 end
 
--- angebotene Stufen: passen auf den Schirm; unter 100 % nur, wenn eine Einheit dann noch 1,4 px hat
+-- offered scales: fit on the screen; below 100 % only if a unit then still has 1.4 px
 local scaleSteps = {}
 function UI.ScaleSteps()
   for i = #scaleSteps, 1, -1 do scaleSteps[i] = nil end
@@ -2706,7 +2705,7 @@ local function ApplyScale()
   if F then F:SetScale(ClampScale(tonumber(Look.Setting("ui.scale", 1)) or 1)) end
 end
 
--- einmalig: ohne eigene Wahl die kleinste Stufe ab 100 %, bei der eine Einheit 1,4 px hat
+-- once: without an own choice the smallest scale from 100 % at which a unit has 1.4 px
 function UX.AutoScale()
   if Look.Setting("ui.autoScale") == true then return end
   local cur = tonumber(Look.Setting("ui.scale", 1)) or 1
@@ -2725,9 +2724,9 @@ function UX.AutoScale()
 end
 
 ------------------------------------------------------------------------
--- Hausordnung (Blaetter Buch, Alarm, Gilde), Gebrauchsanweisung, Sichern/Einlesen
+-- House rules (sheets Book, Alarm, Guild), manual, back up/import
 ------------------------------------------------------------------------
-local SyncClick, MembersTip, BuildSettings, BuildHelp -- im Block unten belegt
+local SyncClick, MembersTip, BuildSettings, BuildHelp -- assigned in the block below
 do
 local BOOK_OPTIONS = {
   { "tooltip",         "OPT_TOOLTIP", true },
@@ -2748,11 +2747,11 @@ local GUILD_OPTIONS = {
   { "announce",    "OPT_G_ANNOUNCE" },
   { "sightings",   "OPT_G_SIGHTINGS" },
 }
--- 1.2.0 mit Freundesbuch: Teilen mit Freunden, Alarm der Abschussliste; die Schalter fuer Alarm, Meldung und
--- Sichtungen gelten fuer Gilde und Freunde und heissen so.
--- 1.2.0: zwei ruhige Gruppen TEILEN und WARNEN mit den fuenf Haken, die ein Spieler braucht; alles andere
--- (Hand-Eintraege, Empfangen, Meldungen, Schwelle, Verfall, Stand, Leeren) hinter "Mehr" auf einer zweiten
--- Seite des Blatts. Raster 24 px wie 1.1.0. Keine Einstellung geht verloren, keine aendert ihren Wert.
+-- 1.2.0 with the friends' book: sharing with friends, hit list alarm; the switches for alarm, message and
+-- sightings apply to guild and friends and are named so.
+-- 1.2.0: two calm groups SHARE and WARN with the five checkboxes a player needs; everything else
+-- (manual entries, receiving, messages, threshold, expiry, status, emptying) behind "More" on a second
+-- page of the sheet. Grid 24 px as 1.1.0. No setting is lost, none changes its value.
 GF.FRIEND_SHARE = {
   { "share",       "OPT_F_SHARE" },
   { "friends",     "OPT_F_FRIENDS" },
@@ -2769,12 +2768,12 @@ GF.MORE_SHARE = {
 GF.MORE_WARN = {
   { "alertListed", "OPT_G_ALERTLISTED" },
   { "announce",    "OPT_F_ANNOUNCE" },
-  { "announceHunt", "OPT_F_ANNOUNCEHUNT" },   -- 1.2.0 fix: Meldung erlegt / neue Ziele hatte keinen Schalter
+  { "announceHunt", "OPT_F_ANNOUNCEHUNT" },   -- 1.2.0 fix: the message taken down / new targets had no switch
 }
-local SHEETS = { "SHEET_BOOK", "SHEET_ALERT", "SHEET_GUILD" }   -- Schluessel
-GF.SHEET_TOP = 76     -- 1.2.2: Kopf und Blatt-Reiter stehen, darunter rollt das Blatt
-GF.TIP_NAMES = 12    -- 1.2.2: hoechstens so viele Namen je Liste im Tooltip der Statuszeile (vorher 20 + 20)
-GF.SYNC_MIN, GF.SYNC_MAX = 84, 150   -- Abgleichen-Knopf: waechst mit dem Text (1.2.0)
+local SHEETS = { "SHEET_BOOK", "SHEET_ALERT", "SHEET_GUILD" }   -- locale key
+GF.SHEET_TOP = 76     -- 1.2.2: head and sheet tabs stand still, the sheet scrolls below them
+GF.TIP_NAMES = 12    -- 1.2.2: at most this many names per list in the status line tooltip (before 20 + 20)
+GF.SYNC_MIN, GF.SYNC_MAX = 84, 150   -- sync button: grows with its text (1.2.0)
 GF.COOLDOWNS = { 30, 60, 90, 120, 180, 300, 600 }
 local ROW_Y0, OPT_H = -84, 24
 
@@ -2799,12 +2798,12 @@ local function SheetHead(parent, text)
   local head = Look.Text(parent, "hand", 26, Look.INK)
   head:SetPoint("TOP", 0, -16)
   head:SetWidth(PAGE_W - 40)
-  Look.FitText(head, text, GF.FIT_NAME26)   -- 1.2.2: 26, 22, 19 pt (REL_HEAD ukUA war breiter als die Linie)
+  Look.FitText(head, text, GF.FIT_NAME26)   -- 1.2.2: 26, 22, 19 pt (REL_HEAD ukUA was wider than the rule)
   Rule(parent, -50, 30, 30, 0.6)
   return head
 end
 
--- Pfeil zum Weiterschalten: kleines Tinten-Dreieck, Klickflaeche 22x20, Hover rot
+-- arrow to step through values: small ink triangle, click area 22x20, hover red
 local function Arrow(parent, dir, onClick)
   local b = CreateFrame("Button", nil, parent)
   b:SetSize(22, 20)
@@ -2816,7 +2815,7 @@ local function Arrow(parent, dir, onClick)
   return b
 end
 
--- Zeile "Beschriftung      ◂ Wert ▸": Wert in Handschrift, unterstrichen; vw = Breite des Werts
+-- row "Label      ◂ value ▸": value in handwriting, underlined; vw = width of the value
 GF.FIT_LANG_HINT = { sizes = { 11, 10 }, lines = 2 }
 GF.FIT_STEP, GF.FIT_STEP_LABEL = { sizes = { 16, 13, 11 } }, { sizes = { 11, 10 } }
 local function Stepper(parent, y, label, onStep, vw)
@@ -2826,7 +2825,7 @@ local function Stepper(parent, y, label, onStep, vw)
   l:SetPoint("TOPLEFT", 34, y - 4)
   l:SetWidth(x - 42)
   l:SetJustifyH("LEFT")
-  -- 1.2.2: Beschriftung und Wert werden kleiner statt gekuerzt, der volle Text steht im Tooltip
+  -- 1.2.2: label and value get smaller instead of truncated, the full text is in the tooltip
   Look.FitText(l, label, GF.FIT_STEP_LABEL)
   local function go(d) onStep(d); UI.FillSettings() end
   local minus = Arrow(parent, -1, function() go(-1) end)
@@ -2854,7 +2853,7 @@ local function Stepper(parent, y, label, onStep, vw)
   return v
 end
 
--- Reihe ausgrauen (Beschriftung, Wert, Pfeile); ausgegraute Pfeile tun nichts
+-- grey out a row (label, value, arrows); greyed-out arrows do nothing
 local function Dim(v, off)
   local a = off and TONE.off or TONE.ink
   v.label:SetTextColor(C(Look.INK, a)); v:SetTextColor(C(Look.INK, a))
@@ -2868,11 +2867,11 @@ local function Preview() if Look.Alarm then Look.Alarm("preview") end end
 
 local function Percent(v) return math.floor((tonumber(v) or 1) * 100 + 0.5) .. " %" end
 
--- "Abgleichen": beschriftet sich nach dem Klick aus dem Teilen-Zustand
+-- "Sync": labels itself after the click from the sharing state
 SyncClick = function(b)
   local h = Look.GuildHealth(GF.HasFriends() and GF.Src() or nil)
   local ok, why = GCall("SyncNow")
-  -- 1.2.0: Freunde gleich mit
+  -- 1.2.0: friends as well
   if GF.HasFriends() and type(ns.Friends.SyncNow) == "function" then
     local fok, fok2, fwhy = pcall(ns.Friends.SyncNow)
     if fok and fok2 then ok, why = true, nil elseif fok and ok == false and tonumber(fwhy) then why = fwhy end
@@ -2888,7 +2887,7 @@ SyncClick = function(b)
   b.resetTimer = C_Timer.NewTimer(3, function() b.resetTimer = nil; b:SetLabel(L.SYNC_BUTTON) end)
 end
 
--- Kollegen mit DeathNote, darunter, was geteilt wird und was nicht
+-- guildmates with DeathNote, below that what is shared and what is not
 MembersTip = function(owner)
   local name = GCall("Name")
   GameTooltip:SetOwner(owner, "ANCHOR_TOP")
@@ -2897,8 +2896,8 @@ MembersTip = function(owner)
   else
     GameTooltip:SetText(name and Fmt(L.TIP_GUILD_NAME, { guild = name }) or L.HEALTH_SHORT_NOGUILD, Look.BONE[1], Look.BONE[2], Look.BONE[3])
   end
-  -- 1.2.0: der Stand steht schon in der Zeile darunter; der Tooltip wiederholt ihn nicht.
-  -- 1.2.2: ausser die Zeile ist gekuerzt (zwei lange Namen): dann der ganze Satz zuerst
+  -- 1.2.0: the status already stands in the line below; the tooltip does not repeat it.
+  -- 1.2.2: unless the line is truncated (two long names): then the whole sentence first
   if LP and owner == LP.statusHit and Truncated(LP.status) then
     GameTooltip:AddLine(LP.status:GetText() or "", 1, 1, 1, true)
   end
@@ -2931,9 +2930,9 @@ BuildSettings = function()
   RP.settings = S
   SheetHead(S, L.HEAD_RULES)
 
-  -- Blaetter: Buch | Alarm | Gilde (das dritte nur, wenn es die Gildenfunktion gibt)
+  -- sheets: Book | Alarm | Guild (the third only if the guild feature exists)
   S.tabs = {}
-  -- 1.2.0: Breite aus dem Wort (mindestens 70 px wie 1.1.0), 28 px Abstand
+  -- 1.2.0: width from the word (70 to 96 px, at least 70 px as 1.1.0), 28 px gap
   local prevTab
   for i, key in ipairs(SHEETS) do
     local t = WordTab(S, L[key], 70, function(self) state.spage = self.page; UI.FillSettings() end)
@@ -2956,12 +2955,12 @@ BuildSettings = function()
     y0 = y0 or ROW_Y0
     step = step or OPT_H
     for i, o in ipairs(list) do
-      local cb = UX.InkCheck(page, o.text or L[o[2]], 310) -- Humor: o.text (Schalter ohne Sprachschluessel)
+      local cb = UX.InkCheck(page, o.text or L[o[2]], 310) -- Humor: o.text (switch without a locale key)
       cb:SetPoint("TOPLEFT", 30, y0 - (i - 1) * step)
       cb.label:SetWidth(280)
       cb.label:SetJustifyH("LEFT")
       cb.label:SetWordWrap(false)
-      -- 1.2.2: 11, dann 10 pt, sonst gekuerzt mit Tooltip
+      -- 1.2.2: 11, then 10 pt, otherwise truncated with tooltip
       Look.FitText(cb.label, cb.label:GetText(), GF.FIT_WORD)
       Look.TipIfCut(cb, cb.label)
       if prefix then cb.opt = { path = prefix .. o[1], guild = o[1] }
@@ -2976,8 +2975,8 @@ BuildSettings = function()
     l:SetPoint("TOPLEFT", 34, y - 6)
     return y - 22
   end
-  -- 1.2.2: der Hinweis steht im Fluss des Blatts (GF.LayoutSheet): an seinem alten Platz ueber der Fussleiste,
-  -- solange der Inhalt darueber endet, sonst darunter, und das Blatt rollt
+  -- 1.2.2: the hint is part of the sheet's flow (GF.LayoutSheet): at its old place above the foot bar
+  -- as long as the content above ends before it, otherwise below, and the sheet scrolls
   local function hint(page, text)
     local h = Look.Text(page, "type", 11, Look.INK)
     h:SetTextColor(C(Look.INK, TONE.hint))
@@ -2987,7 +2986,7 @@ BuildSettings = function()
     page.hint = h
     return h
   end
-  -- Blaetter liegen im Rollkind; ihre Oberkante bleibt die Oberkante der Seite (gleiche Koordinaten wie vorher)
+  -- sheets lie in the scroll child; their top edge stays the top edge of the page (same coordinates as before)
   S.page = Look.Page(S, { top = GF.SHEET_TOP, foot = 44, w = PAGE_W, h = PAGE_H })
   local function sheet()
     local f = CreateFrame("Frame", nil, S.page.body)
@@ -2996,15 +2995,15 @@ BuildSettings = function()
     return f
   end
 
-  -- Blatt 1: Buch (Anzeige, Groesse, Weitergeben)
+  -- sheet 1: book (display, size, passing on)
   local A = sheet()
   S.pageA = A
-  local y = checks(A, ns.Humor and ns.Humor.BookOptions(BOOK_OPTIONS) or BOOK_OPTIONS) -- Humor: Schalter, nur de/en
+  local y = checks(A, ns.Humor and ns.Humor.BookOptions(BOOK_OPTIONS) or BOOK_OPTIONS) -- Humor: switch, de/en only
   S.size = Stepper(A, y, L.SET_BOOK_SIZE, function(d)
     local steps = UI.ScaleSteps()
     Set("ui.scale", Step(steps, ClampScale(tonumber(Look.Setting("ui.scale", 1)) or 1), d))
   end)
-  -- 1.2.0: Sprache des Buchs (wirkt nach /reload)
+  -- 1.2.0: language of the book (takes effect after /reload)
   if ns.Locale and ns.Locale.CODES then
     y = y - OPT_H
     S.lang = Stepper(A, y, L.SET_LANGUAGE, function(d) GF.StepLanguage(d) end, 150)
@@ -3031,7 +3030,7 @@ BuildSettings = function()
   A.bottom = -(y - 4) + 22
   hint(A, L.SET_HINT_BOOK)
 
-  -- Blatt 2: Alarm mit Ton, Lautstaerke und Kanal
+  -- sheet 2: alarm with sound, volume and channel
   local AL = sheet()
   AL:Hide()
   S.pageL = AL
@@ -3053,7 +3052,7 @@ BuildSettings = function()
     if nv ~= v then Set("alert.volume", nv) end
     Preview()
   end, 120)
-  -- Pegel als fuenf Tintenbalken statt Zahl
+  -- volume as five ink bars instead of a number
   S.vol.bars = {}
   for i = 1, Look.VOLUMES do
     local t = AL:CreateTexture(nil, "ARTWORK")
@@ -3063,12 +3062,12 @@ BuildSettings = function()
     S.vol.bars[i] = t
   end
   y = y - OPT_H
-  -- Kanal: drei Woerter, das aktive rot unterstrichen
+  -- channel: three words, the active one underlined in red
   local kl = Look.Text(AL, "body", 11, Look.INK)
   kl:SetPoint("TOPLEFT", 34, y - 4)
   kl:SetText(L.SET_CHANNEL)
   S.chan = { label = kl }
-  -- 1.2.0: Wortbreite aus dem Text (mindestens 52 px); wie 1.1.0 ab x = 176, rueckt bei langen Woertern nach links
+  -- 1.2.0: word width from the text (at least 52 px); as 1.1.0 from x = 176, moves left for long words
   local total = 0
   for i, ch in ipairs(Look.CHANNELS) do
     local b = WordTab(AL, ch.label or L[ch.lkey], 52, function(self)
@@ -3106,16 +3105,16 @@ BuildSettings = function()
   AL.bottom = -(y - 4) + 22
   S.soundHint = hint(AL, "")
 
-  -- Blatt 3: Gilde
+  -- sheet 3: guild
   local B = sheet()
   B:Hide()
   S.pageB = B
-  -- 1.2.0: mit Freunden Stand in je einer Zeile (voller Satz im Tooltip und auf der linken Seite), darunter
-  -- Gildenbuch und Freundesbuch leeren. 1.2.0: Seite 1 (B1) TEILEN und WARNEN, Seite 2 (B2) "Mehr".
+  -- 1.2.0: with friends, one status line each (full sentence in the tooltip and on the left page), below that
+  -- empty the guild book and the friends' book. 1.2.0: page 1 (B1) SHARE and WARN, page 2 (B2) "More".
   local friendsSheet = GF.HasFriends()
   local B2 = B
   local function expireRow(page, yy)
-    -- Freigaben verfallen nach Nie, 30, 90, 180 Tagen (Voreinstellung Nie)
+    -- calls expire after never, 30, 90, 180 days (default never)
     S.hexp = Stepper(page, yy, L.SET_HUNT_EXPIRE, function(d)
       local days = (ns.Guild and ns.Guild.C and ns.Guild.C.EXPIRE_DAYS) or { 0, 30, 90, 180 }
       Set("guild.huntExpire", Step(days, tonumber(Look.GuildSetting("huntExpire")) or 0, d))
@@ -3146,7 +3145,7 @@ BuildSettings = function()
     y = section(B2, y - 6, L.SET_SEC_WARN)
     y = checks(B2, GF.MORE_WARN, "guild.", y)
     y = minKillsRow(B2, y, L.SET_F_MINKILLS) - 10
-    -- "Mehr": Wort unten rechts auf beiden Seiten, unterstrichen, solange die zweite Seite offen ist
+    -- "More": word at the bottom right on both pages, underlined while the second page is open
     S.gmore = WordTab(S.page.foot, L.SET_MORE, 50, function()
       Set("ui.guildMore", Look.Setting("ui.guildMore", false) ~= true)
       UI.FillSettings()
@@ -3166,7 +3165,7 @@ BuildSettings = function()
     fs:SetJustifyH("LEFT")
     fs:SetMaxLines(friendsSheet and 1 or 2)
     if friendsSheet then fs:SetWordWrap(false) end
-    -- gekuerzter Satz: ganz im Tooltip
+    -- truncated sentence: in full in the tooltip
     local hit = CreateFrame("Button", nil, B2)
     hit:SetAllPoints(fs)
     hit:SetScript("OnEnter", function(self) if Truncated(fs) then Tip(self, { fs:GetText() or "" }) end end)
@@ -3177,7 +3176,7 @@ BuildSettings = function()
   S.gstatus = statusLine(y - 2)
   local clearY = y - 36
   if friendsSheet then
-    -- zweite Zeile: Stand bei den Freunden (eigener Satz wie bei der Gilde)
+    -- second line: status with friends (a sentence of its own, as for the guild)
     S.fstatus = statusLine(nil, S.gstatus)
     clearY = y - 38
   end
@@ -3185,7 +3184,7 @@ BuildSettings = function()
   clear:SetPoint("TOPLEFT", 30, clearY)
   B2.bottom = -clearY + 22
   if friendsSheet then
-    -- 1.2.0: das Gegenstueck fuer das Freundesbuch (leert auch dessen Abschussliste, eigene Freigaben bleiben)
+    -- 1.2.0: the counterpart for the friends' book (also empties its hit list, own calls stay)
     local fclear = InkButton(B2, L.SET_FRIENDS_CLEAR, 132, 22, function() Confirm("DEATHNOTE_FRIENDS_CLEAR") end)
     fclear:SetPoint("TOPLEFT", 30 + 132 + 10, clearY)
     S.fclear = fclear
@@ -3195,7 +3194,7 @@ BuildSettings = function()
   local back = InkButton(S, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
   back:SetPoint("BOTTOM", 0, 12)
 
-  -- Sichern/Einlesen
+  -- back up/import
   local IO = PageLayer(RP)
   RP.io = IO
   IO.head = SheetHead(IO, "")
@@ -3203,7 +3202,7 @@ BuildSettings = function()
   IO.help:SetTextColor(C(Look.INK, TONE.hint))
   IO.help:SetPoint("TOP", 0, -58)
   IO.help:SetWidth(330)
-  -- 1.2.2: fester Platz ueber dem Textfeld: hoechstens zwei Zeilen (11, dann 10 pt), sonst Tooltip
+  -- 1.2.2: fixed place above the text field: at most two lines (11, then 10 pt), otherwise tooltip
   IO.help:SetMaxLines(2)
   IO.helpHit = CreateFrame("Frame", nil, IO)
   IO.helpHit:SetAllPoints(IO.help)
@@ -3244,7 +3243,7 @@ BuildSettings = function()
     UI.Refresh()
   end)
   IO.go:SetPoint("BOTTOM", -57, 12)
-  -- Sichern: zwischen der kleinen Fassung (ohne Taten) und dem ganzen Buch umschalten
+  -- back up: toggle between the small version (without deeds) and the whole book
   IO.size = InkButton(IO, "", 104, 22, function() UI.ShowExport(not IO.full) end)
   IO.size:SetPoint("BOTTOM", -57, 12)
   IO.size:Hide()
@@ -3252,17 +3251,17 @@ BuildSettings = function()
   close:SetPoint("BOTTOM", 57, 12)
 end
 
--- Gebrauchsanweisung: links das gesperrte Stichwort, rechts der Absatz
--- 1.2.2: Kopf steht, die Absaetze rollen (Mausrad, Rollbalken nur bei Bedarf), Impressum und Knopf stehen in der
--- Fussleiste. Vorher hingen Impressum und Knopf an der Unterkante derselben Seite, auf die die Absaetze von oben
--- flossen: in 11 von 21 Sprachen lag Text ueber Text (Spiel, deDE: Impressum ueber RUHE).
+-- Manual: on the left the letter-spaced keyword, on the right the paragraph
+-- 1.2.2: the head stands still, the paragraphs scroll (mouse wheel, scroll bar only when needed), imprint and button
+-- stand in the foot bar. Before, imprint and button hung on the bottom edge of the same page the paragraphs flowed
+-- down on: in 11 of 21 languages text lay over text (in game, deDE: imprint over RUHE).
 GF.HELP_LABEL_W, GF.HELP_LABEL = 100, { sizes = { 10, 9 }, lines = 2, width = 100 }
 GF.HELP_FOOT = { sizes = { 11, 10 }, lines = 2 }
 BuildHelp = function()
   local Hp = PageLayer(RP)
   RP.help = Hp
   SheetHead(Hp, L.HEAD_HELP)
-  -- Fussleiste: Knopf unten, darueber das Impressum in hoechstens zwei Zeilen (Humor.lua setzt UI.HELP_FOOT, nur de/en)
+  -- foot bar: button at the bottom, the imprint above it in at most two lines (Humor.lua sets UI.HELP_FOOT, de/en only)
   local pg = Look.Page(Hp, { top = 58, foot = 44, w = PAGE_W, h = PAGE_H, bar = 4 })
   Hp.page = pg
   if type(UI.HELP_FOOT) == "string" then
@@ -3281,7 +3280,7 @@ BuildHelp = function()
     local label = Label(pg.body, p[1])
     label:SetJustifyH("RIGHT")
     label:SetWidth(GF.HELP_LABEL_W)
-    -- Stichwort: 10 pt, sonst 9 pt, sonst zwei Zeilen (nbNO, esES ragten in den Falz)
+    -- keyword: 10 pt, otherwise 9 pt, otherwise two lines (nbNO, esES reached into the fold)
     Look.FitText(label, label:GetText(), GF.HELP_LABEL)
     local text = Look.Text(pg.body, "type", 11, Look.INK)
     text:SetWidth(232)
@@ -3297,7 +3296,7 @@ BuildHelp = function()
   GF.LayoutHelp()
 end
 
--- Absaetze von oben stapeln (echte Hoehen) und die Hoehe des Rollbereichs setzen; beim Bau und bei jedem Oeffnen
+-- stack the paragraphs from the top (real heights) and set the height of the scroll area; on build and on every open
 function GF.LayoutHelp()
   local Hp = RP.help
   local y = 4
@@ -3309,16 +3308,16 @@ function GF.LayoutHelp()
   Hp.page:Layout(y)
 end
 
--- 1.2.0: Blatt "Zur Jagd freigeben": fuer wen (Gilde & Freunde, Gilde, Freunde) und ein kurzer Grund.
--- Der Grund ist der einzige frei geschriebene Text, der je geteilt wird; die Notiz bleibt getrennt.
+-- 1.2.0: sheet "Put on hit list": for whom (Guild & Friends, Guild, Friends) and a short reason.
+-- The reason is the only freely written text that is ever shared; the note stays separate.
 GF.TARGETS = { { "all", "TAB_GUILD_FRIENDS" }, { "guild", "SRC_GUILD" }, { "friends", "SRC_FRIENDS" } }
-GF.REASON_HINT = { all = "REL_HINT_ALL", guild = "REL_HINT_GUILD", friends = "REL_HINT_FRIENDS" }   -- Schluessel
+GF.REASON_HINT = { all = "REL_HINT_ALL", guild = "REL_HINT_GUILD", friends = "REL_HINT_FRIENDS" }   -- locale key
 
 function GF.BuildRelease()
   local R = PageLayer(RP)
   RP.release = R
   SheetHead(R, L.REL_HEAD)
-  -- 1.2.2: Inhalt im Rollkind (gleiche Koordinaten wie vorher), Meldung und Knoepfe in der Fussleiste
+  -- 1.2.2: content in the scroll child (same coordinates as before), message and buttons in the foot bar
   local pg = Look.Page(R, { top = 58, foot = 74, w = PAGE_W, h = PAGE_H })
   R.page = pg
   local Rs = CreateFrame("Frame", nil, pg.body)
@@ -3351,7 +3350,7 @@ function GF.BuildRelease()
     R.tabs[i] = b
     prev = b
   end
-  -- 1.2.2: die drei Woerter enden vor dem Rand (x = 346); sonst werden alle gleich gestaucht, Schrift 11 oder 10 pt
+  -- 1.2.2: the three words end before the edge (x = 346); otherwise all are squeezed alike, font 11 or 10 pt
   local x0 = math.max(92, 34 + TextWidth(forL, 40) + 12)
   local total = 0
   for _, b in ipairs(R.tabs) do total = total + b:GetWidth() end
@@ -3367,7 +3366,7 @@ function GF.BuildRelease()
   local whyL = Label(Rs, L.REL_REASON)
   whyL:SetPoint("TOPLEFT", 34, -176)
   local eb = CreateFrame("EditBox", nil, Rs)
-  eb:SetPoint("TOPLEFT", whyL, "TOPRIGHT", 8, 4)      -- 1.2.0: beide Anker an der Oberkante
+  eb:SetPoint("TOPLEFT", whyL, "TOPRIGHT", 8, 4)      -- 1.2.0: both anchors on the top edge
   eb:SetPoint("TOPRIGHT", Rs, "TOPRIGHT", -34, -172)
   eb:SetHeight(18)
   eb:SetAutoFocus(false)
@@ -3403,7 +3402,7 @@ function GF.BuildRelease()
   R.sheet = Rs
 end
 
--- Hoehe des Rollbereichs aus dem untersten Hinweis
+-- height of the scroll area from the lowest hint
 function GF.LayoutRelease(R)
   local bottom = 204 + Look.TextH(R.hint, 3) + 6 + Look.TextH(R.hint2, 3)
   R.page:Layout(math.ceil(bottom + 8 - 58))
@@ -3464,11 +3463,11 @@ function UI.OpenRelease(key)
   RP.release:Show()
   RP.release.page:Top()
   GF.FillRelease()
-  if state.filter == "guild" and LP then GF.Survey(); UX.UpdateTabs() end   -- 1.2.0: Abschussliste-Ansicht zeigen
+  if state.filter == "guild" and LP then GF.Survey(); UX.UpdateTabs() end   -- 1.2.0: show the hit list view
 end
 
--- 1.2.0: Sprachwahl. Erster Wert "Automatisch" (keine gespeicherte Wahl: die Sprache des Spiels, sonst Englisch),
--- dann die 21 Kennungen; jeder Eigenname in der Schrift seiner Sprache
+-- 1.2.0: language choice. First value "Automatic" (no stored choice: the game's language, otherwise English),
+-- then the 21 codes; every native name in the font of its language
 function GF.CurLanguage()
   local Lc = ns.Locale
   local cur = Lc.StoredChoice and Lc.StoredChoice() or nil
@@ -3493,13 +3492,13 @@ function GF.FillLanguage(S)
   local cur = GF.CurLanguage()
   local name, script = Lc.NATIVE[cur], cur
   if not name then
-    -- Automatisch: das Wort in der aktiven Sprache (ihre Schrift)
+    -- Automatic: the word in the active language (its font)
     script = Lc.code or "enUS"
     name = L.SET_LANG_AUTO
   end
   if S.lang.code ~= cur then
     S.lang.code = cur
-    -- Eigenname in der Schrift seiner Sprache (Kyrillisch, Koreanisch, Chinesisch)
+    -- native name in the font of its language (Cyrillic, Korean, Chinese)
     Look.Font(S.lang, "body", 11, nil, Look.FontOf(script))
   end
   S.lang:SetText(name)
@@ -3521,7 +3520,7 @@ function UI.FillSettings()
   S.pageL:SetShown(state.spage == 2)
   S.pageB:SetShown(state.spage == 3)
   if S.gmore then
-    -- 1.2.0: zweite Seite des Blatts Gilde ("Mehr"), Zustand gemerkt, zu als Standard
+    -- 1.2.0: second page of the guild sheet ("More"), state remembered, closed by default
     local more = Look.Setting("ui.guildMore", false) == true
     S.gmore:SetShown(state.spage == 3)
     S.gmore:SetOn(more)
@@ -3558,7 +3557,7 @@ function UI.FillSettings()
   local io = Store().Export ~= nil
   for _, b in ipairs(S.ioButtons) do b:SetShown(io) end
 
-  -- Ton: "Kein Ton" ist die Stille; eingebaute Toene haben keine eigene Lautstaerke
+  -- sound: "No sound" is silence; built-in sounds have no volume of their own
   local sound, vol, ch = Look.SoundChoice()
   S.tone:SetValue(sound.label or L[sound.lkey])
   local fixed = sound.builtin or sound.silent
@@ -3584,8 +3583,8 @@ function UI.FillSettings()
   GF.LayoutSheet(S)
 end
 
--- 1.2.2: Hinweis des offenen Blatts in den Fluss setzen und die Hoehe des Rollbereichs; ein anderes Blatt
--- (oder "Mehr") beginnt oben
+-- 1.2.2: put the hint of the open sheet into the flow and set the height of the scroll area; another sheet
+-- (or "More") starts at the top
 function GF.LayoutSheet(S)
   local X = (state.spage == 1 and S.pageA) or (state.spage == 2 and S.pageL) or S.pageB
   local inner = X
@@ -3616,7 +3615,7 @@ function UI.OpenPanel(which)
   if RP.help then RP.help:SetShown(which == "help") end
   if which == "help" then GF.LayoutHelp(); RP.help.page:Top() end
   if which == "settings" then
-    if RP.settings.page then RP.settings.sheetKey = nil end   -- 1.2.2: Hausordnung oeffnet oben
+    if RP.settings.page then RP.settings.sheetKey = nil end   -- 1.2.2: house rules open at the top
     UI.FillSettings()
   end
 end
@@ -3637,13 +3636,13 @@ local function ExportText(short)
   return ""
 end
 
--- full == true: ganzes Buch mit Taten, false: kleine Fassung (falls der Store eine kennt),
--- nil: automatisch (ab EXPORT_WARN die kleine)
+-- full == true: whole book with deeds, false: small version (if the store knows one),
+-- nil: automatic (the small one from EXPORT_WARN on)
 function UI.ShowExport(full)
   local IO = RP and RP.io
   if not IO then return end
   local whole = ExportText()
-  local short = ExportText(true)       -- aeltere Store-Fassung ohne Kurzform: derselbe Text
+  local short = ExportText(true)       -- older store version without a short form: the same text
   local hasShort = #short < #whole
   if full == nil then full = #whole < EXPORT_WARN end
   IO.full = full or not hasShort
@@ -3674,7 +3673,7 @@ function UI.OpenIO(mode)
     Look.FitText(IO.head, L.IO_EXPORT, GF.FIT_NAME26)
     Look.FitText(IO.help, L.IO_HELP_EXPORT, GF.FIT_IO_HELP)
     IO.go:Hide()
-    -- grosse Buecher zuerst klein zeigen (eine EditBox mit Tausenden Zeilen bremst)
+    -- show large books small first (an EditBox with thousands of lines is slow)
     UI.ShowExport(nil)
   else
     Look.FitText(IO.head, L.IO_IMPORT, GF.FIT_NAME26)
@@ -3685,14 +3684,14 @@ function UI.OpenIO(mode)
   end
 end
 
-end -- Hausordnung
+end -- house rules
 
 ------------------------------------------------------------------------
--- Hauptfenster
+-- Main window
 ------------------------------------------------------------------------
 GF.OPEN_HEX = ("|cff%02x%02x%02x"):format(Look.RED_ON_BLACK[1] * 255, Look.RED_ON_BLACK[2] * 255, Look.RED_ON_BLACK[3] * 255)
 
--- Zahl am Reiter: nur, wenn es etwas gibt; "Zu klären" in Rot
+-- number on the tab: only when there is something; "Unsolved" in red
 function UX.TabCount(id)
   if id == "journal" then return #UX.Journal() end
   if id == "guild" then return UX.GuildCount() end
@@ -3713,13 +3712,13 @@ function UX.UpdateTabs()
     t.text:SetTextColor(C(on and Look.BONE or Look.TAB_OFF))
     t.mark:SetShown(on)
   end
-  -- 1.2.2: eine vierstellige Zahl passt nicht in den Platz fuer "  123": Reiter neu verteilen
+  -- 1.2.2: a four-digit number does not fit the room for "  123": lay out the tabs again
   for _, t in ipairs(F.tabs) do
     if (Look.TextW(t.text) or 0) > (t.text:GetWidth() or 999) + 0.5 then GF.LayoutTabs(true); break end
   end
-  -- Gilde mit "Nach Kollege": oben der Umschalter (Suchfeld kuerzer); Sortierung unten rechts
-  -- 1.2.0: Ansichten nur, wenn es mehr als eine sinnvolle gibt (niemand zum Teilen: keine; die
-  -- Abschussliste nur mit Freigaben); Quellen nur, wenn es beide wirklich gibt. Im Normalfall eine Reihe.
+  -- Guild with "By guildmate": the toggle at the top (search field shorter); sorting at the bottom right
+  -- 1.2.0: views only when there is more than one that makes sense (nobody to share with: none; the
+  -- hit list only with calls); sources only when both really exist. Normally one row.
   local guildTab = state.filter == "guild"
   local views = guildTab and not GF.nobody and (HasMemberView() or GF.hunts) and true or false
   LP.views:SetShown(views)
@@ -3729,28 +3728,28 @@ function UX.UpdateTabs()
       if b.view == "hunt" then b:SetShown(GF.hunts and true or false) end
     end
   end
-  -- 1.2.0: Quelle (Alle, Gilde, Freunde) unten links, nur mit dem Freundesbuch
+  -- 1.2.0: source (All, Guild, Friends) at the bottom left, only with the friends' book
   local srcs = guildTab and GF.HasFriends() and GF.both and true or false
   LP.srcs:SetShown(srcs)
   if srcs then
     for _, b in ipairs(LP.srcs.items) do b:SetOn(b.src == state.gsource) end
   end
-  -- Morpheus 13 ist breiter als die Naeherung im Standbild: Luft fuer den Umschalter (drei Ansichten: 90)
+  -- Morpheus 13 is wider than the estimate in the still image: room for the toggle (search field 80 px with three views, 120 with two, else 200)
   local three = views and #LP.views.items > 2 and GF.hunts
   local sw = views and (three and 80 or 120) or 200
-  -- 1.2.0: nie unter die Ansicht-Woerter (deren Breite haengt an der Sprache)
+  -- 1.2.0: never below the view words (their width depends on the language)
   local vw = views and (three and LP.views.width or LP.views.width2)
   if vw then sw = math.max(60, math.min(sw, PAGE_W - 14 - vw - 46 - 8)) end
   if LP.search.w ~= sw then LP.search.w = sw; LP.search:SetWidth(sw) end
-  -- Alle auf/zu: Doppeldreieck links neben dem Suchfeld
+  -- all open/closed: double triangle left of the search field
   local member = MemberView()
   LP.all:SetShown(member)
   if member then
-    LP.all.open = not AnyCollapsed()          -- true: Klick klappt alle zu
+    LP.all.open = not AnyCollapsed()          -- true: a click collapses all
     LP.all.a:SetRotation(LP.all.open and -1.5708 or 0)
     LP.all.b:SetRotation(LP.all.open and -1.5708 or 0)
   end
-  -- Sortierung: Gesucht oben rechts, Gilde nach Taeter unten rechts, sonst keine
+  -- sorting: Wanted at the top right, guild by killer at the bottom right, otherwise none
   local foot = state.filter == "guild"
   if LP.sort.foot ~= foot then
     LP.sort.foot = foot
@@ -3761,7 +3760,7 @@ function UX.UpdateTabs()
   LP.sort.text:SetText(SORT_LABEL[sortKey] and L[SORT_LABEL[sortKey]] or "")
   LP.sort:SetWidth(math.max(90, math.min(120, TextWidth(LP.sort.text, 60) + 16)))
   LP.sort:SetShown(state.filter == "wanted" or (state.filter == "guild" and not member and not GF.HuntView()))
-  -- 1.2.2: der Platzhalter bleibt im Feld (kleiner, dann gekuerzt)
+  -- 1.2.2: the placeholder stays inside the field (smaller, then truncated)
   LP.search.ph:SetWidth(sw - 4)
   Look.FitText(LP.search.ph, (state.filter == "guild" and ((views or GF.HuntView()) and L.SEARCH_SHORT or L.SEARCH_KILLER))
                        or (state.filter == "journal" and L.SEARCH_JOURNAL)
@@ -3771,8 +3770,8 @@ end
 function UX.UpdateStatus()
   local U = ns.Util
   if state.filter == "guild" then
-    -- ehrlicher Stand des Teilens, rot, wenn es nicht geht; Tooltip: Kollegen, was geteilt wird
-    -- 1.2.0: niemand zum Teilen: keine Zeile, der Leerzustand rechts sagt es ruhig; "keine Freunde" gedaempft
+    -- honest sharing status, red when it does not work; tooltip: guildmates, what is shared
+    -- 1.2.0: nobody to share with: no line, the empty state on the right says it calmly; "no friends" muted
     local h = Look.GuildHealth(GF.HasFriends() and GF.Src() or nil)
     local quiet = GF.nobody
     LP.status:SetText(quiet and "" or h.text)
@@ -3817,7 +3816,7 @@ function UX.StopPlatePoll()
 end
 function UI.PlatePollActive() return platePoll ~= nil end
 
--- Suche: Teilstring im angezeigten Namen (Journal und Faelle: Taeter, Kandidat oder Ort)
+-- search: substring of the shown name (journal and cases: killer, candidate or place)
 local function Matches(text, q)
   return type(text) == "string" and text:lower():find(q, 1, true) ~= nil
 end
@@ -3831,7 +3830,7 @@ local function DeathMatches(d, q)
   return false
 end
 
--- Todesjournal: nur Tode durch Spieler (pvp und unklar), Monster und Umwelt nicht (1.2.0)
+-- Death Log: only deaths by players (pvp and unclear), not monsters and environment (1.2.0)
 function UX.Journal()
   local S = Store()
   if S.Journal then
@@ -3869,18 +3868,18 @@ function UX.ApplyQuery(list)
 end
 
 ------------------------------------------------------------------------
--- Gilde: flache Liste "nach Kollege" (nur bei Aenderung neu)
+-- Guild: flat list "by guildmate" (rebuilt only on change)
 ------------------------------------------------------------------------
-local mflat = {}            -- Kopf- und Kindzeilen, Wrapper aus wpool
+local mflat = {}            -- head and child rows, wrappers from wpool
 local wpool = {}
 local mv = { src = nil, cver = -1, q = nil, dirty = true, n = 0, builds = 0 }
 local collapseVer = 0
 local NOTHING = {}
-UI.mv = mv                  -- fuer Tests: wie oft wurde die flache Liste gebaut
-function UI.DataCount() return #data end   -- fuer Tests und Messung: Zeilen der aktuellen Liste
+UI.mv = mv                  -- for tests: how often the flat list was built
+function UI.DataCount() return #data end   -- for tests and measuring: rows of the current list
 
--- ui.guildCollapsed: Name -> true heisst "anders als der Standard" (Standard: eigener Abschnitt auf,
--- alle anderen zu). Der Store haelt in dieser Tabelle nur true-Werte.
+-- ui.guildCollapsed: name -> true means "different from the default" (default: own section open,
+-- all others closed). The store keeps only true values in this table.
 local function IsCollapsed(m, t)
   local def = not m.me
   if t and t[m.name] == true then return not def end
@@ -3912,8 +3911,8 @@ function UX.BuildMemberList(src, q)
     local m = src[i]
     local rows = type(m) == "table" and m.rows
     if type(m) == "table" and (m.me or (m.tie and m.tie.conflict)) and (type(rows) ~= "table" or #rows == 0) and q == "" then
-      -- eigener Char steht immer oben, auch ohne Eintraege; 1.2.0: ebenso beide Namen eines Freundes, bei dem
-      -- der Spieler waehlen muss, wer es ist (Rechtsklick)
+      -- the own character is always at the top, even without entries; 1.2.0: so are both names of a friend
+      -- for whom the player has to choose who it is (right click)
       add(m, nil, true, false)
     elseif type(rows) == "table" and #rows > 0 then
       if q == "" then
@@ -3921,7 +3920,7 @@ function UX.BuildMemberList(src, q)
         add(m, nil, true, open)
         if open then for k = 1, #rows do add(m, rows[k], false) end end
       elseif Matches(m.name, q) then
-        -- Treffer klappt den Abschnitt nur fuer die Suche auf (gemerkter Zustand bleibt)
+        -- a match opens the section only for the search (the remembered state stays)
         add(m, nil, true, true)
         for k = 1, #rows do add(m, rows[k], false) end
       else
@@ -3954,7 +3953,7 @@ function UX.MemberData()
   return mflat
 end
 
--- ist irgendein Abschnitt (mit Eintraegen) gerade zugeklappt?
+-- is any section (with entries) collapsed right now?
 AnyCollapsed = function()
   local src, t = mv.src or NOTHING, CollapsedTable()
   for i = 1, #src do
@@ -3964,7 +3963,7 @@ AnyCollapsed = function()
   return false
 end
 
--- Zustand zurueckschreiben: ganze Tabelle kopieren, aendern, setzen (so will es der Store)
+-- write the state back: copy the whole table, change it, set it (that is how the store wants it)
 local function WriteCollapsed(fn)
   local copy = {}
   local t = CollapsedTable()
@@ -4025,12 +4024,12 @@ Refresh = function()
   BindRows()
   picked = false
   ShowRight()
-  if picked then BindRows() end      -- die eben gesetzte Auswahl gleich unterstreichen
+  if picked then BindRows() end      -- underline the selection just set right away
   if state.panel == "settings" then UI.FillSettings() end
 end
 UI.Refresh = Refresh
 
--- mehrere Aenderungen im selben Frame zu einem Neuaufbau zusammenfassen
+-- merge several changes in the same frame into one rebuild
 local function RequestRefresh()
   if not F or not F:IsShown() then dirty = true; return end
   if pending then return end
@@ -4043,7 +4042,7 @@ local function SetFilter(id)
     if state.panel then UI.ClosePanel() end
     return
   end
-  -- 1.2.0: die Abschussliste ist die erste Ansicht, sobald es eine Freigabe gibt (bis man selbst waehlt)
+  -- 1.2.0: the hit list is the first view as soon as there is a call (until the user picks one)
   if id == "guild" and not state.viewPicked and GF.HasHunts() and #GF.Hunts() > 0 then state.gview = "hunt" end
   state.filter = id
   state.offset = 0
@@ -4059,7 +4058,7 @@ function UX.SavePoint()
   if p then Set("ui.point", { p, rp, x, y }) end
 end
 
--- Enter im Suchfeld: Treffer waehlen, ohne Treffer ins Buch eintragen (nur im Reiter Gesucht)
+-- Enter in the search field: pick a match, without a match add the name to the book (only in the Wanted tab)
 local function SubmitSearch(box)
   local q = state.query
   if q == "" then box:ClearFocus(); return end
@@ -4135,7 +4134,7 @@ function UI.SetGuildView(v)
   Refresh()
 end
 
--- 1.2.0: Quelle im vierten Reiter
+-- 1.2.0: source in the fourth tab
 function UI.SetGuildSource(src)
   if src ~= "all" and src ~= "guild" and src ~= "friends" then return end
   if state.gsource == src then return end
@@ -4157,7 +4156,7 @@ function UI.ClearSearch()
   end
 end
 
--- Sortiermenue: die Werte als Liste, im Reiter Gesucht dazu "Begnadigte zeigen/ausblenden"
+-- sort menu: the values as a list, in the Wanted tab also "show/hide pardoned"
 function UX.SortMenu(btn)
   local guild = state.filter == "guild"
   local list = guild and UX.GSORTS or UX.SORTS
@@ -4185,8 +4184,8 @@ function UX.BuildLeftPage()
   LP:SetPoint("TOPLEFT", 16, -44)
   local bg = Tex(LP, "BACKGROUND", Look.TEX.page)
   bg:SetAllPoints()
-  bg:SetTexCoord(1, 0, 0, 1)          -- gespiegelt: der dunkle Rand liegt am Falz
-  -- Linien alle 22 px: Name auf der ersten, Untertext auf der zweiten; blasser roter Rand
+  bg:SetTexCoord(1, 0, 0, 1)          -- mirrored: the dark edge lies at the fold
+  -- lines every 22 px: name on the first, subtext on the second; pale red margin
   for k = 1, ROWS * 2 do
     local l = LP:CreateTexture(nil, "BORDER")
     l:SetColorTexture(0.25, 0.27, 0.33, k % 2 == 0 and 0.28 or 0.16)
@@ -4202,7 +4201,7 @@ function UX.BuildLeftPage()
 
   LP.search = UX.BuildSearch(LP)
 
-  -- Sortierung: ein Wort mit Dreieck; Klick oeffnet die Liste der Werte, Hover unterstreicht
+  -- sorting: one word with a triangle; a click opens the list of values, hover underlines
   local sort = CreateFrame("Button", nil, LP)
   sort:SetSize(90, 18)
   sort:SetPoint("TOPRIGHT", -14, -14)
@@ -4223,7 +4222,7 @@ function UX.BuildLeftPage()
   sort:SetScript("OnClick", function(self) Look.Sound("click"); UX.SortMenu(self) end)
   LP.sort = sort
 
-  -- Alle auf/zu (Gilde nach Kollege): Doppeldreieck links neben dem Suchfeld
+  -- all open/closed (guild by guildmate): double triangle left of the search field
   local all = CreateFrame("Button", nil, LP)
   all:SetSize(20, 20)
   all:SetPoint("TOPLEFT", 14, -12)
@@ -4235,17 +4234,17 @@ function UX.BuildLeftPage()
   all:Hide()
   LP.all = all
 
-  -- Umschalter "Nach Taeter | Nach Kollege": zwei Wort-Reiter, der aktive rot unterstrichen
+  -- toggle "By killer | By guildmate": two word tabs, the active one underlined in red
   local views = CreateFrame("Frame", nil, LP)
   views:SetSize(180, 22)
   views:SetPoint("TOPRIGHT", -14, -10)
   views.items = {}
   local prev
-  -- 1.2.0: die Abschussliste steht vorn (links), wenn die Logik sie kennt
+  -- 1.2.0: the hit list comes first (on the left) when the logic knows it
   local viewList = { { "member", "VIEW_BY_MATE" }, { "enemy", "VIEW_BY_KILLER" } }
   if GF.HasHunts() then viewList[3] = { "hunt", "VIEW_HUNT" } end
   local gap = #viewList > 2 and 8 or 10
-  -- 1.2.0: Breite aus dem Wort; zusammen hoechstens so breit, dass das Suchfeld 60 px behaelt
+  -- 1.2.0: width from the word; together at most so wide that the search field keeps 60 px
   local ws, total = {}, 0
   for i, v in ipairs(viewList) do
     local b = WordTab(views, L[v[2]], 78, function(self) UI.SetGuildView(self.view) end)
@@ -4264,12 +4263,12 @@ function UX.BuildLeftPage()
     prev = b
   end
   views.width = math.min(total, room)
-  -- 1.2.0: Breite ohne die Abschussliste (die steht links und kann fehlen)
+  -- 1.2.0: width without the hit list (it stands on the left and may be missing)
   views.width2 = #ws > 2 and math.floor((ws[1] + ws[2] + gap) * k) or views.width
   views:Hide()
   LP.views = views
 
-  -- 1.2.0: Quelle "Alle | Gilde | Freunde" unten links (Muster der Ansicht-Umschalter)
+  -- 1.2.0: source "All | Guild | Friends" at the bottom left (pattern of the view toggles)
   local srcs = CreateFrame("Frame", nil, LP)
   srcs:SetSize(200, 18)
   srcs:SetPoint("BOTTOMLEFT", 44, 34)
@@ -4298,7 +4297,7 @@ function UX.BuildLeftPage()
   end)
   for i = 1, ROWS do rows[i] = UX.MakeRow(LR, i) end
 
-  -- Rollbalken: 14 px Greifflaeche, sichtbar 5 px
+  -- scroll bar: 14 px grip area, 5 px visible
   local sc = CreateFrame("Slider", nil, LP)
   sc:SetOrientation("VERTICAL")
   sc:SetSize(14, ROWS * ROW_H - 8)
@@ -4324,7 +4323,7 @@ function UX.BuildLeftPage()
   end)
   LP.scroll = sc
 
-  -- Fusszeile: links der Stand (Gilde: Teilen, sonst Hinweis), rechts unten "Abgleichen"
+  -- foot line: on the left the status (guild: sharing, otherwise a hint), at the bottom right "Sync"
   LP.status = Look.Text(LP, "body", 10, Look.INK)
   LP.status:SetPoint("BOTTOMLEFT", 46, 10)
   LP.status:SetWidth(PAGE_W - 46 - 104)
@@ -4340,8 +4339,8 @@ function UX.BuildLeftPage()
   LP.sync = InkButton(LP, L.SYNC_BUTTON, 84, 20, SyncClick)
   LP.sync:SetPoint("BOTTOMRIGHT", -14, 8)
   LP.sync:Hide()
-  -- 1.2.0: der Knopf waechst mit dem Text wie die Reiter (84 bis GF.SYNC_MAX px; Kurzstaende wie
-  -- "Realm blockt Fluestern"); die Statuszeile links weicht ihm aus
+  -- 1.2.0: the button grows with its text like the tabs (84 to GF.SYNC_MAX px; short states like
+  -- "Realm blocks whispers"); the status line on the left makes room for it
   local setLabel = LP.sync.SetLabel
   function LP.sync:SetLabel(t)
     setLabel(self, t)
@@ -4353,12 +4352,12 @@ function UX.BuildLeftPage()
   LP.sync:SetLabel(L.SYNC_BUTTON)
 end
 
--- 1.2.0: Reiterbreite aus dem Text (Platz fuer "  123" dazu), mindestens wie 1.1.0 (104, mit Freunden 132),
--- hoechstens 150 px; die Reihe beginnt bei x = 184 und endet vor dem "?" (x = 704). Reicht der Platz nicht,
--- werden alle gleichmaessig schmaler (Text wird dann gekuerzt, nie ueberlappt).
+-- 1.2.0: tab width from the text (plus room for "  123"), at least as 1.1.0 (104, with friends 132),
+-- at most 150 px; the row starts at x = 184 and ends before the "?" (x = 704). If the room is not enough,
+-- all get evenly narrower (the text is then truncated, never overlapping).
 GF.TAB_X0, GF.TAB_X1, GF.TAB_GAP, GF.TAB_MAX, GF.TAB_ROOM = 184, 704, 4, 150, 34
 GF.FIT_PH = { sizes = { 16, 13, 11 } }
--- withCount (1.2.2): Breite auch aus dem gezeigten Text samt Zahl (vierstellig), der Text bleibt stehen
+-- withCount (1.2.2): width also from the shown text with its number (four digits), the text stays
 function GF.LayoutTabs(withCount)
   local ws, total = {}, 0
   for i, t in ipairs(F.tabs) do
@@ -4384,7 +4383,7 @@ function GF.LayoutTabs(withCount)
   end
 end
 
--- Kopf-Knoepfe: knochenweiss, bei Hover rot (nur die Farbe aendert sich)
+-- head buttons: bone white, red on hover (only the colour changes)
 local function HeadButton(text, size, tip)
   local b = CreateFrame("Button", nil, F)
   b:SetSize(22, 22)
@@ -4411,7 +4410,7 @@ local function Build()
   F:SetScript("OnDragStart", function(self) self:StartMoving() end)
   F:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
-    if self.SetUserPlaced then pcall(self.SetUserPlaced, self, false) end   -- Position nur in DeathNoteDB
+    if self.SetUserPlaced then pcall(self.SetUserPlaced, self, false) end   -- position only in DeathNoteDB
     UX.SavePoint()
   end)
   F:SetScript("OnShow", function()
@@ -4426,17 +4425,17 @@ local function Build()
     if LP and LP.search:HasFocus() then LP.search:ClearFocus() end
   end)
   tinsert(UISpecialFrames, "DeathNoteFrame")
-  -- 1.2.2: andere Aufloesung oder UI-Skalierung im Spiel: die groesste Stufe neu pruefen (das Buch bleibt im Schirm)
+  -- 1.2.2: another resolution or UI scale in game: check the largest scale again (the book stays on screen)
   F:RegisterEvent("UI_SCALE_CHANGED")
   F:RegisterEvent("DISPLAY_SIZE_CHANGED")
   F:SetScript("OnEvent", function() ApplyScale() end)
 
-  -- Einband
+  -- cover
   F:SetBackdrop({ edgeFile = Look.TEX.border, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
   F:SetBackdropBorderColor(0.02, 0.02, 0.02, 1)
   local cover = Tex(F, "BACKGROUND", Look.TEX.cover, -8)
   cover:SetPoint("TOPLEFT", 4, -4); cover:SetPoint("BOTTOMRIGHT", -4, 4)
-  -- Falz: dunkler Streifen zwischen den Seiten
+  -- fold: dark strip between the pages
   local spine = F:CreateTexture(nil, "BORDER")
   spine:SetColorTexture(0, 0, 0, 0.85)
   spine:SetPoint("TOPLEFT", 394, -40)
@@ -4449,7 +4448,7 @@ local function Build()
   title:SetShadowOffset(1, -1)
   title:SetShadowColor(0, 0, 0, 1)
 
-  -- Schliessen, Zahnrad (Hausordnung), "?" (Gebrauchsanweisung)
+  -- close, cog (house rules), "?" (manual)
   local close = HeadButton("×", 22)
   close:SetSize(26, 26)
   close:SetPoint("TOPRIGHT", -8, -9)
@@ -4487,11 +4486,11 @@ local function Build()
   end)
   F.help = help
 
-  -- Reiter: Lederlaschen auf dem Einband, der aktive mit blutroter Unterkante
+  -- tabs: leather flaps on the cover, the active one with a blood-red bottom edge
   F.tabs = {}
   for _, f in ipairs(UX.FILTERS) do
     local t = CreateFrame("Button", nil, F)
-    -- 1.2.0: mit dem Freundesbuch heisst der vierte Reiter "Gilde & Freunde" und ist breiter (bis zum "?")
+    -- 1.2.0: with the friends' book the fourth tab is called "Guild & Friends" and is wider (up to the "?")
     local wide = f.id == "guild" and GF.HasFriends()
     t.base = wide and 132 or 104
     t:SetSize(t.base, 24)
@@ -4559,7 +4558,7 @@ function UI.Open()
   if not F:IsShown() then F:Show() end
 end
 
--- Zeile des Gewaehlten ins Bild rollen
+-- scroll the selected row into view
 local function ScrollTo(pred)
   for i = 1, #data do
     if pred(data[i]) then
@@ -4570,7 +4569,7 @@ local function ScrollTo(pred)
   BindRows()
 end
 
--- Plakat eines bestimmten Taeters aufschlagen (aus dem Journal, der Suche, der Meldung oder von aussen)
+-- open the poster of a given killer (from the journal, the search, the message or from outside)
 function UI.ShowEnemy(key)
   local e = ready and Store().Get(key)
   if not e then return end
@@ -4585,7 +4584,7 @@ function UI.ShowEnemy(key)
   ScrollTo(function(x) return x.key == key end)
 end
 
--- einen Todesfall aufschlagen: offen unter "Zu klären", sonst im Todesjournal
+-- open a death: if open under "Unsolved", otherwise in the Death Log
 function UI.ShowCase(d)
   if not ready or type(d) ~= "table" then return end
   UI.Open()
@@ -4601,7 +4600,7 @@ function UI.ShowCase(d)
   ScrollTo(function(x) return x == d end)
 end
 
--- Abschussliste aufschlagen (/dn jagd ohne Name, nach dem Freigeben)
+-- open the hit list (/dn jagd without a name, after posting a call)
 function UI.ShowHunts(key)
   if not ready or not GF.HasHunts() then return end
   UI.Open()
@@ -4610,7 +4609,7 @@ function UI.ShowHunts(key)
   state.filter, state.gview = "guild", "hunt"
   if type(key) == "string" then
     state.hselected = key
-    -- 1.2.0 fix: Freigabe nur fuer Freunde bei Quelle "Gilde" (oder umgekehrt): die Quelle wechselt auf "Alle"
+    -- 1.2.0 fix: a call only for friends with source "Guild" (or the other way round): the source switches to "All"
     if GF.HasFriends() and not GCall("Hunt", key, GF.Src()) and GCall("Hunt", key, "all") then
       state.gsource = "all"
       Set("ui.guildSource", "all")
@@ -4675,7 +4674,7 @@ local function MinimapTip(owner)
   GameTooltip:Show()
 end
 
--- Alarm an/aus (wie /dn still); das Symbol zeigt "aus" halb durchsichtig
+-- alarm on/off (like /dn still); the icon shows "off" half transparent
 function UI.ToggleAlarm()
   if not ready then return end
   local on = not AlarmOn()
@@ -4729,7 +4728,7 @@ local function IconLib()
 end
 UX.IconLib = IconLib
 
--- nur waehrend des Ziehens aktiv
+-- active only while dragging
 local function DragUpdate(self)
   local mx, my = Minimap:GetCenter()
   if not mx then return end
@@ -4825,7 +4824,7 @@ function UI.UpdateMinimap()
   end
 end
 
--- Globale Namen fuer die TOC-Felder AddonCompartmentFunc*
+-- global names for the TOC fields AddonCompartmentFunc*
 function DeathNote_OnCompartmentClick(_, mouse) Click(mouse) end
 function DeathNote_OnCompartmentEnter(_, owner) MinimapTip(owner) end
 function DeathNote_OnCompartmentLeave() GameTooltip:Hide() end
@@ -4852,7 +4851,7 @@ ns:On("REVENGE", RequestRefresh)
 ns:On("GUILD_UPDATED", function() mv.dirty = true; gpart.src = nil; RequestRefresh() end)
 ns:On("GUILD_SIGHTING", function() if state.filter == "guild" then RequestRefresh() end end)
 ns:On("HUNT_BAGGED", function() if state.filter == "guild" then RequestRefresh() end end)
--- Der Store zieht einen Eintrag auf einen neuen Schluessel um: Auswahl und Notizfeld ziehen mit
+-- the store moves an entry to a new key: selection and note field move with it
 ns:On("ENEMY_REKEYED", function(old, new)
   if type(old) ~= "string" or type(new) ~= "string" or old == new then return end
   if state.selected == old then state.selected = new end
