@@ -645,4 +645,12 @@ L.CHAT_BOUNTY_UNKNOWN = "{name} ei ole missään kirjassasi. Palkkion voi asetta
 L.CHAT_BOUNTY_LIST = "Omat palkkiosi ({count}/{max}): {list}"
 L.CHAT_BOUNTY_LIST_NONE = "Et ole asettanut palkkiota."
 -- <<< BOOK
+-- >>> REPUTE (1.3.0): English placeholders, to be translated (keys as in enUS.lua) ---------------------------------
+L.REPUTE_LINE = "Rank {tier} · Path: {path}"
+L.PATH_R = "Infamy"
+L.PATH_E = "Honour"
+L.PATH_J = "Hunt"
+L.PATH_S = "Protection"
+L.PATH_NONE = "unwritten"
+-- <<< REPUTE
 end)

@@ -638,4 +638,12 @@ L.CHAT_BOUNTY_UNKNOWN = "{name} non è in nessuno dei tuoi libri. Una taglia va 
 L.CHAT_BOUNTY_LIST = "Le tue taglie ({count} su {max}): {list}"
 L.CHAT_BOUNTY_LIST_NONE = "Non hai messo nessuna taglia."
 -- <<< BOOK
+-- >>> REPUTE (1.3.0): English placeholders, to be translated (keys as in enUS.lua) ---------------------------------
+L.REPUTE_LINE = "Rank {tier} · Path: {path}"
+L.PATH_R = "Infamy"
+L.PATH_E = "Honour"
+L.PATH_J = "Hunt"
+L.PATH_S = "Protection"
+L.PATH_NONE = "unwritten"
+-- <<< REPUTE
 end)

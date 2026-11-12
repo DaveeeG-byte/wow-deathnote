@@ -653,4 +653,12 @@ L.CHAT_BOUNTY_UNKNOWN = "{name} egyik könyvedben sincs benne. Vérdíjat csak k
 L.CHAT_BOUNTY_LIST = "Saját vérdíjaid ({count}/{max}): {list}"
 L.CHAT_BOUNTY_LIST_NONE = "Nem tűztél ki vérdíjat."
 -- <<< BOOK
+-- >>> REPUTE (1.3.0): English placeholders, to be translated (keys as in enUS.lua) ---------------------------------
+L.REPUTE_LINE = "Rank {tier} · Path: {path}"
+L.PATH_R = "Infamy"
+L.PATH_E = "Honour"
+L.PATH_J = "Hunt"
+L.PATH_S = "Protection"
+L.PATH_NONE = "unwritten"
+-- <<< REPUTE
 end)

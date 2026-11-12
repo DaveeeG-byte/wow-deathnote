@@ -651,4 +651,12 @@ L.CHAT_BOUNTY_UNKNOWN = "{name}: není v žádné z tvých knih. Odměna jen na 
 L.CHAT_BOUNTY_LIST = "Tvoje odměny ({count} z {max}): {list}"
 L.CHAT_BOUNTY_LIST_NONE = "Nemáš žádnou vlastní odměnu."
 -- <<< BOOK
+-- >>> REPUTE (1.3.0): English placeholders, to be translated (keys as in enUS.lua) ---------------------------------
+L.REPUTE_LINE = "Rank {tier} · Path: {path}"
+L.PATH_R = "Infamy"
+L.PATH_E = "Honour"
+L.PATH_J = "Hunt"
+L.PATH_S = "Protection"
+L.PATH_NONE = "unwritten"
+-- <<< REPUTE
 end)

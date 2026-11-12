@@ -100,6 +100,11 @@ for f in p:lines() do
     if f == "Humor.lua" then
       src = src:gsub("(%-%- >>> HUMOR%-TEXTE.-%-%- <<< HUMOR%-TEXTE)", function(b) return (b:gsub("[^\n]", "")) end)
     end
+    -- Ranks.lua (1.3.0): the rank names are data in German and English by design (repute concept 14), in the
+    -- marked block RANK-NAMES; only that block is skipped
+    if f == "Ranks.lua" then
+      src = src:gsub("(%-%- >>> RANK%-NAMES.-%-%- <<< RANK%-NAMES)", function(b) return (b:gsub("[^\n]", "")) end)
+    end
     for _, lit in ipairs(literals(src)) do
       local why = not (ERLAUBT_IN[f] and ERLAUBT_IN[f][lit.s]) and suspicious(lit.s)
       if why then found[#found + 1] = ("%s:%d  %s  %q"):format(f, lit.line, why, lit.s:sub(1, 60)) end

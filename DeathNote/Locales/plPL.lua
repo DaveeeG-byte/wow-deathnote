@@ -651,4 +651,12 @@ L.CHAT_BOUNTY_UNKNOWN = "{name}: brak w twoich księgach. Nagroda tylko na imię
 L.CHAT_BOUNTY_LIST = "Twoje nagrody ({count} z {max}): {list}"
 L.CHAT_BOUNTY_LIST_NONE = "Nie masz żadnej własnej nagrody."
 -- <<< BOOK
+-- >>> REPUTE (1.3.0): English placeholders, to be translated (keys as in enUS.lua) ---------------------------------
+L.REPUTE_LINE = "Rank {tier} · Path: {path}"
+L.PATH_R = "Infamy"
+L.PATH_E = "Honour"
+L.PATH_J = "Hunt"
+L.PATH_S = "Protection"
+L.PATH_NONE = "unwritten"
+-- <<< REPUTE
 end)

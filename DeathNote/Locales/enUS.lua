@@ -659,4 +659,12 @@ L.CHAT_BOUNTY_UNKNOWN = "{name} is in none of your books. A bounty goes only on 
 L.CHAT_BOUNTY_LIST = "Your bounties ({count} of {max}): {list}"  -- chat: /dn bounty without anything: the own bounties of this char; {count} = how many, {max} = the limit (20), {list} = "Grimm Bart 500g, Fies Ling 50g"
 L.CHAT_BOUNTY_LIST_NONE = "You have posted no bounty."  -- chat: /dn bounty without anything and no own bounty (the next line shows how to post one)
 -- <<< BOOK
+-- >>> REPUTE (Ranks.lua, Ledger.lua, 1.3.0) --------------------------------------------------------------------
+L.REPUTE_LINE = "Rank {tier} · Path: {path}"  -- the rank where no rank name exists (languages without names in Ranks.lua); {tier} = 1..10, {path} = PATH_* below
+L.PATH_R = "Infamy"  -- path word: kills of greys and greens (the ruthless path)
+L.PATH_E = "Honour"  -- path word: kills of players of about the same level (the honourable path)
+L.PATH_J = "Hunt"  -- path word: kills of higher levels, hit list targets, bounties (the bounty hunter's path)
+L.PATH_S = "Protection"  -- path word: kills of players who killed guildmates or friends (the protector's path)
+L.PATH_NONE = "unwritten"  -- path word: fewer than 10 counted kills, no path yet
+-- <<< REPUTE
 end)

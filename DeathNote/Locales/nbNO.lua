@@ -644,4 +644,12 @@ L.CHAT_BOUNTY_UNKNOWN = "{name} står ikke i noen av bøkene dine. Dusør bare p
 L.CHAT_BOUNTY_LIST = "Dusørene dine ({count} av {max}): {list}"
 L.CHAT_BOUNTY_LIST_NONE = "Du har ikke lyst ut noen dusør."
 -- <<< BOOK
+-- >>> REPUTE (1.3.0): English placeholders, to be translated (keys as in enUS.lua) ---------------------------------
+L.REPUTE_LINE = "Rank {tier} · Path: {path}"
+L.PATH_R = "Infamy"
+L.PATH_E = "Honour"
+L.PATH_J = "Hunt"
+L.PATH_S = "Protection"
+L.PATH_NONE = "unwritten"
+-- <<< REPUTE
 end)

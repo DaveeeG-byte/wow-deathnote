@@ -652,4 +652,12 @@ L.CHAT_BOUNTY_UNKNOWN = "{name}: 어느 책에도 없다. 현상금은 책에 �
 L.CHAT_BOUNTY_LIST = "내 현상금 ({count}/{max}): {list}"
 L.CHAT_BOUNTY_LIST_NONE = "건 현상금이 없다."
 -- <<< BOOK
+-- >>> REPUTE (1.3.0): English placeholders, to be translated (keys as in enUS.lua) ---------------------------------
+L.REPUTE_LINE = "Rank {tier} · Path: {path}"
+L.PATH_R = "Infamy"
+L.PATH_E = "Honour"
+L.PATH_J = "Hunt"
+L.PATH_S = "Protection"
+L.PATH_NONE = "unwritten"
+-- <<< REPUTE
 end)

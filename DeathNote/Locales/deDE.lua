@@ -639,4 +639,12 @@ L.CHAT_BOUNTY_UNKNOWN = "{name} steht in keinem deiner Bücher. Kopfgeld nur auf
 L.CHAT_BOUNTY_LIST = "Deine Kopfgelder ({count} von {max}): {list}"
 L.CHAT_BOUNTY_LIST_NONE = "Du hast kein Kopfgeld ausgelobt."
 -- <<< BOOK
+-- >>> REPUTE (Ranks.lua, Ledger.lua, 1.3.0) --------------------------------------------------------------------
+L.REPUTE_LINE = "Rang {tier} · Weg: {path}"
+L.PATH_R = "Verruf"
+L.PATH_E = "Ehre"
+L.PATH_J = "Jagd"
+L.PATH_S = "Schutz"
+L.PATH_NONE = "unbeschrieben"
+-- <<< REPUTE
 end)
