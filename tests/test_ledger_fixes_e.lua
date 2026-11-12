@@ -77,6 +77,10 @@ test("A namesake key shows as the name: NameParts and DisplayName, also after a 
   reload()
   eq(ns.Ledger.Victim(key).realm, "Forever")
   eq(ns.Ledger.DisplayName("Gerd-Groll"), "Gerd")   -- a key nobody holds: the first part only
+  local a = seen("Anna", "Ast", 40); kill(a)
+  local n2, s2, r2 = ns.Ledger.NameParts("Anna-Ast")
+  eq(n2 .. "/" .. s2 .. "/" .. tostring(r2), "Anna/Ast/nil", "a full key has no realm")
+  eq(ns.Ledger.DisplayName("Anna-Ast"), "Anna Ast")
   eq(ns.Store.Get(key), nil, "never in the book")
 end)
 

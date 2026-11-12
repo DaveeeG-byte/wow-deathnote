@@ -28,6 +28,11 @@
 -- booked here. The start books nothing (DB version 4 only creates the empty structure; the repute starts at zero).
 -- Revenge that came in by "Import book" (e.revengeForeign) is foreign data: the bounty reads it like 1.2.x, the
 -- standing leaves it out. Counts read for the standing are capped at COUNT_MAX.
+-- One player, one key: book and rap sheet are joined by the GUID where there is one, by the key only otherwise. A
+-- kill is booked under the book's key for its GUID; a victim follows the book's key for its GUID (ENEMY_UPDATED,
+-- ENEMY_REKEYED, the check at start); a book entry and a victim of two different GUIDs never belong together, the
+-- victim steps aside to a namesake key "Name-Realm#<GUID part>" (rap sheet and tracker only, never the book). Names
+-- to show come from Ledger.NameParts / Ledger.DisplayName or the fields, never from splitting a key.
 --
 -- Detection (decision 7): PARTY_KILL with my GUID or my pet's as attacker is the source. The honour line
 -- (COMBATLOG_HONORGAIN of the client, made into a pattern) is the fallback when no PARTY_KILL came for that victim;
@@ -872,13 +877,19 @@ end
 -- The parts to show for a key of the rap sheet or the book: name, surname (nil when unknown), realm (nil when
 -- unknown). Right for namesake keys ("Name-Realm#...") too, which carry no name of their own: the book and the alarm
 -- show a victim or an entry only through this (or the fields of Ledger.Victim / Store.Get), never by splitting a key.
+local function parts(n, sn, realm)
+  -- a full key "Name-Surname" stores its second part as realm too: that is no realm
+  if sn and realm == sn then realm = nil end
+  return n, sn, realm
+end
+
 function Ledger.NameParts(key)
   if type(key) ~= "string" or IsSecret(key) then return nil end
   local v = db and victims[key]
-  if v then return v.name, v.surname, v.realm end
+  if v then return parts(v.name, v.surname, v.realm) end
   local S = ns.Store
   local e = S and S.Get(key)
-  if e then return e.name, e.surname, e.realm end
+  if e then return parts(e.name, e.surname, e.realm) end
   -- a key nobody holds: the second part may be a surname or a realm, it is shown as neither
   local n = splitVictimKey(key)
   return n, nil, nil
