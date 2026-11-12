@@ -4410,9 +4410,18 @@ function UI.ShowHunts(key)
 end
 
 ------------------------------------------------------------------------
--- Minimap-Knopf (ohne Bibliothek) und AddonCompartment
+-- Minimap button and AddonCompartment.
+-- 1.2.2: with LibDBIcon-1.0 (and LibDataBroker-1.1, both embedded in Libs/) the button is the library's standard
+-- button "LibDBIcon10_DeathNote" with a launcher data object "DeathNote": button collectors and LDB displays
+-- recognise it and show our tooltip through OnTooltipShow. Without the libraries (tests, a broken zip) the own
+-- button "DeathNoteMinimapButton" of 1.2.1 stays. Both read ui.minimap: hide, minimapPos (LibDBIcon) and angle
+-- (own button, 1.2.1); Store keeps angle and minimapPos in step.
 ------------------------------------------------------------------------
-local mm
+local mm                 -- own button (fallback only)
+local LDB_NAME = "DeathNote"
+local LDB_ICON = Look.TEX.icon   -- Interface\\AddOns\\DeathNote\\Media\\icon.tga
+local iconLib            -- LibDBIcon-1.0; false = looked for and missing
+local ldbObj             -- our LibDataBroker launcher
 
 function UX.Radius() return Minimap:GetWidth() / 2 + 6 end
 
@@ -4425,17 +4434,29 @@ end
 
 local function AlarmOn() return Look.Setting("alert.enabled", true) ~= false end
 
-local function MinimapTip(owner)
-  GameTooltip:SetOwner(owner, "ANCHOR_LEFT")
-  GameTooltip:SetText("DeathNote", Look.BONE[1], Look.BONE[2], Look.BONE[3])
+-- the library button, when the libraries are there and it is registered
+local function LibButton()
+  if not iconLib then return nil end
+  local ok, b = pcall(iconLib.GetMinimapButton, iconLib, LDB_NAME)
+  return ok and b or nil
+end
+
+-- tooltip lines (own button, compartment, LibDBIcon tooltip, LDB displays); drag = the line about dragging
+local function FillTip(tt, drag)
+  tt:SetText("DeathNote", Look.BONE[1], Look.BONE[2], Look.BONE[3])
   if ready then
     local w, s, _, o = Counts()
-    GameTooltip:AddLine(Look.Join(Fmt(L.MM_WANTED, { count = w }), (s + o) > 0 and Fmt(L.MM_UNSOLVED, { count = s + o })), 1, 1, 1)
-    if not AlarmOn() then GameTooltip:AddLine(L.MM_ALERT_OFF, 1, 0.45, 0.4) end
+    tt:AddLine(Look.Join(Fmt(L.MM_WANTED, { count = w }), (s + o) > 0 and Fmt(L.MM_UNSOLVED, { count = s + o })), 1, 1, 1)
+    if not AlarmOn() then tt:AddLine(L.MM_ALERT_OFF, 1, 0.45, 0.4) end
   end
-  GameTooltip:AddLine(L.MM_CLICK, 0.8, 0.8, 0.8)
-  GameTooltip:AddLine(L.MM_MIDDLE, 0.8, 0.8, 0.8)
-  if owner == mm then GameTooltip:AddLine(L.MM_DRAG, 0.6, 0.6, 0.6) end
+  tt:AddLine(L.MM_CLICK, 0.8, 0.8, 0.8)
+  tt:AddLine(L.MM_MIDDLE, 0.8, 0.8, 0.8)
+  if drag then tt:AddLine(L.MM_DRAG, 0.6, 0.6, 0.6) end
+end
+
+local function MinimapTip(owner)
+  GameTooltip:SetOwner(owner, "ANCHOR_LEFT")
+  FillTip(GameTooltip, owner == mm)
   GameTooltip:Show()
 end
 
@@ -4457,6 +4478,38 @@ local function Click(mouse)
     UI.Toggle()
   end
 end
+
+-- LibDBIcon-1.0 with its launcher, or nil (then the own button). Looked up once; LibStub is optional.
+local function IconLib()
+  if iconLib ~= nil then return iconLib or nil end
+  iconLib = false
+  local LS = rawget(_G, "LibStub")
+  if type(LS) ~= "table" then return nil end
+  local okB, ldb = pcall(LS, "LibDataBroker-1.1", true)
+  local okI, dbi = pcall(LS, "LibDBIcon-1.0", true)
+  if not (okB and okI and type(ldb) == "table" and type(dbi) == "table") then return nil end
+  local okG, obj = pcall(ldb.GetDataObjectByName, ldb, LDB_NAME)
+  if not (okG and type(obj) == "table") then
+    local okN
+    okN, obj = pcall(ldb.NewDataObject, ldb, LDB_NAME, {
+      type = "launcher",
+      text = "DeathNote",
+      icon = LDB_ICON,
+      OnClick = function(_, mouse) Click(mouse) end,
+      OnTooltipShow = function(tt)
+        if not tt or not tt.AddLine then return end
+        -- the drag line only on the minimap button (LDB displays show the same tooltip elsewhere)
+        local okO, owner = pcall(function() return tt:GetOwner() end)
+        FillTip(tt, okO and owner ~= nil and owner == LibButton())
+      end,
+    })
+    if not (okN and type(obj) == "table") then return nil end
+  end
+  ldbObj = obj
+  iconLib = dbi
+  return dbi
+end
+UX.IconLib = IconLib
 
 -- nur waehrend des Ziehens aktiv
 local function DragUpdate(self)
@@ -4497,11 +4550,40 @@ function UX.BuildMinimap()
   mm:SetScript("OnDragStop", function(self)
     self:SetScript("OnUpdate", nil)
     self.dragging = false
-    if self.angle then Set("ui.minimap.angle", math.floor(self.angle + 0.5)) end
+    if self.angle then
+      -- minimapPos too (LibDBIcon's field), so the logout sync in Store keeps this angle
+      local db = Look.Setting("ui.minimap")
+      if type(db) == "table" then db.minimapPos = math.floor(self.angle + 0.5) % 360 end
+      Set("ui.minimap.angle", math.floor(self.angle + 0.5) % 360)
+    end
   end)
 end
 
+-- the alarm-off look: the icon half transparent (either button)
+local function IconAlpha()
+  local b = mm or LibButton()
+  if b and b.icon then b.icon:SetAlpha(AlarmOn() and 1 or 0.45) end
+end
+
+-- LibDBIcon path. Returns false when the library refused (then the own button takes over).
+local function UpdateLibButton(lib)
+  local db = Look.Setting("ui.minimap")
+  if type(db) ~= "table" then return true end
+  local b = LibButton()
+  if not b then
+    if not pcall(lib.Register, lib, LDB_NAME, ldbObj, db) then return false end
+    b = LibButton()
+    if not b then return false end
+  elseif b.db ~= db then
+    pcall(lib.Refresh, lib, LDB_NAME, db)     -- the settings table was replaced (import, new DB)
+  end
+  if db.hide then pcall(lib.Hide, lib, LDB_NAME) else pcall(lib.Show, lib, LDB_NAME) end
+  return true
+end
+
 function UI.UpdateMinimap()
+  local lib = not mm and IconLib()
+  if lib and UpdateLibButton(lib) then IconAlpha(); return end
   if Look.Setting("ui.minimap.hide", false) then
     if mm then mm:Hide() end
     return
@@ -4509,7 +4591,7 @@ function UI.UpdateMinimap()
   if not mm then UX.BuildMinimap() end
   if mm then
     PlaceAt(Look.Setting("ui.minimap.angle", 215) or 215)
-    mm.icon:SetAlpha(AlarmOn() and 1 or 0.45)
+    IconAlpha()
     mm:Show()
   end
 end
@@ -4554,7 +4636,7 @@ ns:On("SETTINGS_CHANGED", function(path)
   if type(path) == "string" and path:find("^ui%.minimap") and not (mm and mm.dragging == false and path == "ui.minimap.angle") then
     UI.UpdateMinimap()
   end
-  if path == "alert.enabled" and mm then mm.icon:SetAlpha(AlarmOn() and 1 or 0.45) end
+  if path == "alert.enabled" then IconAlpha() end
   if path == "ui.scale" then ApplyScale() end
   if path == "ui.guildCollapsed" then collapseVer = collapseVer + 1; if MemberView() then RequestRefresh() end end
   if type(path) == "string" and path:find("^guild%.") then RequestRefresh() end

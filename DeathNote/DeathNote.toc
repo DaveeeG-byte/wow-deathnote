@@ -20,6 +20,9 @@
 ## AddonCompartmentFuncOnEnter: DeathNote_OnCompartmentEnter
 ## AddonCompartmentFuncOnLeave: DeathNote_OnCompartmentLeave
 
+# Embedded libraries for the standard minimap button (LibDBIcon-1.0); without them the own button is used.
+Libs\embeds.xml
+
 # Language choice first, then English (fallback for every key), then the other 20. Each language
 # file only registers a builder; Locale.lua builds one language at ADDON_LOADED: the chosen one, else the client's.
 Locale.lua

@@ -23,6 +23,8 @@ local DEFAULT_SETTINGS = {
   -- guildView: "enemy" | "member" (1.1.0) | "hunt" (1.2.0); guildCollapsed: member char name -> true (1.1.0)
   -- guildSource (1.2.0): "all" | "guild" | "friends", the source chosen in the fourth tab
   -- guildMore (1.2.0): true = House Rules, sheet Guild shows its second page "More"; absent = closed
+  -- minimap: hide and angle (own button, read by 1.2.1 too); minimapPos (1.2.2, LibDBIcon) has no default here,
+  -- repairSettings derives it from angle
   ui = { scale = 1, sort = "rank", minimap = { hide = false, angle = 215 }, guildView = "enemy", guildCollapsed = {},
     guildSource = "all" },
   deathMessage = true,
@@ -88,6 +90,16 @@ local function repairSettings(st)
   if not GUILD_SOURCES[ui.guildSource] then ui.guildSource = DEFAULT_SETTINGS.ui.guildSource end
   for k, x in pairs(ui.guildCollapsed) do
     if type(k) ~= "string" or x ~= true then ui.guildCollapsed[k] = nil end
+  end
+  -- 1.2.2: LibDBIcon reads and writes ui.minimap.minimapPos (degrees, a float while dragging); angle (whole
+  -- degrees) stays for the own button and for 1.2.1 after a downgrade. Same angle, so the button does not jump.
+  -- A minimapPos that no longer matches angle was left behind by 1.2.1 moving the button: angle wins.
+  local mm = ui.minimap
+  if mm.angle == math.huge or mm.angle == -math.huge then mm.angle = DEFAULT_SETTINGS.ui.minimap.angle end
+  local pos = mm.minimapPos
+  if type(pos) ~= "number" or pos ~= pos or pos == math.huge or pos == -math.huge
+     or math.floor(pos + 0.5) % 360 ~= math.floor(mm.angle + 0.5) % 360 then
+    mm.minimapPos = mm.angle
   end
   -- releases expire after one of these (0 = never)
   local g = st.guild
@@ -318,6 +330,18 @@ function Store.Init()
 end
 
 function Store.DB() return db end
+
+-- 1.2.2: before the SavedVariables are written, angle follows the LibDBIcon position (1.2.1 reads only angle)
+function Store.SyncMinimapAngle()
+  local st = db and db.settings
+  local mm = type(st) == "table" and type(st.ui) == "table" and st.ui.minimap
+  if type(mm) ~= "table" then return end
+  local pos = mm.minimapPos
+  if type(pos) == "number" and pos == pos and pos > -math.huge and pos < math.huge then
+    mm.angle = math.floor(pos + 0.5) % 360
+  end
+end
+ns:RegisterEvent("PLAYER_LOGOUT", Store.SyncMinimapAngle)
 
 ---------------------------------------------------------------------------
 -- Reading

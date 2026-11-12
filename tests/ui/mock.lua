@@ -431,6 +431,7 @@ function M.SetUIScale(sc)
 end
 M.SetUIScale(1)
 G.Minimap = new("Frame", "Minimap")
+G._G = G   -- 1.2.2: optional globals (LibStub) are looked up with rawget(_G, name)
 G.GameTooltip = new("GameTooltip", "GameTooltip")
 G.GameFontNormal = {}
 G.UISpecialFrames = {}
