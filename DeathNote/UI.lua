@@ -3600,7 +3600,9 @@ local function PlatePollTick()
   if not F or not F:IsShown() then return end
   local U = ns.Util
   if U and U.CheckPlates then U.CheckPlates("poll") end
-  if F:IsShown() then platePoll = C_Timer.NewTimer(UX.PLATE_POLL, PlatePollTick) end
+  -- without C_Timer.NewTimer there is no poll (one read per opening), but OnShow must not fail
+  local NewTimer = C_Timer and C_Timer.NewTimer
+  if NewTimer and F:IsShown() then platePoll = NewTimer(UX.PLATE_POLL, PlatePollTick) end
 end
 function UX.StartPlatePoll()
   if platePoll then platePoll:Cancel(); platePoll = nil end
