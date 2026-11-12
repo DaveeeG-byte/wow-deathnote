@@ -1,16 +1,16 @@
 local ADDON, ns = ...
 
--- Tooltip-Zeile "GESUCHT" bzw. "GILDENFEIND" und Bildschirmmeldungen nach Tod, Rache und Gildentod.
+-- Tooltip line "WANTED" or "GUILD ENEMY" and on-screen notices after death, revenge and guild death.
 
 local Look = ns.Look
 local Extras = {}
 ns.Extras = Extras
 local ready = false
--- Texte (1.2.0): L.KEY nur in Funktionen lesen (ns.L ist ab ADDON_LOADED gefuellt)
+-- Texts (1.2.0): read L.KEY inside functions only (ns.L is filled from ADDON_LOADED on)
 local L, Fmt = ns.L, ns.F
 
--- Kopfzeile der Meldung gesperrt: "NEUER EINTRAG" -> "N E U E R   E I N T R A G" (UTF-8-bewusst);
--- Chinesisch und Koreanisch bleiben ungesperrt
+-- Head line of the notice letter-spaced: "NEW ENTRY" -> "N E W   E N T R Y" (UTF-8 aware);
+-- Chinese and Korean stay unspaced
 local NO_SPACING = { koKR = true, zhCN = true, zhTW = true }
 local function Spaced(s)
   if type(s) ~= "string" then return "" end
@@ -21,9 +21,9 @@ local function Spaced(s)
 end
 Extras.Spaced = Spaced
 
--- Stempel der Meldung: Deutsch zeigt die Bilder wie 1.1.0, jede andere Sprache den leeren Rahmen
--- (gleiche Optik) mit dem Text aus der Sprachtabelle darueber, gedreht wie das Bild (Grad, ImageMagick
--- im Uhrzeigersinn). FontString:SetRotation ist nur wo vorhanden benutzt (Beleg: Details/Libs/DF/fw.lua).
+-- Stamp of the notice: German shows the images as in 1.1.0, every other language the empty frame
+-- (same look) with the text from the language table on top, turned like the image (degrees, ImageMagick
+-- clockwise). FontString:SetRotation is used only where it exists (as in Details/Libs/DF/fw.lua).
 local STAMPS = {
   nr1   = { img = "nr1",   key = "STAMP_NR1",     ang = -11, rgb = { 0.69, 0.04, 0.04 } },
   rache = { img = "rache", key = "STAMP_REVENGE", ang = 9,   rgb = { 0.69, 0.04, 0.04 } },
@@ -40,7 +40,7 @@ end
 ------------------------------------------------------------------------
 -- Tooltip
 ------------------------------------------------------------------------
--- "IM BUCH: 2× getötet · 1× beteiligt · Rang 1 · Rache 2×" (dieselben Woerter wie im Buch)
+-- "IN THE BOOK: 2× killed · 1× involved · rank 1 · revenge 2×" (the same words as in the book)
 local function TooltipText(e)
   local rank = e.status == "wanted" and ns.Store.Rank(e.key) or nil
   local rv = tonumber(e.revenge) or 0
@@ -49,7 +49,7 @@ local function TooltipText(e)
   return "|cffe03020" .. L.TIP_IN_BOOK .. "|r |cffd8c8a8" .. s .. "|r"
 end
 
--- Unit-Token des Tooltips: GetUnit, sonst ueber die GUID der Tooltip-Daten; Secrets fallen raus
+-- Unit token of the tooltip: GetUnit, else through the GUID of the tooltip data; secrets drop out
 local function TooltipUnit(tt, data)
   local ok, _, unit = pcall(tt.GetUnit, tt)
   if ok and type(unit) == "string" and not Look.Secret(unit) then return unit end
@@ -70,16 +70,16 @@ local function OnTooltipUnit(tt, data)
   if not Look.Setting("tooltip", true) then return end
   local unit = TooltipUnit(tt, data)
   if not unit then return end
-  local key = ns.Util.KeyOfUnit(unit)   -- nil bei Secret oder Nicht-Spieler
+  local key = ns.Util.KeyOfUnit(unit)   -- nil for a secret or a non-player
   if not key then return end
-  -- Ziel der Abschussliste (1.2.0): eine eigene Zeile, auch wenn er im eigenen Buch steht
+  -- Hit list target (1.2.0): a line of its own, also when he is in the own book
   local h = Look.HasGuild() and Look.GCall("Hunt", key, "all")
   if type(h) == "table" and type(h.names) == "table" and #h.names > 0 then
     tt:AddLine("|cffe03020" .. L.TIP_HUNT .. "|r |cffd8c8a8" .. Fmt(L.HUNT_LINE_BY, { names = Look.NameList(h.names, 2) }) .. "|r")
   end
   local e = ns.Store.Get(key)
   if not e then
-    -- Gildenfeind (1.2.0: oder Taeter der Freunde), der (noch) nicht im eigenen Buch steht
+    -- Guild enemy (1.2.0: or a killer from the friends' book) who is not (yet) in the own book
     local g = Look.HasGuild() and Look.GCall("Get", key, "all")
     if type(g) == "table" and (g.kills or 0) > 0 then
       tt:AddLine("|cffe03020" .. L.TIP_GUILDBOOK .. "|r |cffd8c8a8" .. Fmt(L.GUILD_LINE_KILLED_GUILD, { kills = Look.GKills(g.kills) }) .. "|r")
@@ -113,27 +113,27 @@ local function HookTooltip()
 end
 
 ------------------------------------------------------------------------
--- Bildschirmmeldung (Steckbrief-Streifen in der Bildschirmmitte)
+-- On-screen notice (wanted strip in the middle of the screen)
 ------------------------------------------------------------------------
 local banner
 local BANNER_W, BANNER_H, BANNER_Y = 480, 92, -310
-local guildQueue = {}     -- wartende Gilden-Meldungen; die eigene Meldung hat immer Vorrang
+local guildQueue = {}     -- waiting guild notices; the own notice always goes first
 local GUILD_QUEUE_MAX = 3
-local NextGuild -- vorwaerts
+local NextGuild -- forward declaration
 
--- Schwarzer Streifen mit blutroter Kante; der Name erscheint wie frisch ins Buch geschrieben
+-- Black strip with a blood red edge; the name appears as if freshly written into the book
 local function BuildBanner()
   banner = CreateFrame("Frame", "DeathNoteBanner", UIParent, "BackdropTemplate")
   banner:SetSize(BANNER_W, BANNER_H)
-  banner:SetPoint("TOP", UIParent, "TOP", 0, BANNER_Y)   -- unter dem Alarm-Popup, nie darueber
+  banner:SetPoint("TOP", UIParent, "TOP", 0, BANNER_Y)   -- below the alarm popup (moves above it only when there is no room below, see further down)
   banner:SetClampedToScreen(true)
   banner:SetFrameStrata("HIGH")
   banner:EnableMouse(false)
   banner:Hide()
-  -- Meldungen nach dem eigenen Tod sind anklickbar (man ist tot, es stoert keinen Kampf):
-  -- Linksklick schlaegt den Taeter bzw. den Fall auf, Rechtsklick schliesst
-  -- Stop() loest im Client OnFinished nicht aus: nach einem Klick selbst aufraeumen, sonst bleibt
-  -- der Klick-Zustand stehen und wartende Gilden-Meldungen kommen nie dran
+  -- Notices after the own death can be clicked (you are dead, it disturbs no fight):
+  -- left click opens the killer or the case, right click closes
+  -- Stop() does not fire OnFinished in the client: clean up after a click ourselves, else the click
+  -- state stays and waiting guild notices never get their turn
   local function Dismiss(self)
     self.anim:Stop(); self:Hide()
     self.open, self.key, self.guild = nil, nil, false
@@ -176,13 +176,13 @@ local function BuildBanner()
   banner.line:SetWidth(440)
   banner.line:SetWordWrap(false)
 
-  -- Stempel haengt ueber die rechte obere Ecke
+  -- the stamp hangs over the top right corner
   banner.stamp = banner:CreateTexture(nil, "OVERLAY")
   banner.stamp:SetSize(120, 60)
   banner.stamp:SetPoint("TOPRIGHT", banner, "TOPRIGHT", 26, 18)
   banner.stamp:SetAlpha(0.95)
   banner.stamp:Hide()
-  -- 1.2.0: Stempeltext fuer alle Sprachen ausser Deutsch (auf dem leeren Rahmen)
+  -- 1.2.0: stamp text for every language except German (on the empty frame)
   banner.stampText = Look.Text(banner, "title", 13, { 0.69, 0.04, 0.04 })
   banner.stampText:SetPoint("CENTER", banner.stamp, "CENTER", 0, 0)
   banner.stampText:SetWidth(96)
@@ -193,8 +193,8 @@ local function BuildBanner()
   local g = banner:CreateAnimationGroup()
   Look.AlphaAnim(g, 0, 1, 0.25, 1)
   Look.ScaleAnim(g, 1.15, 1, 0.3, 1)
-  Look.AlphaAnim(g, 1, 0, 0.8, 2, 4.5)   -- 4,5 s stehen lassen, dann ausblenden
-  if g.SetToFinalAlpha then g:SetToFinalAlpha(true) end   -- kein Aufblitzen mit Alpha 1 am Ende
+  Look.AlphaAnim(g, 1, 0, 0.8, 2, 4.5)   -- stay 4.5 s, then fade out
+  if g.SetToFinalAlpha then g:SetToFinalAlpha(true) end   -- no flash at alpha 1 at the end
   g:SetScript("OnFinished", function()
     banner:Hide()
     banner.open = nil
@@ -205,13 +205,13 @@ local function BuildBanner()
   end)
   banner.anim = g
 
-  -- Name: kurz unsichtbar halten, dann einblenden (Alpha springt danach auf 1 zurueck)
+  -- Name: keep it invisible for a moment, then fade in (alpha jumps back to 1 afterwards)
   local ng = banner.name:CreateAnimationGroup()
   Look.AlphaAnim(ng, 0, 0, 0.2, 1)
   Look.AlphaAnim(ng, 0, 1, 0.7, 2)
   banner.nameAnim = ng
 
-  -- Stempel kommt mit einem "Rumms" nach
+  -- the stamp follows with a thud
   local sg = banner.stamp:CreateAnimationGroup()
   Look.AlphaAnim(sg, 0, 0, 0.6, 1)
   Look.AlphaAnim(sg, 0, 1, 0.08, 2)
@@ -223,9 +223,9 @@ local function BuildBanner()
   banner.stampTextAnim = tg
 end
 
--- Die Meldung liegt nie auf dem Alarm-Popup: ueberdecken sie sich (groesserer Alarm, verschobenes
--- Popup), rueckt die Meldung unter das Popup, und wenn dort kein Platz ist, darueber.
--- Alles in UIParent-Einheiten; beide haengen an UIParent, dessen Skalierung (z. B. 0,6) kuerzt sich.
+-- The notice never lies on the alarm popup: when they overlap (larger alarm, moved popup), the notice
+-- moves below the popup, and when there is no room there, above it.
+-- All in UIParent units; both hang on UIParent, so its scale (e.g. 0.6) cancels out.
 local GAP, STAMP_TOP = 10, 18
 function Extras.PlaceBanner()
   if not banner then return end
@@ -241,9 +241,9 @@ function Extras.PlaceBanner()
     local bb = H + BANNER_Y - BANNER_H - strip
     if l < br and r > bl and b < bt and t > bb then
       if b - GAP - STAMP_TOP - BANNER_H >= 0 then
-        y = (b - GAP - STAMP_TOP) - H              -- unter das Popup
+        y = (b - GAP - STAMP_TOP) - H              -- below the popup
       else
-        y = (t + GAP + BANNER_H + strip) - H       -- darueber
+        y = (t + GAP + BANNER_H + strip) - H       -- above it
       end
     end
   end
@@ -254,7 +254,7 @@ function Extras.PlaceBanner()
   end
 end
 
--- zeigt die Meldung gerade diesen Spieler?
+-- does the notice show this player right now?
 function Extras.BannerShows(key)
   return banner ~= nil and banner:IsShown() and banner.key ~= nil and banner.key == key
 end
@@ -263,8 +263,8 @@ local function Silence(key)
   if type(key) == "string" and ns.Alert and ns.Alert.Silence then ns.Alert.Silence(key) end
 end
 
--- open: Funktion fuer den Klick (nur Meldungen nach dem eigenen Tod), sonst nicht anklickbar.
--- kicker ist der ungesperrte Text (1.2.0, gesperrt wird hier); stamp: Art aus STAMPS oder nil
+-- open: function for the click (only notices after the own death), else not clickable.
+-- kicker is the unspaced text (1.2.0, spacing happens here); stamp: kind from STAMPS or nil
 -- 1.2.2: the name steps 26, 22, 19 pt (380 px, 340 px next to the stamp); the line steps 11, 10 pt, and a line
 -- given as { full, short } falls back to the short one (zone left out) before it would be cut;
 -- the stamp text steps 13, 11, 9 pt on up to two lines (a long single word no longer runs out of the frame)
@@ -280,7 +280,7 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   banner.open = open
   banner:EnableMouse(open ~= nil)
   banner.kicker:SetText(kicker)
-  -- mit Stempel ruckt der Name etwas nach links, damit lange Namen frei bleiben
+  -- with a stamp the name moves a bit to the left, so long names stay clear of it
   banner.name:ClearAllPoints()
   banner.name:SetPoint("TOP", stampTex and -24 or 0, -26)
   banner.name:SetWidth(stampTex and 340 or 380)
@@ -317,9 +317,9 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
     banner.stampText:Hide()
   end
   Extras.PlaceBanner()
-  -- ein Ereignis, ein Fenster: kein Alarm-Popup fuer denselben Spieler daneben
+  -- one event, one window: no alarm popup for the same player next to it
   if key then Silence(key) end
-  if ns.Humor then pcall(ns.Humor.OnBanner, banner, stamp, key, guild) end -- Humor: Spruch und Stempel zur Meldung
+  if ns.Humor then pcall(ns.Humor.OnBanner, banner, stamp, key, guild) end -- Humor: remark and stamp for the notice
 end
 
 local function OnDeath(death, key)
@@ -343,7 +343,7 @@ local function OnDeath(death, key)
       Banner(L.BANNER_AGAIN, name, rgb, Fmt(L.BANNER_AGAIN_LINE, { count = e.kills }),
              rank == 1 and "nr1" or nil, false, key, open)
     end
-    -- Mittaeter stehen jetzt auch im Buch und sind meist noch in Sicht: auch fuer sie kein Popup
+    -- accomplices are in the book now too and mostly still in sight: no popup for them either
     local others = death.others
     if type(others) ~= "table" and type(e.deaths) == "table" and e.deaths[1] and e.deaths[1].t == death.t then
       others = e.deaths[1].others
@@ -370,7 +370,7 @@ local function OnRevenge(key)
   Look.Alarm("revenge")
 end
 
--- 1.2.1: eine von Hand vermerkte Rache wurde zurueckgenommen: steht noch ihre Meldung, geht sie weg
+-- 1.2.1: a revenge noted by hand was taken back: if its notice is still up, it goes away
 local function OnRevengeUndone(key)
   if not (banner and banner:IsShown() and banner.key == key and banner.kind == "rache") then return end
   banner.anim:Stop(); banner:Hide()
@@ -379,8 +379,8 @@ local function OnRevengeUndone(key)
   if #guildQueue > 0 then C_Timer.After(0.4, NextGuild) end
 end
 
--- 1.2.1: ein Kollege oder Freund hat einen Taeter erledigt, der im eigenen Buch steht: eine Chatzeile und der
--- kurze Ton der Rache-Meldung, kein Fenster (ist er zugleich Ziel der Abschussliste, kommt nur die Erlegt-Meldung)
+-- 1.2.1: a guildmate or friend took down a killer who is in the own book: a chat line and the short
+-- sound of the revenge notice, no window (if he is also a hit list target, only the taken-down notice comes)
 local function OnAvenged(key, char, t)
   if not ready or type(key) ~= "string" or Look.Secret(key) or type(char) ~= "string" or Look.Secret(char) then return end
   local e = ns.Store.Get(key)
@@ -389,8 +389,8 @@ local function OnAvenged(key, char, t)
   Look.Alarm("revenge")
 end
 
--- Ein Kollege (1.2.0: oder Freund) wurde gerade getoetet: "Vorname" gross, darunter
--- "wurde von <Name> getötet · <Zone>"
+-- A guildmate (1.2.0: or friend) was just killed: "first name" large, below it
+-- "killed by <name> · <zone>"
 local function ShowGuild(tat, key, src)
   local g = Look.GCall("Get", key, "all")
   local killer = g and Look.Name(g) or (type(key) == "string" and (key:match("^([^%-]+)") or key)) or "?"
@@ -400,7 +400,7 @@ local function ShowGuild(tat, key, src)
          type(key) == "string" and key or nil)
 end
 
--- Ein Ziel der Abschussliste wurde erlegt (1.2.0): Name gross, darunter wer und wann, Stempel
+-- A hit list target was taken down (1.2.0): name large, below it who and when, stamp
 local function ShowBagged(key, char, t)
   local h = Look.GCall("Hunt", key, "all")
   local name = h and Look.Name(h) or (key:match("^([^%-]+)") or key)
@@ -410,7 +410,7 @@ local function ShowBagged(key, char, t)
   Banner(L.BANNER_HUNT, name, rgb, line, "hunt", true, key)
 end
 
--- wartende Meldungen: { Funktion, Argumente ... }
+-- waiting notices: { function, arguments ... }
 NextGuild = function()
   if banner and banner:IsShown() then return end
   local q = table.remove(guildQueue, 1)
@@ -429,13 +429,13 @@ local function OnGuildKill(tat, key, src)
   if not ready or type(tat) ~= "table" or not Look.HasGuild() then return end
   if Look.GuildSetting("announce") ~= true then return end
   if type(tat.victim) ~= "string" or Look.Secret(tat.victim) or tat.victim == "" then return end
-  if tat.victim == Look.Me() then return end      -- der eigene Tod hat seine eigene Meldung
+  if tat.victim == Look.Me() then return end      -- the own death has its own notice
   Later(ShowGuild, tat, key, src)
 end
 
--- Ein Ereignis, ein Fenster: der eigene Todesstoss auf einen Taeter des eigenen Buchs hat schon die
--- Rache-Meldung; dann keine zweite. Zeigt die Rache-Meldung ihn nicht (z. B. begnadigt, 1.2.0 fix),
--- kommt die Erlegt-Meldung. Eigener Schalter guild.announceHunt (1.2.0 fix: vorher keiner).
+-- One event, one window: the own killing blow on a killer from the own book already has the
+-- revenge notice; then no second one. If the revenge notice does not show him (e.g. pardoned, 1.2.0 fix),
+-- the taken-down notice comes. Own switch guild.announceHunt (1.2.0 fix: none before).
 local function OnBagged(key, char, t, src)
   if not ready or type(key) ~= "string" or Look.Secret(key) or type(char) ~= "string" or type(t) ~= "number" then return end
   if Look.GuildSetting("announceHunt") == false then return end
@@ -443,11 +443,11 @@ local function OnBagged(key, char, t, src)
   Later(ShowBagged, key, char, t)
 end
 
--- Neue Ziele anderer auf der Abschussliste (1.2.0): eine Zeile fuer mehrere ("3 neue Ziele").
+-- New targets of others on the hit list (1.2.0): one line for several ("3 new targets").
 -- 1.2.0: releases from the friends' book name the releaser with his full name (a friend listed
 -- without surname is bound provisionally: the player sees who it really is)
--- 1.2.0: neue Freigaben aus Gilde und Freunden kommen als eine Chatzeile, nicht als Fenster (die Liste zeigt
--- sie, der Alarm meldet das Ziel, wenn es auftaucht). Ist das eine Ziel gerade in Sicht: der normale Alarm.
+-- 1.2.0: new releases from guild and friends come as one chat line, not as a window (the list shows
+-- them, the alarm reports the target when it shows up). If the one target is in sight right now: the normal alarm.
 local function ChatNew(count, key, by, src, one)
   local h = Look.GCall("Hunt", key, "all")
   local who = src == "friends" and by or Look.First(by)
