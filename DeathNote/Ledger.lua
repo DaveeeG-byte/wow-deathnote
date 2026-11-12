@@ -952,7 +952,7 @@ local function book(info, opts)
   if not key then return reject(c, "name") end
   local S = ns.Store
   local t, gt = nowT(), gtime()
-  -- the state before: revenge = the standing was open
+  -- the state before the kill
   local mine0, his0, state0 = standingBefore(key, t)
   local e = S and S.Get(key)
   local v = victims[key] or addVictim(key, info)
@@ -965,7 +965,8 @@ local function book(info, opts)
   if not v.dt or t - v.dt >= Ledger.WINDOW or t < v.dt then v.dt, v.dn = t, 0 end
   v.dn = v.dn + 1
   local ctx = {
-    revenge = state0 == "open", protect = protects(key), hunt = onHitList(key), bounty = foreignBounty(key),
+    -- revenge: a real debt (he leads); an open 0 : 0 (entered by hand, assists only) is none
+    revenge = state0 == "open" and his0 > mine0, protect = protects(key), hunt = onHitList(key), bounty = foreignBounty(key),
     group = size > 1, kick = v.last ~= nil and t - v.last >= 0 and t - v.last < Ledger.KICK, nthToday = v.dn,
     pet = opts.pet, unknown = band == "unbekannt", honor = opts.honor,
   }

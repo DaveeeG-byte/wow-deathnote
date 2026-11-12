@@ -331,4 +331,22 @@ test("The book's placeholder moves: the victim takes the surname, stops being a 
   eq(ns.Tracker.ledgerHook, nil, "no placeholder left")
 end)
 
+---------------------------------------------------------------------------
+-- Revenge only on a real debt (finding 6)
+---------------------------------------------------------------------------
+test("A grey entered by hand before the kill (he never killed me): infamy as without the entry", function()
+  fresh(60)
+  local a = seen("Klein", "Eins", 20)
+  ns.Store.Upsert({ name = "Klein", surname = "Eins" }, true)
+  eq(ns.Store.Get("Klein-Eins").kills, 0)
+  eq(standing("Klein-Eins"), "0:0 open")
+  kill(a)
+  local row = ns.Ledger.Log()[1]
+  eq(row.band, "grau"); no(row.f:find("v"), "no revenge flag"); eq(row.r, 4); eq(row.e, 0)
+  local b = seen("Gross", "Zwei", 60)
+  ns.Store.ApplyKill({ name = "Gross", surname = "Zwei", guid = b }, { t = time() - 50 }, true)
+  M.Advance(20); kill(b)
+  ok(ns.Ledger.Log()[1].f:find("v"), "with a debt: revenge")
+end)
+
 M.done("ledger_fixes")
