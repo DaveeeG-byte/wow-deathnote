@@ -70,10 +70,24 @@ function Look.Text(parent, kind, size, color, flags, layer)
   return fs
 end
 
--- Texture with a fallback colour (no green error square if the file is missing)
+-- Texture with a fallback colour (no green error square if the file is missing). 1.3.0: marks the texture while it
+-- shows the fallback colour (dnFlat), so Look.Tint leaves that colour as it is
 function Look.Tex(tex, path, r, g, b, a)
   local ok = tex:SetTexture(path)
-  if ok == false then tex:SetColorTexture(r or 0.5, g or 0.4, b or 0.3, a or 1) end
+  if ok == false then
+    tex:SetColorTexture(r or 0.5, g or 0.4, b or 0.3, a or 1)
+    tex.dnFlat = true
+  else
+    tex.dnFlat = nil
+  end
+  return tex
+end
+
+-- 1.3.0: the theme's tint on a texture. A fallback colour is already the finished colour (the themes write it as the
+-- mean of the tinted picture): it is not tinted a second time
+function Look.Tint(tex, t)
+  if not t then return tex end
+  if tex.dnFlat then tex:SetVertexColor(1, 1, 1, 1) else tex:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
   return tex
 end
 
@@ -87,9 +101,7 @@ end
 -- 1.3.0: texture `key` of the theme with its fallback colour (fb: another fallback name) and its tint
 function Look.Skin(tex, key, fb)
   Look.Tex(tex, Look.TEX[key], Look.FB(fb or key))
-  local t = Look.TINT[key]
-  if t then tex:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
-  return tex
+  return Look.Tint(tex, Look.TINT[key])
 end
 
 -- 1.3.0: the stamp picture: blank = the frame without text, else the picture with burnt-in German text (nil when
@@ -103,9 +115,7 @@ end
 -- takes the ink of the theme; the black book's pictures carry their own colour, no tint)
 function Look.StampSkin(tex, path, fb)
   Look.Tex(tex, path, Look.FB(fb or "stamp"))
-  local t = Look.TINT.stamp
-  if t then tex:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
-  return tex
+  return Look.Tint(tex, Look.TINT.stamp)
 end
 
 -- 1.3.0: "|cffrrggbb" of a colour table; the theme's colours stand ready in Look.HEX[role]

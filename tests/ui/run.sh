@@ -13,7 +13,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          tests/ui/final_f10_oberflaeche_messen.lua tests/ui/final_f11_dialog_alarm_sprachwechsel.lua \
          tests/ui/final_f15_sprachdatei_fehlt_kaputt.lua tests/ui/final_f17_kampf_neue_stellen.lua tests/ui/fix2.lua tests/ui/fix3.lua \
          tests/ui/layout_guard.lua tests/ui/layout_belege.lua tests/ui/layout_kit.lua tests/ui/layout_fixes.lua \
-         tests/ui/layout_red_probes.lua tests/ui/theme_probe.lua tests/ui/theme_guard.lua tests/ui/notice_first.lua tests/ui/notice_queue.lua tests/ui/namesake_keys.lua tests/ui/humor_cover.lua tests/ui/victim_alarm.lua tests/ui/first_start.lua "$adir"/Start.lua tests/ui/rapsheet.lua tests/ui/rapsheet_off.lua \
+         tests/ui/layout_red_probes.lua tests/ui/theme_probe.lua tests/ui/theme_guard.lua tests/ui/notice_first.lua tests/ui/notice_queue.lua tests/ui/namesake_keys.lua tests/ui/humor_cover.lua tests/ui/theme_fallback.lua tests/ui/victim_alarm.lua tests/ui/first_start.lua "$adir"/Start.lua tests/ui/rapsheet.lua tests/ui/rapsheet_off.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
 done
@@ -61,6 +61,8 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     luajit tests/ui/namesake_keys.lua . || status=1
     # 1.3.0: the milestone "rank 1 paid back" follows the top title of the cover (stamp and remark)
     luajit tests/ui/humor_cover.lua . || status=1
+    # 1.3.0: a missing texture file shows the theme's fallback colour untinted (it is the finished colour)
+    luajit tests/ui/theme_fallback.lua . || status=1
     # 1.3.0 (package C): the victim alarm and the alarm for an even or overpaid standing (alert.settled)
     luajit tests/ui/victim_alarm.lua . || status=1
     # 1.3.0 (first start): the window for language and cover on a new installation, the chat line for everybody else

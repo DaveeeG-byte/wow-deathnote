@@ -213,7 +213,8 @@ local function Skin(tex, id, key)
   local fb = T.ParseColor(T.Pick(id, "fallback", key)) or { 0.5, 0.4, 0.3, 1 }
   Look.Tex(tex, Path(T.Pick(id, "tex", key)), fb[1], fb[2], fb[3], fb[4] or 1)
   local tint = T.ParseColor(T.Pick(id, "tint", key))
-  if tint then tex:SetVertexColor(tint[1], tint[2], tint[3], tint[4] or 1) else tex:SetVertexColor(1, 1, 1, 1) end
+  -- a fallback colour is the finished colour (Look.Tint): never tinted a second time
+  Look.Tint(tex, tint or { 1, 1, 1, 1 })
 end
 -- the fonts of role `role` of theme `id` for the writing of language `code`
 local function Fonts(id, role, code)

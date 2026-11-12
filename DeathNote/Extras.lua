@@ -193,7 +193,7 @@ local function BuildQuip()
   bg:SetAllPoints()
   Look.Skin(bg, "slip")
   local t = Look.TINT.slip or Look.TINT.paper
-  if t then bg:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
+  Look.Tint(bg, t)
   q.bg = bg
   q.text = Look.Text(q, "body", 11, line)
   q.text:SetPoint("CENTER", 0, 0)
@@ -262,7 +262,7 @@ local function BuildBanner()
   bg:SetAllPoints()
   Look.Skin(bg, "slip")
   local t = Look.TINT.slip or Look.TINT.paper    -- a theme without its own slip tint colours it like its paper
-  if t then bg:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
+  Look.Tint(bg, t)
   banner.bg = bg
 
   banner.kicker = Look.Text(banner, "body", 10, kickerC)
