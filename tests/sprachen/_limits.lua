@@ -272,4 +272,8 @@ return {
   PATH_J = { max = 16, field = "path word: in REPUTE_LINE and alone (rap sheet page, not built yet)" },
   PATH_S = { max = 16, field = "path word: in REPUTE_LINE and alone (rap sheet page, not built yet)" },
   PATH_NONE = { max = 16, field = "path word: in REPUTE_LINE and alone (rap sheet page, not built yet)" },
+  -- Alarm (1.3.0, Alert.lua): the head of the victim alarm stands where the other popup titles stand; the victim line
+  -- shares the popup line with the level in front (286 px, two lines, 11 pt, down to 9 pt before anything is cut)
+  ALERT_TITLE_VICTIM = { max = 30, field = "popup title, 288 px, Skurri 13 (11 when longer), no wrap" },
+  ALERT_LINE_VICTIM = { max = 56, field = "popup line after the level, 286 px, two lines, Friz 11 (10, 9 when longer)" },
 }

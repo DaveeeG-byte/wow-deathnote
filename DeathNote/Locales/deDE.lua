@@ -656,4 +656,11 @@ L.PATH_J = "Jagd"
 L.PATH_S = "Schutz"
 L.PATH_NONE = "unbeschrieben"
 -- <<< REPUTE
+-- >>> ALARM (Alert.lua, 1.3.0) ---------------------------------------------------------------------------------
+L.ALERT_TITLE_VICTIM = "NACHTRAGEND?"
+L.ALERT_LINE_VICTIM = "Stand {score} · von dir getötet, zuletzt {time}"
+L.ALERT_LINE_STANDING = "{text} · Stand {score}"
+L.ALERT_LINE_STANDING_EVEN = "{text} · Stand {score}, quitt"
+L.ALERT_LINE_STANDING_AHEAD = "{text} · Stand {score}, überzahlt"
+-- <<< ALARM
 end)

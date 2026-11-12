@@ -667,4 +667,11 @@ L.PATH_J = "Hunt"
 L.PATH_S = "Protection"
 L.PATH_NONE = "unwritten"
 -- <<< REPUTE
+-- >>> ALARM (1.3.0): English placeholders, to be translated (keys as in enUS.lua) -----------------------------------
+L.ALERT_TITLE_VICTIM = "HOLDS A GRUDGE?"
+L.ALERT_LINE_VICTIM = "score {score} · killed by you, last {time}"
+L.ALERT_LINE_STANDING = "{text} · score {score}"
+L.ALERT_LINE_STANDING_EVEN = "{text} · score {score}, even"
+L.ALERT_LINE_STANDING_AHEAD = "{text} · score {score}, overpaid"
+-- <<< ALARM
 end)

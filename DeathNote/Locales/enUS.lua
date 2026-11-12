@@ -676,4 +676,11 @@ L.PATH_J = "Hunt"  -- [max 16] path word: kills of higher levels, hit list targe
 L.PATH_S = "Protection"  -- [max 16] path word: kills of players who killed guildmates or friends (the protector's path)
 L.PATH_NONE = "unwritten"  -- [max 16] path word: below tier 3 and fewer than 10 counted kills, no path yet
 -- <<< REPUTE
+-- >>> ALARM (Alert.lua, 1.3.0: rap sheet standing in the alarm line, victim alarm) ----------------------------------
+L.ALERT_TITLE_VICTIM = "HOLDS A GRUDGE?"  -- [max 30] title of the victim alarm: someone you killed (and who has a reason for revenge) is near; a question, not a warning
+L.ALERT_LINE_VICTIM = "score {score} · killed by you, last {time}"  -- [max 56] line of the victim alarm; {score} = "3 : 0" (you : him), {time} = "2 days ago" (your last kill on him)
+L.ALERT_LINE_STANDING = "{text} · score {score}"  -- alarm line of a wanted player you have killed back, still open; {text} = the line so far, {score} = "1 : 2" (you : him). Replaces ALERT_LINE_REVENGE while the rap sheet is kept
+L.ALERT_LINE_STANDING_EVEN = "{text} · score {score}, even"  -- like ALERT_LINE_STANDING, the score is level ("2 : 2"): the debt is settled
+L.ALERT_LINE_STANDING_AHEAD = "{text} · score {score}, overpaid"  -- like ALERT_LINE_STANDING, you lead ("3 : 2"): you have taken more than he took
+-- <<< ALARM
 end)
