@@ -151,6 +151,7 @@ local function Label(parent, text, red)
 end
 
 -- Button: black, bone-white text, blood-red edge; the text stays inside the button
+GF.FIT_INK = { sizes = { 10, 9 } }
 local function InkButton(parent, text, w, h, onClick)
   local b = CreateFrame("Button", nil, parent, "BackdropTemplate")
   w, h = w or 104, h or 22
@@ -162,23 +163,21 @@ local function InkButton(parent, text, w, h, onClick)
   b.text:SetPoint("CENTER", 0, 0)
   b.text:SetWidth(w - 8)
   b.text:SetWordWrap(false)
-  -- 1.2.0: a label too long for the button in another language gets 9 pt instead of being cut
-  function b:SetLabel(t)
-    local fs = self.text
-    if fs.small then Look.Font(fs, "body", 10); fs.small = nil end
-    fs:SetText(t or "")
-    local ok, tw = pcall(fs.GetStringWidth, fs)
-    if ok and type(tw) == "number" and not Look.Secret(tw) and tw > self:GetWidth() - 8 then
-      Look.Font(fs, "body", 9); fs.small = true; fs:SetText(t or "")
-    end
-  end
-  b:SetLabel(text)
   b:SetScript("OnEnter", function(self) self:SetBackdropBorderColor(0.95, 0.1, 0.08, 1) end)
   b:SetScript("OnLeave", function(self) self:SetBackdropBorderColor(0.45, 0.04, 0.04, 1) end)
   b:SetScript("OnClick", function(self, mouse)
     Look.Sound("click")
     if self.fn then self.fn(self, mouse) end
   end)
+  -- 1.2.0: a label too long for the button in another language gets 9 pt instead of being cut;
+  -- 1.2.2: through Look.FitText in the width of the button, and still cut: the whole label in a tooltip
+  -- (hooked after the edge colour above, both run)
+  function b:SetLabel(t)
+    self.text:SetWidth(self:GetWidth() - 8)
+    Look.FitText(self.text, t or "", GF.FIT_INK)
+  end
+  b:SetLabel(text)
+  Look.TipIfCut(b, b.text)
   b.fn = onClick
   return b
 end
@@ -687,9 +686,7 @@ local function OpenMenu(spec, fallbackAnchor)
   local need = GF.MENU_W0
   for i = 1, n do
     local t = menu.items[i].text
-    if t.small then Look.Font(t, "body", 10); t.small = nil end
-    t:SetText(spec[i][1])
-    need = math.max(need, math.ceil((Look.TextW(t) or 0) + 16))
+    need = math.max(need, math.ceil((GF.MeasureAt(t, spec[i][1], 10) or 0) + 16))   -- SetLabel fits it below
   end
   local bw = math.min(GF.MENU_W1, need)
   for i = 1, GF.MENU_MAX do
@@ -1722,19 +1719,43 @@ function UX.BuildPoster()
   E.racheCount:SetPoint("LEFT", E.stampRache, "RIGHT", -6, -8)
   if E.racheCount.SetRotation then pcall(E.racheCount.SetRotation, E.racheCount, 0.16) end
 
-  -- Poster foot row (1.2.2): two buttons on the left, "Strike out" on the right; the widths are shared out (word first,
-  -- 64 to 120 px, the buttons share the rest up to 108 px), no word grows into the neighbouring button
+  -- Poster foot row (1.2.2): two buttons on the left, "Strike out" on the right, together 296 px (x = 20 to 332, two
+  -- gaps of 8). Fair shares: the need of each is measured first (the longest label the buttons can carry plus 8,
+  -- the word plus 4). While the needs fit, nobody is cut: first at 10 pt (buttons) and 13 pt (word), then the
+  -- buttons at 9 pt, then the word at 11 pt; the room left goes to the buttons up to 108 px, then to the word (64 to
+  -- 120 px). If even that does not fit, all give way in proportion to their need; a cut label or word shows whole
+  -- in its tooltip (the word is also in the menu of the poster).
   E.strike = WordButton(E, L.ACT_STRIKE, "hand", 13)
   E.strike:SetPoint("BOTTOMRIGHT", -20, 11)
-  local sw = math.max(64, math.min(120, math.ceil((Look.TextW(E.strike.text) or 60) + 4)))
+  E.buttons = {}
+  for i = 1, 2 do E.buttons[i] = InkButton(E, "", 108, 22) end
+  local function needS(size) return math.ceil((GF.MeasureAt(E.strike.text, L.ACT_STRIKE, size) or 60) + 4) end
+  local function needB(size)
+    local n = 0
+    for _, k in ipairs(GF.POSTER_LABELS) do n = math.max(n, math.ceil((GF.MeasureAt(E.buttons[1].text, L[k] or "", size) or 0) + 8)) end
+    return n
+  end
+  local room = GF.FOOT_ROOM
+  local b10, b9, s13, s11 = needB(10), needB(9), needS(13), needS(11)
+  local bw, sw
+  for _, n in ipairs({ { b10, s13 }, { b9, s13 }, { b9, s11 } }) do
+    if 2 * n[1] + n[2] <= room then
+      bw = math.min(108, math.max(n[1], math.floor((room - math.max(n[2], 64)) / 2)))
+      sw = math.min(120, room - 2 * bw)
+      break
+    end
+  end
+  if not bw then
+    bw = math.floor(b9 * room / (2 * b9 + s11))
+    sw = room - 2 * bw
+  end
   E.strike:SetSize(sw, 20)
   E.strike.text:SetWidth(sw)
   Look.FitText(E.strike.text, L.ACT_STRIKE, GF.FIT_STRIKE)
   Look.TipIfCut(E.strike, E.strike.text)
-  local bw = math.min(108, math.floor((352 - 40 - sw - 16) / 2))
-  E.buttons = {}
   for i = 1, 2 do
-    E.buttons[i] = InkButton(E, "", bw, 22)
+    E.buttons[i]:SetWidth(bw)
+    E.buttons[i]:SetLabel("")
     E.buttons[i]:SetPoint("BOTTOMLEFT", 20 + (i - 1) * (bw + 8), 10)
   end
   E.strike:SetScript("OnClick", function(self) Look.Sound("click"); if self.key then UI.ConfirmDelete(self.key) end end)
@@ -1855,6 +1876,18 @@ local function ShowEmpty(kind)
 end
 
 -- two buttons side by side at the bottom left (the word "Strike out" stands to their right)
+-- every label they can carry (EnemySpec, GF.RevengeAct, GuildSpec, GF.HuntSpec): the foot row is measured on them
+GF.POSTER_LABELS = { "ACT_CONFIRM", "ACT_DISMISS", "ACT_HUNT_AGAIN", "ACT_REVENGE", "ACT_UNDO", "ACT_PARDON",
+                     "ACT_OPEN_OWN", "ACT_ADOPT", "ACT_CALLOFF", "ACT_RELEASE" }
+GF.FOOT_ROOM = 352 - 40 - 16
+-- width of text in fs at one size, only to measure (the field is fitted again by its owner afterwards)
+GF.FIT_AT = {}
+function GF.MeasureAt(fs, text, size)
+  local o = GF.FIT_AT[size]
+  if not o then o = { sizes = { size } }; GF.FIT_AT[size] = o end
+  Look.FitText(fs, text, o)
+  return Look.TextW(fs)
+end
 local function ConfigButtons(E, spec)
   for i = 1, 2 do
     local b, s = E.buttons[i], spec[i]
@@ -4343,10 +4376,9 @@ function UX.BuildLeftPage()
   -- "Realm blocks whispers"); the status line on the left makes room for it
   local setLabel = LP.sync.SetLabel
   function LP.sync:SetLabel(t)
-    setLabel(self, t)
-    local w = math.max(GF.SYNC_MIN, math.min(GF.SYNC_MAX, math.floor(TextWidth(self.text, 60) + 16 + 0.5)))
+    local w = math.max(GF.SYNC_MIN, math.min(GF.SYNC_MAX, math.floor((GF.MeasureAt(self.text, t or "", 10) or 60) + 16 + 0.5)))
     self:SetWidth(w)
-    self.text:SetWidth(w - 8)
+    setLabel(self, t)   -- fitted in the final width (9 pt or the tooltip only beyond GF.SYNC_MAX)
     LP.status:SetWidth(PAGE_W - 46 - w - 20)
   end
   LP.sync:SetLabel(L.SYNC_BUTTON)

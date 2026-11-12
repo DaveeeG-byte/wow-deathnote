@@ -206,5 +206,87 @@ for _, code in ipairs({ "zhCN", "zhTW" }) do
   end
 end
 
+------------------------------------------------------------------------
+-- B04: poster foot row. The widths are shared fairly: while the needs fit, no label and not the word is cut; a cut
+-- label shows whole in its tooltip and the edge still turns red on hover (every InkButton). Cyrillic handwriting
+-- at the measured width of the picture tool (0.71 em: "Викреслити" 96 px).
+------------------------------------------------------------------------
+do
+  local ns = K.world("ukUA", { before = function(_, BM) BM.WIDTH["Fonts\\MORPHEUS_CYR.TTF"] = 0.71 end })
+  local AM, BM = K.AM, K.BM
+  local P = ns.Guild.Proto
+  K.tick(30); K.settle(); AM.Advance(120)
+  local t = _G.time()
+  local k = ns.Store.AddManual("Anna", "Beispiel")
+  ns.Store.ApplyKill({ name = "Anna", surname = "Beispiel", class = "MAGE", level = 60 }, { t = t - 86400, zone = "Z" }, true)
+  K.gmsg(P.EncodeKill({ key = "Fremder-Langername", display = "Fremder Langername", class = "MAGE", level = 60, zone = "Z", t = t - 30, victim = "Kollege Lang" }, "K"))
+  K.tick(10); for _ = 1, 4 do K.settle() end
+  K.gmsg(P.EncodeHunt({ key = "Ziel-Eins", display = "Ziel Eins", class = "ROGUE", level = 55, t = t - 86400, by = "Kollege Lang", why = "x" }))
+  K.tick(10); K.settle()
+  ns:Fire("TOGGLE_UI"); K.tick(); K.settle()
+  local E = K.find(function(f) return f.bounty and f.stampRache end)
+  local seen = 0
+  local function look(where)
+    for i, b in ipairs(E.buttons) do
+      if b:IsVisible() and (b.text._text or "") ~= "" then
+        seen = seen + 1
+        local tip = K.hover(b)
+        K.check(("B04 ukUA %s, button %d '%s' whole, or whole in its tooltip"):format(where, i, b.text._text),
+          not b.text:IsTruncated() or tip == b.text.full,
+          ("%.1f px at %s pt in %s px, tooltip '%s'"):format(BM.Unbounded(b.text), tostring(b.text._fontSize), tostring(b.text._w), tip))
+      end
+    end
+  end
+  ns.UI.ShowEnemy(k); K.tick(); K.settle(); look("wanted")
+  for _, f in ipairs(BM.frames) do if f.id == "guild" and f._scripts and f._scripts.OnClick then f._scripts.OnClick(f, "LeftButton"); break end end
+  K.tick(); K.settle()
+  ns.UI.SetGuildView("enemy"); K.tick(); K.settle(); look("guild enemy")
+  ns.UI.SetGuildView("hunt"); K.tick(); K.settle()
+  ns.UI.ShowHunts("Ziel-Eins"); K.tick(); K.settle(); look("hit list")
+  K.check("B04 ukUA poster showed its buttons", seen >= 4, seen)
+  -- at this width the needs (2 x 108 at 9 pt plus the word at 11 pt) are 301 px for 296: all give way a little
+  K.check("B04 ukUA the word 'strike out' is whole, or whole in its tooltip", not E.strike.text:IsTruncated()
+    or K.hover(E.strike) == ns.L.ACT_STRIKE, ("%.1f px in %s px"):format(BM.Unbounded(E.strike.text), tostring(E.strike.text._w)))
+  for _, b in ipairs(E.buttons) do
+    if b.text._text ~= "" then
+      K.check("B04 ukUA label " .. b.text._text .. " loses at most 3 px", BM.Unbounded(b.text) - b.text._w <= 3,
+        ("%.1f px in %s"):format(BM.Unbounded(b.text), tostring(b.text._w)))
+    end
+  end
+  local _, _, r2 = BM.RectUI(E.buttons[2])
+  local sl = BM.RectUI(E.strike)
+  K.check("B04 ukUA second button ends before the word", r2 and sl and r2 <= sl + 0.5, r2 and sl and (r2 - sl))
+  -- a label that cannot fit: tooltip with the whole label, the edge still turns red
+  local b = E.buttons[1]
+  local long = "Оголосити полювання на дуже довгу ціль"
+  b:SetLabel(long)
+  local tip = K.hover(b)
+  K.check("B04 a cut poster label shows whole in its tooltip", b.text:IsTruncated() and tip == long, tip)
+  local edge
+  b._scripts.OnEnter(b); edge = b._bdb; b._scripts.OnLeave(b)
+  K.check("B04 the edge of the button still turns red on hover", edge and edge[1] > 0.9, edge and edge[1])
+  b:SetLabel("ok")
+  K.check("B04 no tooltip once the label is whole again", K.hover(b) == "", K.hover(b))
+end
+-- every language: the needs of the foot row fit, so nothing in it is cut
+for _, code in ipairs({ "enUS", "deDE", "frFR", "esES", "itIT", "ptBR", "ruRU", "koKR", "zhCN", "zhTW", "svSE", "nbNO",
+  "daDK", "fiFI", "nlNL", "plPL", "csCZ", "huHU", "hrHR", "ukUA", "trTR" }) do
+  local ns = K.world(code)
+  local BM, L = K.BM, ns.L
+  ns.Store.AddManual("Anna", "Beispiel")
+  K.tick(30); K.settle()
+  ns:Fire("TOGGLE_UI"); K.tick(); K.settle()
+  local E = K.find(function(f) return f.bounty and f.stampRache end)
+  local worst, what = -999, nil
+  local probe = E.buttons[2].text
+  for _, key in ipairs({ "ACT_CONFIRM", "ACT_DISMISS", "ACT_HUNT_AGAIN", "ACT_REVENGE", "ACT_UNDO", "ACT_PARDON",
+                         "ACT_OPEN_OWN", "ACT_ADOPT", "ACT_CALLOFF", "ACT_RELEASE" }) do
+    E.buttons[2]:SetLabel(L[key])
+    if probe:IsTruncated() and BM.Unbounded(probe) - probe._w > worst then worst, what = BM.Unbounded(probe) - probe._w, key end
+  end
+  K.check(code .. " B04 every poster label fits its button", what == nil, what and ("%s %.1f px over"):format(what, worst))
+  K.check(code .. " B04 the word 'strike out' is whole", not E.strike.text:IsTruncated(), E.strike.text._text)
+end
+
 io.write(("Layout fixes 1.2.2 (hunt B): %d green, %d red\n"):format(K.ok, K.bad))
 os.exit(K.bad == 0 and 0 or 1)
