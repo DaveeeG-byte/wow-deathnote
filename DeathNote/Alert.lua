@@ -11,59 +11,24 @@ local L, Fmt = ns.L, ns.F
 -- Media path always through the folder name (ADDON), never hard-wired
 local MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\"
 Look.MEDIA = MEDIA
+-- 1.3.0: colours (Look.INK, Look.RED ... and Look.COLOR), textures (Look.TEX), tints, fallback colours, font roles
+-- (Look.FONT) and tones (Look.TONE) come from the active theme (Theme.lua, Themes\<id>.lua). Theme.Fill writes
+-- them into these tables in place; here: the base theme, the chosen one follows at ADDON_LOADED.
+-- Fixed in every theme: the addon icon (minimap, addon list) and the client's technical textures.
 Look.TEX = {
-  paper   = MEDIA .. "paper.tga",     -- wanted poster
-  page    = MEDIA .. "page.tga",      -- notebook page
-  cover   = MEDIA .. "cover.tga",     -- black leather cover
-  ink     = MEDIA .. "ink.tga",       -- quill stroke
-  mugshot = MEDIA .. "mugshot.tga",
-  edge    = MEDIA .. "edge.tga",
-  nr1     = MEDIA .. "stamp_nr1.tga",
-  rache   = MEDIA .. "stamp_rache.tga",
-  pardon  = MEDIA .. "stamp_pardon.tga",
-  suspect = MEDIA .. "stamp_suspect.tga",
-  guild   = MEDIA .. "stamp_guild.tga",
-  hunt    = MEDIA .. "stamp_hunt.tga",    -- stamp "ZUR JAGD FREIGEGEBEN" (hit list, 1.2.0)
-  check   = MEDIA .. "check.tga",
-  pin     = MEDIA .. "pin.tga",
-  skull   = MEDIA .. "skull.tga",
   icon    = MEDIA .. "icon.tga",
-  tape    = MEDIA .. "tape.tga",
-  tri     = MEDIA .. "tri.tga",       -- triangle open/closed (guild by guildmate)
   white   = "Interface\\Buttons\\WHITE8X8",
-  border  = "Interface\\Tooltips\\UI-Tooltip-Border",
   classes = "Interface\\Glues\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES",
 }
--- Client fonts only (paths as used by OpenMap and ElvUI's LibSharedMedia), each list tried in order,
--- GameFontNormal last.
-Look.FONT = {
-  title = { "Fonts\\SKURRI_CYR.TTF", "Fonts\\SKURRI.TTF" },        -- angular: titles, alarm head
-  hand  = { "Fonts\\MORPHEUS.TTF", "Fonts\\MORPHEUS_CYR.TTF" },    -- quill handwriting, WANTED
-  body  = { "Fonts\\FRIZQT__.TTF" },                                -- labels
-  type  = { "Fonts\\NIM_____.ttf" },                                -- file note
-}
-Look.FONT.head = Look.FONT.hand
--- 1.2.0: fonts per script of the active language (Locale.FONTS); Latin West stays as above
+Look.FONT = {}
+Look.TONE = {}
+if ns.Theme and ns.Theme.Fill then ns.Theme.Fill(Look) end
+-- 1.2.0: fonts per script of the active language (Locale.FONTS); 1.3.0: role -> kind from the theme
 if ns.Locale and ns.Locale.OnActivate then
   ns.Locale.OnActivate(function()
-    for _, kind in ipairs({ "title", "hand", "body", "type" }) do Look.FONT[kind] = ns.Locale.FontList(kind) end
-    Look.FONT.head = Look.FONT.hand
+    if ns.Theme and ns.Theme.FillFonts then ns.Theme.FillFonts(Look) end
   end)
 end
--- Palette: black, bone white, ink black, blood red as the only accent
-Look.INK   = { 0.08, 0.07, 0.07 }
-Look.RED   = { 0.72, 0.04, 0.04 }       -- large text (16 pt and up) and areas on paper
-Look.RED_INK = { 0.55, 0.03, 0.03 }     -- small red text on paper (contrast 4.5:1 or more)
-Look.RED_ON_BLACK = { 1.0, 0.40, 0.33 }   -- red text on the black cover, popup and notice
-Look.BONE  = { 0.93, 0.90, 0.82 }
-Look.CREAM = Look.BONE
-Look.FADED = { 0.38, 0.35, 0.31 }
-Look.BLACK = { 0.05, 0.045, 0.045 }
-Look.TAB_OFF = { 0.62, 0.59, 0.54 }     -- inactive tabs on the cover
-Look.WARN = { 1.0, 0.62, 0.18 }         -- warning colour in the popup (target above your level), on black
--- Ink on paper: opacity per role. Measured against page and poster (contrast guard in tests/ui):
--- every role for small text keeps 4.5:1, "hand" and "off" are for text of 16 pt and up only.
-Look.TONE = { ink = 1, label = 0.85, sub = 0.8, hint = 0.8, hand = 0.7, off = 0.5 }
 
 local issecret = issecretvalue or function() return false end
 function Look.Secret(v) return issecret(v) and true or false end
@@ -88,10 +53,11 @@ function Look.Font(fs, kind, size, flags, list)
   return fs
 end
 
--- Font list for a text in a given language (language list of the house rules)
+-- Font list for a text in a given language (language list of the house rules); kind is a role of the theme
 function Look.FontOf(code, kind)
-  if ns.Locale and ns.Locale.FontList then return ns.Locale.FontList(kind or "body", code) end
-  return Look.FONT[kind or "body"]
+  kind = kind or "body"
+  if ns.Locale and ns.Locale.FontList then return ns.Locale.FontList((Look.FONT_KIND and Look.FONT_KIND[kind]) or kind, code) end
+  return Look.FONT[kind]
 end
 
 -- FontString in one go
@@ -111,23 +77,62 @@ function Look.Tex(tex, path, r, g, b, a)
   return tex
 end
 
+-- 1.3.0: the fallback colour `name` of the theme as r, g, b, a (Look.Tex(tex, path, Look.FB("stamp")))
+function Look.FB(name)
+  local c = Look.FALLBACK[name]
+  if not c then return nil end
+  return c[1], c[2], c[3], c[4] or 1
+end
+
+-- 1.3.0: texture `key` of the theme with its fallback colour (fb: another fallback name) and its tint
+function Look.Skin(tex, key, fb)
+  Look.Tex(tex, Look.TEX[key], Look.FB(fb or key))
+  local t = Look.TINT[key]
+  if t then tex:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
+  return tex
+end
+
+-- 1.3.0: the stamp picture: blank = the frame without text, else the picture with burnt-in German text (nil when
+-- the theme has none: then the frame plus the text in every language)
+function Look.StampTex(id, blank)
+  if blank then return Look.STAMP_BLANK[id] end
+  return Look.STAMP_BAKED[id]
+end
+
+-- 1.3.0: a stamp picture (path from Look.StampTex) with a fallback colour and the theme's stamp tint (a white frame
+-- takes the ink of the theme; the black book's pictures carry their own colour, no tint)
+function Look.StampSkin(tex, path, fb)
+  Look.Tex(tex, path, Look.FB(fb or "stamp"))
+  local t = Look.TINT.stamp
+  if t then tex:SetVertexColor(t[1], t[2], t[3], t[4] or 1) end
+  return tex
+end
+
+-- 1.3.0: "|cffrrggbb" of a colour table; the theme's colours stand ready in Look.HEX[role]
+Look.Hex = ns.Theme.Hex
+
 function Look.ClassIcon(tex, class)
   local tc = class and CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[class]
   if tc then
-    Look.Tex(tex, Look.TEX.classes, 0.3, 0.3, 0.3, 1)
+    Look.Tex(tex, Look.TEX.classes, Look.FB("classes"))
     tex:SetTexCoord(tc[1], tc[2], tc[3], tc[4])
   else
-    Look.Tex(tex, Look.TEX.skull, 0.2, 0.2, 0.2, 1)
+    -- no theme tint here: the icon keeps the vertex colour its builder gave it (MugIcon)
+    Look.Tex(tex, Look.TEX.skull, Look.FB("skull"))
     tex:SetTexCoord(0, 1, 0, 1)
   end
 end
 
+-- class colour of the game; without a class the theme's classUnknown, with a class the game has no colour for
+-- (manual entries) the theme's classOther
 function Look.ClassRGB(class)
+  local c = Look.COLOR.classUnknown
   if class and ns.Util and ns.Util.ClassColor then
     local r, g, b = ns.Util.ClassColor(class)
     if r then return r, g, b end
+    c = Look.COLOR.classOther
   end
-  return 0.85, 0.85, 0.85
+  return c[1], c[2], c[3]
 end
 
 function Look.Name(e)
@@ -340,8 +345,9 @@ function Look.SoundFile(key, level)
 end
 
 function Look.SoundChoice()
-  local key = Look.Setting("alert.soundKey", "warnung")
-  local s = Look.SOUND_BY_KEY[key] or Look.SOUND_BY_KEY.warnung
+  -- 1.3.0: without a choice the theme's suggestion (Store fills alert.soundKey at login, so this is the first moments)
+  local key = Look.Setting("alert.soundKey", Look.THEME_SOUND or "warnung")
+  local s = Look.SOUND_BY_KEY[key] or Look.SOUND_BY_KEY[Look.THEME_SOUND] or Look.SOUND_BY_KEY.warnung
   -- older setting "sound on alarm" off: counts as "no sound"
   if Look.Setting("alert.sound", true) == false then s = Look.SOUND_BY_KEY.aus end
   local vol = math.floor(tonumber(Look.Setting("alert.volume", 3)) or 3)
@@ -606,7 +612,8 @@ end
 -- Look.Page(parent, opts): standing head (above opts.top), body that scrolls (only stacked from the top,
 -- nothing hangs at its bottom), standing foot (opts.foot high, buttons and foot lines).
 -- opts: top (px from the top of parent), foot (px), w, h (size of parent), bar (px from the right edge for the
--- scroll bar), step (px per mouse wheel step), paper (the texture that fills parent; default Look.TEX.page). Fields: page.body (scroll child), page.foot, page.scroll, page.bar.
+-- scroll bar), step (px per mouse wheel step), paper (key in Look.TEX of the texture that fills parent; default
+-- "page"; 1.3.0: a key, so the fade takes the theme's tint as well). Fields: page.body (scroll child), page.foot, page.scroll, page.bar.
 -- page:Layout(height) sets the height of the content, shows the bar only when needed, keeps the offset in range;
 -- page:Top() goes back to the start. No OnUpdate: the bar and the wheel move it, nothing else.
 -- 1.2.2: content up to PAGE_SLACK px taller than the window does not scroll (the line box of the last line has room
@@ -698,10 +705,13 @@ function Look.Page(parent, opts)
     over:SetAllPoints(parent)
     over:SetFrameLevel(sf:GetFrameLevel() + 3)
     local fade = over:CreateTexture(nil, "OVERLAY")
-    Look.Tex(fade, opts.paper or Look.TEX.page)
+    local key = opts.paper or "page"
+    Look.Tex(fade, Look.TEX[key] or key)
+    local tc = Look.TINT[key]
+    local r, g, b = tc and tc[1] or 1, tc and tc[2] or 1, tc and tc[3] or 1
     fade:Hide()
     -- without a working gradient there is no fade at all: an opaque strip of paper would hide the last lines
-    local ok = fade.SetGradient and pcall(fade.SetGradient, fade, "VERTICAL", CreateColor(1, 1, 1, 1), CreateColor(1, 1, 1, 0))
+    local ok = fade.SetGradient and pcall(fade.SetGradient, fade, "VERTICAL", CreateColor(r, g, b, 1), CreateColor(r, g, b, 0))
     if ok then
       page.fade = fade
       PageFadeAt(page)
@@ -1022,7 +1032,7 @@ local function BuildFlash()
   flash:EnableMouse(false)
   local t = flash:CreateTexture(nil, "BACKGROUND")
   t:SetAllPoints()
-  Look.Tex(t, Look.TEX.edge, 1, 0, 0, 0.25)
+  Look.Skin(t, "edge")
   t:SetBlendMode("ADD")
   flash:SetAlpha(0)
   flash:Hide()
@@ -1060,12 +1070,9 @@ local function Dismiss()
 end
 Alert.Dismiss = Dismiss
 
-local EDGE_IDLE = { 0.55, 0.03, 0.03 }
-local EDGE_HOT  = { 0.95, 0.10, 0.08 }
-local EDGE_NR1  = { 0.90, 0.12, 0.10 }
 
 local function EdgeColor(c) popup:SetBackdropBorderColor(c[1], c[2], c[3], 1) end
-local function EdgeIdle() EdgeColor(popup.nr1 and EDGE_NR1 or EDGE_IDLE) end
+local function EdgeIdle() EdgeColor(popup.nr1 and Look.COLOR.edgeNr1 or Look.COLOR.edgeIdle) end
 
 -- Edge: 2 px, for public enemy no. 1 3 px in light red
 local function SetEdge(nr1)
@@ -1097,7 +1104,7 @@ local function Build()
 
   local bg = popup:CreateTexture(nil, "BACKGROUND")
   bg:SetPoint("TOPLEFT", 2, -2); bg:SetPoint("BOTTOMRIGHT", -2, 2)
-  Look.Tex(bg, Look.TEX.cover, 0.06, 0.05, 0.05, 1)
+  Look.Skin(bg, "cover", "coverDark")
   bg:SetTexCoord(0, 1, 0.2, 0.5)
   -- thin red line under the head
   local rule = popup:CreateTexture(nil, "BORDER")
@@ -1124,26 +1131,27 @@ local function Build()
   frame:SetColorTexture(Look.BONE[1], Look.BONE[2], Look.BONE[3], 0.9)
   local mug = photo:CreateTexture(nil, "BORDER")
   mug:SetAllPoints()
-  Look.Tex(mug, Look.TEX.mugshot, 0.45, 0.44, 0.42, 1)
+  Look.Skin(mug, "mugshot", "mugshotDark")
   mug:SetDesaturated(true)
   popup.icon = photo:CreateTexture(nil, "ARTWORK")
   popup.icon:SetSize(44, 44)
   popup.icon:SetPoint("CENTER", 0, -2)
   popup.icon:SetDesaturated(true)
-  popup.icon:SetVertexColor(0.85, 0.80, 0.70, 1)
+  local mt = Look.COLOR.mugTint
+  popup.icon:SetVertexColor(mt[1], mt[2], mt[3], mt[4] or 1)
   popup.model = CreateFrame("PlayerModel", nil, photo)
   popup.model:SetAllPoints(mug)
   popup.model:Hide()
   local tape = photo:CreateTexture(nil, "OVERLAY")
   tape:SetSize(34, 14)
   tape:SetPoint("TOP", photo, "TOP", 0, 6)
-  Look.Tex(tape, Look.TEX.tape, 0.9, 0.86, 0.7, 0.6)
+  Look.Skin(tape, "tape")
   tape:SetRotation(0.12)
 
   -- Name in quill handwriting, class colour; appears with a short delay as if freshly written.
   -- 1.2.2: the full width (286 px) for the name; the level stands at the front of the text line. No tooltip
   -- possible (the secure button lies above): rather smaller (22, 19, 16, 13 pt) than cut.
-  popup.name = Look.Text(popup, "hand", 22, nil, nil)
+  popup.name = Look.Text(popup, "head", 22, nil, nil)
   popup.name:SetPoint("TOPLEFT", 86, -30)
   popup.name:SetWidth(W - 86 - 12)
   popup.name:SetJustifyH("LEFT")
@@ -1152,7 +1160,7 @@ local function Build()
   popup.stroke:SetHeight(8)
   popup.stroke:SetPoint("TOPLEFT", popup.name, "BOTTOMLEFT", -2, 3)
   popup.stroke:SetWidth(170)
-  Look.Tex(popup.stroke, Look.TEX.ink, 0.6, 0.05, 0.05, 1)
+  Look.Skin(popup.stroke, "ink", "inkRed")
   popup.stroke:SetVertexColor(Look.RED[1], Look.RED[2], Look.RED[3], 0.9)
 
   popup.line = Look.Text(popup, "body", 11, Look.BONE)
@@ -1162,7 +1170,7 @@ local function Build()
   popup.line:SetWidth(W - 86 - 12)
   popup.line:SetMaxLines(2)
 
-  popup.hint = Look.Text(popup, "body", 10, { 0.62, 0.58, 0.52 })
+  popup.hint = Look.Text(popup, "body", 10, Look.COLOR.hint)
   popup.hint:SetPoint("BOTTOMLEFT", 86, 8)
   -- 1.2.2: the hint ends before "+n more" (before: a fixed gap, two- and three-digit numbers ran into it)
   popup.hint:SetPoint("RIGHT", popup.more, "LEFT", -8, 0)
@@ -1205,7 +1213,7 @@ local function Build()
     SavePoint()
     ArmButton()
   end)
-  popup:SetScript("OnEnter", function() EdgeColor(EDGE_HOT) end)
+  popup:SetScript("OnEnter", function() EdgeColor(Look.COLOR.edgeHot) end)
   popup:SetScript("OnLeave", EdgeIdle)
 
   PlacePopup()
@@ -1229,7 +1237,7 @@ EnsureButton = function()
   button:SetScript("PostClick", function(_, mouse, down)
     if mouse == "RightButton" and not down then Dismiss() end
   end)
-  button:SetScript("OnEnter", function() EdgeColor(EDGE_HOT) end)
+  button:SetScript("OnEnter", function() EdgeColor(Look.COLOR.edgeHot) end)
   button:SetScript("OnLeave", function() EdgeIdle() end)
   button:SetScript("OnDragStart", function(self)
     if InCombat() then return end
@@ -1421,8 +1429,7 @@ SetLine = function(e, guild)
   local lt, warn = popup.levelText, popup.levelWarn
   local lead = ""
   if lt then
-    local c = warn and Look.WARN or Look.BONE
-    lead = ("|cff%02x%02x%02x%s|r · "):format(c[1] * 255, c[2] * 255, c[3] * 255, lt)
+    lead = Look.HEX[warn and "warn" or "onCover"] .. lt .. "|r · "
   end
   -- Text line in two lines at most; if it does not fit, first the place gives way, then "last" (own book)
   -- or the long reason, then the second name (hit list); last of all 10 pt

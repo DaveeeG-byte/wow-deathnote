@@ -265,7 +265,8 @@ function Util.ClassColor(token)
       or (_G.RAID_CLASS_COLORS and _G.RAID_CLASS_COLORS[token])
     if c and c.r then return c.r, c.g, c.b end
   end
-  return 0.75, 0.75, 0.75
+  -- 1.3.0: no colour for an unknown class; the look (theme) decides (Look.ClassRGB)
+  return nil
 end
 
 -- The two time forms of the addon (1.1.0, one place for all of them; 1.2.0: words and date formats
