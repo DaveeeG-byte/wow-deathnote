@@ -115,11 +115,12 @@ local function new(kind, name, parent, template)
   end
   -- 1.2.2: where the object was made (only for the layout guard, M.trace): first addon file in the stack
   if M.trace then
-    for lvl = 3, 8 do
-      local info = debug.getinfo(lvl, "Sl")
+    for lvl = 3, 10 do
+      local info = debug.getinfo(lvl, "Sln")
       if not info then break end
       local src = info.source or ""
-      if src:find("DeathNote/[%w]+%.lua$") then o._src = src:match("([%w]+%.lua)$") .. ":" .. tostring(info.currentline); break end
+      local helper = ({ Text = true, Label = true, InkButton = true, WordButton = true, WordTab = true, Stepper = true })[info.name or ""]
+      if src:find("DeathNote/[%w]+%.lua$") and not helper then o._src = src:match("([%w]+%.lua)$") .. ":" .. tostring(info.currentline); break end
     end
   end
   o._secure = (template or ""):find("Secure") ~= nil
@@ -270,7 +271,36 @@ local function rectUI(f, depth)
   if f._parent and f._parent._child == f then
     pt = { "TOPLEFT", f._parent, "TOPLEFT", 0, f._parent._vscroll or 0 }
   end
-  if not pt and (depth > 20 or not f._points or #f._points ~= 1) then return nil end
+  if depth > 20 then return nil end
+  -- 1.2.2 (only with M.measure, older tests expect nil): several anchors like the client, edges first per axis
+  if not pt and M.measure and f._points and #f._points >= 2 then
+    local s, ok = relScale(f)
+    if not ok then return nil end
+    local xs, ys = {}, {}
+    for _, q0 in ipairs(f._points) do
+      local p, rel, rp, x, y = q0[1], q0[2], q0[3], q0[4], q0[5]
+      if type(rel) == "number" then rel, rp, x, y = f._parent, p, q0[2], q0[3]
+      elseif type(rel) == "string" then rel, rp, x, y = f._parent, rel, q0[3], q0[4] end
+      rel, rp, x, y = rel or f._parent, rp or p, x or 0, y or 0
+      if not ANCH[rp] or not ANCH[p] or not rel then return nil end
+      local l, b, r, t = rectUI(rel, depth)
+      if not l then return nil end
+      local a, q = ANCH[rp], ANCH[p]
+      xs[q[1]] = l + (r - l) * a[1] + x * s
+      ys[q[2]] = b + (t - b) * a[2] + y * s
+    end
+    local fw, fh = f._w * s, f._h * s
+    if M.measure and f._kind == "FontString" and not f._hset then fh = (methods.GetStringHeight(f) or f._h) * s end
+    local L, R, B, T
+    if xs[0] and xs[1] then L, R = xs[0], xs[1]
+    elseif xs[0] then L, R = xs[0], xs[0] + fw elseif xs[1] then L, R = xs[1] - fw, xs[1]
+    elseif xs[0.5] then L, R = xs[0.5] - fw / 2, xs[0.5] + fw / 2 else return nil end
+    if ys[0] and ys[1] then B, T = ys[0], ys[1]
+    elseif ys[1] then B, T = ys[1] - fh, ys[1] elseif ys[0] then B, T = ys[0], ys[0] + fh
+    elseif ys[0.5] then B, T = ys[0.5] - fh / 2, ys[0.5] + fh / 2 else return nil end
+    return L, B, R, T
+  end
+  if not pt and (not f._points or #f._points ~= 1) then return nil end
   pt = pt or f._points[1]
   local p, rel, rp, x, y = pt[1], pt[2], pt[3], pt[4], pt[5]
   if type(rel) == "number" then rel, rp, x, y = f._parent, p, pt[2], pt[3]
@@ -282,7 +312,13 @@ local function rectUI(f, depth)
   if not l then return nil end
   local a, q = ANCH[rp], ANCH[p]
   local px, py = l + (r - l) * a[1] + x * s, b + (t - b) * a[2] + y * s
-  local w, h = f._w * s, f._h * s
+  local fw, fh = f._w, f._h
+  -- 1.2.2: with M.measure a text without its own width is as wide and high as its text (like the client)
+  if M.measure and f._kind == "FontString" then
+    if not f._wset then fw = M.Unbounded(f) or 0 end
+    if not f._hset then fh = methods.GetStringHeight(f) or fh end
+  end
+  local w, h = fw * s, fh * s
   local L, B = px - w * q[1], py - h * q[2]
   return L, B, L + w, B + h
 end

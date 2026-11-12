@@ -1461,6 +1461,7 @@ function GF.BountySlot(E, key)
 end
 
 GF.FIT_STRIKE = { sizes = { 13, 11 } }
+GF.FIT_IO_HELP = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
 GF.FIT_NAME22, GF.FIT_NAME26, GF.FIT_WORD = { sizes = { 22, 19, 16 } }, { sizes = { 26, 22, 19 } }, { sizes = { 11, 10 } }
 function UX.BuildPoster()
   P = CreateFrame("Frame", nil, RP)
@@ -1691,6 +1692,7 @@ function UX.BuildPoster()
   E.victimsHit:SetScript("OnEnter", CandEnter)
   E.victimsHit:SetScript("OnLeave", CandLeave)
   E.victimsHit:Hide()
+  E.victims.tipOwner = E.victimsHit
 
   -- Stempel (vorgedrehte Texturen). Nr. 1 / Begnadigt / Verdacht auf der unteren Fotohaelfte,
   -- Rache neben dem Kopfgeld: kein Stempel liegt auf Text.
@@ -1986,6 +1988,7 @@ local function SetInfo(E, info, optional)
   for i = shown + 1, INFO_LINES do E.info[i]:SetText("") end
   -- 1.2.2: auch eine gekuerzte Zeile (Ellipse) zeigt den ganzen Steckbrief im Tooltip
   for i = 1, shown do if not dropped and Truncated(E.info[i]) then dropped = true end end
+  for i = 1, INFO_LINES do E.info[i].tipOwner = dropped and E.infoHit or nil end
   if dropped then
     local t = wipe(scratchTip)
     t[1] = Look.Name(P.enemy.current)
@@ -2962,6 +2965,9 @@ BuildSettings = function()
       cb.label:SetWidth(280)
       cb.label:SetJustifyH("LEFT")
       cb.label:SetWordWrap(false)
+      -- 1.2.2: 11, dann 10 pt, sonst gekuerzt mit Tooltip
+      Look.FitText(cb.label, cb.label:GetText(), GF.FIT_WORD)
+      Look.TipIfCut(cb, cb.label)
       if prefix then cb.opt = { path = prefix .. o[1], guild = o[1] }
       else cb.opt = { path = o[1], def = o[3], invert = o.invert } end
       cb:SetScript("OnClick", onCheck)
@@ -3169,6 +3175,7 @@ BuildSettings = function()
     hit:SetAllPoints(fs)
     hit:SetScript("OnEnter", function(self) if Truncated(fs) then Tip(self, { fs:GetText() or "" }) end end)
     hit:SetScript("OnLeave", GameTooltip_Hide)
+    fs.tipOwner = hit
     return fs
   end
   S.gstatus = statusLine(y - 2)
@@ -3200,6 +3207,11 @@ BuildSettings = function()
   IO.help:SetTextColor(C(Look.INK, TONE.hint))
   IO.help:SetPoint("TOP", 0, -58)
   IO.help:SetWidth(330)
+  -- 1.2.2: fester Platz ueber dem Textfeld: hoechstens zwei Zeilen (11, dann 10 pt), sonst Tooltip
+  IO.help:SetMaxLines(2)
+  IO.helpHit = CreateFrame("Frame", nil, IO)
+  IO.helpHit:SetAllPoints(IO.help)
+  Look.TipIfCut(IO.helpHit, IO.help)
   local box = CreateFrame("Frame", nil, IO, "BackdropTemplate")
   box:SetPoint("TOPLEFT", 20, -88)
   box:SetPoint("BOTTOMRIGHT", -20, 70)
@@ -3664,13 +3676,13 @@ function UI.OpenIO(mode)
   IO.size:Hide()
   if mode == "export" then
     Look.FitText(IO.head, L.IO_EXPORT, GF.FIT_NAME26)
-    IO.help:SetText(L.IO_HELP_EXPORT)
+    Look.FitText(IO.help, L.IO_HELP_EXPORT, GF.FIT_IO_HELP)
     IO.go:Hide()
     -- grosse Buecher zuerst klein zeigen (eine EditBox mit Tausenden Zeilen bremst)
     UI.ShowExport(nil)
   else
     Look.FitText(IO.head, L.IO_IMPORT, GF.FIT_NAME26)
-    IO.help:SetText(L.IO_HELP_IMPORT)
+    Look.FitText(IO.help, L.IO_HELP_IMPORT, GF.FIT_IO_HELP)
     IO.edit:SetText("")
     IO.go:SetShown(Store().Import ~= nil)
     IO.edit:SetFocus()

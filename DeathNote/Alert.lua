@@ -457,11 +457,34 @@ function Look.FitText(fs, text, opts)
   local function size(s)
     if fs.fontSize ~= s or fs.fontKind ~= kind then Look.Font(fs, kind, s, flags) end
   end
+  local wrapped = false
+  -- the longest word (by characters) on its own: wider than the line means cut even when the client wraps
+  local function wordTooWide()
+    local long, n = nil, 0
+    for word in text:gmatch("%S+") do
+      local c = #word:gsub("[\128-\191]", "")
+      if c > n then long, n = word, c end
+    end
+    if not long then return false end
+    if long == text then
+      local w = Look.TextW(fs)
+      return w ~= nil and width > 0 and w > width + 0.5
+    end
+    fs:SetText(long)
+    local w = Look.TextW(fs)
+    fs:SetText(text)
+    return w ~= nil and width > 0 and w > width + 0.5
+  end
   local function cut()
     local c = Look.IsCut(fs)
-    if c ~= nil then return c end
-    local w = Look.TextW(fs)
-    return w ~= nil and width > 0 and w > width + 0.5
+    if c == nil then
+      local w = Look.TextW(fs)
+      if w == nil or width <= 0 then c = false
+      elseif wrapped then c = math.ceil(w / width - 0.001) > lines
+      else c = w > width + 0.5 end
+    end
+    if not c and wrapped then c = wordTooWide() end
+    return c
   end
   if fs.SetMaxLines then fs:SetMaxLines(lines) end
   fs:SetWordWrap(false)
@@ -471,14 +494,14 @@ function Look.FitText(fs, text, opts)
     if not cut() then fs.cut = false; return true end
     -- opts.wrapFirst: running text wraps in this size before it gets smaller (a number: from that step of the ladder on)
     if lines > 1 and opts.wrapFirst and i >= (opts.wrapFirst == true and 1 or opts.wrapFirst) then
-      fs:SetWordWrap(true)
+      fs:SetWordWrap(true); wrapped = true
       fs:SetText(text)
       if not cut() then fs.cut = false; return true end
-      fs:SetWordWrap(false)
+      fs:SetWordWrap(false); wrapped = false
     end
   end
   if lines > 1 then
-    fs:SetWordWrap(true)
+    fs:SetWordWrap(true); wrapped = true
     fs:SetText(text)
     if not cut() then fs.cut = false; return true end
   end

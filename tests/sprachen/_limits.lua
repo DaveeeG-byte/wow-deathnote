@@ -1,8 +1,12 @@
 -- DeathNote: highest lengths for texts in fixed fields. NOT in the TOC (only tests read it).
 -- max = characters (code points, UTF-8 aware); for zhCN/zhTW/koKR cells (a wide sign counts 2).
 -- Color codes do not count, {placeholder} counts 3, a plural {count|a|b} its longest form.
--- Measured on the field: width in px / (font size * average glyph width). Friz Quadrata
--- ~0.55 em, Morpheus ~0.5 em, Skurri capitals ~0.7 em. German must fit (it does in 1.1.0).
+-- Measured on the field: width in px / (font size * average glyph width). Factors at the wide end of
+-- the real fonts (1.2.2, calibrated on a client screenshot): Nimrod 0.60 em, Friz Quadrata 0.56 em,
+-- capitals (stamps, labels) 0.70 em, Morpheus 0.56 em, Arial Narrow 0.45 em, CJK 1.07 em.
+-- The numbers below were derived with narrower factors (Friz 0.55, Morpheus 0.5, Nimrod missing); since
+-- 1.2.2 the fields do not rely on them: they shrink (Look.FitText), wrap or show the whole text in a tooltip,
+-- and tests/ui/layout_guard.lua measures the real fields in all 21 languages. German must fit.
 -- grow = true: the field grows with the text (1.2.0: tabs, word tabs); max is then the most the
 -- book's row of tabs can take without crowding the "?" and the gear button.
 -- enUS.lua carries the same number as "[max N]" in the comment of the key (checked by the test).
@@ -19,21 +23,21 @@ return {
   SHEET_BOOK  = { max = 14, field = "word tab, grows from 70 px, Friz 11", grow = true },
   SHEET_ALERT = { max = 14, field = "word tab, grows from 70 px, Friz 11", grow = true },
   -- stamps: 140x70 px on the poster, text on the empty stamp frame, two lines
-  STAMP_NR1      = { max = 24, field = "stamp 140x70 px, text area 104 px, two lines, 16/13/11 pt as needed" },
+  STAMP_NR1      = { max = 24, field = "stamp 140x70 px, text area 104 px, two lines, 16/13/11/9 pt as needed" },
   STAMP_REVENGE  = { max = 16, field = "stamp 140x70 px, two lines" },
   STAMP_PARDONED = { max = 16, field = "stamp 140x70 px, two lines" },
   STAMP_SUSPECT  = { max = 16, field = "stamp 140x70 px, two lines" },
   -- alarm popup title: 384 px popup, text from x=86 to -10 = 288 px, Skurri 16 (rank 1) / 13 pt, no wrap
-  ALERT_SIGHTED_NR1     = { max = 30, field = "popup title, 288 px, Skurri 16 (14 when longer), no wrap" },
-  ALERT_SIGHTED         = { max = 30, field = "popup title, 288 px, Skurri 13, no wrap" },
-  ALERT_SIGHTED_SUSPECT = { max = 30, field = "popup title, 288 px, Skurri 13, no wrap" },
-  ALERT_TITLE_GUILD     = { max = 30, field = "popup title, 288 px, Skurri 13, no wrap" },
-  ALERT_TITLE_FRIENDS   = { max = 30, field = "popup title, 288 px, Skurri 13, no wrap" },
-  ALERT_TITLE_HUNT      = { max = 30, field = "popup title, 288 px, Skurri 13, no wrap" },
+  ALERT_SIGHTED_NR1     = { max = 30, field = "popup title, 288 px, Skurri 16 (13, 11 when longer), no wrap" },
+  ALERT_SIGHTED         = { max = 30, field = "popup title, 288 px, Skurri 13 (11 when longer), no wrap" },
+  ALERT_SIGHTED_SUSPECT = { max = 30, field = "popup title, 288 px, Skurri 13 (11 when longer), no wrap" },
+  ALERT_TITLE_GUILD     = { max = 30, field = "popup title, 288 px, Skurri 13 (11 when longer), no wrap" },
+  ALERT_TITLE_FRIENDS   = { max = 30, field = "popup title, 288 px, Skurri 13 (11 when longer), no wrap" },
+  ALERT_TITLE_HUNT      = { max = 30, field = "popup title, 288 px, Skurri 13 (11 when longer), no wrap" },
   -- popup hint: from x=86 to -76 = 222 px, Friz 10, no wrap
-  ALERT_HINT_CLOSE  = { max = 44, field = "popup hint, 222 px, Friz 10, no wrap" },
-  ALERT_HINT_COMBAT = { max = 44, field = "popup hint, 222 px, Friz 10, no wrap" },
-  ALERT_HINT_TARGET = { max = 44, field = "popup hint, 222 px, Friz 10, no wrap" },
+  ALERT_HINT_CLOSE  = { max = 44, field = "popup hint, from x=86 to the left of \"+n more\" (up to 278 px), Friz 10, no wrap" },
+  ALERT_HINT_COMBAT = { max = 44, field = "popup hint, from x=86 to the left of \"+n more\" (up to 278 px), Friz 10, no wrap" },
+  ALERT_HINT_TARGET = { max = 44, field = "popup hint, from x=86 to the left of \"+n more\" (up to 278 px), Friz 10, no wrap" },
   ALERT_MORE        = { max = 14, field = "popup corner, 66 px, Friz 10" },
   -- relative time in list sub lines and the status column
   TIME_MINUTES = { max = 14, field = "time in sub lines and columns" },
@@ -49,7 +53,7 @@ return {
   HEALTH_SHORT_FAIL    = { max = 18, field = "short status, status line" },
   -- sound and channel names in the stepper of the sheet Alert (value field)
   SOUND_NONE        = { max = 16, field = "stepper value, sheet Alert" },
-  SOUND_RAIDWARNING = { max = 16, field = "stepper value, sheet Alert" },
+  SOUND_RAIDWARNING = { max = 16, field = "stepper value, sheet Alert, 132 px, Morpheus 16/13/11" },
   SOUND_BELL        = { max = 16, field = "stepper value, sheet Alert" },
   SOUND_GONG        = { max = 16, field = "stepper value, sheet Alert" },
   SOUND_HEARTBEAT   = { max = 16, field = "stepper value, sheet Alert" },
@@ -87,14 +91,14 @@ return {
   SORT_NAME = { max = 14, field = "sort word, up to 104 px, Friz 11" },
   SORT_SEEN = { max = 14, field = "sort word, up to 104 px, Friz 11" },
   -- How it works (help page, "?" button): label left (spaced capitals), paragraph right
-  MANUAL_BOOK_HEAD = { max = 12, field = "help label, 106 px, Friz 10, letter-spaced" },
-  MANUAL_WANTED_HEAD = { max = 12, field = "help label, 106 px, Friz 10, letter-spaced" },
-  MANUAL_UNSOLVED_HEAD = { max = 13, field = "help label, 106 px, Friz 10 (9 when longer), letter-spaced" },
-  MANUAL_ALERT_HEAD = { max = 12, field = "help label, 106 px, Friz 10, letter-spaced" },
-  MANUAL_ADD_HEAD = { max = 12, field = "help label, 106 px, Friz 10, letter-spaced" },
-  MANUAL_GUILD_HEAD = { max = 12, field = "help label, 106 px, Friz 10, letter-spaced" },
-  MANUAL_SHARE_HEAD = { max = 12, field = "help label, 106 px, Friz 10, letter-spaced" },
-  MANUAL_QUIET_HEAD = { max = 12, field = "help label, 106 px, Friz 10, letter-spaced" },
+  MANUAL_BOOK_HEAD = { max = 12, field = "help label, 100 px, Friz 10 (9, then two lines when longer), letter-spaced" },
+  MANUAL_WANTED_HEAD = { max = 12, field = "help label, 100 px, Friz 10 (9, then two lines when longer), letter-spaced" },
+  MANUAL_UNSOLVED_HEAD = { max = 13, field = "help label, 100 px, Friz 10 (9, then two lines when longer), letter-spaced" },
+  MANUAL_ALERT_HEAD = { max = 12, field = "help label, 100 px, Friz 10 (9, then two lines when longer), letter-spaced" },
+  MANUAL_ADD_HEAD = { max = 12, field = "help label, 100 px, Friz 10 (9, then two lines when longer), letter-spaced" },
+  MANUAL_GUILD_HEAD = { max = 12, field = "help label, 100 px, Friz 10 (9, then two lines when longer), letter-spaced" },
+  MANUAL_SHARE_HEAD = { max = 12, field = "help label, 100 px, Friz 10 (9, then two lines when longer), letter-spaced" },
+  MANUAL_QUIET_HEAD = { max = 12, field = "help label, 100 px, Friz 10 (9, then two lines when longer), letter-spaced" },
   -- Questions before something is destroyed (game dialog)
   CONFIRM_DELETE_OK = { max = 14, field = "dialog button, ~120 px, game font" },
   CONFIRM_GUILD_CLEAR_OK = { max = 14, field = "dialog button, ~120 px, game font" },
@@ -108,7 +112,7 @@ return {
   ACT_HUNT_AGAIN = { max = 19, field = "poster button 104 px / menu 148 px, Friz 10, no wrap" },
   ACT_REVENGE = { max = 19, field = "poster button 104 px / menu 148 px, Friz 10, no wrap" },
   ACT_PARDON = { max = 19, field = "poster button 104 px / menu 148 px, Friz 10, no wrap" },
-  ACT_STRIKE = { max = 19, field = "poster button 104 px / menu 148 px, Friz 10, no wrap" },
+  ACT_STRIKE = { max = 19, field = "poster word right of the buttons, 64..120 px, Morpheus 13/11; menu 148..252 px, Friz 10/9" },
   ACT_OPEN_OWN = { max = 19, field = "poster button 104 px / menu 148 px, Friz 10, no wrap" },
   ACT_ADOPT = { max = 19, field = "poster button 104 px / menu 148 px, Friz 10, no wrap" },
   ACT_CALLOFF = { max = 19, field = "poster button 104 px / menu 148 px, Friz 10, no wrap" },
@@ -229,13 +233,13 @@ return {
   SEARCH_KILLER = { max = 15, field = "search field, 120 px, Morpheus 16" },
   SEARCH_JOURNAL = { max = 26, field = "search field, 200 px, Morpheus 16" },
   -- Stamps without burnt-in text (all languages but German; German keeps the pictures)
-  STAMP_GUILD_NR1 = { max = 25, field = "stamp 140x70 px, text area 104 px, two lines, 16/13/11 pt as needed" },
+  STAMP_GUILD_NR1 = { max = 25, field = "stamp 140x70 px, text area 104 px, two lines, 16/13/11/9 pt as needed" },
   STAMP_HUNT = { max = 20, field = "stamp 140x70 px, text area 104 px, two lines" },
   -- Identity, hit list, alarm level, expiry (1.2.0)
   FRIENDS_SHORT_IMPOSTOR = { max = 22, field = "short status, status line" },
-  ALERT_LEVEL = { max = 12, field = "popup, right of the name, Friz 11" },
-  ALERT_LEVEL_LAST = { max = 20, field = "popup, right of the name, Friz 11" },
-  ALERT_LEVEL_UNKNOWN = { max = 12, field = "popup, right of the name, Friz 11" },
+  ALERT_LEVEL = { max = 12, field = "popup, start of the text line, Friz 11 (1.2.2)" },
+  ALERT_LEVEL_LAST = { max = 20, field = "popup, start of the text line, Friz 11 (1.2.2)" },
+  ALERT_LEVEL_UNKNOWN = { max = 12, field = "popup, start of the text line, Friz 11 (1.2.2)" },
   BANNER_NEW_HUNTS = { max = 24, field = "message, big line, Morpheus 24, 480 px" },
   OPT_F_ANNOUNCEHUNT = { max = 44, field = "check box label, 280 px, Friz 11, one line" },
   SET_HUNT_EXPIRE = { max = 30, field = "stepper label, 190 px, Friz 11, one line" },

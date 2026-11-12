@@ -12,6 +12,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          tests/ui/humor.lua tests/ui/final_f05_kaputte_daten.lua tests/ui/final_f06_hoch_zurueck_hoch.lua \
          tests/ui/final_f10_oberflaeche_messen.lua tests/ui/final_f11_dialog_alarm_sprachwechsel.lua \
          tests/ui/final_f15_sprachdatei_fehlt_kaputt.lua tests/ui/final_f17_kampf_neue_stellen.lua tests/ui/fix2.lua tests/ui/fix3.lua \
+         tests/ui/layout_guard.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
 done
@@ -43,6 +44,9 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
       out=$(luajit tests/ui/$t.lua . 2>&1) || status=1
       printf '%s\n' "$out" | grep -v "^  Reiter \|^  Blatt \|^  Alarm \|^  UIParent\|^  Dialog \|^[a-z][a-z][A-Z][A-Z]: "
     done
+    # 1.2.2: layout guard (nothing overlaps, nothing cut without tooltip, scroll pages) in all 21 languages
+    out=$(luajit tests/ui/layout_guard.lua . 2>&1) || status=1
+    printf '%s\n' "$out" | grep -v "^[a-z][a-z][A-Z][A-Z]: 0 findings"
   fi
 fi
 
