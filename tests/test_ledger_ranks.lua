@@ -6,8 +6,9 @@ local test, eq, ok, no = M.test, M.eq, M.ok, M.no
 local ns = M.Load()
 local R = ns.Ranks
 
--- The 14 PvP rank titles per faction of the Classic honour system (German and English client), from memory of the
--- Classic clients: the mocks carry no PVP_RANK_* strings, and Forever's own rank track is unproven in game.
+-- The 14 PvP rank titles per faction of the Classic honour system (German and English client), checked against
+-- warcraft.wiki.gg "Honor system (Classic)" and German overviews by the bug hunt of 1.3.0 (Horde rank 3 is
+-- "Landsknecht" there): the mocks carry no PVP_RANK_* strings, and Forever's own rank track is unproven in game.
 -- A rank name of the book must never be one of them, alone.
 local GAME_TITLES = {
   -- Alliance, English / German
@@ -17,9 +18,11 @@ local GAME_TITLES = {
   "Kürassier", "Ritter der Allianz", "Feldkommandant", "Rittmeister", "Marschall", "Feldmarschall", "Großmarschall",
   -- Horde, English / German
   "Scout", "Grunt", "Senior Sergeant", "First Sergeant", "Stone Guard", "Blood Guard", "Legionnaire", "Centurion",
-  "Champion", "Lieutenant General", "General", "Warlord", "High Warlord", "Späher", "Grunzer", "Waffenträger",
+  "Champion", "Lieutenant General", "General", "Warlord", "High Warlord", "Späher", "Grunzer", "Landsknecht",
   "Schlachtrufer", "Rottenmeister", "Steingardist", "Blutgardist", "Zornbringer", "Klinge der Horde", "Feldherr",
   "Sturmreiter", "Kriegsherr", "Kriegsfürst", "Oberster Kriegsfürst",
+  -- other German forms some lists give (Horde rank 3, Alliance rank 11): checked as well
+  "Waffenträger", "Kommandant",
   -- the bare word the concept forbids alone
   "Ritter",
 }
