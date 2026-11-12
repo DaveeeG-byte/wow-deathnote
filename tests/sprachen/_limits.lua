@@ -321,7 +321,7 @@ return {
   OPT_VICTIMS = { max = 44, field = "check box (off by default)" },
   SET_SETTLED = { max = 34, field = "stepper label: alarm for killers you are even with or lead" },
   SET_SETTLED_ALWAYS = { max = 10, field = "stepper value: alarm as for everyone" },
-  SET_SETTLED_QUIET = { max = 10, field = "stepper value: the popup without sound" },
+  SET_SETTLED_QUIET = { max = 10, field = "stepper value: the popup with the soft sound, no edge pulse" },
   SET_SETTLED_OFF = { max = 10, field = "stepper value: no alarm" },
   MANUAL_RECORD_HEAD = { max = 14, field = "keyword of the help paragraph" },
   SHEET_RECORD = { max = 14, field = "word tab of the House Rules (four sheets: 50 to 96 px, Friz 11, 10 when narrower)", grow = true },
