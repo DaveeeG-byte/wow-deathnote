@@ -530,7 +530,7 @@ Locale.THEME_KEYS = {
   STAMP_QUITT = true, STAMP_OVERPAID = true,
   POSTER_HUNTLIST = true, BANNER_HUNT = true, BANNER_NEW = true, BANNER_REVENGE = true,
   ALERT_SIGHTED = true, ALERT_SIGHTED_NR1 = true, ALERT_TITLE_GUILD = true, ALERT_TITLE_FRIENDS = true,
-  ALERT_TITLE_HUNT = true,
+  ALERT_TITLE_HUNT = true, ALERT_TITLE_VICTIM = true,   -- 1.3.0: the head of the victim alarm (Alert.lua)
   BOUNTY_GOLD = true, BOUNTY_SILVER = true,
   WELCOME = true, EMPTY_WANTED_HEAD = true, EMPTY_WANTED_SUB = true, EMPTY_JOURNAL_HEAD = true, EMPTY_JOURNAL_SUB = true,
 }

@@ -906,9 +906,6 @@ end
 local Alert = {}
 ns.Alert = Alert
 
--- 1.3.0: the head of the victim alarm is a show word: a theme may give it its own wording (Locale.THEME_KEYS; the
--- words are applied at ADDON_LOADED, after every file of the TOC ran)
-if ns.Locale and type(ns.Locale.THEME_KEYS) == "table" then ns.Locale.THEME_KEYS.ALERT_TITLE_VICTIM = true end
 
 local HOLD = 12           -- seconds shown
 local W, H = 384, 108
