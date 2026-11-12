@@ -265,6 +265,11 @@ end
 
 -- open: Funktion fuer den Klick (nur Meldungen nach dem eigenen Tod), sonst nicht anklickbar.
 -- kicker ist der ungesperrte Text (1.2.0, gesperrt wird hier); stamp: Art aus STAMPS oder nil
+-- 1.2.2: the name steps 26, 22, 19 pt (380 px, 340 px next to the stamp); the line steps 11, 10 pt, and a line
+-- given as { full, short } falls back to the short one (zone left out) before it would be cut;
+-- the stamp text steps 13, 11, 9 pt on up to two lines (a long single word no longer runs out of the frame)
+Extras.FIT_NAME, Extras.FIT_LINE = { sizes = { 26, 22, 19 } }, { sizes = { 11, 10 } }
+Extras.FIT_STAMP = { sizes = { 13, 11, 9 }, lines = 2, wrapFirst = true }
 local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   local stampTex, stampText, st = StampImage(stamp)
   kicker = Spaced(kicker)
@@ -275,13 +280,18 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   banner.open = open
   banner:EnableMouse(open ~= nil)
   banner.kicker:SetText(kicker)
-  banner.name:SetText(name)
   -- mit Stempel ruckt der Name etwas nach links, damit lange Namen frei bleiben
   banner.name:ClearAllPoints()
   banner.name:SetPoint("TOP", stampTex and -24 or 0, -26)
+  banner.name:SetWidth(stampTex and 340 or 380)
+  Look.FitText(banner.name, name, Extras.FIT_NAME)
   local c = nameRGB or Look.BONE
   banner.name:SetTextColor(c[1], c[2], c[3], 1)
-  banner.line:SetText(line or "")
+  if type(line) == "table" then
+    if not Look.FitText(banner.line, line[1] or "", Extras.FIT_LINE) then Look.FitText(banner.line, line[2] or "", Extras.FIT_LINE) end
+  else
+    Look.FitText(banner.line, line or "", Extras.FIT_LINE)
+  end
   banner.anim:Stop()
   banner.stampAnim:Stop()
   banner:SetAlpha(1)
@@ -298,11 +308,7 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   end
   if stampText then
     local fs = banner.stampText
-    Look.Font(fs, "title", 13)
-    fs:SetText(stampText)
-    -- 1.2.0: longer stamp words (up to 25 signs) take 11 pt on their two lines
-    local ok, w = pcall(fs.GetStringWidth, fs)
-    if ok and type(w) == "number" and not Look.Secret(w) and w > 96 * 1.6 then Look.Font(fs, "title", 11); fs:SetText(stampText) end
+    Look.FitText(fs, stampText, Extras.FIT_STAMP)
     fs:SetTextColor(st.rgb[1], st.rgb[2], st.rgb[3], 0.95)
     if fs.SetRotation then pcall(fs.SetRotation, fs, math.rad(-st.ang)) end
     fs:Show()
@@ -388,7 +394,8 @@ end
 local function ShowGuild(tat, key, src)
   local g = Look.GCall("Get", key, "all")
   local killer = g and Look.Name(g) or (type(key) == "string" and (key:match("^([^%-]+)") or key)) or "?"
-  local line = Look.Join(Fmt(L.BANNER_KILLED_BY, { name = killer }), type(tat.zone) == "string" and tat.zone or nil)
+  local by = Fmt(L.BANNER_KILLED_BY, { name = killer })
+  local line = { Look.Join(by, type(tat.zone) == "string" and tat.zone or nil), by }
   Banner(src == "friends" and L.BANNER_FRIENDS or L.BANNER_GUILD, Look.First(tat.victim), Look.BONE, line, nil, true,
          type(key) == "string" and key or nil)
 end

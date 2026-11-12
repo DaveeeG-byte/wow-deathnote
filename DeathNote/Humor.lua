@@ -358,6 +358,7 @@ Humor.Mem = Mem
 ------------------------------------------------------------------------
 -- Meldung (Extras.lua): Spruch unter dem Streifen, Ueberraschungs-Stempel
 ------------------------------------------------------------------------
+local FIT_QUIP = { sizes = { 11, 10 } }
 local function QuipStrip(banner)
   if banner.dnQuip then return banner.dnQuip end
   local Look = ns.Look
@@ -381,7 +382,7 @@ local function Apply(banner, d)
   if not (banner and Look and d) then return false end
   if d.quip then
     local q = QuipStrip(banner)
-    q.text:SetText(d.quip)
+    Look.FitText(q.text, d.quip, FIT_QUIP)   -- 1.2.2: 11 pt, else 10 pt (a quip was 1 to 2 px too wide)
     q:Show()
     if d.hush then Hush() end
   end
