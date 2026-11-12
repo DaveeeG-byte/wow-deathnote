@@ -397,6 +397,8 @@ L.MARK_BOTH = "GUILDMEDLEM, VENN"  -- [max 20]
 L.MARK_TAKEN_DOWN = "FELT {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "DØD ELLER LEVENDE"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "UDÅDER"  -- [max 14]
 L.POSTER_NOTE = "NOTAT"  -- [max 8]
 L.POSTER_BOUNTY = "DUSØR"  -- [max 12]

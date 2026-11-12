@@ -392,6 +392,8 @@ L.MARK_BOTH = "KOLLEGE, FREUND"  -- [max 20]
 L.MARK_TAKEN_DOWN = "ERLEGT {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "DEAD OR ALIVE"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "TATEN"  -- [max 14]
 L.POSTER_NOTE = "NOTIZ"  -- [max 8]
 L.POSTER_BOUNTY = "KOPFGELD"  -- [max 12]

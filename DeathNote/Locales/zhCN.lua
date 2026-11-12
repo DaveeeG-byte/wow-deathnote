@@ -405,6 +405,8 @@ L.MARK_BOTH = "公会成员、好友"  -- [max 20]
 L.MARK_TAKEN_DOWN = "已击杀{times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "生死不论"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "罪行"  -- [max 14]
 L.POSTER_NOTE = "备注"  -- [max 8]
 L.POSTER_BOUNTY = "赏金"  -- [max 12]

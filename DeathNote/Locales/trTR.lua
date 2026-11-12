@@ -407,6 +407,8 @@ L.MARK_BOTH = "LONCA ÜYESİ, ARKADAŞ"  -- [max 20]
 L.MARK_TAKEN_DOWN = "AVLANDI {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ÖLÜ YA DA DİRİ"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "SUÇLAR"  -- [max 14]
 L.POSTER_NOTE = "NOT"  -- [max 8]
 L.POSTER_BOUNTY = "KELLE PARASI"  -- [max 12]

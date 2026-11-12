@@ -405,6 +405,8 @@ L.MARK_BOTH = "길드원, 친구"  -- [max 20]
 L.MARK_TAKEN_DOWN = "처치 {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "생사 불문"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "범행"  -- [max 14]
 L.POSTER_NOTE = "메모"  -- [max 8]
 L.POSTER_BOUNTY = "현상금"  -- [max 12]

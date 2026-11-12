@@ -411,7 +411,9 @@ L.MARK_FRIEND = "FRIEND"  -- [max 16] mark at the right: a friend from the frien
 L.MARK_BOTH = "GUILDMATE, FRIEND"  -- [max 20] mark at the right: both at once
 L.MARK_TAKEN_DOWN = "TAKEN DOWN {times}"  -- [max 18] Hit List row, right: killed by one of you; {times} = "2×"
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
-L.POSTER_DOA = "DEAD OR ALIVE"  -- [max 24] line under WANTED on the poster (WANTED itself never changes); may stay English like WANTED
+L.POSTER_DOA = "DEAD OR ALIVE"  -- [max 24] line under WANTED (POSTER_HEAD) on the poster; may stay English like WANTED
+L.BOOK_TITLE = "DeathNote"  -- [max 10] 1.3.0: title on the cover of the book; a theme may set its own (theme word)
+L.POSTER_HEAD = "WANTED"  -- [max 7] 1.3.0: head of the poster, in no language translated; a theme may set its own (theme word)
 L.POSTER_DEEDS = "DEEDS"  -- [max 14] label above the deeds list
 L.POSTER_NOTE = "NOTE"  -- [max 8] label left of the note field (the field takes the rest of the line)
 L.POSTER_BOUNTY = "BOUNTY"  -- [max 12] label above the bounty

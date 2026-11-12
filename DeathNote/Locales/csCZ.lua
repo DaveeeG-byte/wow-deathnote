@@ -404,6 +404,8 @@ L.MARK_BOTH = "Z GUILDY, PŘÍTEL"  -- [max 20]
 L.MARK_TAKEN_DOWN = "ULOVENO {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ŽIVÝ NEBO MRTVÝ"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "ČINY"  -- [max 14]
 L.POSTER_NOTE = "POZNÁMKA"  -- [max 8]
 L.POSTER_BOUNTY = "ODMĚNA"  -- [max 12]

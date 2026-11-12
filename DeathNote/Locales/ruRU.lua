@@ -403,6 +403,8 @@ L.MARK_BOTH = "СОГИЛЬДИЕЦ, ДРУГ"  -- [max 20]
 L.MARK_TAKEN_DOWN = "ЦЕЛЬ УБИТА {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ЖИВЫМ ИЛИ МЁРТВЫМ"  -- [max 24]
+L.BOOK_TITLE = "DeathNote"
+L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "ЗЛОДЕЯНИЯ"  -- [max 14]
 L.POSTER_NOTE = "ЗАМЕТКА"  -- [max 8]
 L.POSTER_BOUNTY = "НАГРАДА"  -- [max 12]

@@ -515,9 +515,64 @@ end
 
 local function wipe(t) for k in pairs(t) do t[k] = nil end return t end
 
--- Builds English plus the overlay of `code` into `into` (default a new table).
+---------------------------------------------------------------------------
+-- Theme words (1.3.0): a theme may set its own SHOW words (titles, tabs, page heads, stamps, alarm titles, the
+-- welcome, the currency of the book's value). Control words (buttons, menus, switches, commands) never change,
+-- so every button keeps its name in every theme. A file Locales\Themes\<id>.lua registers one builder per
+-- language: Locale.RegisterWords("<id>", "deDE", function(T) T.TAB_WANTED = "..." end).
+-- A word the theme lacks in a language keeps the base word OF THAT LANGUAGE (never the theme's English word).
+---------------------------------------------------------------------------
+Locale.THEME_KEYS = {
+  BOOK_TITLE = true, POSTER_HEAD = true, POSTER_DOA = true, POSTER_BOUNTY = true,
+  TAB_WANTED = true, TAB_DEATHLOG = true, TAB_GUILD = true, TAB_GUILD_FRIENDS = true, TAB_RECORD = true,
+  HEAD_RULES = true, HEAD_HELP = true,
+  STAMP_NR1 = true, STAMP_GUILD_NR1 = true, STAMP_REVENGE = true, STAMP_PARDONED = true, STAMP_HUNT = true,
+  STAMP_QUITT = true, STAMP_OVERPAID = true,
+  POSTER_HUNTLIST = true, BANNER_HUNT = true, BANNER_NEW = true, BANNER_REVENGE = true,
+  ALERT_SIGHTED = true, ALERT_SIGHTED_NR1 = true, ALERT_TITLE_GUILD = true, ALERT_TITLE_FRIENDS = true,
+  ALERT_TITLE_HUNT = true,
+  BOUNTY_GOLD = true, BOUNTY_SILVER = true,
+  WELCOME = true, EMPTY_WANTED_HEAD = true, EMPTY_WANTED_SUB = true, EMPTY_JOURNAL_HEAD = true, EMPTY_JOURNAL_SUB = true,
+}
+
+local words = {}        -- theme -> code -> builder; nil after activation
+
+function Locale.RegisterWords(theme, code, fn)
+  if words == nil or type(theme) ~= "string" or not KNOWN[code] or type(fn) ~= "function" then return false end
+  words[theme] = words[theme] or {}
+  words[theme][code] = fn
+  return true
+end
+
+-- The theme's own words in `code`, without fallback (tests). nil, err when there are none or the builder fails.
+function Locale.RawWords(theme, code)
+  local fn = words and words[theme] and words[theme][code]
+  if not fn then return nil, "not registered" end
+  local t = {}
+  local ok, err = pcall(fn, t)
+  if not ok then return nil, err end
+  return t
+end
+
+-- Lays the words of `theme` in `code` over `into` (show keys only, only keys English has, no empty text).
+-- Returns the number of words taken.
+function Locale.ApplyWords(theme, code, into)
+  if not theme then return 0 end
+  local t, err = Locale.RawWords(theme, code)
+  if not t then
+    if err ~= "not registered" then report("DeathNote Locale " .. tostring(theme) .. " " .. tostring(code) .. ": " .. tostring(err)) end
+    return 0
+  end
+  local n = 0
+  for k, v in pairs(t) do
+    if Locale.THEME_KEYS[k] and rawget(into, k) ~= nil and type(v) == "string" and v ~= "" then into[k] = v; n = n + 1 end
+  end
+  return n
+end
+
+-- Builds English plus the overlay of `code` into `into` (default a new table); 1.3.0: plus the words of `theme`.
 -- Returns into, own (keys the language itself delivered), total (English keys), extra (unknown keys).
-function Locale.Build(code, into)
+function Locale.Build(code, into, theme)
   into = wipe(into or {})
   local en, err = Locale.Raw(Locale.DEFAULT)
   -- 1.2.0: without English the chosen language stands in (below); reported only when nothing is there
@@ -529,7 +584,10 @@ function Locale.Build(code, into)
   for k, v in pairs(en) do
     if type(v) == "string" then into[k] = v; total = total + 1 end
   end
-  if code == Locale.DEFAULT then return into, total, total, 0 end
+  if code == Locale.DEFAULT then
+    Locale.themeWords = Locale.ApplyWords(theme, code, into)
+    return into, total, total, 0
+  end
   local own, extra = 0, 0
   local t, err2 = Locale.Raw(code)
   if not t and err2 ~= "not registered" then report("DeathNote Locale " .. tostring(code) .. ": " .. tostring(err2)) end
@@ -550,6 +608,7 @@ function Locale.Build(code, into)
       end
     end
   end
+  Locale.themeWords = Locale.ApplyWords(theme, code, into)
   return into, own, total, extra
 end
 
@@ -574,12 +633,19 @@ function Locale.Activate(choice)
   if choice == nil then choice = Locale.StoredChoice() end
   local code = Locale.Resolve(choice)
   if not (registry and registry[code]) then code = Locale.DEFAULT end
-  local _, own, total, extra = Locale.Build(code, L)
+  -- 1.3.0: the theme first (its words are the third layer; it also fills ns.Look with its look)
+  local Theme, theme = ns.Theme, nil
+  if Theme and Theme.Activate then
+    local ok, id = pcall(Theme.Activate)
+    if ok then theme = Theme.Words and Theme.Words(id) or nil else report(id) end
+  end
+  local _, own, total, extra = Locale.Build(code, L, theme)
   Locale.code = code
   Locale.choice = Locale.Normalize(choice)        -- nil: automatic (the client's language)
   Locale.own, Locale.total, Locale.extra = own, total, extra
   Locale.fallback = own < total      -- some texts are English
   registry = nil                     -- the other builders (and their strings) go to the GC
+  words = nil                        -- likewise the words of the themes
   for i = 1, #listeners do
     local ok, err = pcall(listeners[i], code)
     if not ok then report(err) end

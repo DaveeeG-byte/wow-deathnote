@@ -132,6 +132,9 @@ return {
   MARK_TAKEN_DOWN = { max = 18, field = "row mark, right, 70..120 px, Friz 10" },
   -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty
   POSTER_DOA = { max = 24, field = "poster line, 304 px, Friz 11, letter-spaced" },
+  -- 1.3.0: theme words with a fixed field (a theme's word takes the limit of the base key)
+  POSTER_HEAD = { max = 7, field = "poster head, 304 px, Morpheus 46" },
+  BOOK_TITLE = { max = 10, field = "book title on the cover, Skurri 26, left of the tabs" },
   POSTER_DEEDS = { max = 14, field = "poster label, Friz 10, letter-spaced (a sign is ~11 px)" },
   POSTER_NOTE = { max = 8, field = "poster label before a field, Friz 10, letter-spaced" },
   POSTER_BOUNTY = { max = 12, field = "poster label, ~140 px, Friz 10, letter-spaced" },
