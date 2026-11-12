@@ -52,9 +52,9 @@ local FOREIGN = { all = { foreign = true, source = "all" }, guild = { foreign = 
 local GF = { SOURCES = { { "all", "SRC_ALL" }, { "guild", "SRC_GUILD" }, { "friends", "SRC_FRIENDS" } },
              STAMP_W = 140, STAMP_H = 70, MENU_MAX = 6, CAND_MAX = 6, ASSIST_MAX = 4,
              WHY_ROW = 24,    -- reason in a hit list row: at most this many characters (then "…")
-             -- 1.2.1: coin on a killer with a bounty (client texture, also used by Details and Auctionator), seconds
-             -- of "Undo" after "Note revenge", bounty posters or avengers per row (then "and n more")
-             COIN = "Interface\\MoneyFrame\\UI-GoldIcon", UNDO_SECONDS = 8, UNDO_LOCK = 0.5 }
+             -- 1.2.1: seconds of "Undo" after "Note revenge", bounty posters or avengers per row (then "and n more");
+             -- the coin on a killer with a bounty is Look.TEX.coin (1.3.0, theme)
+             UNDO_SECONDS = 8, UNDO_LOCK = 0.5 }
 
 -- Manual ("?"): every paragraph describes what is really built (acceptance mirror)
 UX.HELP = {
@@ -157,14 +157,14 @@ local function InkButton(parent, text, w, h, onClick)
   w, h = w or 104, h or 22
   b:SetSize(w, h)
   b:SetBackdrop({ bgFile = Look.TEX.white, edgeFile = Look.TEX.white, edgeSize = 1 })
-  b:SetBackdropColor(0.07, 0.06, 0.06, 0.94)
-  b:SetBackdropBorderColor(0.45, 0.04, 0.04, 1)
+  b:SetBackdropColor(C(Look.COLOR.btnFill))
+  b:SetBackdropBorderColor(C(Look.COLOR.btnEdge))
   b.text = Look.Text(b, "body", 10, Look.BONE)
   b.text:SetPoint("CENTER", 0, 0)
   b.text:SetWidth(w - 8)
   b.text:SetWordWrap(false)
-  b:SetScript("OnEnter", function(self) self:SetBackdropBorderColor(0.95, 0.1, 0.08, 1) end)
-  b:SetScript("OnLeave", function(self) self:SetBackdropBorderColor(0.45, 0.04, 0.04, 1) end)
+  b:SetScript("OnEnter", function(self) self:SetBackdropBorderColor(C(Look.COLOR.btnEdgeHot)) end)
+  b:SetScript("OnLeave", function(self) self:SetBackdropBorderColor(C(Look.COLOR.btnEdge)) end)
   b:SetScript("OnClick", function(self, mouse)
     Look.Sound("click")
     if self.fn then self.fn(self, mouse) end
@@ -233,12 +233,12 @@ function UX.InkCheck(parent, label, width)
   local inner = cb:CreateTexture(nil, "ARTWORK", nil, 1)
   inner:SetPoint("TOPLEFT", box, "TOPLEFT", 1, -1)
   inner:SetPoint("BOTTOMRIGHT", box, "BOTTOMRIGHT", -1, 1)
-  Look.Tex(inner, Look.TEX.white, 0.93, 0.90, 0.82, 1)
-  inner:SetVertexColor(0.93, 0.90, 0.82, 1)
+  Look.Tex(inner, Look.TEX.white, Look.FB("white"))
+  inner:SetVertexColor(C(Look.COLOR.boxFill))
   cb.cross = cb:CreateTexture(nil, "OVERLAY")
   cb.cross:SetSize(20, 20)
   cb.cross:SetPoint("CENTER", box, "CENTER", 1, 1)
-  Look.Tex(cb.cross, Look.TEX.check, 0.1, 0.1, 0.1, 1)
+  Look.Skin(cb.cross, "check")
   cb.cross:SetVertexColor(C(Look.INK, 0.95))
   cb.cross:Hide()
   local hl = cb:CreateTexture(nil, "HIGHLIGHT")
@@ -254,15 +254,16 @@ function UX.InkCheck(parent, label, width)
   return cb
 end
 
-local function Tex(frame, layer, path, sub)
+-- key: texture of the theme (paper, page, cover) with its fallback colour and tint
+local function Tex(frame, layer, key, sub)
   local t = frame:CreateTexture(nil, layer or "BACKGROUND", nil, sub)
-  Look.Tex(t, path, 0.85, 0.80, 0.70, 1)
+  Look.Skin(t, key)
   return t
 end
 
 function UX.Shadow(frame, dx, dy, a)
   local s = frame:CreateTexture(nil, "BACKGROUND", nil, -8)
-  s:SetColorTexture(0, 0, 0, a or 0.45)
+  s:SetColorTexture(C(Look.COLOR.shadow, a or 0.45))
   s:SetPoint("TOPLEFT", dx or 3, -(dy or 3))
   s:SetPoint("BOTTOMRIGHT", dx or 3, -(dy or 3))
   return s
@@ -273,7 +274,7 @@ local function Tape(frame, corner, rot, dx)
   local t = frame:CreateTexture(nil, "OVERLAY", nil, 6)
   t:SetSize(52, 20)
   t:SetPoint("CENTER", frame, corner, dx or 0, 0)
-  Look.Tex(t, Look.TEX.tape, 0.9, 0.86, 0.7, 0.6)
+  Look.Skin(t, "tape")
   t:SetRotation(rot)
   return t
 end
@@ -282,7 +283,7 @@ end
 local function Tri(parent, size, rot)
   local t = parent:CreateTexture(nil, "ARTWORK")
   t:SetSize(size, size)
-  Look.Tex(t, Look.TEX.tri, 0.1, 0.1, 0.1, 1)
+  Look.Skin(t, "tri")
   t:SetVertexColor(C(Look.INK, 0.9))
   if rot and rot ~= 0 then t:SetRotation(rot) end
   return t
@@ -291,7 +292,7 @@ end
 -- mugshot without a colour spot: desaturated and tinted like paper
 local function MugIcon(tex)
   tex:SetDesaturated(true)
-  tex:SetVertexColor(0.85, 0.80, 0.70, 1)
+  tex:SetVertexColor(C(Look.COLOR.mugTint))
 end
 
 local function PlaceText(z, sz)
@@ -657,8 +658,8 @@ function UX.BuildMenu()
   menu = CreateFrame("Frame", "DeathNoteMenu", F, "BackdropTemplate")
   menu:SetFrameStrata("DIALOG")
   menu:SetBackdrop({ bgFile = Look.TEX.white, edgeFile = Look.TEX.white, edgeSize = 1 })
-  menu:SetBackdropColor(0.05, 0.045, 0.045, 0.97)
-  menu:SetBackdropBorderColor(0.45, 0.04, 0.04, 1)
+  menu:SetBackdropColor(C(Look.COLOR.menuFill))
+  menu:SetBackdropBorderColor(C(Look.COLOR.btnEdge))
   menu:Hide()
   -- a click anywhere else in the book closes the menu
   local bl = CreateFrame("Button", nil, F)
@@ -835,8 +836,8 @@ function UX.MakeRow(parent, i)
   r.skull = r:CreateTexture(nil, "ARTWORK")
   r.skull:SetSize(18, 18)
   r.skull:SetPoint("TOPLEFT", 12, -2)
-  Look.Tex(r.skull, Look.TEX.skull, 0.2, 0.2, 0.2, 1)
-  r.skull:SetVertexColor(0.25, 0.22, 0.2, 1)
+  Look.Skin(r.skull, "skull")
+  r.skull:SetVertexColor(C(Look.COLOR.skullTint))
   r.skull:Hide()
 
   r.name = Look.Text(r, "hand", 19, Look.INK)
@@ -865,22 +866,22 @@ function UX.MakeRow(parent, i)
   r.coin = r:CreateTexture(nil, "ARTWORK")
   r.coin:SetSize(11, 11)
   r.coin:SetPoint("TOPRIGHT", -28, -6)
-  r.coin:SetTexture(GF.COIN)
+  r.coin:SetTexture(Look.TEX.coin)
   r.coin:SetDesaturated(true)
-  r.coin:SetVertexColor(0.55, 0.45, 0.25, 0.9)
+  r.coin:SetVertexColor(C(Look.COLOR.coinTint))
   r.coin:Hide()
 
   -- underlined = selected, struck through = pardoned
   r.under = r:CreateTexture(nil, "OVERLAY")
   r.under:SetHeight(8)
   r.under:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", -4, 4)
-  Look.Tex(r.under, Look.TEX.ink, 0.1, 0.1, 0.1, 1)
+  Look.Skin(r.under, "ink")
   r.under:SetVertexColor(C(Look.INK, 0.95))
   r.under:Hide()
   r.strike = r:CreateTexture(nil, "OVERLAY", nil, 1)
   r.strike:SetHeight(9)
   r.strike:SetPoint("LEFT", r.name, "LEFT", -3, -1)
-  Look.Tex(r.strike, Look.TEX.ink, 0.1, 0.1, 0.1, 1)
+  Look.Skin(r.strike, "ink")
   r.strike:SetVertexColor(C(Look.INK, 0.8))
   r.strike:SetTexCoord(1, 0, 0, 1)
   r.strike:Hide()
@@ -1255,7 +1256,7 @@ end
 -- per stamp: key, angle from make_media.sh (degrees, ImageMagick clockwise), ink
 GF.STAMPS = { nr1 = { "STAMP_NR1", -11, 1 }, guild = { "STAMP_GUILD_NR1", -9, 1 }, rache = { "STAMP_REVENGE", 9, 1 },
               pardon = { "STAMP_PARDONED", -6, 2 }, suspect = { "STAMP_SUSPECT", 7, 3 }, hunt = { "STAMP_HUNT", 8, 1 } }
-GF.STAMP_INK = { { 0.69, 0.04, 0.04 }, { 0.12, 0.106, 0.098 }, { 0.18, 0.165, 0.153 } }   -- #b00a0a #1e1b19 #2e2a27
+GF.STAMP_INK = Look.STAMP_INK   -- 1.3.0: the theme's stamp inks (red, dark, darker), filled in place
 GF.STAMP_TEXT_W = 104       -- inner frame of the stamp at 140x70 px
 GF.FIT_STAMP = { sizes = { 16, 13, 11, 9 }, lines = 2, wrapFirst = 2 }
 
@@ -1275,12 +1276,14 @@ end
 function GF.Stamp(tex, id)
   local s, fs = GF.STAMPS[id], tex.label
   local code = ns.Locale and ns.Locale.code
-  if not (s and fs and code) or code == "deDE" then
-    Look.Tex(tex, Look.TEX[id], 0.7, 0.05, 0.05, 0.5)
+  -- 1.3.0: the picture with burnt-in text only where the theme has one (the black book, German)
+  local baked = Look.StampTex(id)
+  if not (s and fs and code) or (code == "deDE" and baked) then
+    Look.StampSkin(tex, baked or Look.StampTex(id, true))
     if fs then fs.on = false; fs:Hide() end
     return
   end
-  Look.Tex(tex, Look.MEDIA .. "stamp_" .. id .. "_blank.tga", 0.7, 0.05, 0.05, 0.5)
+  Look.StampSkin(tex, Look.StampTex(id, true))
   local text = L[s[1]]
   if fs.text ~= text then
     fs.text = text
@@ -1468,12 +1471,12 @@ function UX.BuildPoster()
   P:SetSize(352, 452)
   P:SetPoint("TOP", 2, -20)
   UX.Shadow(P, 4, 5, 0.5)
-  local bg = Tex(P, "BACKGROUND", Look.TEX.paper)
+  local bg = Tex(P, "BACKGROUND", "paper")
   bg:SetAllPoints()
   P.pin = P:CreateTexture(nil, "OVERLAY", nil, 7)
   P.pin:SetSize(28, 28)
   P.pin:SetPoint("TOP", 0, 12)
-  Look.Tex(P.pin, Look.TEX.pin, 0.7, 0.05, 0.05, 1)
+  Look.Skin(P.pin, "pin")
   if ns.Humor then pcall(ns.Humor.Pin, P, P.pin) end -- Humor: thumbtack (an error there only costs the thumbtack)
   P.tapes = { Tape(P, "BOTTOMLEFT", 0.6), Tape(P, "BOTTOMRIGHT", -0.55) }
   P.card = Tape(P, "TOPLEFT", 0.75)            -- index card (file): tape instead of a thumbtack
@@ -1492,9 +1495,9 @@ function UX.BuildPoster()
   E:RegisterForDrag("LeftButton")
   E:SetScript("OnDragStart", function() local f = F and F:GetScript("OnDragStart"); if f then f(F) end end)
   E:SetScript("OnDragStop", function() local f = F and F:GetScript("OnDragStop"); if f then f(F) end end)
-  E.wanted = Look.Text(E, "hand", 46, Look.INK)
+  E.wanted = Look.Text(E, "head", 46, Look.INK)
   E.wanted:SetPoint("TOP", 0, -12)
-  E.wanted:SetText("WANTED")
+  E.wanted:SetText(L.POSTER_HEAD)
   Rule(E, -56, 24, 24, 0.7)
   E.doa = Look.Text(E, "body", 11, Look.INK)
   E.doa:SetPoint("TOP", 0, -61)
@@ -1509,7 +1512,7 @@ function UX.BuildPoster()
   pb:SetColorTexture(C(Look.INK, 1))
   local mug = photo:CreateTexture(nil, "BORDER")
   mug:SetAllPoints()
-  Look.Tex(mug, Look.TEX.mugshot, 0.75, 0.73, 0.69, 1)
+  Look.Skin(mug, "mugshot")
   E.icon = photo:CreateTexture(nil, "ARTWORK")
   E.icon:SetSize(70, 70)
   E.icon:SetPoint("CENTER", 0, -4)
@@ -1719,7 +1722,7 @@ function UX.BuildPoster()
   E.stampRache:SetAlpha(0.92)
   for _, st in ipairs({ E.stampNr1, E.stampOther, E.stampRache }) do GF.StampLabel(SL, st) end
   GF.Stamp(E.stampRache, "rache")
-  E.racheCount = Look.Text(E, "body", 19, { 0.56, 0.04, 0.04, 0.95 }, "THICKOUTLINE")
+  E.racheCount = Look.Text(E, "body", 19, Look.COLOR.stampCount, "THICKOUTLINE")
   E.racheCount:SetPoint("LEFT", E.stampRache, "RIGHT", -6, -8)
   if E.racheCount.SetRotation then pcall(E.racheCount.SetRotation, E.racheCount, 0.16) end
 
@@ -1779,7 +1782,7 @@ function UX.BuildPoster()
   D:SetAllPoints()
   D:Hide()
   P.death = D
-  D.head = Look.Text(D, "hand", 26, Look.INK)
+  D.head = Look.Text(D, "head", 26, Look.INK)
   D.head:SetPoint("TOPLEFT", 24, -16)
   D.head:SetText(L.CASE_HEAD)
   D.when = Look.Text(D, "type", 11, Look.INK)
@@ -1787,7 +1790,7 @@ function UX.BuildPoster()
   D.when:SetJustifyH("RIGHT")
   Rule(D, -52, 24, 24, 0.7)
   -- 1.2.2: below the head the file scrolls (same coordinates as before), the source line stands in the foot
-  D.page = Look.Page(D, { top = 54, foot = 46, w = 352, h = 452, paper = Look.TEX.paper })
+  D.page = Look.Page(D, { top = 54, foot = 46, w = 352, h = 452, paper = "paper" })
   local Ds = CreateFrame("Frame", nil, D.page.body)
   Ds:SetPoint("TOPLEFT", D.page.body, "TOPLEFT", 0, 54)
   Ds:SetSize(352, 452)
@@ -1850,7 +1853,7 @@ function UX.BuildPoster()
   X:SetAllPoints()
   X:Hide()
   RP.empty = X
-  X.big = Look.Text(X, "hand", 26, Look.INK)
+  X.big = Look.Text(X, "head", 26, Look.INK)
   X.big:SetPoint("CENTER", 0, 20)
   X.big:SetWidth(PAGE_W - 40)
   X.small = Look.Text(X, "hand", 16, Look.INK)
@@ -1864,8 +1867,8 @@ function UX.BuildPoster()
   local xs = X:CreateTexture(nil, "ARTWORK")
   xs:SetSize(64, 64)
   xs:SetPoint("BOTTOM", X.big, "TOP", 0, 20)
-  Look.Tex(xs, Look.TEX.skull, 0.2, 0.2, 0.2, 1)
-  xs:SetVertexColor(0.2, 0.18, 0.16, 0.7)
+  Look.Skin(xs, "skull")
+  xs:SetVertexColor(C(Look.COLOR.skullFaint))
 end
 
 -- empty state of the right page: one pattern for all tabs
@@ -2827,13 +2830,13 @@ local function PageLayer(parent)
   f:SetAllPoints()
   f:EnableMouse(true)
   f:Hide()
-  local bg = Tex(f, "BACKGROUND", Look.TEX.page)
+  local bg = Tex(f, "BACKGROUND", "page")
   bg:SetAllPoints()
   return f
 end
 
 local function SheetHead(parent, text)
-  local head = Look.Text(parent, "hand", 26, Look.INK)
+  local head = Look.Text(parent, "head", 26, Look.INK)
   head:SetPoint("TOP", 0, -16)
   head:SetWidth(PAGE_W - 60)                -- 1.2.2: no wider than the rule under it (x = 30 to PAGE_W - 30)
   Look.FitText(head, text, GF.FIT_NAME26)   -- 1.2.2: 26, 22, 19 pt (REL_HEAD ukUA was wider than the rule)
@@ -3249,7 +3252,7 @@ BuildSettings = function()
   box:SetPoint("TOPLEFT", 20, -88)
   box:SetPoint("BOTTOMRIGHT", -20, 70)
   box:SetBackdrop({ bgFile = Look.TEX.white, edgeFile = Look.TEX.white, edgeSize = 1 })
-  box:SetBackdropColor(1, 0.98, 0.92, 0.5)
+  box:SetBackdropColor(C(Look.COLOR.editFill))
   box:SetBackdropBorderColor(C(Look.INK, 0.6))
   local sf = CreateFrame("ScrollFrame", nil, box, "UIPanelScrollFrameTemplate")
   sf:SetPoint("TOPLEFT", 6, -6)
@@ -3727,7 +3730,6 @@ end -- house rules
 ------------------------------------------------------------------------
 -- Main window
 ------------------------------------------------------------------------
-GF.OPEN_HEX = ("|cff%02x%02x%02x"):format(Look.RED_ON_BLACK[1] * 255, Look.RED_ON_BLACK[2] * 255, Look.RED_ON_BLACK[3] * 255)
 
 -- number on the tab: only when there is something; "Unsolved" in red
 function UX.TabCount(id)
@@ -3745,7 +3747,7 @@ function UX.UpdateTabs()
     t:SetShown(t.id ~= "guild" or guild)
     local n = UX.TabCount(t.id) or 0
     if n <= 0 then t.text:SetText(t.label)
-    elseif t.id == "open" then t.text:SetText(t.label .. "  " .. GF.OPEN_HEX .. n .. "|r")
+    elseif t.id == "open" then t.text:SetText(t.label .. "  " .. Look.HEX.accentOnCover .. n .. "|r")
     else t.text:SetText(t.label .. "  " .. n) end
     t.text:SetTextColor(C(on and Look.BONE or Look.TAB_OFF))
     t.mark:SetShown(on)
@@ -4220,13 +4222,13 @@ function UX.BuildLeftPage()
   LP = CreateFrame("Frame", nil, F)
   LP:SetSize(PAGE_W, PAGE_H)
   LP:SetPoint("TOPLEFT", 16, -44)
-  local bg = Tex(LP, "BACKGROUND", Look.TEX.page)
+  local bg = Tex(LP, "BACKGROUND", "page")
   bg:SetAllPoints()
   bg:SetTexCoord(1, 0, 0, 1)          -- mirrored: the dark edge lies at the fold
   -- lines every 22 px: name on the first, subtext on the second; pale red margin
   for k = 1, ROWS * 2 do
     local l = LP:CreateTexture(nil, "BORDER")
-    l:SetColorTexture(0.25, 0.27, 0.33, k % 2 == 0 and 0.28 or 0.16)
+    l:SetColorTexture(C(Look.COLOR.rule, k % 2 == 0 and 0.28 or 0.16))
     l:SetHeight(1)
     l:SetPoint("TOPLEFT", 6, ROW_TOP - k * LINE_H + 1)
     l:SetPoint("TOPRIGHT", -6, ROW_TOP - k * LINE_H + 1)
@@ -4469,21 +4471,21 @@ local function Build()
 
   -- cover
   F:SetBackdrop({ edgeFile = Look.TEX.border, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
-  F:SetBackdropBorderColor(0.02, 0.02, 0.02, 1)
-  local cover = Tex(F, "BACKGROUND", Look.TEX.cover, -8)
+  F:SetBackdropBorderColor(C(Look.COLOR.frameEdge))
+  local cover = Tex(F, "BACKGROUND", "cover", -8)
   cover:SetPoint("TOPLEFT", 4, -4); cover:SetPoint("BOTTOMRIGHT", -4, 4)
   -- fold: dark strip between the pages
   local spine = F:CreateTexture(nil, "BORDER")
-  spine:SetColorTexture(0, 0, 0, 0.85)
+  spine:SetColorTexture(C(Look.COLOR.fold))
   spine:SetPoint("TOPLEFT", 394, -40)
   spine:SetPoint("BOTTOMLEFT", 394, 10)
   spine:SetWidth(12)
 
   local title = Look.Text(F, "title", 26, Look.BONE)
   title:SetPoint("TOPLEFT", 22, -9)
-  title:SetText("DeathNote")
+  title:SetText(L.BOOK_TITLE)
   title:SetShadowOffset(1, -1)
-  title:SetShadowColor(0, 0, 0, 1)
+  title:SetShadowColor(C(Look.COLOR.titleShadow))
 
   -- close, cog (house rules), "?" (manual)
   local close = HeadButton("×", 22)
@@ -4496,7 +4498,7 @@ local function Build()
   gear:SetPoint("RIGHT", close, "LEFT", -6, 0)
   local gt = gear:CreateTexture(nil, "ARTWORK")
   gt:SetAllPoints()
-  Look.Tex(gt, "Interface\\Buttons\\UI-OptionsButton", 0.8, 0.75, 0.65, 1)
+  Look.Skin(gt, "gear")
   gt:SetDesaturated(true)
   gt:SetVertexColor(C(Look.BONE))
   gear:SetScript("OnClick", function()
@@ -4534,10 +4536,10 @@ local function Build()
     t.id, t.label = f.id, wide and L.TAB_GUILD_FRIENDS or L[f.key]
     local tb = t:CreateTexture(nil, "BACKGROUND")
     tb:SetAllPoints()
-    tb:SetColorTexture(1, 1, 1, 0.05)
+    tb:SetColorTexture(C(Look.COLOR.tabFill))
     local hl = t:CreateTexture(nil, "HIGHLIGHT")
     hl:SetAllPoints()
-    hl:SetColorTexture(1, 1, 1, 0.06)
+    hl:SetColorTexture(C(Look.COLOR.tabHi))
     t.mark = t:CreateTexture(nil, "ARTWORK")
     t.mark:SetColorTexture(C(Look.RED, 1))
     t.mark:SetHeight(2)
@@ -4555,7 +4557,7 @@ local function Build()
   RP = CreateFrame("Frame", nil, F)
   RP:SetSize(PAGE_W, PAGE_H)
   RP:SetPoint("TOPLEFT", 404, -44)
-  local rbg = Tex(RP, "BACKGROUND", Look.TEX.page)
+  local rbg = Tex(RP, "BACKGROUND", "page")
   rbg:SetAllPoints()
   UX.BuildPoster()
 
@@ -4785,7 +4787,7 @@ function UX.BuildMinimap()
   local icon = mm:CreateTexture(nil, "ARTWORK")
   icon:SetSize(20, 20)
   icon:SetPoint("TOPLEFT", 6, -5)
-  Look.Tex(icon, Look.TEX.icon, 0.5, 0.05, 0.05, 1)
+  Look.Tex(icon, Look.TEX.icon, Look.FB("icon"))
   mm.icon = icon
   local border = mm:CreateTexture(nil, "OVERLAY")
   border:SetSize(53, 53)
