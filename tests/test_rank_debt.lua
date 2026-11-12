@@ -96,6 +96,18 @@ test("Ledger.Clear reopens a debt the book never saw as revenge: rank 1 at once"
   eq(ranks(), "2 1 nil", "Anna 0 : 1 is open again")
 end)
 
+test("The cached debt order follows a standing change without a book change (Ledger.Clear flips the order)", function()
+  ns = M.Load()
+  M.units.player.level = 40
+  iKill("Anna", "Ast", 3)
+  killsMe("Anna", "Ast", 3); killsMe("Grimm", "Bart", 1)
+  eq(ranks(), "nil 1 nil", "Anna 3 : 3")
+  ns.Store.Ranked("wanted", "debt")
+  ns.Ledger.Clear()
+  eq(ranks(), "1 2 nil", "Anna 0 : 3 leads Grimm 0 : 1")
+  eq(ns.Store.Ranked("wanted", "debt")[1].key, "Anna-Ast")
+end)
+
 test("Rap sheet off: the rank of 1.2.x, settled or not; on again: the debt order", function()
   ns = M.Load()
   M.units.player.level = 40
