@@ -272,9 +272,12 @@ local function Build()
     self:StopMovingOrSizing()
     if self.SetUserPlaced then pcall(self.SetUserPlaced, self, false) end
   end)
-  -- Esc (UISpecialFrames) and the cross both hide it: that is "leave it as it is"; a hide for a fight or by Go is not
-  frame:SetScript("OnHide", function()
+  -- Esc (UISpecialFrames) and the cross both hide it: that is "leave it as it is"; a hide for a fight or by Go is not.
+  -- 1.3.0: neither is a hide of the whole interface (Alt+Z, a cinematic): then UIParent is hidden, and the window
+  -- itself still counts as shown (IsShown is its own flag); it comes back with the interface
+  frame:SetScript("OnHide", function(self)
     if state.combatHidden or state.going then return end
+    if self:IsShown() or (UIParent and UIParent.IsShown and not UIParent:IsShown()) then return end
     Asked()
   end)
   tinsert(UISpecialFrames, "DeathNoteStart")
