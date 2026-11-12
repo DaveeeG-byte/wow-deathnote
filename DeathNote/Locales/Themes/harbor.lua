@@ -586,7 +586,7 @@ Locale.RegisterWords("harbor", "csCZ", function(T)
 end)
 
 Locale.RegisterWords("harbor", "huHU", function(T)
-  T.BOOK_TITLE          = "Kalózkönyv"
+  T.BOOK_TITLE          = "Kalóz"
   T.TAB_WANTED          = "Vérdíjak"
   T.TAB_DEATHLOG        = "Hajónapló"
   T.TAB_GUILD           = "Legénység"
