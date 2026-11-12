@@ -1,6 +1,6 @@
--- 1.2.1: Upgrade-Kette mit der Fixture: 1.0.1-Datei -> 1.1.0 -> 1.2.0 -> 1.2.1 -> 1.2.0 -> 1.2.1, nichts geht verloren,
--- die neuen Felder (Kopfgeld, gerächt, Rache von Hand) ueberstehen den Rueckweg. Aufruf: luajit beleg_b06_... <Projektkopie>
--- Die Fixture wird nur geladen, nie zitiert.
+-- 1.2.1: upgrade chain with the fixture: 1.0.1 file -> 1.1.0 -> 1.2.0 -> 1.2.1 -> 1.2.0 -> 1.2.1, nothing is lost,
+-- the new fields (bounty, avenged, hand revenge) survive the way back. Usage: luajit beleg_b06_... <project copy>
+-- The fixture is only loaded, never quoted.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf.lua")
 local M = H.M
 local G = "Die Testgilde"
@@ -33,7 +33,7 @@ H.lauf("Kette 1.0.1 -> 1.1.0 -> 1.2.0 -> 1.2.1 -> 1.2.0 -> 1.2.1", function()
   c = stufe(V120, FILES120, db, "1.2.0")
   c.ns.Guild.Release("Ziel-Eins", { to = "guild", why = "Grund" }); W.run(10)
   db = H.raus(W, c)
-  -- 1.2.1: alles Neue benutzen
+  -- 1.2.1: use everything new
   c = stufe(nil, nil, db, "1.2.1")
   local ek
   for k, e in pairs(c.ns.Store.All()) do if (e.kills or 0) > 0 then ek = k; break end end
@@ -45,7 +45,7 @@ H.lauf("Kette 1.0.1 -> 1.1.0 -> 1.2.0 -> 1.2.1 -> 1.2.0 -> 1.2.1", function()
   local mitte = H.tiefe_kopie(H.raus(W, c))
   H.erwartet("1.2.1 schreibt die neuen Felder", mitte.bounty and mitte.bounty[ek] and mitte.avenged and mitte.avenged[ek]
     and mitte.enemies[ek].revengeHand == 1 and mitte.guild.lists[G].bounty and mitte.guild.lists[G].bounty["Zeuge-Ziel"])
-  -- zurueck auf 1.2.0: spielt, stuerzt nicht, laesst alles Neue stehen
+  -- back to 1.2.0: plays, does not crash, leaves everything new in place
   c = stufe(V120, FILES120, H.tiefe_kopie(mitte), "1.2.0")
   c.ns.Store.AddRevenge(ek)
   H.tod(c, "Neu", "Wolf"); W.run(10)
@@ -55,7 +55,7 @@ H.lauf("Kette 1.0.1 -> 1.1.0 -> 1.2.0 -> 1.2.1 -> 1.2.0 -> 1.2.1", function()
   H.erwartet("1.2.0 laesst Kopfgeld, gerächt und Merker stehen", db.bounty and db.bounty[ek] and db.bounty[ek]["Anton Wurst"]
     and db.bounty[ek]["Anton Wurst"].g == 321 and db.avenged and db.avenged[ek] and db.enemies[ek].revengeHand == 1
     and db.guild.lists[G].bounty and db.guild.lists[G].bounty["Zeuge-Ziel"])
-  -- wieder hoch
+  -- up again
   c = stufe(nil, nil, db, "1.2.1")
   local e = c.ns.Store.Get(ek)
   H.erwartet("wieder 1.2.1: Rache 2 mehr als vorher, davon 1 abziehbar", e.revenge == (tonumber(fx.DeathNoteDB.enemies[ek]

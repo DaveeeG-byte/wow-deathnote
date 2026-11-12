@@ -1,5 +1,5 @@
--- Fund 7: "30 Tage ohne Tod" wird beim Login sofort als erledigt vermerkt (m.clean30), die Zeile kommt aber erst
--- 12 Sekunden spaeter. Wer in diesen 12 Sekunden /reload macht oder ausloggt, sieht den Meilenstein nie.
+-- Finding 7: "30 days without death" is marked done at login right away (m.clean30), but the line comes only
+-- 12 seconds later. Whoever does /reload or logs out in those 12 seconds never sees the milestone.
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. package.path
 local H = require("_kopf_hu")
@@ -8,7 +8,7 @@ local db = {}
 local ns = H.welt("deDE", { db = db, epoch = T0 })
 H.kill(ns, "Grimm", "Bart"); H.away()
 local T = H.SRC.deDE
--- 31 Tage spaeter: Login, nach 5 Sekunden /reload
+-- 31 days later: login, /reload after 5 seconds
 ns = H.welt("deDE", { db = db, epoch = T0 + 31 * 86400 })
 H.vor(5)
 local gezeigt = ns.Humor.said == T.MILESTONE.clean30

@@ -1,11 +1,11 @@
--- Sprache und Formate technisch.
--- (1) Datumsformat-Zeilen einer Uebersetzung gehen ungeprueft an date(): nur pcall schuetzt. Ein Formatzeichen, das die
---     C-Bibliothek des Clients nicht kennt, ist dort kein Lua-Fehler (unter Windows bricht strftime bei ungueltigen
---     Zeichen hart ab oder liefert Leeres). Erwartet: der Code reicht nur gepruefte Zeichen weiter.
--- (2) Gegenproben gruen: Mehrzahl mit 0, negativ, nil, Secret, sehr gross, NaN, unendlich in allen Regeln;
---     Platzhalter-Werte mit %, |, { }; fehlende Werte; Tausendertrenner aller 21 Sprachen.
--- (3) Die Datumsformate der 21 Sprachdateien des Stands benutzen nur %d %m %y %Y %H %M (Gegenprobe).
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen; Kopf: tests/beleg_helfer.lua
+-- Language and formats, technically.
+-- (1) Date format strings of a translation go to date() unchecked: only pcall protects. A format character the
+--     client's C library does not know is no Lua error there (on Windows strftime aborts hard on invalid
+--     characters or returns empty). Expected: the code only passes on checked characters.
+-- (2) Counter-checks green: plural with 0, negative, nil, secret, very large, NaN, infinity in all rules;
+--     placeholder values with %, |, { }; missing values; thousands separators of all 21 languages.
+-- (3) The date formats of the 21 locale files of this version only use %d %m %y %Y %H %M (counter-check).
+-- (fix-2) Proof test of the final hunt, taken into the suite; head: tests/beleg_helfer.lua
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -71,7 +71,7 @@ H.lauf("(3) Formatzeilen und Tausendertrenner der 21 Sprachdateien", function()
     end
     local sep = t.THOUSANDS_SEP
     if sep then
-      -- dieselbe Rechnung wie Thousands() in UI.lua
+      -- the same computation as Thousands() in UI.lua
       local s = "1234567"
       local out = s:reverse():gsub("(%d%d%d)", "%1" .. sep:reverse():gsub("%%", "%%%%")):reverse()
       if out:sub(1, #sep) == sep then out = out:sub(#sep + 1) end

@@ -1,8 +1,8 @@
--- Gegenprobe Fund 17 und Dekoder (erwartet gruen): Zufallsbytes durch CleanReason, EncodeHunt, Decode.
--- Ergebnis immer gueltiges UTF-8 ohne Steuerzeichen und "|", hoechstens 60 Zeichen und 120 Bytes, Nachricht
--- hoechstens 255 Bytes; Decode wirft nie; CutUTF8 schneidet nie mitten im Zeichen (auch Kyrillisch, CJK, Emoji).
--- Aufruf: luajit beleg_f16_grund_und_dekoder_zufall.lua <Projektkopie> [Runden=60000] [Saat=7]
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen; Kopf: tests/beleg_helfer.lua
+-- Counter-check finding 17 and decoder (expected green): random bytes through CleanReason, EncodeHunt, Decode.
+-- Result always valid UTF-8 without control characters and "|", at most 60 characters and 120 bytes, message
+-- at most 255 bytes; Decode never throws; CutUTF8 never cuts inside a character (Cyrillic, CJK, emoji too).
+-- Usage: luajit beleg_f16_grund_und_dekoder_zufall.lua <project copy> [rounds=60000] [seed=7]
+-- (fix-2) Proof test of the final hunt, taken into the suite; head: tests/beleg_helfer.lua
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -51,7 +51,7 @@ H.lauf("Zufall", function()
         elseif m.why ~= P.CleanReason(m.why) or not validUTF8(m.why) then note("Grund nach dem Dekodieren nicht sauber", m.why) end
       end
     end
-    -- Dekoder mit Muell und mit verstuemmelten echten Nachrichten
+    -- decoder with garbage and with mangled real messages
     local junk = "1\t" .. ({ "K", "R", "H", "S", "M", "X", "J", "A", "E", "Q" })[R(10)] .. "\t" .. raw:gsub("\t", R() < 0.5 and "\t" or "")
     local okd = pcall(P.Decode, junk, time(), {})
     if not okd then note("Decode wirft", junk) end

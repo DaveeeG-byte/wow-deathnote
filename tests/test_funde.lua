@@ -1,4 +1,4 @@
--- Fund-Belege der Logik-Jagd (B1..B16 unveraendert uebernommen), dazu B11/B6/B8/B17-B19 und Zusaetze.
+-- Finding proofs of the logic hunt (B1..B16 taken over unchanged), plus B11/B6/B8/B17-B19 and extras.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local M = require("mock_wow")
 local test, eq, ok, no = M.test, M.eq, M.ok, M.no
@@ -9,7 +9,7 @@ end
 
 test("B1 Fehler im Leseversuch blockiert alle spaeteren Tode (pending bleibt haengen)", function()
   local ns = M.Load()
-  -- ein Recap-Ereignis, dessen Feldzugriff wirft (steht fuer jeden unerwarteten Fehler im Timer)
+  -- a recap event whose field access throws (stands for any unexpected error in the timer)
   M.recap = { id = 1, events = { setmetatable({}, { __index = function() error("unerwartet") end }) } }
   M.FireEvent("PLAYER_DEAD"); M.Advance(6)
   M.errors = {}
@@ -32,7 +32,7 @@ end)
 
 test("B3 Taeter nur per GUID+Vorname bekannt (nie gesehen): spaetere Sichtung mit Nachnamen wird nicht erkannt", function()
   local ns = M.Load()
-  M.units.fern = { exists = true, isPlayer = true, name = "Grimm", guid = "Player-93-G1", class = "ROGUE", classLoc = "Schurke" } -- nur fuer GetPlayerInfoByGUID
+  M.units.fern = { exists = true, isPlayer = true, name = "Grimm", guid = "Player-93-G1", class = "ROGUE", classLoc = "Schurke" } -- only for GetPlayerInfoByGUID
   recap(5, "Player-93-G1", nil)
   die()
   local d = M.Fired("DEATH_RECORDED")[1]; ok(d and d[3], "Kill gebucht:")
@@ -95,7 +95,7 @@ test("B8 Hallo eines zweiten Mitglieds innerhalb 60 s wird nicht beantwortet", f
   M.Advance(15)
   local first = #M.addonSent; ok(first >= 1, "Antwort an Anna:")
   M.addonSent = {}
-  M.Advance(20) -- Berta loggt 20 s spaeter ein, hat Annas Antworten nicht gehoert
+  M.Advance(20) -- Berta logs in 20 s later and did not hear Anna's answers
   M.FireEvent("CHAT_MSG_ADDON", "DeathNote", P.EncodeHello(M.epoch + M.now - 3 * 86400, "1.0.0"), "GUILD", "Berta-Forever")
   M.Advance(15)
   ok(#M.addonSent >= 1, "Antwort an Berta (gesendet " .. #M.addonSent .. "):")
@@ -155,7 +155,7 @@ test("B13 Rache ueber 'X stirbt.' geht verloren, wenn ich ihn laenger als 15 s i
   local ns = M.Load()
   local k = ns.Store.AddManual("Grimm", "Blut")
   M.AddEnemy("target", { name = "Grimm", surname = "Blut" }); M.FireEvent("PLAYER_TARGET_CHANGED")
-  M.Advance(40)  -- langer Kampf, Ziel unveraendert
+  M.Advance(40)  -- long fight, target unchanged
   M.FireEvent("CHAT_MSG_COMBAT_HOSTILE_DEATH", "Grimm Blut stirbt.")
   eq(ns.Store.Get(k).revenge, 1, "Rache:")
 end)
@@ -192,7 +192,7 @@ end)
 
 
 ---------------------------------------------------------------------------
--- Zusaetze zu den Funden (Testluecken laut Funde-Datei)
+-- Extras to the findings (test gaps according to the findings file)
 ---------------------------------------------------------------------------
 test("B1b Haengende Auswertung (Timer kam nie) wird nach 10 s verworfen", function()
   local ns = M.Load()
@@ -278,8 +278,8 @@ test("B8b Mehrere Hallos kurz hintereinander: eine Antwort je 10 s, keine geht v
     M.Advance(3)
   end
   M.Advance(30)
-  -- fix-2: jede Antwort endet mit einem Z (Momentaufnahme der Freigaben); gezaehlt werden die Taten
-  -- (1.2.1: und mit einem Y, der Momentaufnahme der Kopfgelder)
+  -- fix-2: every answer ends with a Z (snapshot of the calls); the deeds are counted
+  -- (1.2.1: and with a Y, the snapshot of the bounties)
   local n = 0
   for _, m in ipairs(M.addonSent) do if not m.text:match("^1\t[ZY]\t") then n = n + 1 end end
   ok(n >= 2 and n <= 3, "Antworten gebuendelt: " .. n)

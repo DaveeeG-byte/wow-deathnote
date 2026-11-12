@@ -1,11 +1,11 @@
--- Gegenprobe Fund 6 (Tempo-Deckel fuer Freigaben) und Fund 2 (Erlegt).
--- (1) Der Live-Deckel (5 neue Freigaben je Absender in 10 Minuten) gilt nicht im "Antwortfenster" von 60 s nach
---     einem Hallo auf GUILD. Das Fenster oeffnet JEDES Hallo, auch das des Absenders selbst: Hallo, zehn Freigaben,
---     zehn Abblasen, Hallo, zehn neue ... So laufen wieder Dutzende Ziele in einer Minute ueber die Liste aller,
---     jedes loest in Sichtweite den Alarm aus.
--- (2) Erlegt: ein Absender kann ohne jede Toetung dauerhaft 3 Fenster je 10 Minuten bei allen ausloesen und den
---     Zaehler eines Ziels in einigen Stunden auf den Deckel treiben (Pruefung, was der Deckel wirklich haelt).
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen; Kopf: tests/beleg_helfer.lua
+-- Counter-check finding 6 (rate cap for calls) and finding 2 (taken down).
+-- (1) The live cap (5 new calls per sender in 10 minutes) does not apply in the "answer window" of 60 s after
+--     a hello on GUILD. EVERY hello opens the window, the sender's own too: hello, ten calls,
+--     ten call-offs, hello, ten new ones ... So dozens of targets run over everyone's list in a minute again,
+--     each alerting in sight.
+-- (2) Taken down: a sender can trigger 3 windows per 10 minutes at everyone permanently without any kill and
+--     drive a target's counter to the cap in a few hours (checks what the cap really holds).
+-- (fix-2) Proof test of the final hunt, taken into the suite; head: tests/beleg_helfer.lua
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -15,7 +15,7 @@ H.lauf("(1) eigenes Hallo oeffnet das Antwortfenster", function()
   local W = H.welt({ "GUILD_ENEMY_SPOTTED", "HUNT_NEW", "GUILD_UPDATED" })
   local z = W.client("Zeuge", "Still", G)
   local b = W.client("Berta", "Senf", G)
-  z.login(); b.login(); W.run(120)        -- das Fenster nach den Login-Hallos ist vorbei
+  z.login(); b.login(); W.run(120)        -- the window after the login hellos is over
   local P = z.ns.Guild.Proto
   local from = "Berta-Forever"
   local gesehen, max = {}, 0
@@ -24,7 +24,7 @@ H.lauf("(1) eigenes Hallo oeffnet das Antwortfenster", function()
     for _, r in ipairs(z.ns.Guild.Hunts("guild")) do n = n + 1; gesehen[r.key] = true end
     if n > max then max = n end
   end
-  -- Gegenprobe ohne Hallo: der Live-Deckel haelt
+  -- counter-check without hello: the live cap holds
   for i = 1, 10 do
     H.gilde(z, P.EncodeHunt({ key = "Vor" .. string.char(64 + i) .. "-Lamm", t = time(), by = "Berta Senf", why = "" }), from)
   end
@@ -33,7 +33,7 @@ H.lauf("(1) eigenes Hallo oeffnet das Antwortfenster", function()
   for _ in pairs(gesehen) do ohne = ohne + 1 end
   H.erwartet("Gegenprobe: ohne Hallo nimmt der Zeuge hoechstens 5 neue Freigaben live", ohne <= 5, ohne)
   for i = 1, 10 do H.gilde(z, P.EncodeCallOff("Vor" .. string.char(64 + i) .. "-Lamm", "Berta Senf"), from) end
-  -- jetzt mit eigenem Hallo vor jedem Schub, 7 Schuebe in 35 Sekunden
+  -- now with an own hello before each burst, 7 bursts in 35 seconds
   gesehen = {}
   for runde = 1, 7 do
     H.gilde(z, P.EncodeHello(0, "1.2.0"), from)
@@ -63,7 +63,7 @@ H.lauf("(2) Erlegt ohne Toetung: was haelt der Deckel", function()
   z.ns.Guild.Release("Opfer-Lamm", { to = "guild" })
   W.run(5)
   local from = "Berta-Forever"
-  -- eine Stunde lang, alle 20 Sekunden eine erfundene Toetung mit frischer Zeit
+  -- for one hour, every 20 seconds a made-up kill with a fresh time
   for _ = 1, 180 do
     H.gilde(z, P.EncodeBagged("Opfer-Lamm", "Berta Senf", time()), from)
     W.run(20)

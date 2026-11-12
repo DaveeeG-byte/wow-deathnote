@@ -1,8 +1,8 @@
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen (Aufruf aus der Projektwurzel: luajit <datei> .)
--- Kampf an den Stellen, die seit dem Fixer neu sind (Gegenprobe, erwartet gruen): Alarm mit Stufe und Warnzeile
--- fuer ein Ziel der Abschussliste, Meldungen "erlegt" und "neue Ziele", Ausblenden, Alle abblasen, beide
--- Leeren-Knoepfe, Blatt Gilde mit allen Schaltern und Stufen, Sprachwahl in der Hausordnung, Kampfbeginn und
--- Kampfende bei offenem Popup. Der strenge UI-Mock meldet jede geschuetzte Aktion im Kampf als Verstoss.
+-- (fix-2) Proof test of the final hunt, taken into the suite (run from the project root: luajit <file> .)
+-- Combat at the spots that are new since the fixer (counter check, expected green): alarm with level and warning line
+-- for a hit list target, "taken down" and "new targets" messages, hide, call off all, both
+-- empty buttons, guild sheet with all switches and steppers, language choice in the house rules, combat start and
+-- combat end with the popup open. The strict UI mock reports every protected action in combat as a violation.
 local DIR = (arg[1] or "."):gsub("/+$", "")
 package.path = DIR .. "/tests/ui/?.lua;" .. DIR .. "/tests/?.lua;" .. package.path
 arg[0] = DIR .. "/tests/ui/beleg.lua"
@@ -40,7 +40,7 @@ AM.FireEvent("UPDATE_MOUSEOVER_UNIT"); tick()
 local popup = rawget(G, "DeathNoteAlert")
 erwartet("Alarm im Kampf fuer ein Ziel der Abschussliste, Stufe mit Abstand (fix-3)", popup and popup:IsShown()
   and (popup.levelText or ""):find("(+20)", 1, true) ~= nil and (popup.line._text or ""):find("(+20)", 1, true) ~= nil)
-kampf(false); kampf(true)                      -- Kampfende und neuer Kampf bei offenem Popup
+kampf(false); kampf(true)                      -- combat end and new combat with the popup open
 ns:Fire("HUNT_BAGGED", "Ziel-Eins", "Kollege Lang", _G.time(), "guild"); tick()
 ns:Fire("HUNT_NEW", 3, "Ziel-Zwei", "Kollege Lang", "guild"); tick()
 ns:Fire("TOGGLE_UI"); tick()
@@ -58,7 +58,7 @@ for _, f in ipairs(BM.frames) do
   local tx = type(fs) == "table" and fs._text
   if (tx == ns.L.SHEET_GUILD or tx == ns.L.SHEET_BOOK) and f._scripts.OnClick then f._scripts.OnClick(f, "LeftButton"); tick() end
 end
--- jeden sichtbaren Haken und jeden Pfeil der Hausordnung im Kampf bedienen
+-- use every visible checkbox and every arrow of the house rules in combat
 local n = 0
 for _, f in ipairs(BM.frames) do
   if (f._kind == "CheckButton" or (f._kind == "Button" and f.tri)) and f:IsVisible() and f._scripts.OnClick then

@@ -1,26 +1,26 @@
--- Fund 1: Zaehler und Merker in db.humor laufen nur mit, solange Humor aktiv ist. Nach einer Phase in einer
--- anderen Sprache (ebenso: zurueck auf 1.1.0 und wieder hoch, 1.1.0 laesst db.humor stehen) sind letzter Tod,
--- Tode gesamt und "erste Rache" veraltet: falsches "30 Tage ohne Tod" am Tag nach einem Tod, "erste Rache"
--- bei der zweiten, 100 Tode zaehlt zu wenig. Das Journal (db.deaths) und e.revenge wissen es besser.
+-- Finding 1: counters and markers in db.humor only keep up while Humor is active. After a phase in another
+-- language (likewise: back to 1.1.0 and up again, 1.1.0 leaves db.humor alone) last death,
+-- total deaths and "first revenge" are stale: a wrong "30 days without death" the day after a death, "first revenge"
+-- on the second one, 100 deaths counts too few. The journal (db.deaths) and e.revenge know better.
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. package.path
 local H = require("_kopf_hu")
 local T0 = 1700000000
 local db = {}
--- Sitzung 1, Deutsch: 7 Tode
+-- session 1, German: 7 deaths
 local ns = H.welt("deDE", { db = db, epoch = T0 })
 local key
-for _ = 1, 4 do H.kill(ns, "Ober", "Schurke"); H.away() end       -- Rang 1 bleibt ein anderer
+for _ = 1, 4 do H.kill(ns, "Ober", "Schurke"); H.away() end       -- rank 1 stays someone else
 for _ = 1, 3 do key = H.kill(ns, "Grimm", "Bart"); H.away() end
 H.check("Vorbedingung: Merker angelegt, 7 Tode", db.humor and db.humor.deaths == 7, db.humor and db.humor.deaths)
--- Sitzung 2, 40 Tage spaeter, Finnisch: 5 Tode, eine Rache
+-- session 2, 40 days later, Finnish: 5 deaths, one revenge
 db.settings.lang = "fiFI"
 ns = H.welt("fiFI", { db = db, epoch = T0 + 40 * 86400 })
 for _ = 1, 5 do H.kill(ns, "Ober", "Schurke"); H.away() end
 ns.Store.AddRevenge(key); H.away()
 local newest = db.deaths[1].t
 H.check("Vorbedingung: Journal hat 12 Tode, Rache steht im Eintrag", #db.deaths == 12 and ns.Store.Get(key).revenge == 1)
--- Sitzung 3, einen Tag spaeter, wieder Deutsch
+-- session 3, one day later, German again
 db.settings.lang = "deDE"
 ns = H.welt("deDE", { db = db, epoch = T0 + 41 * 86400 })
 local T = H.SRC.deDE

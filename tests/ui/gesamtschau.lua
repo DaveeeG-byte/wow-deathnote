@@ -1,6 +1,6 @@
--- Gesamtschau (Uebersicht, Intuition, Design): je Fund mit Verhaltensaenderung ein Belegtest, die
--- Szenarien a bis j als Durchlaeufe, Waechter je Einheitlichkeitsregel und ein Lauf mit alter Logik.
--- Aufruf: luajit tests/ui/gesamtschau.lua [Quellordner]
+-- Overview (overview, intuition, design): one proof test per finding that changes behaviour, the
+-- scenarios a to j as runs, one guard per consistency rule and one run with old logic.
+-- Usage: luajit tests/ui/gesamtschau.lua [source folder]
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. package.path
 local root = here .. "/../.."
@@ -20,7 +20,7 @@ local function check(name, cond, detail)
 end
 
 local NOW = 1800000000
--- eine frische Welt: Mock, Stub, B's Dateien; opts.old = Logik ohne die Vertragsfunktionen der Gesamtschau
+-- a fresh world: mock, stub, the UI files; opts.old = logic without the contract functions of the overview
 local function world(opts)
   opts = opts or {}
   package.loaded.mock, package.loaded.stub = nil, nil
@@ -74,7 +74,7 @@ local function enemy(i, x)
 end
 
 ------------------------------------------------------------------------
--- Gliederung: vier Reiter, "?" und Zahnrad
+-- Structure: four tabs, "?" and gear
 ------------------------------------------------------------------------
 local W = world()
 local ns, M, G = W.ns, W.M, W.G
@@ -84,7 +84,7 @@ local labels = {}
 for _, t in ipairs(F.tabs) do labels[#labels + 1] = t.label end
 check("IA vier Reiter: Gesucht, Zu klären, Todesjournal, Gilde", table.concat(labels, "|") == "Gesucht|Zu klären|Todesjournal|Gilde", table.concat(labels, "|"))
 check("IA kein Reiter Verdächtig/Begnadigt", not W.text("Verdächtig") and not W.text("Begnadigt  "))
--- Szenario a / G26: der leere erste Reiter sagt, was das Buch tut
+-- Scenario a / G26: the empty first tab says what the book does
 check("a/G26 Leerzustand erklaert das Buch", W.text("Wer dich in der offenen Welt tötet, steht danach hier. Von selbst.", true) ~= nil)
 check("a Reiter ohne Zahl, wenn leer", F.tabs[1].text._text == "Gesucht" and F.tabs[2].text._text == "Zu klären")
 check("G4 Knopf ? links neben dem Zahnrad", F.help and F.help.text._text == "?" and F.help._points[1][3] == "LEFT")
@@ -146,7 +146,7 @@ check("G13 Menue: Rache vermerken, Begnadigen, Streichen", W.text("Rache vermerk
 G.DeathNoteMenu.blocker._scripts.OnClick(G.DeathNoteMenu.blocker)
 
 ------------------------------------------------------------------------
--- Begnadigte am Ende von Gesucht, abschaltbar (G28)
+-- Pardoned at the end of Wanted, can be switched off (G28)
 ------------------------------------------------------------------------
 local par = W.put(enemy(9, { name = "Gnaden", surname = "Brot", key = "Gnaden-Brot", status = "pardoned", kills = 9 }))
 W.step("Begnadigte am Ende", function() ns:Fire("ENEMY_UPDATED", par.key); W.settle(); W.tab("wanted") end)
@@ -166,7 +166,7 @@ ns.Store.Setting("ui.showPardoned", true); W.settle()
 sortB._scripts.OnLeave(sortB)
 
 ------------------------------------------------------------------------
--- Zu klaeren (G2): Faelle ohne Taeter und echte Verdachtsfaelle, rote Zahl
+-- Unsolved (G2): cases without a killer and real suspicion cases, red count
 ------------------------------------------------------------------------
 local sus = W.put(enemy(5, { name = "Vage", surname = "Sicht", key = "Vage-Sicht", status = "suspect", kills = 0, suspected = 1,
   deaths = { { t = NOW - 50, zone = "Brachland", role = "suspect", sure = false, source = "suspect" } } }))
@@ -178,7 +178,7 @@ ns.db.deaths = {
 W.step("Zu klaeren zaehlt", function() ns:Fire("DEATH_RECORDED", ns.db.deaths[1], nil); W.settle() end)
 check("G2 Reiter Zu klären mit roter Zahl 2", F.tabs[2].text._text:find("Zu klären  |cff", 1, true) == 1 and F.tabs[2].text._text:find("2|r$") ~= nil, F.tabs[2].text._text)
 check("G12 Meldung Täter unklar anklickbar", G.DeathNoteBanner._mouse == true and W.text("Klick: unter Zu klären den Täter festlegen", true))
--- Szenario c: Meldung -> Fall -> Kandidat
+-- scenario c: notice -> case -> candidate
 W.step("c Klick auf die Meldung oeffnet den Fall", function() G.DeathNoteBanner._scripts.OnMouseUp(G.DeathNoteBanner, "LeftButton"); W.settle() end)
 check("c Reiter Zu klären aktiv, Fall aufgeschlagen", F.tabs[2].mark:IsShown() and W.text("U N K L A R", true) and W.text("Todesfall", true))
 check("G30 Karteikarte: Klebestreifen statt Reisszwecke", W.find(function(f) return f._kind == "Texture" and f._tex and f._tex:find("pin.tga") and f:IsVisible() end) == nil)
@@ -198,7 +198,7 @@ W.step("Verdacht verwerfen", function() W.click(W.btn("Verwerfen")) end)
 check("IA leer: Nichts zu klären. (ruhig, ohne Zahl)", W.text("Nichts zu klären.", true) and F.tabs[2].text._text == "Zu klären")
 
 ------------------------------------------------------------------------
--- Todesjournal (G10, G11, G19)
+-- death journal (G10, G11, G19)
 ------------------------------------------------------------------------
 yoron.deaths[1].t = NOW - 20; yoron.deaths[1].others = { kug.key, "Weg-Weg" }
 W.step("Journal", function() W.tab("journal") end)
@@ -215,7 +215,7 @@ check("G19 Plakat Brenendan", F.tabs[1].mark:IsShown() and W.text("Brenendan For
 check("G19/G30 keine Aktennummer", not M.texts["A K T E   N r.  1"])
 
 ------------------------------------------------------------------------
--- Szenario b + G12: Tod -> Meldung -> Klick schlaegt das Plakat auf; Rache-Meldung ist nicht anklickbar
+-- Scenario b + G12: death -> message -> click opens the poster; the revenge message is not clickable
 ------------------------------------------------------------------------
 F:Hide()
 local neu = W.put(enemy(7, { name = "Neu", surname = "Ling", key = "Neu-Ling", kills = 1 }))
@@ -232,7 +232,7 @@ check("G12 bleibt stehen", B:IsShown())
 M.FinishAnims()
 
 ------------------------------------------------------------------------
--- G15 + G32 + Szenario j: Minimap
+-- G15 + G32 + scenario j: minimap
 ------------------------------------------------------------------------
 local mm = G.DeathNoteMinimapButton
 W.step("G32 Tooltip", function() G.GameTooltip._lines = {}; mm._scripts.OnEnter(mm) end)
@@ -248,13 +248,13 @@ W.step("j kein Alarm, wenn aus", function() ns:Fire("ENEMY_SPOTTED", yac.key, ni
 check("j kein Popup", not (rawget(G, "DeathNoteAlert") and G.DeathNoteAlert:IsShown()))
 W.step("j Compartment Mittelklick: wieder an", function() G.DeathNote_OnCompartmentClick("DeathNote", "MiddleButton") end)
 check("j wieder an", ns.db.settings.alert.enabled == true and mm.icon._alpha == 1)
--- Szenario d + G20: Taeter taucht auf
+-- Scenario d + G20: killer shows up
 W.step("d Taeter taucht auf", function() ns:Fire("ENEMY_SPOTTED", yac.key, nil, "nameplate") end)
 local pop = G.DeathNoteAlert
 check("d Popup mit Zahl und Beteiligung", pop:IsShown() and pop.line._text:find("^hat dich 2× getötet, war 1× beteiligt") ~= nil, pop.line._text)
 check("G20 Kopf in hellem Rot auf Schwarz", pop.title._tc[1] == ns.Look.RED_ON_BLACK[1] and G.DeathNoteBanner.kicker._tc[1] == ns.Look.RED_ON_BLACK[1])
 ns.Alert.Dismiss(); M.FinishAnims(); M.Advance(1)
--- G5: Alarm-Schwelle zaehlt Beteiligungen
+-- G5: alarm threshold counts assists
 ns.Store.Setting("alert.minKills", 3); M.Advance(300)
 W.step("G5 Schwelle 3: Yoron (1 + 2) meldet", function() ns:Fire("ENEMY_SPOTTED", yoron.key, nil, "nameplate") end)
 check("G5 Gewicht kills + assists", pop:IsShown() and pop.name._text == "Yoron Pvp")
@@ -264,7 +264,7 @@ check("G5 unter der Schwelle kein Alarm", not pop:IsShown())
 ns.Store.Setting("alert.minKills", 1)
 
 ------------------------------------------------------------------------
--- Szenario e: eintragen, Notiz, begnadigen, Rache, streichen
+-- scenario e: add, note, pardon, revenge, remove
 ------------------------------------------------------------------------
 W.step("e Eintragen ueber das Suchfeld", function()
   local sb = G.DeathNoteSearch
@@ -280,7 +280,7 @@ W.step("e Streichen", function() UI.ConfirmDelete(zk); local p = M.popups[#M.pop
 check("e gestrichen", ns.db.enemies[zk] == nil)
 
 ------------------------------------------------------------------------
--- Szenario f + G1 + G16: Gilde ehrlich
+-- scenario f + G1 + G16: guild honest
 ------------------------------------------------------------------------
 local GG = ns.MakeGuild(3, { noMembers = true })
 GG.list[1].ownOnly = true; GG.list[1].victims = { Davee = 1 }; GG.list[1].lastVictim = "Davee"
@@ -317,15 +317,15 @@ W.step("G17 Blatt Alarm", function() W.click(W.find(function(f) return f.page ==
 check("G17 Meldung nach einem PvP-Tod beim Alarm", W.find(function(f) return f._kind == "CheckButton" and f.opt and f.opt.path == "deathMessage" and f:IsVisible() end))
 check("G29 Abschnittswoerter als gesperrte Etiketten", W.text("T O N", true) and W.text("S C H W E L L E", true))
 check("G29 Stepper ohne schwarze Kaestchen-Knoepfe", W.find(function(f) return f._bd and f.text and (f.text._text == "+" or f.text._text == "-" or f.text._text == "<") end) == nil)
--- Szenario h: leiser/anderer Ton ueber die Tonwahl
+-- Scenario h: quieter/other sound through the sound choice
 W.step("G23 Blatt Buch", function() W.click(W.find(function(f) return f.page == 1 and f._scripts.OnClick end)) end)
 check("G23 Sichern-Hinweis nennt Weitergeben", W.text("zum Weitergeben an Leute außerhalb der Gilde", true))
 check("G23 Slash-Liste nicht mehr im Kleingedruckten", not W.text("/deathlist", true))
--- Szenario i: Liste nach aussen
+-- Scenario i: list to the outside
 W.step("i Buch sichern", function() W.click(W.btn("Buch sichern")) end)
 check("i Text markiert, Hinweis Weitergeben", W.text("Aufheben oder an Freunde weitergeben.", true))
 UI.ClosePanel()
--- Szenario g: Moppels Liste
+-- scenario g: Moppel's list
 GG = ns.MakeGuild(6, { members = 3 })
 W.step("g nach Kollege", function() ns:Fire("GUILD_UPDATED"); W.settle(); UI.SetGuildView("member"); W.settle() end)
 check("G9 Kopf mit Vornamen, ganzer Name im Tooltip", (function()
@@ -348,7 +348,7 @@ check("G9 Meldung: Vorname", G.DeathNoteBanner.name._text == "Hühnerbein")
 M.FinishAnims()
 
 ------------------------------------------------------------------------
--- G24/G25: Groesse
+-- G24/G25: size
 ------------------------------------------------------------------------
 local W2 = world({ ui = { 1366, 768 }, ppu = 1 })
 W2.ns.Store.Setting("ui.scale", 1.5)
@@ -364,7 +364,7 @@ W3.ns.Store.Setting("ui.scale", 1); W3.G.DeathNoteFrame:Hide(); W3.open()
 check("G25 eigene Wahl bleibt", W3.G.DeathNoteFrame._scale == 1)
 
 ------------------------------------------------------------------------
--- alte Logik ohne die neuen Vertragsfunktionen: nichts wirft, Rueckfaelle greifen
+-- old logic without the new contract functions: nothing throws, fallbacks apply
 ------------------------------------------------------------------------
 local O = world({ old = true })
 O.ns.MakeGuild(4, { noHealth = true, noForeign = true })
@@ -387,13 +387,13 @@ check("alte Logik: Gildenstand ohne Health", O.text("Kollegen mit DeathNote geh�
 check("alte Logik: Zeit ohne Util.When", O.text(os.date("%d.%m. %H:%M", NOW)) ~= nil)
 
 ------------------------------------------------------------------------
--- Waechter: je Regel ein Test, der eine Abweichung rot macht
+-- Guards: one test per rule that turns a deviation red
 ------------------------------------------------------------------------
 local function readAll(p) local f = assert(io.open(p)); local s = f:read("*a"); f:close(); return s end
 local files = { "Alert.lua", "UI.lua", "Extras.lua" }
 local code = {}
 for _, f in ipairs(files) do code[f] = readAll(SRC .. "/" .. f) end
--- Nutzertexte: alle Stringliterale ausserhalb von Kommentaren plus alles, was zur Laufzeit gesetzt wurde
+-- User texts: all string literals outside comments plus everything set at run time
 local literals = {}
 for f, s in pairs(code) do
   for line in s:gmatch("[^\n]+") do
@@ -412,7 +412,7 @@ for _, x in ipairs(literals) do
   end
 end
 check("Waechter Wortwahl (Buch, Gildenbuch, Täter, Kollege, Streichen)", #bad == 0, table.concat(bad, " | "))
--- Zeit: date() nur in Look.When, keine dritte Zeitform in Texten
+-- Time: date() only in Look.When, no third time format in texts
 local whenBody = code["Alert.lua"]:match("function Look%.When%(t%)(.-)\nend")
 local dates = 0
 for f, s in pairs(code) do
@@ -426,22 +426,22 @@ for _, x in ipairs(literals) do
   if x[2]:find("%d%d%.%d%d%.%d%d, ") or x[2]:find(" Uhr") or x[2]:find("%d%d%.%d%d%.%d%d%d%d,") then oddTime[#oddTime + 1] = x[2] end
 end
 check("Waechter Zeit: keine Form ausser When/Ago in Texten", #oddTime == 0, table.concat(oddTime, " | "))
--- Schriftgrade nur aus der Skala
+-- Font sizes only from the scale
 local scale = {}
 for _, s in ipairs(ns.Look.SIZE) do scale[s] = true end
 local odd = {}
 for _, Wx in ipairs({ W, W2, W3, O }) do for s in pairs(Wx.M.fontSizes or {}) do if not scale[s] then odd[#odd + 1] = s end end end
 check("Waechter Schriftgrade nur aus Look.SIZE", #odd == 0, table.concat(odd, ","))
--- G33: Bind-Funktionen liefern Werte, Toene macht SetRow (keine eigene Deckkraft)
+-- G33: bind functions return values, SetRow does the tones (no own alpha)
 local binds = 0
--- fix-2: die Bind-Funktionen stehen seit dem Buendeln (Grenze 200 lokale Namen) als UX.BindXxx in der Datei
+-- fix-2: since the bundling (limit of 200 local names) the bind functions sit in the file as UX.BindXxx
 for body in code["UI.lua"]:gmatch("\n[%w ]-function [%w%.]-Bind%w+%(.-\nend") do
   binds = binds + 1
   check("Waechter G33: kein SetAlpha in Bind-Funktion " .. (body:match("Bind%w+") or "?"), not body:find("SetAlpha%("))
 end
 check("Waechter G33: Bind-Funktionen gefunden", binds >= 6, binds)
 check("Waechter G33: Unterzeilen mit Look.Join, kein doppelter Trenner", not code["UI.lua"]:find('"  ·  "', 1, true) and not code["Extras.lua"]:find('"  ·  "', 1, true))
--- Kontrast: definierte Farbpaare gegen die gemittelten Texturen (Mitte der Schriftflaeche)
+-- Contrast: defined colour pairs against the averaged textures (centre of the writing area)
 local function tga(name)
   local s = readAll(MEDIA .. "/" .. name .. ".tga")
   local w = s:byte(13) + s:byte(14) * 256
@@ -482,8 +482,8 @@ for _, p in ipairs(PAIRS) do
   check(("Waechter Kontrast %s >= %.1f"):format(p[1], p[4]), r >= p[4], ("%.2f:1"):format(r))
 end
 
--- Abschlussjagd 1.1.0: Stempel liegen auf einer Ebene UEBER dem Fahndungsfoto (Kind-Frames verdecken
--- im Client jede Region des Eltern-Frames) und Gildeneintraege heissen wie im eigenen Buch.
+-- Final hunt 1.1.0: stamps sit on a layer ABOVE the wanted photo (child frames cover every region of
+-- the parent frame in the client) and guild entries are named as in your own book.
 do
   local W = world()
   W.put(enemy(1, { kills = 5 })); W.open(); W.ns.UI.ShowEnemy("Feind1-Nach1"); W.settle()
@@ -501,8 +501,8 @@ do
   check("Stempel am Plakat gefunden", n >= 1, n)
 end
 
--- Abschlussjagd 1.1.0: nach einem Klick auf die Todesmeldung ist sie sauber weg (Stop() loest OnFinished
--- nicht aus) und eine wartende Gilden-Meldung kommt trotzdem dran.
+-- Final hunt 1.1.0: after a click on the death message it is cleanly gone (Stop() does not fire OnFinished)
+-- and a waiting guild message still gets its turn.
 do
   local W = world()
   local ns, G = W.ns, W.G
@@ -521,7 +521,7 @@ do
   check("Gilden-Meldung faengt keine Maus", not b:IsMouseEnabled())
 end
 
--- 1.2.0 Sprachen: Welt in einer bestimmten Sprache (Stub liest DN_LANG beim Bauen)
+-- 1.2.0 languages: world in a given language (the stub reads DN_LANG while building)
 local function worldIn(code, opts)
   local real = os.getenv
   os.getenv = function(k) if k == "DN_LANG" then return code end return real(k) end
@@ -533,7 +533,7 @@ end
 local function L1(f) return f and f.GetLeft and f:GetLeft() end
 local function R1(f) return f and f.GetRight and f:GetRight() end
 
--- Dehnbare Reiter und Umschalter: eine kuenstlich lange Sprache (deutsche Texte verdoppelt) passt ohne Ueberlappung
+-- Stretching tabs and switches: an artificially long language (German texts doubled) fits without overlap
 do
   local W = worldIn("deDE")
   W.M.measure = true
@@ -580,7 +580,7 @@ do
   check("Sprachen: Blaetter passen auf die Seite (320 px)", total <= 320, total)
 end
 
--- Stempel: Deutsch zeigt das Bild mit eingebranntem Text, Englisch den leeren Rahmen mit Text aus der Tabelle
+-- Stamps: German shows the image with burnt-in text, English the empty frame with text from the table
 for _, code in ipairs({ "deDE", "enUS" }) do
   local W = worldIn(code)
   W.put(enemy(1, { kills = 9, revenge = 2 })); W.put(enemy(2, { kills = 1 }))
@@ -602,11 +602,11 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   end
 end
 
--- Sprachwahl in der Hausordnung: Eigenname, Weiterschalten speichert, Hinweis und Neuladen-Knopf erst bei Wechsel
+-- Language choice in the house rules: native name, stepping saves, hint and reload button only after a change
 do
   local W = worldIn("deDE")
-  rawset(W.G, "_G", W.G)           -- wie im Spiel: Locale liest die SavedVariables ueber _G
-  rawset(W.G, "DeathNoteDB", { settings = { lang = "deDE" } })   -- gespeicherte Wahl
+  rawset(W.G, "_G", W.G)           -- as in the game: Locale reads the SavedVariables through _G
+  rawset(W.G, "DeathNoteDB", { settings = { lang = "deDE" } })   -- stored choice
   W.step("Sprachwahl: Hausordnung oeffnen", function() W.open(); W.ns.UI.OpenPanel("settings"); W.settle() end)
   local v = W.text("Deutsch", true)
   local reload = W.btn(W.ns.L.SET_LANG_RELOAD)

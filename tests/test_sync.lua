@@ -91,22 +91,22 @@ test("Kaputte, abgeschnittene und bösartige Nachrichten werden verworfen, nicht
   local good = killMsg(ns)
   ok(decodeOK(ns, good), "Vorlage gültig")
   local bad = {
-    "", "1", "1\tK", "2\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. now .. "\tOpfer",   -- falsche Version
-    "1\tX\tGrimm-Bart", "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. now,          -- Feld fehlt
+    "", "1", "1\tK", "2\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. now .. "\tOpfer",   -- wrong version
+    "1\tX\tGrimm-Bart", "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. now,          -- field missing
     "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. now .. "\tOpfer\textra",
-    "1\tK\tgrimm-bart\t\tROGUE\t44\tZone\t" .. now .. "\tOpfer",                 -- nicht kanonisch
-    "1\tK\tGrimm\t\tROGUE\t44\tZone\t" .. now .. "\tOpfer",                      -- ohne Nachname
+    "1\tK\tgrimm-bart\t\tROGUE\t44\tZone\t" .. now .. "\tOpfer",                 -- not canonical
+    "1\tK\tGrimm\t\tROGUE\t44\tZone\t" .. now .. "\tOpfer",                      -- without surname
     "1\tK\tGrimm-Bart\t\trogue\t44\tZone\t" .. now .. "\tOpfer",
     "1\tK\tGrimm-Bart\t\tROGUE\t-1\tZone\t" .. now .. "\tOpfer",
     "1\tK\tGrimm-Bart\t\tROGUE\t500\tZone\t" .. now .. "\tOpfer",
     "1\tK\tGrimm-Bart\t\tROGUE\t4x\tZone\t" .. now .. "\tOpfer",
-    "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. (now + 3600) .. "\tOpfer",        -- Zukunft
-    "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. (now - 200 * 86400) .. "\tOpfer", -- zu alt
+    "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. (now + 3600) .. "\tOpfer",        -- future
+    "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. (now - 200 * 86400) .. "\tOpfer", -- too old
     "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t1e9\tOpfer",
-    "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. now .. "\t",                      -- kein Opfer
-    "1\tK\tGrimm-Bart\t\tROGUE\t44\t%G1\t" .. now .. "\tOpfer",                  -- kaputtes Escape
+    "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. now .. "\t",                      -- no victim
+    "1\tK\tGrimm-Bart\t\tROGUE\t44\t%G1\t" .. now .. "\tOpfer",                  -- broken escape
     "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone%2\t" .. now .. "\tOpfer",
-    "1\tK\tGrimm-Bart\t\tROGUE\t44\t%7CTInterface\\x:999%7Ct\t" .. now .. "\tOpfer", -- Textur-Injektion
+    "1\tK\tGrimm-Bart\t\tROGUE\t44\t%7CTInterface\\x:999%7Ct\t" .. now .. "\tOpfer", -- texture injection
     "1\tK\tGrimm-Bart\t\tROGUE\t44\tZone\t" .. now .. "\tOp%00fer",
     "1\tK\tGrimm-Bart\t\tROGUE\t44\t" .. string.rep("z", 65) .. "\t" .. now .. "\tOpfer",
     "1\tH\tabc\t1.0", "1\tH\t" .. (now + 9999) .. "\t1.0", "1\tH\t1",
@@ -429,7 +429,7 @@ test("Warteschlange: Drosselung, Kampf, Ablehnung, nie endlos", function()
   -- permanent refusal (e.g. not in guild = 5): dropped at once
   M.sendResult = 5
   ownDeath(ns, "Weg", "Damit", time())
-  M.Advance(0.5)              -- (fix-1) zwei Sendungen nie enger als 0,3 s, auch nach leerer Schlange
+  M.Advance(0.5)              -- (fix-1) two sends never closer than 0.3 s, even after an empty queue
   eq(ns.Guild.QueueSize(), 0)
   -- general error: at most 5 tries
   calls = 0
@@ -500,8 +500,8 @@ test("Antwort auf H: nur eigene Kills, neuer als since, neueste zuerst, höchste
   hear("1\tH\t" .. (base + 50) .. "\t1.0.0", "Kollege-Forever")
   hear("1\tH\t" .. (base + 5) .. "\t1.0.0", "Dritter-Forever")   -- merged into the pending answer
   M.Advance(60)
-  -- fix-2: am Ende jeder Antwort steht ein Z (Momentaufnahme der Freigaben); gezaehlt werden die Taten
-  -- (1.2.1: danach ein Y, die Momentaufnahme der Kopfgelder)
+  -- fix-2: every answer ends with a Z (snapshot of the calls); the deeds are counted
+  -- (1.2.1: then a Y, the snapshot of the bounties)
   for i = #M.addonSent, 1, -1 do if M.addonSent[i].text:match("^1\t[ZY]\t") then table.remove(M.addonSent, i) end end
   eq(#M.addonSent, 30, "höchstens 30")
   local P = ns.Guild.Proto
@@ -625,7 +625,7 @@ test("Liste, Rang, Count, Adopt", function()
   local key = ns.Guild.Adopt("Eins-A")
   eq(key, "Eins-A")
   local own = ns.Store.Get(key)
-  -- fix-2 (Fund 14): gespeichert wird ein Merker, der Satz entsteht beim Anzeigen in der aktiven Sprache
+  -- fix-2 (finding 14): a marker is stored, the sentence is built in the active language when shown
   ok(own and own.manual); eq(own.class, "ROGUE"); eq(own.note, ""); eq(own.fromGuildKills, 2)
   ok(ns.Util.NoteOf(own):find("Gilden"), ns.Util.NoteOf(own))
   ok(ns.Guild.Get("Eins-A").mine)

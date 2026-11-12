@@ -1,15 +1,15 @@
--- (fix-2) Fund 1 der finalen Jagd (hoch): Ausweis und Bindung bei Freunden ohne Nachnamen auf der Liste.
--- Beleg der Jagd: der Fremde mit gleichem Vornamen, der sich ZUERST meldet, besetzte die Bindung still und fuer
--- immer, ohne Rueckweg. Entscheidung des Orchestrators (hier geprueft):
--- (1) mit GUID (die Freundesliste nennt sie, das Hallo an Freunde traegt die eigene): nur wer die GUID des
---     Listeneintrags hat, wird angenommen; der Fremde nie, auch nicht als Erster.
--- (2) ohne GUID: der erste Kontakt bindet vorlaeufig; ein zweiter voller Name macht einen Konflikt: von keinem
---     wird mehr etwas angenommen, die Daten des Gebundenen bleiben ohne Alarm, eine Meldung nennt beide, der
---     Spieler waehlt ("Das ist mein Freund"); erst die Wahl bindet endgueltig, die Daten des Abgewaehlten gehen.
--- (3) Rueckwege: Bindung loesen (loescht seine Daten), Entfernen und neu Hinzufuegen, geaenderter Nachname
---     landet im selben Dialog.
--- (4) Freigaben eines vorlaeufig Gebundenen alarmieren (Normalfall), der Tempo-Deckel gilt, die Sammelmeldung
---     nennt den vollen Namen.
+-- (fix-2) Finding 1 of the final hunt (high): identity and binding for friends without surname on the list.
+-- Proof of the hunt: the stranger with the same first name who reports FIRST took the binding silently and
+-- forever, with no way back. Orchestrator's decision (checked here):
+-- (1) with GUID (the friend list gives it, the hello to friends carries the own one): only who has the GUID of
+--     the list entry is accepted; the stranger never, not even as the first.
+-- (2) without GUID: the first contact binds provisionally; a second full name makes a conflict: nothing is
+--     accepted from either any more, the bound one's data stays without alert, a message names both, the
+--     player chooses ("That is my friend"); only the choice binds for good, the data of the one not chosen goes.
+-- (3) Ways back: release the binding (deletes their data), remove and add again, a changed surname
+--     lands in the same dialog.
+-- (4) Calls of a provisionally bound friend alert (normal case), the rate cap applies, the summary message
+--     names the full name.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -29,17 +29,17 @@ H.lauf("(1) mit GUID: der Fremde kommt nie herein, auch nicht als Erster", funct
   local f = W.client("Berta", "Fremd", nil, { friends = { "Anton Wurst" }, fullSender = true })
   a.login(); W.run(40)
   local P = a.ns.Guild.Proto
-  -- der Fremde sendet sein Hallo zuerst, mit seiner eigenen (gueltigen) GUID
+  -- the stranger sends his hello first, with his own (valid) GUID
   H.fluestern(a, P.EncodeHello(0, "1.2.0", W.guidOf(f)), "Berta Fremd-Forever")
   H.fluestern(a, J(P, "Falsch-Lamm", "Berta Fremd"), "Berta Fremd-Forever")
-  -- ein Hallo ohne GUID (er gibt sich als alter Stand aus) hilft ihm nicht: die Liste nennt eine GUID
+  -- a hello without GUID (he poses as an old version) does not help him: the list gives a GUID
   H.fluestern(a, P.EncodeHello(0, "1.2.0"), "Berta Fremd-Forever")
   H.fluestern(a, J(P, "Falsch-Lamm", "Berta Fremd"), "Berta Fremd-Forever")
   H.erwartet("das Hallo mit fremder GUID bindet nicht", a.env.DeathNoteDB.friends.ties["Berta"] == nil
     or a.env.DeathNoteDB.friends.ties["Berta"].full ~= "Berta Fremd", a.env.DeathNoteDB.friends.ties["Berta"])
   H.erwartet("der Fremde bringt keine Freigabe ins Freundesbuch (GUID auf der Liste, er ist nicht belegt)",
     a.ns.Guild.Hunt("Falsch-Lamm", "friends") == nil)
-  -- die echte Freundin loggt ein: ihr Hallo (passende GUID) bindet sie sicher
+  -- the real friend logs in: her hello (matching GUID) binds her for sure
   b.login(); W.run(60)
   local tie = a.env.DeathNoteDB.friends.ties["Berta"]
   H.erwartet("das Hallo der echten Freundin (passende GUID) bindet sie sicher", tie and tie.full == "Berta Senf" and tie.sure == true,
@@ -87,17 +87,17 @@ H.lauf("(2) ohne GUID: Fremder zuerst, dann die echte Freundin -> Konflikt, Wahl
   H.erwartet("im Konflikt nimmt das Buch von keinem etwas an", a.ns.Guild.Hunt("Echt-Lamm", "friends") == nil
     and a.ns.Guild.Hunt("Falsch2-Lamm", "friends") == nil)
   H.erwartet("die Daten des Gebundenen bleiben stehen", a.ns.Guild.Hunt("Falsch-Lamm", "friends") ~= nil)
-  -- kein Alarm aus den Daten des Gebundenen, solange der Konflikt besteht
+  -- no alert from the bound one's data while the conflict lasts
   local n0 = H.zaehle(a, "GUILD_ENEMY_SPOTTED")
   a.ns.Guild.OnUnit("Falsch-Lamm", "nameplate1", "plate")
   H.erwartet("kein Alarm aus den Daten des Gebundenen im Konflikt", H.zaehle(a, "GUILD_ENEMY_SPOTTED") == n0)
-  -- die Ansicht "Nach Kollege" hat beide Namen, mit der Wahl
+  -- the "By guildmate" view has both names, with the choice
   local both = 0
   for _, g in ipairs(a.ns.Guild.ByMember("all")) do
     if (g.name == "Berta Fremd" or g.name == "Berta Senf") and g.tie and g.tie.conflict then both = both + 1 end
   end
   H.erwartet("Nach Kollege zeigt beide Namen mit der Wahl", both == 2, both)
-  -- bleibt ueber den Login hinaus (gespeichert), bis gewaehlt ist
+  -- stays beyond the login (saved) until a choice is made
   local a2 = H.relog(W, a); a2.login(); W.run(40)
   H.fluestern(a2, J(P, "Echt2-Lamm", "Berta Senf"), "Berta Senf-Forever")
   H.erwartet("nach dem Login: weiter Konflikt statt stiller Sperre", a2.ns.Friends.Health().reason == "conflict"
@@ -124,9 +124,9 @@ H.lauf("(3) Rueckwege: Bindung loesen, Entfernen und neu Hinzufuegen, /dn freund
   H.erwartet("Bindung loesen loescht seine Daten", a.ns.Guild.Hunt("Falsch-Lamm", "friends") == nil)
   H.fluestern(a, J(P, "Echt-Lamm", "Berta Senf"), "Berta Senf-Forever")
   H.erwartet("der naechste Kontakt bindet neu", a.ns.Guild.Hunt("Echt-Lamm", "friends") ~= nil)
-  -- Entfernen und neu Hinzufuegen loest die Bindung auch
+  -- removing and adding again releases the binding too
   H.fluestern(a, P.EncodeHello(0, "1.2.0"), "Berta Fremd-Forever")
-  -- seit 1.2.0 loest erst das Fehlen in drei Scans in Folge (MISS_SCANS) die Bindung, ein einzelner Scan nicht
+  -- since 1.2.0 only missing from three scans in a row (MISS_SCANS) releases the binding, a single scan does not
   a.friendNames = { "Carla" }
   for _ = 1, 3 do a.fire("FRIENDLIST_UPDATE"); W.run(5) end
   a.friendNames = { "Berta", "Carla" }

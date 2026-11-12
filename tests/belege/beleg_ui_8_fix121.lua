@@ -1,8 +1,8 @@
--- 1.2.1 nach der Jagd, Oberflaeche: Buch am Plakat ziehbar (M1), Doppelklick-Schutz fuer "Rueckgaengig" (M2),
--- /dn kopfgeld (M3, N4, N5), kurze Zeilen "Kopfgeld"/"Gerächt von" mit Tooltip in allen 21 Sprachen (M4),
--- "zuletzt gesehen" bleibt (N1), Muenze nach Ablauf (N2), eine Regel fuer Begnadigte (N6), Klickflaechen (N7),
--- Tooltip mit Rest (N8), kein Muell ohne Kopfgeld (N9).
--- Aufruf: nice -n 15 luajit beleg_ui_8_fix121.lua <Projektkopie>. Alle Namen erfunden.
+-- 1.2.1 after the hunt, UI: book draggable at the poster (M1), double-click guard for "Undo" (M2),
+-- /dn kopfgeld (M3, N4, N5), short lines "Bounty"/"Avenged by" with tooltip in all 21 languages (M4),
+-- "last seen" stays (N1), coin after expiry (N2), one rule for the pardoned (N6), click areas (N7),
+-- tooltip with the rest (N8), no garbage without bounty (N9).
+-- Usage: nice -n 15 luajit beleg_ui_8_fix121.lua <project copy>. All names made up.
 package.path = (arg[0]:match("^(.*)/[^/]+$") or ".") .. "/?.lua;" .. package.path
 local K = require("_kopf_ui")
 
@@ -40,7 +40,7 @@ local function menue(W, row)
 end
 local function zu(menu) if menu and menu:IsShown() then menu.blocker._scripts.OnClick(menu.blocker) end end
 
------------------------------------------------------------------------- (1) M1 Ziehen am Plakat
+------------------------------------------------------------------------ (1) M1 dragging the poster
 do
   local W = welt("deDE")
   local E, F = W.E, rawget(W.BM.G, "DeathNoteFrame")
@@ -54,7 +54,7 @@ do
   local n, e = W.errs(); K.check("1 keine Fehler", n == 0, e)
 end
 
------------------------------------------------------------------------- (2) M2 Doppelklick
+------------------------------------------------------------------------ (2) M2 double click
 do
   local W = welt("deDE")
   local ns, E, L = W.ns, W.E, W.L
@@ -91,18 +91,18 @@ do
   ns.HandleSlash("kopfgeld")
   local line = W.chat()
   K.check("3 ohne alles: listet die eigenen", line:find("Grimm Bart", 1, true) and line:find("Ohne Geld", 1, true) and line:find("2", 1, true), line)
-  -- gestrichen: das eigene Kopfgeld geht mit (kein Plakat mehr)
+  -- struck: the own bounty goes too (no poster any more)
   ns.Store.Remove(W.key2); W.tick()
   K.check("3 gestrichener Taeter: eigenes Kopfgeld zurueckgenommen", ns.Guild.OwnBounty(W.key2) == nil and own() == 1)
   local n, e = W.errs(); K.check("3 keine Fehler", n == 0, e)
 end
 
------------------------------------------------------------------------- (4) M4 Zeilen kurz, in 192 px, mit Tooltip
+------------------------------------------------------------------------ (4) M4 short lines, in 192 px, with tooltip
 local NAMES = { "Annabellchen", "Bertramchens", "Cordulachens", "Dietmarchens" }
 for _, code in ipairs(K.CODES) do
   local W = welt(code)
   local ns, E, L, P, t = W.ns, W.E, W.L, W.P, _G.time()
-  -- (a) vier Auslober mit langen Namen und Hoechstbetrag, vier Raecher
+  -- (a) four posters with long names and maximum amount, four avengers
   for i, n in ipairs(NAMES) do W.gmsg(P.EncodeBounty(W.key2, n .. " Wurst", 99999, t), n .. " Wurst-Forever") end
   for i, n in ipairs(NAMES) do W.gmsg(P.EncodeAvenged(W.key2, n .. " Wurst", t - 5 - i * 40, false), n .. " Wurst-Forever"); W.tick(20) end
   W.tick(5); W.zeigen(W.key2)
@@ -113,7 +113,7 @@ for _, code in ipairs(K.CODES) do
   K.check(code .. " 4a alles in 192 px", #zu_breit == 0, table.concat(zu_breit, " / "))
   K.check(code .. " 4a Tooltip Kopfgeld mit allen vier", E.bountyLineHit:IsShown() and #(E.bountyLineHit.tip or {}) >= 5)
   K.check(code .. " 4a Tooltip gerächt mit allen vier", E.avengedHit:IsShown() and #(E.avengedHit.tip or {}) >= 5)
-  -- (b) ein fremder Auslober mit langem Namen und Hoechstbetrag, ein Raecher mit 99
+  -- (b) one foreign poster with a long name and maximum amount, one avenger with 99
   local W2 = welt(code)
   W2.gmsg(W2.P.EncodeBounty(W2.key2, "Annabellchen Wurst", 99999, t), "Annabellchen Wurst-Forever")
   local av = W2.ns.Store.DB(); av.avenged = { [W2.key2] = { by = { ["Bertramchens Wurst"] = 99 }, log = {}, t = t } }
@@ -122,7 +122,7 @@ for _, code in ipairs(K.CODES) do
   for _, fs in ipairs(W2.info()) do local w = K.estimate(fs); if w > 192 then zu_breit[#zu_breit + 1] = math.floor(w) .. "px " .. fs._text end end
   K.check(code .. " 4b ein Auslober, ein Raecher: in 192 px", #zu_breit == 0, table.concat(zu_breit, " / "))
   K.check(code .. " 4b Tooltip gerächt auch bei einem", W2.E.avengedHit:IsShown() and W2.E.avengedHit.tip ~= nil)
-  -- (c) eigenes Kopfgeld
+  -- (c) own bounty
   local W3 = welt(code)
   W3.ns.Guild.SetBounty(W3.key2, 99999); W3.tick(1); W3.zeigen(W3.key2)
   zu_breit = {}
@@ -131,7 +131,7 @@ for _, code in ipairs(K.CODES) do
   local n, e = W.errs(); K.check(code .. " 4 keine Fehler", n == 0, e)
 end
 
------------------------------------------------------------------------- (5) N1, N7: gesehen bleibt, Flaechen vorn
+------------------------------------------------------------------------ (5) N1, N7: seen stays, areas in front
 do
   local W = welt("deDE")
   local ns, E, L, P, t = W.ns, W.E, W.L, W.P, _G.time()
@@ -146,10 +146,10 @@ do
   for _, fs in ipairs(W.info()) do if fs._text:find(vorn(L.POSTER_LAST_SEEN), 1, true) then seen = true end end
   K.check("5 N1: mit Kopfgeld bleibt 'zuletzt gesehen'", seen)
   K.check("5 N1: der Tooltip ueber dem Steckbrief zeigt die Kopfgeld-Zeile", E.infoHit:IsShown() and table.concat(E.infoHit.tip or {}, "|"):find(vorn(L.POSTER_BOUNTY_MINE) ~= "" and "500" or "500", 1, true) ~= nil)
-  -- Grimm Bart mit Rasse, Gilde und Kopfgeld: Kopfgeld-Zeile vor dem Steckbrief-Tooltip
+  -- Grimm Bart with race, guild and bounty: bounty line before the profile tooltip
   W.gmsg(P.EncodeBounty(W.key, "Kollege Wurst", 300, t)); W.tick(1); W.zeigen(W.key)
   K.check("5 N7: Rasse faellt weg, Kopfgeld-Zeile und Steckbrief-Tooltip beide da", E.infoHit:IsShown() and E.bountyLineHit:IsShown())
-  -- (bei gleicher Ebene gewaenne im Mock der zuerst genannte nicht: die hoehere Ebene muss entscheiden)
+  -- (on the same level the first named would not win in the mock: the higher level must decide)
   K.check("5 N7: Kopfgeld-Zeile liegt vor dem Steckbrief-Tooltip", W.BM.TopFrame(E.bountyLineHit, E.infoHit) == E.bountyLineHit)
   W.zeigen(W.key)
   W.click(E.bountyHit)
@@ -160,7 +160,7 @@ do
   K.check("5 N7: nach Esc wieder da", E.bountyHit:IsShown())
 end
 
------------------------------------------------------------------------- (6) N2 Muenze nach Ablauf, N6 Begnadigte, N8, N9
+------------------------------------------------------------------------ (6) N2 coin after expiry, N6 pardoned, N8, N9
 do
   local W = welt("deDE")
   local ns, E, L, P, t = W.ns, W.E, W.L, W.P, _G.time()
@@ -170,21 +170,21 @@ do
   W.AM.epoch = W.AM.epoch + 2 * 86400; W.tick(1)
   K.check("6 N2: abgelaufen: keine Muenze (ohne /reload)", ns.Guild.HasBounty(W.key) == false)
   ns.Store.Setting("guild.huntExpire", 0)
-  -- N6: begnadigt: weder Menue noch Plakat; mit eigenem Kopfgeld beides (zum Zuruecknehmen)
+  -- N6: pardoned: neither menu nor poster; with an own bounty both (to take it back)
   ns.Store.SetStatus(W.key2, "pardoned"); W.tick(); W.zeigen(W.key2)
   local m, menu = menue(W, zeileVon(W, W.key2)); zu(menu)
   K.check("6 N6: begnadigt: kein Menuepunkt, keine Klickflaeche", m.ACT_BOUNTY == nil and not E.bountyHit:IsShown())
   ns.Store.SetStatus(W.key2, "wanted"); ns.Guild.SetBounty(W.key2, 5); ns.Store.SetStatus(W.key2, "pardoned"); W.tick(); W.zeigen(W.key2)
   m, menu = menue(W, zeileVon(W, W.key2)); zu(menu)
   K.check("6 N6: begnadigt mit eigenem: beides da", m.ACT_BOUNTY ~= nil and E.bountyHit:IsShown())
-  -- N8: 25 Auslober: Tooltip endet mit "und 5 weitere"
+  -- N8: 25 posters: tooltip ends with "and 5 more"
   for i = 1, 25 do W.gmsg(P.EncodeBounty(W.key, "Kollege" .. string.char(64 + i) .. " Wurst", 10, t), "Kollege" .. string.char(64 + i) .. " Wurst-Forever"); W.AM.Advance(130) end
   W.tick(1); W.zeigen(W.key)
   local tip = E.bountyHit.tip or {}
   local mehr = false
   for _, l in ipairs(tip) do if l == ns.F(L.MORE_LINE, { count = #select(1, ns.Guild.Bounties(W.key)) - 20 }) then mehr = true end end
   K.check("6 N8: Tooltip nennt den Rest", #select(1, ns.Guild.Bounties(W.key)) > 20 and mehr, #select(1, ns.Guild.Bounties(W.key)))
-  -- N9: ohne Kopfgeld und ohne Raecher keine neuen Tabellen
+  -- N9: without bounty and without avenger no new tables
   local r1 = select(1, ns.Guild.Bounties("Niemand-Hier"))
   local r2 = select(1, ns.Guild.Bounties("Keiner-Da"))
   K.check("6 N9: ohne Kopfgeld dieselbe leere Tabelle", r1 == r2 and next(r1) == nil)

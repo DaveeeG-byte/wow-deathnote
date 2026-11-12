@@ -1,11 +1,11 @@
--- 1.2.0 Mehrsprachigkeit, Oberflaeche mit echter Logik (wie integration.lua):
---  A) Sprache beim ersten Start: die des Clients (kein Dialog), Kampf, zweiter Login, Aliase, gespeicherte
---     Wahl, /dn lang auto, Upgrade von 1.1.0 mit der Fixture.
---  B) Das Buch in jeder der 21 Sprachen einmal aufbauen (alle Reiter, Plakat, Hausordnung mit allen
---     Blaettern, Gebrauchsanweisung, Sichern/Einlesen, Abschussliste, Alarm, Meldungen): rot bei
---     Lua-Fehlern, Verstoessen gegen den strengen Mock, fehlenden oder zu frueh gelesenen Schluesseln.
---  C) Voller Lauf auf Englisch: kein deutsches Wort in irgendeinem gesetzten Text, englische Wortwahl.
--- Aufruf: luajit tests/ui/sprachen.lua [nur-diese-Kennung]
+-- 1.2.0 multiple languages, UI with real logic (like integration.lua):
+--  A) Language on first start: the client's (no dialog), combat, second login, aliases, stored
+--     choice, /dn lang auto, upgrade from 1.1.0 with the fixture.
+--  B) Build the book once in each of the 21 languages (all tabs, poster, house rules with all
+--     sheets, manual, save/load, hit list, alarm, messages): red on
+--     Lua errors, violations of the strict mock, missing keys or keys read too early.
+--  C) Full run in English: no German word in any text set, English wording.
+-- Usage: luajit tests/ui/sprachen.lua [only-this-code]
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. here .. "/../?.lua;" .. package.path
 local root = here .. "/../.."
@@ -17,7 +17,7 @@ local function check(name, cond, detail)
   if cond then pass = pass + 1 else fail = fail + 1; print("ROT   " .. name .. (detail ~= nil and ("  -> " .. tostring(detail)) or "")) end
 end
 
--- frische Welt: Logik-Mock (A's Dateien) plus strenger UI-Mock (Alert/UI/Extras), gemeinsames ns
+-- fresh world: logic mock plus strict UI mock (Alert/UI/Extras), shared ns
 local AM, BM, G
 local function world(opts)
   opts = opts or {}
@@ -32,7 +32,7 @@ local function world(opts)
     AM.units.player.guild = opts.guild ~= false and "Die Wurstbrueder" or nil
   end })
   for _, f in ipairs({ "Alert.lua", "UI.lua", "Extras.lua" }) do BM.Load(DIR .. "/" .. f, ns) end
-  -- 1.2.0 (bau-d): Humor.lua gehoert zum Addon; sie wirkt nur in Deutsch und Englisch
+  -- 1.2.0 (bau-d): Humor.lua is part of the addon; it only acts in German and English
   local hf = io.open(DIR .. "/Humor.lua", "r")
   if hf then hf:close(); BM.Load(DIR .. "/Humor.lua", ns) end
   AM.FireEvent("PLAYER_LOGIN")
@@ -55,7 +55,7 @@ end
 local function dialog() return rawget(G, "DeathNoteLangDialog") end
 
 ------------------------------------------------------------------------
--- A) Sprache beim ersten Start: die des Clients, kein Dialog (Nachtrag 3)
+-- A) Language on first start: the client's, no dialog (addendum 3)
 ------------------------------------------------------------------------
 do
   local ns = world({ lang = false, client = "deDE" })
@@ -75,7 +75,7 @@ do
   check("zweiter Login: Deutsch, keine zweite Begruessung", ns.Locale.code == "deDE" and not chatHas("Das Buch liegt bereit."))
 end
 
-do -- Kampf beim Login: die Begruessung wartet aufs Kampfende
+do -- combat at login: the greeting waits for the end of combat
   local ns = world({ lang = false, client = "frFR", locale = "frFR" })
   check("frFR-Client: Franzoesisch", ns.Locale.code == "frFR", ns.Locale.code)
   AM.inCombat, BM.combat = true, true
@@ -93,7 +93,7 @@ for client, want in pairs({ enGB = "enUS", esMX = "esES", ptPT = "ptBR", svSE = 
   check("Client " .. client .. ": " .. want, ns.Locale.code == want, ns.Locale.code)
 end
 
-do -- gespeicherte Wahl gewinnt; Automatisch loescht sie
+do -- the stored choice wins; Automatic clears it
   local ns = world({ lang = false, client = "deDE", locale = "plPL", db = { settings = { lang = "plPL" } } })
   check("gespeicherte Wahl gewinnt gegen die Client-Sprache", ns.Locale.code == "plPL", ns.Locale.code)
   ns.HandleSlash("lang auto"); settle()
@@ -101,7 +101,7 @@ do -- gespeicherte Wahl gewinnt; Automatisch loescht sie
   clean("Wahl", ns)
 end
 
-do -- Upgrade von 1.1.0 (Fixture), deutscher Client: bleibt deutsch, kein Fenster, keine zweite Begruessung
+do -- upgrade from 1.1.0 (fixture), German client: stays German, no window, no second greeting
   local f = assert(loadfile(root .. "/tests/fixtures/sv_1.0.1_autor.lua"))
   local env = {}
   setfenv(f, env); f()
@@ -115,7 +115,7 @@ do -- Upgrade von 1.1.0 (Fixture), deutscher Client: bleibt deutsch, kein Fenste
 end
 
 ------------------------------------------------------------------------
--- B) Das Buch in jeder Sprache
+-- B) The book in every language
 ------------------------------------------------------------------------
 local function drive(ns, code)
   local name = "Buch " .. code
@@ -136,7 +136,7 @@ local function drive(ns, code)
   if ns.UI.SetGuildView then
     for _, v in ipairs({ "hunt", "enemy", "member" }) do pcall(ns.UI.SetGuildView, v); settle() end
   end
-  -- Rechtsklick-Menue einer Zeile, Suche, Quellen, Freigabe-Blatt, Rueckfrage
+  -- right click menu of a row, search, sources, post sheet, confirmation
   for _, f in ipairs(BM.frames) do
     if f.item and f._scripts and f._scripts.OnClick and f:IsVisible() then f._scripts.OnClick(f, "RightButton"); break end
   end
@@ -149,7 +149,7 @@ local function drive(ns, code)
   if box then box:SetText("Niemand"); box._scripts.OnEnterPressed(box); settle(); ns.UI.ClearSearch(); settle() end
   if ns.UI.OpenRelease then ns.UI.OpenRelease(key); settle(); ns.UI.ClosePanel(); settle() end
   if ns.UI.ConfirmDelete then ns.UI.ConfirmDelete(key); settle() end
-  -- jede Maus-Ueber-Stelle einmal (Tooltips aller Knoepfe, Zeilen, Plakat-Felder, Minimap-Knopf)
+  -- every mouse-over spot once (tooltips of all buttons, rows, poster fields, minimap button)
   for _, f in ipairs(BM.frames) do
     if f._scripts and f._scripts.OnEnter and f:IsVisible() and f ~= rawget(G, "DeathNoteLangDialog") then
       pcall(f._scripts.OnEnter, f)
@@ -158,7 +158,7 @@ local function drive(ns, code)
   end
   settle()
   ns.UI.OpenPanel("settings"); settle()
-  -- jedes Blatt der Hausordnung einmal anklicken (Wort-Reiter unter dem Kopf)
+  -- click every sheet of the house rules once (word tabs under the head)
   local sheets = {}
   for _, k in ipairs({ "SHEET_BOOK", "SHEET_ALERT", "SHEET_GUILD" }) do sheets[rawget(ns.L, k) or ""] = true end
   for _, f in ipairs(BM.frames) do
@@ -180,7 +180,7 @@ local function drive(ns, code)
   ns:Fire("GUILD_KILL", { t = _G.time(), zone = "Zone", victim = "Hans Wurst" }, "Grimm-Bart"); settle()
   BM.Advance(6); BM.FinishAnims()
   ns:Fire("REVENGE", key); settle()
-  do -- Stempel der Rache-Meldung: Deutsch als Bild, sonst leerer Rahmen plus Text der Sprache
+  do -- stamp of the revenge message: German as an image, otherwise an empty frame plus text in the language
     local b = rawget(G, "DeathNoteBanner")
     local tex = b and b.stamp and tostring(b.stamp._tex or "")
     if code == "deDE" then
@@ -217,7 +217,7 @@ for _, code in ipairs(codes) do
       ns.Look.FONT[kind][1])
   end
   drive(ns, code)
-  -- C) Englisch: kein deutsches Wort, englische Wortwahl
+  -- C) English: no German word, English wording
   if code == "enUS" then
     local german, banned = {}, {}
     local GERMAN = { "Buch", "Gilde", "Täter", "Kollege", "Freunde", "Hausordnung", "Abschussliste", "Rache", "Notiz",
@@ -225,20 +225,20 @@ for _, code in ipairs(codes) do
     local BANNED_EN = { "Notebook", "Murderer", "Member", "Delete", "Enemies", "Enemy list", "Wanted list",
       "Kill list", "Accomplice" }
     local function scan(t)
-      t = t:gsub("Die Fachkräfte", "")   -- Gildenname (Humor.lua), bleibt in jeder Sprache deutsch
+      t = t:gsub("Die Fachkräfte", "")   -- guild name (Humor.lua), stays German in every language
       for _, u in ipairs({ "Ä", "Ö", "Ü", "ä", "ö", "ü", "ß" }) do
         if t:find(u, 1, true) then german[#german + 1] = t; break end
       end
       for _, w in ipairs(GERMAN) do
         if t:find("%f[%a]" .. w .. "%f[%A]") and not t:find("Die Wurstbrueder", 1, true) then german[#german + 1] = t; break end
       end
-      local low = t:gsub("{[^{}]*}", ""):lower()      -- Platzhalter-Namen zaehlen nicht
+      local low = t:gsub("{[^{}]*}", ""):lower()      -- placeholder names do not count
       for _, w in ipairs(BANNED_EN) do
         if low:find("%f[%a]" .. w:lower() .. "%f[%A]") then banned[#banned + 1] = t end
       end
     end
     for t in pairs(BM.texts) do scan(t) end
-    for _, v in pairs(ns.L) do if type(v) == "string" then scan(v) end end   -- auch Texte, die der Lauf nicht zeigt
+    for _, v in pairs(ns.L) do if type(v) == "string" then scan(v) end end   -- also texts the run does not show
     for _, l in ipairs(AM.chat) do scan(l) end
     check("Englisch: kein deutsches Wort in gesetzten Texten und Chat", #german == 0, table.concat(german, " | "))
     check("Englisch: Wortwahl (Verbotsliste)", #banned == 0, table.concat(banned, " | "))

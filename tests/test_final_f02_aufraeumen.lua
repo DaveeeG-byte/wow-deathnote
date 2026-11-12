@@ -1,11 +1,11 @@
--- Gegenprobe Fund 1 (Aufraeumen der Freundesdaten).
--- (1) Pause von mehr als 60 Tagen: Battle.net-Freunde gelten beim ersten Aufraeumen nach dem Login als entfernt
---     (BN_KEEP zaehlt ab dem letzten Sehen, auch wenn ICH weg war), ihre Taten und Freigaben sind weg.
--- (2) Gegenprobe gruen: wirklich entfernter Charakter-Freund verschwindet nach 14 Tagen und drei Scans.
--- (3) Gegenprobe gruen: 13 Tage reichen nicht; Zweit-Char loescht nichts; leere Liste loescht nichts.
--- (4) Der eigene Char, der den Freund hatte, loggt nie wieder ein (geloescht, umbenannt): der entfernte Freund
---     bleibt fuer immer, seine Freigaben alarmieren weiter.
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen; Kopf: tests/beleg_helfer.lua
+-- Counter-check finding 1 (cleaning up friends' data).
+-- (1) Break of more than 60 days: Battle.net friends count as removed at the first cleanup after login
+--     (BN_KEEP counts from the last sighting, even if I was away), their deeds and calls are gone.
+-- (2) Counter-check green: a char friend really removed disappears after 14 days and three scans.
+-- (3) Counter-check green: 13 days are not enough; an alt deletes nothing; an empty list deletes nothing.
+-- (4) The own char that had the friend never logs in again (deleted, renamed): the removed friend
+--     stays forever, his calls keep alerting.
+-- (fix-2) Proof test of the final hunt, taken into the suite; head: tests/beleg_helfer.lua
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -21,18 +21,18 @@ H.lauf("(1) 61 Tage Pause, Battle.net-Freund ist noch Freund", function()
   W.run(60)
   H.erwartet("Vorbedingung: Tat und Freigabe der Battle.net-Freundin kamen an",
     a.ns.Guild.Get(key, "friends") ~= nil and a.ns.Guild.Hunt("Opfer-Lamm", "friends") ~= nil)
-  -- beide sind 61 Tage nicht im Spiel; die Freundschaft besteht weiter
+  -- both are out of the game for 61 days; the friendship still exists
   b.online = false
   H.tage(61)
   local a2 = H.relog(W, a); a2.login(); W.run(30)
-  a2.fire("BN_FRIEND_INFO_CHANGED"); W.run(5)     -- Freundin offline, steht aber weiter auf der Battle.net-Liste
+  a2.fire("BN_FRIEND_INFO_CHANGED"); W.run(5)     -- friend offline, but still on the Battle.net list
   H.erwartet("Freigabe der Battle.net-Freundin ueberlebt meine Pause von 61 Tagen",
     a2.ns.Guild.Hunt("Opfer-Lamm", "friends") ~= nil, "Freigabe geloescht")
   H.erwartet("Tat der Battle.net-Freundin ueberlebt meine Pause von 61 Tagen",
     a2.ns.Guild.Get(key, "friends") ~= nil, "Tat geloescht")
 end)
 
--- fix-2 (Entscheidung zu Fund 2): die Frist zaehlt in eigenen Spieltagen (Tage mit Login), nicht in Kalendertagen
+-- fix-2 (decision on finding 2): the period counts in own play days (days with a login), not calendar days
 H.lauf("(2) wirklich entfernter Freund verschwindet nach 14 eigenen Spieltagen (Gegenprobe)", function()
   local W = H.welt()
   local a = W.client("Anton", "Wurst", nil, { friends = { "Berta", "Carla" } })
@@ -59,8 +59,8 @@ H.lauf("(2) wirklich entfernter Freund verschwindet nach 14 eigenen Spieltagen (
   H.erwartet("14 Spieltage nach dem Entfernen ist die Freigabe weg", c.ns.Guild.Hunt("Opfer-Lamm", "friends") == nil, "steht noch")
 end)
 
--- fix-2: ein Battle.net-Freund, der lange nicht im Spiel ist, aber auf der Battle.net-Liste steht, bleibt (BattleTag);
--- ohne BattleTag faellt er nach 60 eigenen Spieltagen ohne Sehen (Gegenprobe)
+-- fix-2: a Battle.net friend who has not played for long but is on the Battle.net list stays (BattleTag);
+-- without BattleTag he is dropped after 60 own play days without a sighting (counter-check)
 for _, tags in ipairs({ true, false }) do
   H.lauf("(1c) Battle.net-Freund 61 Spieltage offline, " .. (tags and "mit" or "ohne") .. " BattleTag", function()
     local W = H.welt()
@@ -82,7 +82,7 @@ for _, tags in ipairs({ true, false }) do
   end)
 end
 
--- fix-2: ohne BattleTag (falls der Client keinen liefert) haelt die Frist in Spieltagen die Pause aus
+-- fix-2: without BattleTag (if the client gives none) the period in play days survives the break
 H.lauf("(1b) 61 Tage Pause, Battle.net ohne BattleTag", function()
   local W = H.welt()
   W.noTags = true
@@ -100,8 +100,8 @@ H.lauf("(1b) 61 Tage Pause, Battle.net ohne BattleTag", function()
   H.erwartet("Freigabe ueberlebt meine Pause auch ohne BattleTag", a2.ns.Guild.Hunt("Opfer-Lamm", "friends") ~= nil)
 end)
 
--- Seit 1.2.0 (Entscheidung zu den Spieltagen je Char): Spieltage anderer eigener Chars zaehlen nie gegen einen Char;
--- ein Char, der nicht mehr eingeloggt wird, verliert nichts. Seine Freunde bleiben, bis der Spieler das Freundesbuch leert.
+-- Since 1.2.0 (decision on play days per char): play days of other own chars never count against a char;
+-- a char that is no longer logged in loses nothing. Its friends stay until the player empties the friends' book.
 H.lauf("(4) der eigene Char, der den Freund hatte, kommt nie wieder", function()
   local W = H.welt()
   local a = W.client("Anton", "Wurst", nil, { friends = { "Berta" } })
@@ -110,7 +110,7 @@ H.lauf("(4) der eigene Char, der den Freund hatte, kommt nie wieder", function()
   b.ns.Guild.Release("Opfer-Lamm", { to = "friends", why = "Grund" })
   W.run(30)
   H.erwartet("Vorbedingung: Freigabe kam an", a.ns.Guild.Hunt("Opfer-Lamm", "friends") ~= nil)
-  -- Anton wird geloescht; der Account spielt nur noch mit Zweitchar weiter, der Berta nie auf der Liste hatte
+  -- Anton is deleted; the account only plays the alt, which never had Berta on its list
   H.tage(1)
   local z = H.relog(W, a, { name = "Zweitchar", surname = "Wurst", friends = { "Carla" } })
   z.login(); W.run(40)

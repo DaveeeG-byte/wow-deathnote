@@ -1,7 +1,7 @@
--- Humor.lua (1.2.0, bau-d): Anlaesse, Schalter, Meilensteine genau einmal (auch nach /reload), Zufall mit
--- festem Startwert, versteckte Befehle gegen /dn add, Gilden-Extras (passend, fremd, keine, Secret),
--- nur Deutsch und Englisch (in fiFI und zhCN passiert nichts), kein Humor-Text in Datei oder Leitung.
--- Die Logik laeuft hier ohne Oberflaeche: Meilensteine ohne Meldung kommen als Chatzeile.
+-- Humor.lua (1.2.0, bau-d): occasions, switch, milestones exactly once (also after /reload), randomness with
+-- a fixed seed, hidden commands vs. /dn add, guild extras (matching, foreign, none, secret),
+-- German and English only (nothing happens in fiFI and zhCN), no humor text in the file or on the wire.
+-- The logic runs without UI here: milestones without a message arrive as a chat line.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local M = require("mock_wow")
 local test, eq, ok, no = M.test, M.eq, M.ok, M.no
@@ -19,7 +19,7 @@ local function load(code, opts)
   M.FILES = saved
   return ns
 end
-local function always(ns) for k in pairs(ns.Humor.CHANCE) do ns.Humor.CHANCE[k] = 1 end; ns.Humor.QUIET = 0 end -- fix-3: ohne Sperre
+local function always(ns) for k in pairs(ns.Humor.CHANCE) do ns.Humor.CHANCE[k] = 1 end; ns.Humor.QUIET = 0 end -- fix-3: without the lock
 local function never(ns) for k in pairs(ns.Humor.CHANCE) do ns.Humor.CHANCE[k] = 0 end end
 local QUIP = "|cffa89878"
 local function quips()
@@ -29,7 +29,7 @@ local function quips()
 end
 local function said(text) for _, l in ipairs(M.chat) do if l:find(text, 1, true) then return true end end return false end
 
--- ein sicherer PvP-Tod durch name/surname (wie Attribution: Tat buchen, Journal, Ereignis)
+-- A certain PvP death by name/surname (like Attribution: book the deed, journal, event)
 local function kill(ns, name, surname, o)
   o = o or {}
   local S = ns.Store
@@ -48,7 +48,7 @@ local function pve(ns)
 end
 local function slash(s) _G.SlashCmdList.DEATHNOTE(s) end
 
--- alle Texte (Blaetter) der Humor-Tabellen beider Sprachen
+-- All texts (leaves) of the humor tables of both languages
 local function allTexts(ns)
   local out = {}
   local function walk(t)
@@ -71,7 +71,7 @@ local function dump(v, seen, out)
 end
 
 ---------------------------------------------------------------------------
--- fix-2: Speicher. Nach der Aktivierung bleibt nur die Texttabelle der aktiven Sprache (in den 19 anderen keine)
+-- fix-2: memory. After activation only the text table of the active language remains (none in the 19 others)
 ---------------------------------------------------------------------------
 test("Speicher: nur die Texte der aktiven Sprache bleiben", function()
   local before = {}
@@ -90,7 +90,7 @@ test("Speicher: nur die Texte der aktiven Sprache bleiben", function()
 end)
 
 ---------------------------------------------------------------------------
--- Jeder Anlass loest aus (de/en) und bei "aus" nicht
+-- Every occasion fires (de/en), and not when switched off
 ---------------------------------------------------------------------------
 for _, code in ipairs({ "deDE", "enUS" }) do
   test(code .. ": Anlaesse loesen aus (Stammkunde, Meilenstein, PvE, Begnadigen, Rache, 100 Tode, Befehle)", function()
@@ -112,9 +112,9 @@ for _, code in ipairs({ "deDE", "enUS" }) do
     ns.Store.SetStatus(key, "wanted")
     M.chat = {}
     local k2 = kill(ns, "Zweiter", "Feind")
-    ns.Store.AddRevenge(k2)      -- Rang 2: erste Rache
+    ns.Store.AddRevenge(k2)      -- rank 2: first revenge
     ok(said(T.MILESTONE.revenge1), "erste Rache")
-    ns.Store.AddRevenge(key)     -- Rang 1: Staatsfeind erledigt
+    ns.Store.AddRevenge(key)     -- rank 1: public enemy taken down
     ok(said(T.MILESTONE.nr1), "Staatsfeind Nr. 1 erledigt")
     M.chat = {}
     ns.Humor.Mem().deaths = 99
@@ -169,9 +169,9 @@ test("Stufe deutlich darunter: Spruch nur ab 10 Stufen Abstand (Entscheidung)", 
   local H = ns.Humor
   local calls = 0
   H.random = function(n) calls = calls + 1; return n and 1 or 0 end
-  kill(ns, "Klein", "Wicht", { level = 31, myLevel = 40 })   -- 9 darunter: nichts
+  kill(ns, "Klein", "Wicht", { level = 31, myLevel = 40 })   -- 9 below: nothing
   eq(calls, 0, "9 Stufen: keine Auswahl")
-  kill(ns, "Winzig", "Wicht", { level = 30, myLevel = 40 })  -- 10 darunter: Wurf + Auswahl
+  kill(ns, "Winzig", "Wicht", { level = 30, myLevel = 40 })  -- 10 below: roll + pick
   eq(calls, 1, "10 Stufen: Auswahl aus dem Topf")
 end)
 
@@ -189,7 +189,7 @@ test("Nachts (2 bis 5 Uhr): eigener Topf, tagsueber nicht", function()
 end)
 
 ---------------------------------------------------------------------------
--- Meilensteine genau einmal, auch nach /reload; Vorbelegung aus 1.1.0
+-- Milestones exactly once, also after /reload; preset from 1.1.0
 ---------------------------------------------------------------------------
 test("Meilensteine genau einmal, auch nach /reload", function()
   local ns = load("deDE")
@@ -237,7 +237,7 @@ test("30 Tage ohne Tod: einmal beim Login (verzoegert), dann nie wieder", functi
   pve(ns)
   local db = _G.DeathNoteDB
   db.humor.lastDeath = time() - 31 * DAY
-  db.tally.last = time() - 31 * DAY      -- 1.2.0: der Zaehler des Buchs ist die Wahrheit, die Merker folgen ihm
+  db.tally.last = time() - 31 * DAY      -- 1.2.0: the book's counter is the truth, the markers follow it
   ns = load("deDE", { db = db })
   M.Advance(13)
   ok(said(ns.Humor.TEXTS.deDE.MILESTONE.clean30), "Zeile nach dem Login")
@@ -245,7 +245,7 @@ test("30 Tage ohne Tod: einmal beim Login (verzoegert), dann nie wieder", functi
   ns = load("deDE", { db = _G.DeathNoteDB })
   M.Advance(13)
   no(said(ns.Humor.TEXTS.deDE.MILESTONE.clean30), "nicht zweimal")
-  -- 29 Tage: nichts
+  -- 29 days: nothing
   db = _G.DeathNoteDB
   db.humor.m.clean30 = nil
   db.humor.lastDeath = time() - 29 * DAY
@@ -255,7 +255,7 @@ test("30 Tage ohne Tod: einmal beim Login (verzoegert), dann nie wieder", functi
 end)
 
 ---------------------------------------------------------------------------
--- Zufall mit festem Startwert: wiederholbar, nie zweimal derselbe hintereinander
+-- Randomness with a fixed seed: repeatable, never the same one twice in a row
 ---------------------------------------------------------------------------
 test("Zufall: fester Startwert gibt dieselbe Folge, nie zweimal dieselbe Zeile hintereinander", function()
   local function run()
@@ -279,7 +279,7 @@ test("Zufall: fester Startwert gibt dieselbe Folge, nie zweimal dieselbe Zeile h
 end)
 
 ---------------------------------------------------------------------------
--- Versteckte Befehle: nie gegen /dn add, nie Daten aendern, nur de/en
+-- Hidden commands: never vs. /dn add, never change data, de/en only
 ---------------------------------------------------------------------------
 test("Versteckte Befehle gegen /dn add mit gleichem Namen, ohne Datenaenderung", function()
   local ns = load("deDE")
@@ -325,7 +325,7 @@ for _, code in ipairs({ "fiFI", "zhCN" }) do
 end
 
 ---------------------------------------------------------------------------
--- Gilden-Extras: passend, fremd, keine, Secret; einmal bei Login und Gildenwechsel
+-- Guild extras: matching, foreign, none, secret; once at login and on guild change
 ---------------------------------------------------------------------------
 test("Gilde: passender, fremder, fehlender und Secret-Gildenname", function()
   local ns = load("deDE", { before = function() M.units.player.guild = "Die Fachkräfte" end })
@@ -351,7 +351,7 @@ test("Gilde: passender, fremder, fehlender und Secret-Gildenname", function()
   M.units.player.guild = "Die Fachkräfte"
   M.FireEvent("PLAYER_GUILD_UPDATE")
   ok(H.IsMember(), "Gildenwechsel zurueck")
-  -- Mitglieder bekommen eigene Varianten im Topf
+  -- members get their own variants in the pool
   local mine = {}
   for _, v in ipairs(H.TEXTS.deDE.MEMBER.revenge) do mine[v] = true end
   local got = false
@@ -372,7 +372,7 @@ test("Gilde wird nicht je Ereignis bestimmt (nur Login, Gildenwechsel, /dn fachk
 end)
 
 ---------------------------------------------------------------------------
--- Ende zu Ende ueber den echten Todesweg (Recap): PvE-Tod mit Spruch
+-- End to end over the real death path (recap): PvE death with a line
 ---------------------------------------------------------------------------
 test("Echter Todesweg: Tod durch ein Monster gibt (mit Wahrscheinlichkeit 1) eine Zeile", function()
   local ns = load("enUS")
@@ -387,7 +387,7 @@ test("Echter Todesweg: Tod durch ein Monster gibt (mit Wahrscheinlichkeit 1) ein
 end)
 
 ---------------------------------------------------------------------------
--- Kein Humor-Text in gespeicherten oder gesendeten Daten
+-- No humor text in stored or sent data
 ---------------------------------------------------------------------------
 test("Kein Humor-Text in DeathNoteDB oder auf der Leitung, nur Zahlen in db.humor", function()
   local ns = load("deDE", { before = function() M.units.player.guild = "Die Fachkräfte" end })
@@ -416,7 +416,7 @@ end)
 
 test("Humor-Texte sind keine Schluessel der Sprachtabelle (keine Pflicht fuer die 19 Uebersetzungen)", function()
   local ns = load("deDE")
-  -- eigenes Geruest (nach der Aktivierung gibt Locale die Bauanleitungen frei)
+  -- own scaffold (after activation Locale releases the build instructions)
   local lns = {}
   assert(loadfile(M.ADDON_DIR .. "Locale.lua"))("DeathNote", lns)
   for _, c in ipairs({ "enUS", "deDE" }) do assert(loadfile(M.ADDON_DIR .. "Locales/" .. c .. ".lua"))("DeathNote", lns) end
@@ -433,8 +433,8 @@ test("Humor-Texte sind keine Schluessel der Sprachtabelle (keine Pflicht fuer di
 end)
 
 ---------------------------------------------------------------------------
--- fix-3: seltener. Wahrscheinlichkeiten gesenkt, der 3. Tod ist kein Anlass mehr, und hoechstens ein
--- Zufallsspruch je 10 Minuten ueber alle Anlaesse (Meilensteine ausgenommen)
+-- fix-3: rarer. Probabilities lowered, the 3rd death is no occasion any more, and at most one
+-- random line per 10 minutes across all occasions (milestones excepted)
 ---------------------------------------------------------------------------
 test("fix-3: Wahrscheinlichkeiten gesenkt", function()
   local ns = load("deDE")
@@ -446,7 +446,7 @@ end)
 
 test("fix-3: hoechstens ein Zufallsspruch je 10 Minuten, ueber alle Anlaesse", function()
   local ns = load("deDE")
-  for k in pairs(ns.Humor.CHANCE) do ns.Humor.CHANCE[k] = 1 end   -- jeder Wurf traefe; die Sperre bleibt an
+  for k in pairs(ns.Humor.CHANCE) do ns.Humor.CHANCE[k] = 1 end   -- every roll would hit; the lock stays on
   pve(ns)
   eq(#quips(), 1, "erster Spruch")
   pve(ns)

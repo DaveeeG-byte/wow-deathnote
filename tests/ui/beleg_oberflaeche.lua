@@ -1,8 +1,8 @@
--- Oberflaeche ueber den UI-Mock (tests/ui/mock.lua) mit der echten Logik. Rundwege und Zustaende.
--- Funde: (a) Freigabe "nur Freunde" bei Quelle "Gilde": das Buch springt in die Abschussliste, das
--- Ziel steht dort aber nicht. (b) Die Erlegt-Meldung kommt auch, wenn alle Meldungen und Warnungen
--- der Gilde abgeschaltet sind (kein Schalter). Der Rest sind Rundwege, die gruen sein sollen.
--- (fix-1: in die Suite uebernommen; Teil (b) an den neuen Schalter guild.announceHunt angepasst.)
+-- UI through the UI mock (tests/ui/mock.lua) with the real logic. Round trips and states.
+-- Findings: (a) a call for "friends only" while the source is "guild": the book jumps to the hit list, but
+-- the target is not there. (b) The taken down message comes even when all guild messages and warnings
+-- are switched off (no switch). The rest are round trips that should be green.
+-- (fix-1: taken into the suite; part (b) adapted to the new switch guild.announceHunt.)
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/../?.lua;" .. (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 package.path = H.DIR .. "/tests/ui/?.lua;" .. package.path
@@ -57,14 +57,14 @@ local function view(i) VIEWS.items[i]._scripts.OnClick(VIEWS.items[i]); tick() e
 local function src(i) click(SRCS.items[i]); tick() end
 sauber("Start")
 
--- Daten: ein Freund, ein Kollege
+-- Data: one friend, one guildmate
 whisper(P.EncodeHello(0, "1.2.0"))
 whisper(P.EncodeKill({ key = "Grimm-Bart", display = "Grimm Bart", class = "MAGE", level = 40, zone = "Z", t = time() - 60, victim = "Fritz Frei" }, "K"))
 guildMsg(P.EncodeKill({ key = "Rauf-Bold", display = "Rauf Bold", class = "ROGUE", level = 44, zone = "Z", t = time() - 90, victim = "Kollege Wurst" }, "K"))
 tick(2); settle()
 
 ------------------------------------------------------------------------
--- (a) Freigabe nur fuer Freunde, waehrend die Quelle auf "Gilde" steht
+-- (a) Call for friends only while the source is set to "guild"
 ------------------------------------------------------------------------
 src(2); view(2)
 local rb
@@ -73,11 +73,11 @@ H.erwartet("Vorbedingung: Rauf Bold in Quelle Gilde", rb ~= nil, rowKeys())
 if rb then
   click(rb)
   local hw = word("Zur Jagd freigeben") or frameWith(function(f) return f.key == "Rauf-Bold" and f.text and f._scripts.OnClick and f:IsVisible() end)
-  -- fix-3: unter dem Stempel Nr. 1 kein Wort am Plakat; dann ueber das Zeilenmenue
+  -- fix-3: no word on the poster under the No. 1 stamp; so go through the row menu
   if not hw then click(rb, "RightButton"); hw = word("Zur Jagd freigeben") end
   click(hw)
   local R = frameWith(function(f) return f.edit and f.tabs and f.go end)
-  click(R.tabs[3])                       -- nur Freunde
+  click(R.tabs[3])                       -- friends only
   R.edit:SetText("nur fuer Freunde")
   click(R.go)
   sauber("Freigabe nur Freunde")
@@ -88,7 +88,7 @@ if rb then
 end
 
 ------------------------------------------------------------------------
--- Rundwege: Ansicht und Quelle wechseln bei offenem Plakat, Buch zu und auf
+-- Round trips: switch view and source with the poster open, close and reopen the book
 ------------------------------------------------------------------------
 src(1); view(3)
 ns.Guild.Release("Grimm-Bart", { to = "all", why = "beide" }); tick(1); ns.UI.Refresh()
@@ -101,7 +101,7 @@ ns:Fire("TOGGLE_UI"); tick(1); settle(); ns:Fire("TOGGLE_UI"); tick(1); settle()
 sauber("Buch zu und auf")
 H.erwartet("nach Zu und Auf dieselbe Abschussliste", rowKeys() == before, before .. " / " .. rowKeys())
 
--- Quelle wechseln, waehrend ein Ziel gewaehlt ist, das es dort nicht gibt
+-- Switch the source while a target is selected that does not exist there
 local rr
 for _, r in ipairs(rows()) do if r.item.key == "Rauf-Bold" then rr = r end end
 if rr then click(rr) end
@@ -109,7 +109,7 @@ src(2)
 sauber("Quelle wechseln mit gewaehltem Ziel")
 src(1)
 
--- Freigeben, sofort abblasen (Knopf am Plakat), wieder freigeben
+-- Post, call off at once (button on the poster), post again
 for _, r in ipairs(rows()) do if r.item.key == "Grimm-Bart" then click(r) end end
 local ab = word("Jagd abblasen")
 H.erwartet("Knopf Jagd abblasen am Plakat der eigenen Freigabe", ab ~= nil)
@@ -118,7 +118,7 @@ sauber("Abblasen am Plakat")
 H.erwartet("Ziel nach dem Abblasen weg", ns.Guild.Hunt("Grimm-Bart", "all") == nil)
 H.erwartet("Liste ohne das Ziel", rowKeys():find("Grimm-Bart", 1, true) == nil, rowKeys())
 
--- fremdes Abblasen der letzten Freigabe bei offenem Plakat
+-- Someone else calls off the last call while the poster is open
 guildMsg(P.EncodeHunt({ key = "Einzel-Ziel", display = "Einzel Ziel", t = time(), by = "Kollege Wurst", why = "x" }))
 tick(2); ns.UI.Refresh()
 for _, r in ipairs(rows()) do if r.item.key == "Einzel-Ziel" then click(r) end end
@@ -128,7 +128,7 @@ ns.Guild.CallOff("Rauf-Bold"); tick(2); settle()
 sauber("Leere Abschussliste nach dem letzten Abblasen")
 H.erwartet("Abschussliste ist leer", ns.Guild.HuntCount("all") == 0, ns.Guild.HuntCount("all"))
 
--- Kampf: Freigeben-Blatt oeffnen, Grund tippen, freigeben, abblasen
+-- combat: open the release sheet, type a reason, release, call off
 AM.inCombat = true
 ns.UI.OpenRelease("Grimm-Bart"); tick()
 local R = frameWith(function(f) return f.edit and f.tabs and f.go end)
@@ -141,12 +141,12 @@ AM.FireEvent("PLAYER_REGEN_ENABLED"); tick(5)
 sauber("Kampfende")
 
 ------------------------------------------------------------------------
--- (b) Erlegt-Meldung ohne Schalter
+-- (b) Taken down message without a switch
 ------------------------------------------------------------------------
 settle(); BM.Advance(60); AM.Advance(60)
 guildMsg(P.EncodeHunt({ key = "Einzel-Ziel", display = "Einzel Ziel", t = time(), by = "Kollege Wurst", why = "x" })); tick(2)
--- (fix-1) eigener Schalter "Abschussliste melden" (guild.announceHunt) auf dem Blatt Gilde; die anderen
--- Schalter lassen die Meldung, er allein nimmt sie weg
+-- (fix-1) own switch "report hit list" (guild.announceHunt) on the guild sheet; the other
+-- switches keep the message, only this one removes it
 ns.Store.Setting("guild.announce", false)
 ns.Store.Setting("guild.alertHunt", false)
 ns.Store.Setting("guild.alert", false)
@@ -154,7 +154,7 @@ if rawget(G, "DeathNoteBanner") then rawget(G, "DeathNoteBanner"):Hide() end
 guildMsg(P.EncodeBagged("Einzel-Ziel", "Kollege Wurst", time())); tick(1)
 local shown = rawget(G, "DeathNoteBanner") and rawget(G, "DeathNoteBanner"):IsShown()
 H.erwartet("Schalter Abschussliste melden an: die Erlegt-Meldung kommt", shown, "kein Fenster")
-for _ = 1, 3 do settle(); BM.Advance(30); AM.Advance(60) end   -- mehr als 2 Minuten: eine neue Toetung
+for _ = 1, 3 do settle(); BM.Advance(30); AM.Advance(60) end   -- more than 2 minutes: a new kill
 ns.Store.Setting("guild.announceHunt", false)
 if rawget(G, "DeathNoteBanner") then rawget(G, "DeathNoteBanner"):Hide() end
 guildMsg(P.EncodeBagged("Einzel-Ziel", "Kollege Wurst", time())); tick(1)

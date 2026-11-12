@@ -1,7 +1,7 @@
--- Gemeinsamer Kopf der UI-Belegtests (Design-Rueckbau). Aufruf je Datei:
---   nice -n 15 luajit <datei> <Projektkopie>
--- Laedt je Welt die echte Logik (tests/mock_wow.lua) und die Oberflaeche ueber den UI-Mock (tests/ui/mock.lua)
--- der angegebenen Kopie. Alle Namen sind erfunden. Geprueft wird ueber Schluessel und Daten, nie ueber Wortlaute.
+-- Shared head of the UI proof tests (design rollback). Usage per file:
+--   nice -n 15 luajit <file> <project copy>
+-- Loads the real logic per world (tests/mock_wow.lua) and the UI through the UI mock (tests/ui/mock.lua)
+-- of the given copy. All names are made up. Checks go through keys and data, never through wording.
 local K = {}
 local DIR = assert(arg and arg[1], "Aufruf: luajit <datei> <Projektkopie>"):gsub("/+$", "")
 K.DIR = DIR
@@ -12,7 +12,7 @@ arg[0] = DIR .. "/tests/ui/beleg.lua"
 K.CODES = { "enUS", "deDE", "frFR", "esES", "itIT", "ptBR", "ruRU", "koKR", "zhCN", "zhTW", "svSE", "nbNO",
   "daDK", "fiFI", "nlNL", "plPL", "csCZ", "huHU", "hrHR", "ukUA", "trTR" }
 
--- Breitenschaetzung wie in der finalen Jagd (Zeichen x Schriftgrad x Faktor, CJK als Geviert)
+-- Width estimate as in the final hunt (characters x font size x factor, CJK as em square)
 local function wide(cp)
   return (cp >= 0x1100 and cp <= 0x115F) or (cp >= 0x2E80 and cp <= 0xA4CF) or (cp >= 0xAC00 and cp <= 0xD7A3)
     or (cp >= 0xF900 and cp <= 0xFAFF) or (cp >= 0xFE30 and cp <= 0xFE4F) or (cp >= 0xFF00 and cp <= 0xFF60)
@@ -42,7 +42,7 @@ function K.estimate(fs)
   return best
 end
 
--- Zeilenzahl eines umbrechenden Textes der Breite w (Wortumbruch an Leerzeichen; CJK bricht je Zeichen)
+-- Line count of a wrapping text of width w (word wrap at spaces; CJK breaks per character)
 function K.lines(fs, w)
   local t = fs._text
   if type(t) ~= "string" or t == "" then return 0 end
@@ -60,7 +60,7 @@ function K.lines(fs, w)
     end
     return x
   end
-  -- Einheiten: Woerter (mit folgendem Leerzeichen), CJK-Zeichen einzeln
+  -- units: words (with the following space), CJK characters one by one
   local units, i = {}, 1
   local word = ""
   while i <= #t do
@@ -88,8 +88,8 @@ function K.lines(fs, w)
   return n
 end
 
--- Eine frische Welt. opts: guild (Text oder false), friends (Liste), db, humor (Humor.lua laden),
--- before (Funktion vor dem Laden), noOpen
+-- A fresh world. opts: guild (text or false), friends (list), db, humor (load Humor.lua),
+-- before (function before loading), noOpen
 function K.world(code, opts)
   opts = opts or {}
   package.loaded.mock_wow, package.loaded.mock = nil, nil
@@ -142,14 +142,14 @@ function K.world(code, opts)
     for j = #BM.violations, 1, -1 do BM.violations[j] = nil end
     return n, first
   end
-  -- Schluessel zu einem Wortlaut (fuer Meldungen)
+  -- key for a wording (for messages)
   W.keyOf = {}
   for k, v in pairs(ns.L) do if type(v) == "string" and not W.keyOf[v] then W.keyOf[v] = k end end
-  -- Rechteck eines Elements in UI-Einheiten, auch mit mehreren Ankern (SetAllPoints, TOPLEFT plus TOPRIGHT).
-  -- FontString: Rechteck der Tinte (geschaetzte Breite, Zeilenzahl aus dem Umbruch, Ausrichtung). nil ohne Lage.
+  -- Rectangle of an element in UI units, also with several anchors (SetAllPoints, TOPLEFT plus TOPRIGHT).
+  -- FontString: rectangle of the ink (estimated width, line count from wrapping, justification). nil without position.
   local ANCH = { TOPLEFT = { 0, 1 }, TOP = { 0.5, 1 }, TOPRIGHT = { 1, 1 }, LEFT = { 0, 0.5 }, CENTER = { 0.5, 0.5 },
     RIGHT = { 1, 0.5 }, BOTTOMLEFT = { 0, 0 }, BOTTOM = { 0.5, 0 }, BOTTOMRIGHT = { 1, 0 } }
-  local LINE = K.LINE or 1.0   -- Zeilenhoehe je Schriftgrad (Client: Zeilenhoehe = Schriftgrad; K.LINE = 1.2 als strenge Probe)
+  local LINE = K.LINE or 1.0   -- line height per font size (client: line height = font size; K.LINE = 1.2 as a strict check)
   local function box(f, depth, ink)
     if f == BM.G.UIParent then return 0, 0, f._w, f._h end
     depth = (depth or 0) + 1
@@ -169,7 +169,7 @@ function K.world(code, opts)
     end
     local isText = f._kind == "FontString"
     local function span(c, size)
-      -- Kante plus Mitte (BOTTOMLEFT plus RIGHT, das Muster der Hinweiszeilen seit 1.1.0): die Kante gilt
+      -- edge plus middle (BOTTOMLEFT plus RIGHT, the pattern of the hint lines since 1.1.0): the edge counts
       if c[0.5] and (c[0] or c[1]) then c[0.5] = nil end
       local k1, k2
       for k in pairs(c) do if not k1 then k1 = k elseif k ~= k1 then k2 = k end end
@@ -197,7 +197,7 @@ function K.world(code, opts)
     end
     local B0, T0, hfix = span(ys, h)
     if isText and ink ~= false then
-      -- Tinte im Kasten: waagrecht nach Ausrichtung, senkrecht mittig bzw. oben
+      -- ink in the box: horizontally by justification, vertically centred or at the top
       local iw = (lines > 1) and bw or math.min(est, bw > 0 and bw or est)
       if not f._wset and not wfix then iw = est end
       local jh = f._jh or "CENTER"
@@ -213,7 +213,7 @@ function K.world(code, opts)
   W.box = function(f) return box(f, 0, true) end
   W.frameBox = function(f) return box(f, 0, false) end
   function W.under(f, root) local o = f; while o do if o == root then return true end; o = o._parent end return false end
-  -- haengt a an b (oder umgekehrt) mit allen Ankern? (Klickflaeche ueber einem Text u. ae.)
+  -- is a hung onto b (or the other way round) with all anchors? (click area over a text and the like)
   function W.tied(a, b)
     local function all(x, y)
       if not x._points or #x._points == 0 then return false end
@@ -226,9 +226,9 @@ function K.world(code, opts)
     local t = f._kind == "FontString" and f._text or (type(f.text) == "table" and f.text._text) or (type(f.label) == "table" and f.label._text) or nil
     return (t and (W.keyOf[t] or ("(Daten)"))) or f._kind
   end
-  -- Alle sichtbaren Texte und Klickflaechen unter root vermessen. Liefert Liste von Meldungen
-  -- { art = "LAGE"|"FEST"|"KNOPF"|"RAND", a = Name, b = Name, x = px, y = px }.
-  -- opts.extra(f): weitere Elemente aufnehmen (z. B. Stempel-Texturen); opts.rand: Abstand zum Rand von root
+  -- Measure all visible texts and click areas under root. Returns a list of messages
+  -- { art = "LAGE"|"FEST"|"KNOPF"|"RAND", a = name, b = name, x = px, y = px }.
+  -- opts.extra(f): include more elements (e.g. stamp textures); opts.rand: distance to the edge of root
   function W.scan(root, opts)
     opts = opts or {}
     local items, out = {}, {}
@@ -273,7 +273,7 @@ function K.world(code, opts)
   return W
 end
 
--- Zaehler und Abschluss
+-- Counters and summary
 local rot, gruen = 0, 0
 function K.check(name, cond, detail)
   if cond then gruen = gruen + 1

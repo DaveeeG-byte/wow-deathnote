@@ -1,11 +1,11 @@
--- Beleg UI 1: "niemand zum Teilen" (GF.Survey, fix-3) versteckt Ansichten und Stand, obwohl es Daten gibt.
--- Aufruf: nice -n 15 luajit beleg_ui_1_niemand_versteckt_liste.lua <Projektkopie>
--- Fall A: Gildenmitglied mit Gildenbuch, fremder Freigabe und eigener Freigabe schaltet "Mit der Gilde teilen" und
---         "Mit Freunden teilen" aus. Erwartet: die Ansichten bleiben erreichbar (es gibt Eintraege und Freigaben),
---         die Statuszeile sagt, dass nicht geteilt wird.
--- Fall B: ohne Gilde, ein Freund mit DeathNote hat ein Ziel freigegeben; "Mit Freunden teilen" aus. Der Alarm
---         fuer das Ziel kommt weiter; erwartet: dann ist die Abschussliste auch zu oeffnen.
--- Alle Namen sind erfunden. Geprueft wird ueber Daten und Schluessel, nicht ueber Wortlaute.
+-- Proof UI 1: "nobody to share with" (GF.Survey, fix-3) hides views and status although there is data.
+-- Usage: nice -n 15 luajit beleg_ui_1_niemand_versteckt_liste.lua <project copy>
+-- Case A: guild member with guild book, a foreign call and an own call turns off "Share with the guild" and
+--         "Share with friends". Expected: the views stay reachable (there are entries and calls),
+--         the status line says that nothing is shared.
+-- Case B: no guild, a friend with DeathNote has called a target; "Share with friends" off. The alert
+--         for the target still comes; expected: then the hit list can be opened too.
+-- All names are made up. Checked via data and keys, not wording.
 package.path = (arg[0]:match("^(.*)/[^/]+$") or ".") .. "/?.lua;" .. package.path
 local K = require("_kopf_ui")
 
@@ -19,7 +19,7 @@ local function lage(W)
 end
 local function open(W) W.ns:Fire("TOGGLE_UI"); W.tick(); W.settle(); W.tab("guild"); W.settle() end
 
--- Fall A
+-- case A
 do
   local W = K.world("deDE")
   local ns, P, t = W.ns, W.P, _G.time()
@@ -55,7 +55,7 @@ do
   K.check("A keine Fehler", n == 0, e)
 end
 
--- Fall B
+-- case B
 do
   local W = K.world("deDE", { guild = false })
   local ns, P = W.ns, W.P

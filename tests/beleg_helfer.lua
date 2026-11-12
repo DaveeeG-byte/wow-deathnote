@@ -1,13 +1,13 @@
--- Gemeinsamer Kopf der Belegtests der Fehlerjagd (1.2.0, in die Suite uebernommen von fix-1).
--- Ohne Argument gilt das Projekt, in dem die Datei liegt; sonst eine Projektkopie als erstes Argument
--- oder in DN_DIR (Rot-Probe):  luajit tests/test_beleg_xx.lua [/pfad/zur/projektkopie]
--- Die Tests pruefen Verhalten und Daten, keine deutschen Texte. Alle Namen sind erfunden.
+-- Shared head of the proof tests of the bug hunt (1.2.0, taken into the suite by fix-1).
+-- Without argument the project the file lives in is used; otherwise a project copy as first argument
+-- or in DN_DIR (red check):  luajit tests/test_beleg_xx.lua [/path/to/project-copy]
+-- The tests check behaviour and data, not German texts. All names are made up.
 local a0 = arg and arg[0] or ""
 local here = a0:match("^(.*)/tests/") or (a0:match("^tests/") and ".")
 local DIR = (arg and arg[1]) or os.getenv("DN_DIR") or here or "."
 DIR = DIR:gsub("/+$", "")
 local SELF = arg[0]
--- mock_wow.lua leitet den Addon-Ordner aus arg[0] ab ("<x>/tests/...")
+-- mock_wow.lua derives the addon folder from arg[0] ("<x>/tests/...")
 arg[0] = DIR .. "/tests/beleg.lua"
 package.path = DIR .. "/tests/?.lua;" .. package.path
 local M = require("mock_wow")
@@ -15,7 +15,7 @@ local M = require("mock_wow")
 local H = { M = M, DIR = DIR }
 local pass, fail, lines = 0, 0, {}
 
--- erwartet(name, bedingung, detail): gruen, wenn das SOLL erfuellt ist (rot = der Fund besteht)
+-- erwartet(name, condition, detail): green when the expectation holds (red = the finding still exists)
 function H.erwartet(name, cond, detail)
   if cond then pass = pass + 1 else
     fail = fail + 1
@@ -51,7 +51,7 @@ function H.zaehle(c, ev)
   return n
 end
 
--- sicherer Tod von c durch name/surname (wie tests/test_freunde.lua)
+-- certain death of c by name/surname (as in tests/test_freunde.lua)
 function H.tod(c, name, surname, dt)
   local t = time() - (dt or 0)
   local me = c.surname and (c.name .. " " .. c.surname) or c.name
@@ -65,10 +65,10 @@ end
 function H.gilde(c, text, from) c.fire("CHAT_MSG_ADDON", "DeathNote", text, "GUILD", from) end
 function H.fluestern(c, text, from) c.fire("CHAT_MSG_ADDON", "DeathNote", text, "WHISPER", from) end
 
--- (fix-2, aus dem Kopf der finalen Jagd) Zeitsprung ohne Sitzungszeit: nur die Uhr laeuft weiter
+-- (fix-2, from the head of the final hunt) time jump without session time: only the clock moves on
 function H.tage(n) M.epoch = M.epoch + n * 86400 end
 
--- derselbe Char loggt aus und (spaeter) wieder ein: gespeicherte Daten bleiben, Sitzung ist neu
+-- the same char logs out and (later) in again: saved data stays, the session is new
 function H.relog(W, c, opts)
   c.fire("PLAYER_LOGOUT")
   local db = H.tiefe_kopie(c.env.DeathNoteDB)

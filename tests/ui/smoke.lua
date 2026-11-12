@@ -1,13 +1,13 @@
--- Rauchtest fuer Alert.lua, UI.lua, Extras.lua gegen Mini-Mock und Vertrags-Stub.
--- Aufruf: luajit tests/ui/smoke.lua [Quellordner]   (Standard: Staatsfeind)
--- Hinweis 1.2.0: dieser Test findet Knoepfe und Texte ueber die DEUTSCHEN Beschriftungen und laeuft darum
--- mit deDE (der Mock waehlt die Sprache). Bewusst so gelassen (ein Umbau aller Pruefungen auf Schluessel waere
--- ein eigenes Vorhaben); der volle Lauf auf Englisch und in allen Sprachen ist tests/ui/sprachen.lua.
+-- Smoke test for Alert.lua, UI.lua, Extras.lua against the mini mock and the contract stub.
+-- Usage: luajit tests/ui/smoke.lua [source folder]   (default: DeathNote/ in the project root)
+-- Note 1.2.0: this test finds buttons and texts by their GERMAN labels and therefore runs
+-- with deDE (the mock selects the language). Left that way on purpose (moving all checks to keys would be
+-- a project of its own); the full run in English and in all languages is tests/ui/sprachen.lua.
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. package.path
 local root = here .. "/../.."
 
--- Addon-Ordner: DeathNote/ (nach der Umbenennung) oder noch Staatsfeind/
+-- Addon folder: DeathNote/ (after the rename) or still Staatsfeind/
 local function addonDir(root)
   for _, d in ipairs({ "DeathNote", "Staatsfeind" }) do
     local f = io.open(root .. "/" .. d .. "/Alert.lua", "r")
@@ -56,7 +56,7 @@ local function anyText(root, needle)
   end
 end
 local function settle() M.Advance(0.01); M.Advance(0.01) end
--- Knoepfe einer Stepper-Zeile der Hausordnung ueber ihre Beschriftung (gleiches Blatt, gleiche Hoehe)
+-- buttons of a stepper row in the house rules by their label (same sheet, same height)
 local function stepperButtons(label)
   local lbl = find(function(f) return f._kind == "FontString" and f._text == label end)
   if not lbl then return nil end
@@ -84,7 +84,7 @@ end
 local function put(e) ns.db.enemies[e.key] = e; return e end
 
 ------------------------------------------------------------------------
--- Laden: vor READY darf nichts aus der DB gelesen und kein Fenster gebaut werden
+-- Loading: before READY nothing may be read from the DB and no window built
 ------------------------------------------------------------------------
 local realStore = ns.Store
 ns.Store = setmetatable({}, { __index = function(_, k) error("DB vor READY gelesen: Store." .. tostring(k)) end })
@@ -102,7 +102,7 @@ check("Minimap-Knopf nach READY da", G.DeathNoteMinimapButton ~= nil)
 check("Hauptfenster noch nicht gebaut", rawget(G, "DeathNoteFrame") == nil)
 
 ------------------------------------------------------------------------
--- Leere Liste
+-- empty list
 ------------------------------------------------------------------------
 step("TOGGLE_UI leer", function() ns:Fire("TOGGLE_UI") end)
 local F = rawget(G, "DeathNoteFrame")
@@ -112,7 +112,7 @@ check("ESC-Liste", G.UISpecialFrames[1] == "DeathNoteFrame")
 step("TOGGLE_UI schliesst", function() ns:Fire("TOGGLE_UI") end)
 check("Fenster zu", not F:IsShown())
 
--- allererster Alarm mitten im Kampf: Popup ja, Secure-Knopf darf noch gar nicht entstehen
+-- very first alarm in the middle of combat: popup yes, the secure button must not exist yet
 step("erster Alarm im Kampf (Beispiel)", function() M.combat = true; ns:Fire("TEST_ALERT") end)
 local popup = rawget(G, "DeathNoteAlert")
 check("Popup sichtbar", popup and popup:IsShown())
@@ -129,7 +129,7 @@ check("Popup weg", not popup:IsShown())
 check("Secure-Knopf weg", not button:IsShown())
 
 ------------------------------------------------------------------------
--- Ein Feind
+-- One enemy
 ------------------------------------------------------------------------
 local one = put(enemy(1, { kills = 3, revenge = 2, guild = "Die Bösen", level = 40, raceLoc = "Ork", classLoc = "Magier" }))
 step("ENEMY_UPDATED bei geschlossenem Fenster", function() ns:Fire("ENEMY_UPDATED", one.key) end)
@@ -173,7 +173,7 @@ end)
 check("Popup nach Rechtsklick zu", not popup:IsShown())
 
 ------------------------------------------------------------------------
--- 40 Feinde, Pool-Wiederverwendung, Scrollen
+-- 40 enemies, pool reuse, scrolling
 ------------------------------------------------------------------------
 for i = 2, 40 do put(enemy(i)) end
 step("40 Feinde Refresh", function() ns:Fire("ENEMY_UPDATED", "Feind2-Nach2"); settle() end)
@@ -194,7 +194,7 @@ end)
 check("Rang 40 erreichbar", (function() slider:SetValue(31); return anyText(F, "Feind40 Nach40") ~= nil end)())
 
 ------------------------------------------------------------------------
--- Sonderfaelle: ohne Klasse/lastSeen/Taten, nur Verdacht, begnadigt
+-- Special cases: without class/lastSeen/deeds, suspicion only, pardoned
 ------------------------------------------------------------------------
 local bare = put({ key = "Nackt-X", name = "Nackt", status = "wanted", kills = 1, deaths = {} })
 local sus = put({ key = "Vage-Y", name = "Vage", status = "suspect", kills = 0, suspected = 1 })
@@ -219,7 +219,7 @@ check("kein Popup fuer Verdacht", not popup:IsShown())
 step("unbekannter/geloeschter Schluessel", function() ns:Fire("ENEMY_SPOTTED", "Gibts-Nicht", nil, "other") end)
 
 ------------------------------------------------------------------------
--- Warteschlange
+-- queue
 ------------------------------------------------------------------------
 M.Advance(200)
 step("drei gleichzeitig", function()
@@ -238,7 +238,7 @@ end)
 check("Popup am Ende zu", not popup:IsShown())
 
 ------------------------------------------------------------------------
--- Kampf: Popup ja, Secure-Knopf erst nach dem Kampf
+-- Combat: popup yes, secure button only after combat
 ------------------------------------------------------------------------
 M.Advance(200)
 step("Alarm im Kampf", function()
@@ -263,7 +263,7 @@ M.combat = false
 ns:FireWow("PLAYER_REGEN_ENABLED")
 
 ------------------------------------------------------------------------
--- Tod, Rache, Journal
+-- death, revenge, journal
 ------------------------------------------------------------------------
 ns.db.deaths = {
   { t = NOW, zone = "Schlingendorntal", kind = "pvp", killerKey = one.key, sure = true, source = "recap", me = "Davee",
@@ -326,9 +326,9 @@ end)
 check("keine Zeile bei Secret", #tt._lines == 0)
 
 ------------------------------------------------------------------------
--- Einstellungen, Sichern/Einlesen, Notiz, Loeschen, Minimap, Compartment
+-- Settings, save/load, note, delete, minimap, compartment
 ------------------------------------------------------------------------
--- Rueckfaelle wirklich durchlaufen: Schriften und Texturen der Hausordnung lassen sich nicht laden
+-- really run the fallbacks: fonts and textures of the house rules cannot be loaded
 M.fontFails, M.textureFails = true, true
 step("Einstellungen", function()
   ns.UI.OpenPanel("settings")
@@ -399,7 +399,7 @@ end)
 check("Hinweis Namensplaketten", anyText(F, "Namensplaketten sind aus") ~= nil)
 
 ------------------------------------------------------------------------
--- Design-Funde: Suche, Groesse, Rechtsklick-Menue, Umschalt-Klick, Tooltip bei gekuerztem Namen
+-- Design findings: search, size, right click menu, shift click, tooltip on a shortened name
 ------------------------------------------------------------------------
 ns.nameplates = true
 local search = G.DeathNoteSearch
@@ -456,7 +456,7 @@ step("Haken mit eigener Optik", function()
   cb:SetChecked(true); cb._scripts.OnClick(cb)
   check("Kreuz sichtbar", cb.cross:IsShown())
 end)
--- G22: ein Weg zur Stille: kein Haken "Ton beim Alarm", "Kein Ton" vorn in der Tonwahl
+-- G22: one way to silence: no "sound on alarm" checkbox, "No sound" first in the sound choice
 check("G22 kein Haken Ton beim Alarm", find(function(f) return f._kind == "CheckButton" and f.opt and f.opt.path == "alert.sound" end) == nil
       and not M.texts["Ton beim Alarm"])
 check("G22 Kein Ton ist der erste Ton", ns.Look.SOUNDS[1].key == "aus")
@@ -485,7 +485,7 @@ end)
 local menu = G.DeathNoteMenu
 check("Menue offen", menu and menu:IsShown())
 check("Menue am Mauszeiger bei Buchgroesse 130 %", (function()
-  local pt = menu._points[1]   -- GetCursorPosition = 100, 200 (Bildschirm), Menue-Einheiten = / 1,3
+  local pt = menu._points[1]   -- GetCursorPosition = 100, 200 (screen), menu units = / 1.3
   return pt and pt[2] == G.UIParent and math.abs(pt[4] - (100 / 1.3 + 2)) < 1e-9 and math.abs(pt[5] - (200 / 1.3 - 2)) < 1e-9
 end)(), menu._points[1] and (tostring(menu._points[1][4]) .. "," .. tostring(menu._points[1][5])))
 check("Menue zeigt Begnadigen", anyText(menu, "Begnadigen") ~= nil and anyText(menu, "Rache vermerken") ~= nil
@@ -526,7 +526,7 @@ step("Tooltip bei gekuerztem Namen", function()
 end)
 
 ------------------------------------------------------------------------
--- Gilde
+-- guild
 ------------------------------------------------------------------------
 local guildTab = find(function(f) return f.id == "guild" and f._scripts.OnClick end)
 step("ohne ns.Guild", function() ns.Guild = nil; ns.UI.Refresh() end)
@@ -534,7 +534,7 @@ check("Gilden-Reiter versteckt ohne Sync.lua", not guildTab:IsShown())
 step("Reiter-Klick ohne ns.Guild faellt zurueck", function() guildTab._scripts.OnClick(guildTab) end)
 check("ohne Gilde zurueck auf Gesucht", find(function(f) return f.id == "wanted" and f.mark end).mark:IsShown())
 
--- der fruehere Einstellungs-Schritt hat alle Haken umgelegt: zuruecksetzen
+-- the earlier settings step flipped all checkboxes: reset
 for k, v in pairs({ enabled = true, sound = true, flash = true, suspects = false }) do ns.db.settings.alert[k] = v end
 ns.db.settings.tooltip, ns.db.settings.deathMessage, ns.db.settings.guild = true, true, nil
 local GG = ns.MakeGuild(0, { noguild = true })
@@ -566,7 +566,7 @@ step("Gilde: 1 Eintrag", function() ns:Fire("GUILD_UPDATED"); settle() end)
 check("Gildenfeind in der Liste", anyText(F, "Gilde1 Feind1") ~= nil)
 check("Untertext mit Opfern und mindestens 20", anyText(F, "mindestens 20× getötet · ") ~= nil and anyText(F, " Opfer · zuletzt ") ~= nil)
 check("Plakat: Gildenfahndung", anyText(F, "G I L D E N B U C H") ~= nil and anyText(F, "WANTED") ~= nil)
--- fix-3: Opferzahl ohne Rolle (Kollege oder Freund), das Etikett OPFER nur einmal (vor den Namen)
+-- fix-3: victim count without a role (guildmate or friend), the VICTIMS label only once (before the names)
 check("Opferzahl statt Kopfgeld", anyText(F, "O P F E R") ~= nil and anyText(F, "2 Opfer") ~= nil and anyText(F, "2 KOLLEGEN") == nil)
 check("Tat: Datum · Ort · Opfer", anyText(F, " · Nesingwarys Expedition · ") ~= nil)
 check("Knopf Ins eigene Buch", anyText(F, "Ins eigene Buch") ~= nil)
@@ -632,7 +632,7 @@ check("alte Liste nicht gezeigt", anyText(F, "Keine Gilde.") ~= nil)
 GG.name = "Die Schlächter von Sturmwind"
 ns:Fire("GUILD_UPDATED"); settle()
 
--- Einstellungen Gilde
+-- guild settings
 step("Hausordnung Blatt Gilde", function()
   ns.UI.OpenPanel("settings")
   local t = find(function(f) return f.page == 3 and f._scripts.OnClick end)
@@ -663,7 +663,7 @@ end)
 check("Clear aufgerufen", GG.cleared == 1)
 ns.UI.ClosePanel()
 
--- Alarm fuer Gildenfeinde
+-- alarm for guild enemies
 GG = ns.MakeGuild(3)
 M.Advance(300)
 local snd = #M.sounds
@@ -688,7 +688,7 @@ step("guild.alert aus", function() ns:Fire("GUILD_ENEMY_SPOTTED", "Gilde3-Feind3
 check("kein Alarm wenn aus", not popup:IsShown())
 ns.Store.Setting("guild.alert", true)
 
--- Tooltip fuer Gildenfeind
+-- tooltip for a guild enemy
 step("Tooltip Gildenfeind", function()
   ns.units.mouseover = "Gilde2-Feind2"
   tt._unitName, tt._unit, tt._lines = "Gilde2", "mouseover", {}
@@ -696,7 +696,7 @@ step("Tooltip Gildenfeind", function()
 end)
 check("Tooltip GILDENFEIND", tt._lines[1] and tt._lines[1]:find("GILDENBUCH:", 1, true) ~= nil and tt._lines[1]:find("hat 19× Kollegen getötet", 1, true) ~= nil, tt._lines[1])
 
--- Meldung, wenn ein Kollege getoetet wird
+-- message when a guildmate is killed
 ns.Store.Setting("guild.announce", true)
 M.FinishAnims()
 step("GUILD_KILL", function()
@@ -733,19 +733,19 @@ end)
 check("ohne ns.Guild kein Popup und keine Meldung", not popup:IsShown() and not banner:IsShown())
 
 ------------------------------------------------------------------------
--- Funde der UI-Jagd (U1 bis U16, F4, F7): je ein Belegtest
+-- Findings of the UI hunt (U1 to U16, F4, F7): one proof test each
 ------------------------------------------------------------------------
 local function spot(key, unit) ns:Fire("ENEMY_SPOTTED", key, unit, "other") end
 local function closePopup() if popup:IsShown() then ns.Alert.Dismiss(); M.FinishAnims() end; M.Advance(0.5) end
 local function clickTarget()
-  -- wen visiert ein Linksklick auf das Popup an? (Knopf und Popup liegen deckungsgleich)
+  -- whom does a left click on the popup target? (button and popup lie exactly on top of each other)
   local top = M.TopFrame(popup, button)
   if top == button then return (button:GetAttribute("macrotext") or ""):match("/targetexact ([^\n]+)") end
   return nil
 end
 M.Advance(300); closePopup()
 
--- U1: Zeilenumbruch im Namen schaltet den Knopf nicht scharf (und nimmt einen alten Knopf weg)
+-- U1: a line break in the name does not arm the button (and removes an old button)
 put(enemy(70, { kills = 3, surname = "Bube\n/run BOESE()" }))
 step("U1 Probe-Feind scharf", function() spot("Feind30-Nach30") end)
 check("U1 Vorbedingung: Knopf scharf fuer Feind30", button:IsShown() and (button:GetAttribute("macrotext") or ""):find("Feind30 Nach30", 1, true) ~= nil)
@@ -760,7 +760,7 @@ check("U1 TargetName lehnt | und Ueberlaenge ab", ns.Look.TargetName({ name = "A
 closePopup()
 ns.db.enemies["Feind70-Nach70"] = nil
 
--- Skalierung 1,3: Knopf deckungsgleich ueber dem Popup (Popup-Einheiten * 1,3 = UIParent-Einheiten)
+-- scale 1.3: button exactly over the popup (popup units * 1.3 = UIParent units)
 popup._cx, popup._cy = 500, 400
 step("Knopf bei Alarmgroesse 130 %", function() spot("Feind31-Nach31") end)
 check("Knopf-Mitte und -Groesse bei 130 %", (function()
@@ -771,7 +771,7 @@ check("Knopf-Mitte und -Groesse bei 130 %", (function()
 end)(), button._points[1] and (tostring(button._points[1][4]) .. "," .. tostring(button._points[1][5]) .. " " .. tostring(button._w)))
 popup._cx, popup._cy = nil, nil
 
--- U13 + U15: Kampfbeginn beim Ziehen am Knopf; gezogene Frames nicht in layout-local.txt
+-- U13 + U15: combat starts while dragging the button; dragged frames not in layout-local.txt
 step("U13 Kampfbeginn waehrend des Ziehens", function()
   button._scripts.OnDragStart(button)
   ns:FireWow("PLAYER_REGEN_DISABLED")
@@ -794,16 +794,16 @@ check("U15 Buch nicht user-placed", F._userPlaced == false)
 ns.db.settings.alert.point = nil
 closePopup()
 
--- U14: Ausblenden endet auf Alpha 0 (kein Aufblitzen)
+-- U14: fading out ends at alpha 0 (no flash)
 check("U14 SetToFinalAlpha an Popup und Meldung", popup.outAnim._toFinal == true and banner.anim._toFinal == true)
 
--- U4: ein in der Nachrueck-Luecke gezeigter Alarm wird nicht vom Nachruecker ueberschrieben
+-- U4: an alarm shown in the follow-up gap is not overwritten by the follower
 M.Advance(300)
 step("U4 Luecke", function()
   spot("Feind33-Nach33"); spot("Feind34-Nach34")
-  ns.Alert.Dismiss(); M.FinishAnims()           -- 33 weg, 34 kaeme in 0,4 s
+  ns.Alert.Dismiss(); M.FinishAnims()           -- 33 gone, 34 would come in 0.4 s
   M.Advance(0.1)
-  spot("Feind35-Nach35")                        -- 35 in der Luecke: sofort gezeigt
+  spot("Feind35-Nach35")                        -- 35 in the gap: shown at once
   M.Advance(0.5)
 end)
 check("U4 35 bleibt stehen", popup:IsShown() and popup.name._text == "Feind35 Nach35", popup.name._text)
@@ -811,17 +811,17 @@ step("U4 danach 34", function() closePopup() end)
 check("U4 34 kommt danach", popup:IsShown() and popup.name._text == "Feind34 Nach34", popup.name._text)
 closePopup()
 
--- U5: volle Schlange verbraucht die Abklingzeit nicht
+-- U5: a full queue does not use up the cooldown
 M.Advance(300)
 step("U5 elf auf einmal", function()
   for i = 1, 11 do spot("Feind" .. (i + 10) .. "-Nach" .. (i + 10)) end
   for _ = 1, 12 do closePopup() end
-  spot("Feind21-Nach21")                        -- der verdraengte elfte, gleich wieder gesehen
+  spot("Feind21-Nach21")                        -- the pushed out eleventh, seen again right away
 end)
 check("U5 verdraengter Feind wird gemeldet", popup:IsShown() and popup.name._text == "Feind21 Nach21", popup:IsShown() and popup.name._text or "nichts")
 closePopup()
 
--- U6: SetUnit liefert false -> Klassensymbol statt leerem Foto
+-- U6: SetUnit returns false -> class icon instead of an empty photo
 M.Advance(300)
 ns.units.target = "Feind22-Nach22"
 M.setUnitResult = false
@@ -831,7 +831,7 @@ check("U6 Klassensymbol statt Modell", popup.icon:IsShown() and not popup.model:
 ns.units.target = nil
 closePopup()
 
--- U16: ein Klick aufs Popup visiert nie einen anderen an, als das Popup zeigt
+-- U16: a click on the popup never targets anyone other than the popup shows
 M.Advance(300)
 step("U16a Verstecken gelingt", function()
   spot("Feind23-Nach23")
@@ -866,7 +866,7 @@ end)
 check("U16b nach dem Kampf: Klick visiert den Neuen an", clickTarget() == "Feind26 Nach26" and popup:GetFrameStrata() == "HIGH", tostring(clickTarget()))
 closePopup()
 
--- U9: Umzug auf einen neuen Schluessel: Auswahl, Notizfeld, Popup und Abklingzeit ziehen mit
+-- U9: move to a new key: selection, note field, popup and cooldown move along
 M.Advance(300)
 put({ key = "Umzug-X", name = "Umzug", status = "wanted", kills = 2, deaths = {}, note = "" })
 local noteBox
@@ -892,7 +892,7 @@ local snd9 = #M.sounds
 step("U9 Abklingzeit folgt", function() spot("Umzug-Neu") end)
 check("U9 kein zweiter Alarm", #M.sounds == snd9 and not popup:IsShown())
 
--- U2: Notiz landet beim richtigen Eintrag, wenn die Auswahl bei Fokus wechselt
+-- U2: the note ends up with the right entry when the selection changes while focused
 step("U2 Auswahl wechselt bei Fokus", function()
   ns.UI.ShowEnemy("Feind2-Nach2"); settle()
   noteBox:SetFocus(); noteBox:SetText("campt am Zeppelin")
@@ -903,7 +903,7 @@ end)
 check("U2 Notiz bei Feind2", ns.db.enemies["Feind2-Nach2"].note == "campt am Zeppelin", ns.db.enemies["Feind2-Nach2"].note)
 check("U2 Feind3 ohne fremde Notiz", (ns.db.enemies["Feind3-Nach3"].note or "") == "")
 
--- F4: Neuaufbau ohne neue Knopf-Closures; Tat-Tooltip erst beim Zeigen
+-- F4: rebuild without new button closures; deed tooltip only when shown
 local rache = find(function(f) return f.fn and f.text and f.text._text == "Rache vermerken" and f:IsVisible() and under(f, F) end)
 local fn1 = rache and rache.fn
 step("F4 Refresh", function() ns.UI.Refresh(); ns.UI.Refresh() end)
@@ -919,14 +919,14 @@ check("F4 neue Knoepfe nach Statuswechsel", (function()
 end)())
 ns.Store.SetStatus("Feind3-Nach3", "wanted"); settle(); ns.UI.ShowEnemy("Feind3-Nach3")
 
--- U10: Klick auf den aktiven Reiter schliesst die Hausordnung
+-- U10: a click on the active tab closes the house rules
 step("U10 aktiver Reiter", function()
   ns.UI.OpenPanel("settings")
   tabClick("wanted")
 end)
 check("U10 Hausordnung zu", not anyText(F, "Hausordnung"):IsVisible() and anyText(F, "WANTED"):IsVisible())
 
--- U3 + U7 + U11: Todesjournal
+-- U3 + U7 + U11: death journal
 ns.db.deaths = {
   { t = NOW - 100, zone = "Alt", kind = "pve", me = "Davee" },
   { t = NOW - 50, zone = "Brachland", kind = "pvp", sure = false, source = "suspect",
@@ -977,7 +977,7 @@ check("U7 AssignDeath trifft den gezeigten Fall", ns.db.deaths[4].zone == "Brach
       and ns.db.deaths[3].killerKey == nil)
 tabClick("wanted")
 
--- U12: Import wirft
+-- U12: import throws
 step("U12 Import wirft", function()
   ns.UI.OpenIO("import")
   local eb = find(function(f) return f._kind == "EditBox" and f._focus end)
@@ -987,7 +987,7 @@ step("U12 Import wirft", function()
 end)
 check("U12 Meldung statt leer", anyText(F, "Das hat nicht geklappt.") ~= nil)
 
--- F7: grosses Buch zuerst klein
+-- F7: large book small first
 local function ioText() return find(function(f) return f._kind == "EditBox" and f._focus end)._text or "" end
 ns.bigExport = true
 step("F7 Buch sichern gross", function() ns.UI.OpenIO("export") end)
@@ -1002,7 +1002,7 @@ check("F7 Warnung statt Wahl", anyText(F, "Großes Buch (") ~= nil and not sizeB
 ns.bigExport, ns.exportShort = nil, nil
 ns.UI.ClosePanel()
 
--- Design: vierstelliges Kopfgeld einen Grad kleiner (22 statt 26), sonst stoesst es an den Rache-Stempel
+-- Design: a four-digit bounty one size smaller (19 instead of 22), otherwise it hits the revenge stamp
 put(enemy(80, { kills = 250, revenge = 1 }))
 step("Kopfgeld vierstellig", function() ns.UI.ShowEnemy("Feind80-Nach80") end)
 check("Kopfgeld 1.251 GOLD in 19", (function() local f = anyText(F, "1.251 GOLD"); return f and f._fontSize == 19 end)())
@@ -1012,7 +1012,7 @@ ns.db.enemies["Feind80-Nach80"] = nil
 settle()
 
 ------------------------------------------------------------------------
--- 1.1.0: Gilde nach Mitglied, Hand-Eintraege, Ton, ein Fenster je Ereignis
+-- 1.1.0: guild by member, manual entries, sound, one window per event
 ------------------------------------------------------------------------
 local Look = ns.Look
 local function rowsShown() return findAll(function(f) return f._kind == "Button" and f.item ~= nil and f._shown and f.under end) end
@@ -1032,7 +1032,7 @@ local function flatCount() return ns.UI.DataCount() end
 ns.UI.ClosePanel()
 type_("")
 
--- ohne ByMember (alte Logik): kein Umschalter
+-- without ByMember (old logic): no switch
 GG = ns.MakeGuild(40)
 step("1.1 alte Logik ohne ByMember", function() tabClick("wanted"); guildTab._scripts.OnClick(guildTab); settle() end)
 local VW = views()
@@ -1040,7 +1040,7 @@ check("1.1 Umschalter-Frame gebaut", VW ~= nil)
 check("1.1 ohne ByMember kein Umschalter", VW and not VW:IsShown())
 check("1.1 Sortierung unten rechts", find(function(f) return f.arrow and f.text._text == "Rang" and f:IsVisible() and f._points[1][1] == "BOTTOMRIGHT" end) ~= nil)
 
--- 0 Mitglieder (ByMember leer)
+-- 0 members (ByMember empty)
 GG = ns.MakeGuild(0, { members = 0 })
 GG.ByMember = function() return {} end
 step("1.1 nach Mitglied, leer", function() ns:Fire("GUILD_UPDATED"); settle(); VW.items[1]._scripts.OnClick(VW.items[1]); settle() end)
@@ -1049,13 +1049,13 @@ check("1.1 Zustand ui.guildView gemerkt", ns.db.settings.ui.guildView == "member
 check("1.1 Leerzustand nach Mitglied", anyText(F, "Im Gildenbuch steht noch nichts.") ~= nil and anyText(F, "Deine Kollegen hatten bisher Ruhe.") ~= nil)
 check("1.1 Nach Mitglied unterstrichen", VW.items[1].mark:IsShown() and not VW.items[2].mark:IsShown())
 
--- eigener Char ohne Eintraege: steht trotzdem oben
+-- own character without entries: still on top
 GG = ns.MakeGuild(0, { members = 1 })
 step("1.1 nur ich, leer", function() ns:Fire("GUILD_UPDATED"); settle() end)
 check("1.1 eigener Kopf auch leer", (function() local r = rowOf(function(i) return i.head and i.m.me end); return r and r.sub._text == "das sehen die anderen von dir" and not r.tri:IsShown() end)())
 check("1.1 rechts Leerzustand", anyText(F, "Im Gildenbuch steht noch nichts.") ~= nil and anyText(F, "Im Gildenbuch steht noch nichts."):IsVisible())
 
--- 1 Mitglied (ich) mit 5 Feinden: eigener Abschnitt offen
+-- 1 member (me) with 5 enemies: own section open
 GG = ns.MakeGuild(5, { members = 1 })
 step("1.1 ein Mitglied", function() ns:Fire("GUILD_UPDATED"); settle() end)
 check("1.1 ein Mitglied: Kopf + 5 Zeilen", #rowsShown() == 6, #rowsShown())
@@ -1068,7 +1068,7 @@ check("1.1 Kindzeile eingerueckt mit Kills", (function()
   return r and r.name._points[1][2] == 58 and r.sub._text:find("× getötet · zuletzt vor 2 Tagen in ", 1, true) ~= nil
 end)())
 
--- 30 Mitglieder, 400 Feinde
+-- 30 members, 400 enemies
 GG = ns.MakeGuild(400, { members = 30 })
 ns.db.settings.ui.guildCollapsed = nil
 step("1.1 dreissig Mitglieder", function() ns:Fire("GUILD_UPDATED"); settle() end)
@@ -1089,7 +1089,7 @@ check("1.1 flache Liste nicht neu gebaut", ns.UI.mv.builds == builds, ns.UI.mv.b
 check("1.1 kein Neuaufbau, keine neuen Frames", M.created == created)
 step("1.1 Kopf Kollege2 aufklappen", function()
   slider:SetValue(0)
-  slider:SetValue(#mine.rows)        -- Kollege2 steht direkt nach meinen Zeilen
+  slider:SetValue(#mine.rows)        -- Kollege2 comes right after my rows
   local r = rowOf(function(i) return i.head and i.m.name == "Kollege2" end)
   r._scripts.OnClick(r, "LeftButton"); settle()
 end)
@@ -1150,7 +1150,7 @@ check("1.1 beim Oeffnen einmal neu", ns.UI.mv.builds == builds + 1, ns.UI.mv.bui
 step("1.1 zurueck nach Feind", function() VW.items[2]._scripts.OnClick(VW.items[2]); settle() end)
 check("1.1 Nach Feind: Sortierung unten", find(function(f) return f.arrow and f.text._text == "Rang" and f:IsVisible() end) ~= nil and flatCount() == 400)
 
--- Hand-Eintraege in beiden Ansichten und im Plakat
+-- manual entries in both views and on the poster
 GG = ns.MakeGuild(10, { listed = 3, listedFirst = true, members = 3, mixedListed = true })
 step("1.1 Hand-Eintraege nach Feind", function() ns:Fire("GUILD_UPDATED"); settle(); slider:SetValue(4) end)
 check("1.1 Hand-Eintraege am Ende", (function()
@@ -1199,7 +1199,7 @@ check("1.1 Kopf: von Hand gezaehlt", (function()
   end
 end)())
 
--- Tooltip-Zeile und Alarm fuer reine Hand-Eintraege
+-- tooltip line and alarm for pure manual entries
 step("1.1 Tooltip Hand-Eintrag", function()
   ns.units.mouseover = "Hand1-Eintrag1"
   tt._unitName, tt._unit, tt._lines = "Hand1", "mouseover", {}
@@ -1214,7 +1214,7 @@ step("1.1 Hand-Eintrag gesichtet, alertListed an", function() ns:Fire("GUILD_ENE
 check("1.1 Alarm mit Hand-Text", popup:IsShown() and popup.line._text == "steht im Buch von Moppel", popup.line._text)
 closePopup()
 
--- Hausordnung: neue Haken, drei Blaetter
+-- house rules: new checkboxes, three sheets
 step("1.1 Hausordnung Gilde", function()
   ns.UI.OpenPanel("settings")
   local t = find(function(f) return f.page == 3 and f._scripts.OnClick end)
@@ -1229,7 +1229,7 @@ end
 check("1.1 Blatt Gilde: sieben Haken", #findAll(function(f) return f._kind == "CheckButton" and f.opt and f.opt.guild and f:IsVisible() end) == 7)
 
 ------------------------------------------------------------------------
--- Ton
+-- sound
 ------------------------------------------------------------------------
 local SND = M.mediaDir .. "/Sounds"
 local listing = {}
@@ -1248,7 +1248,7 @@ for _, s in ipairs(Look.SOUNDS) do
       combos = combos + 1
       local path = Look.SoundFile(s.key, lv)
       local file = path:match("Sounds\\([^\\]+)$")
-      -- exakte Schreibweise: Name muss so im Verzeichnis stehen (Linux unterscheidet Gross/Klein)
+      -- exact spelling: the name must be in the folder like this (Linux is case sensitive)
       if path:find("^Interface\\AddOns\\DeathNote\\Media\\Sounds\\") and file and listing[file] then okc = okc + 1 end
     end
   end
@@ -1305,7 +1305,7 @@ check("Ton: Hauptschalter aus = kein Aufruf", #M.soundCalls == calls0, #M.soundC
 closePopup()
 ns.Store.Setting("alert.sound", true)
 
--- Hausordnung Blatt Alarm
+-- house rules, sheet Alarm
 step("Ton: Blatt Alarm", function()
   local t = find(function(f) return f.page == 2 and f._scripts.OnClick end)
   t._scripts.OnClick(t)
@@ -1349,7 +1349,7 @@ ns.Store.Setting("alert.channel", "Master")
 ns.UI.ClosePanel()
 
 ------------------------------------------------------------------------
--- D: ein Fenster je Ereignis und Spieler
+-- D: one window per event and player
 ------------------------------------------------------------------------
 M.FinishAnims(); M.Advance(300); closePopup()
 put(enemy(90, { kills = 2 })); put(enemy(91, { kills = 2 })); put(enemy(92, { kills = 2 }))
@@ -1357,7 +1357,7 @@ local K90, K91, K92 = "Feind90-Nach90", "Feind91-Nach91", "Feind92-Nach92"
 step("D1 Popup fuer Taeter, dann Tod", function()
   spot(K90)
   ns:Fire("DEATH_RECORDED", { t = NOW, kind = "pvp", killerKey = K90, sure = true, others = { K91 } }, K90)
-  -- nur das Ausblenden des Popups beenden, die Meldung laeuft weiter
+  -- only finish fading out the popup, the message keeps running
   if popup.outAnim._playing then popup.outAnim._playing = false; popup.outAnim._scripts.OnFinished(popup.outAnim) end
 end)
 check("D1 Banner zeigt den Taeter", banner:IsShown() and anyText(banner, "Feind90 Nach90") ~= nil,
@@ -1369,12 +1369,12 @@ M.FinishAnims()
 step("D2 Banner aktiv: Rache", function() M.Advance(300); ns:Fire("REVENGE", K92); spot(K92) end)
 check("D2 kein Popup fuer den Spieler der Meldung", banner:IsShown() and not popup:IsShown())
 check("D2 Abklingzeit verbraucht", (function() M.FinishAnims(); spot(K92); return not popup:IsShown() end)())
--- verschiedene Spieler: beide, nicht uebereinander (UI-Skalierung 0,6, Alarm 150 %)
+-- different players: both, not on top of each other (UI scale 0.6, alarm 150 %)
 local function overlap(a, b)
   local l1, b1, r1, t1 = Look.Rect(a)
   local l2, b2, r2, t2 = Look.Rect(b)
   if not (l1 and l2) then return "keine Geometrie" end
-  t2 = t2 + 18 -- Stempel ragt ueber die Meldung
+  t2 = t2 + 18 -- stamp sticks out above the message
   return l1 < r2 and r1 > l2 and b1 < t2 and t1 > b2
 end
 for _, cfg in ipairs({ { 1, 1 }, { 0.6, 1 }, { 0.6, 1.5 }, { 1, 1.5 }, { 0.6, 0.8 } }) do
@@ -1394,7 +1394,7 @@ for _, cfg in ipairs({ { 1, 1 }, { 0.6, 1 }, { 0.6, 1.5 }, { 1, 1.5 }, { 0.6, 0.
   check("D2 Banner nicht auf dem Popup " .. cfg[1] .. "/" .. cfg[2], overlap(popup, banner) == false, tostring(overlap(popup, banner)))
   M.FinishAnims(); closePopup()
 end
--- gespeicherte Popup-Position mitten auf der Meldung
+-- stored popup position in the middle of the message
 M.SetUIScale(0.6); ns.Store.Setting("alert.scale", 1.3)
 ns.db.settings.alert.point = { "TOP", "TOP", 0, -260 }
 step("D2 Popup auf die Meldung gezogen", function()
@@ -1404,7 +1404,7 @@ end)
 check("D2 Meldung weicht aus", overlap(popup, banner) == false, tostring(overlap(popup, banner)))
 M.FinishAnims(); closePopup()
 
--- D3a Knopf deckungsgleich bei UI-Skalierung 0,6 und Alarm 100 % / 130 %, auch mit gespeicherter Position
+-- D3a button exactly on top at UI scale 0.6 and alarm 100 % / 130 %, also with a stored position
 for _, cfg in ipairs({ { 0.6, 1 }, { 0.6, 1.3 }, { 1, 1.3 }, { 0.6, 1.3, true } }) do
   M.SetUIScale(cfg[1]); ns.Store.Setting("alert.scale", cfg[2])
   ns.db.settings.alert.point = cfg[3] and { "CENTER", "CENTER", 120, -80 } or nil
@@ -1436,7 +1436,7 @@ check("Look.Rect: Teilwerte nil", (function()
   return ok and l == nil
 end)())
 
--- D3b eigener und Gildentreffer: ein Popup, eigene Liste hat Vorrang
+-- D3b own and guild hit: one popup, own list takes precedence
 GG = ns.MakeGuild(3)
 M.Advance(300); closePopup()
 local snd = #M.sounds
@@ -1452,7 +1452,7 @@ closePopup()
 check("D3b nichts rueckt nach", not popup:IsShown())
 ns.db.enemies["Gilde2-Feind2"] = nil
 
--- D3d Warteschlange: alter und neuer Schluessel desselben Spielers
+-- D3d queue: old and new key of the same player
 M.Advance(300)
 put(enemy(93, { kills = 2 })); put({ key = "Feind93-Neu", name = "Feind93", surname = "Neu", status = "wanted", kills = 2, deaths = {} })
 step("D3d beide Schluessel in der Schlange, dann Umzug", function()
@@ -1475,7 +1475,7 @@ end)
 check("D3d gezeigter nicht nochmal in der Schlange", anyText(popup, "+1 weiterer") ~= nil)
 closePopup(); closePopup(); closePopup()
 
--- D3e Probealarm plus echter fuer denselben
+-- D3e test alarm plus a real one for the same player
 M.Advance(300)
 snd = #M.sounds
 step("D3e Probe, dann echter", function()
@@ -1485,20 +1485,20 @@ step("D3e Probe, dann echter", function()
 end)
 check("D3e ein Popup, ein Ton", popup:IsShown() and anyText(popup, "+1") == nil and #M.sounds == snd + 1)
 closePopup()
--- D3c Randblitz bleibt keine sichtbare Flaeche
+-- D3c edge flash leaves no visible area
 check("D3c Blitz ohne Maus, nach dem Puls versteckt", (function()
   M.FinishAnims()
   return flash._mouse == false and not flash:IsShown()
 end)())
 
--- Mock: nur gelistete Widget-Methoden; der ganze Lauf hat keine andere benutzt, Tippfehler fallen auf
+-- Mock: only listed widget methods; the whole run used no other, typos show up
 local unk = {}
 for k in pairs(M.unknown or {}) do unk[#unk + 1] = k end
 check("Mock: nur Methoden aus der Liste benutzt", #unk == 0, table.concat(unk, ", "))
 check("Mock: Tippfehler ist nil und wirft beim Aufruf", popup.SetTextt == nil and not pcall(function() popup:Shwo() end)
       and not pcall(function() return popup.title.SetBackdrop end) and not pcall(function() popup.icon:SetText("x") end))
 
--- Keine OnUpdate-Logik ausser beim Ziehen
+-- no OnUpdate logic except while dragging
 local onupd = findAll(function(f) return f._scripts.OnUpdate ~= nil end)
 check("kein dauerhaftes OnUpdate", #onupd == 0, #onupd .. " Frames")
 local leaked = {}

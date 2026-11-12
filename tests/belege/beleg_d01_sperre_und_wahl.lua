@@ -1,8 +1,8 @@
--- 1.2.1 nach der Abschluss-Jagd: (1) wartende Nachrichten altern nicht, solange eine lange Sperre dauert, auch wenn
--- zwischendurch Ereignisse die Schlange anstossen; (2) nach einer ueber 70 Minuten langen Sperre laeuft der Zeitgeber
--- bei einer zweiten Sperre wieder an; (3) eine vom Spieler gewaehlte Bindung verliert durch ein fremdes Hallo mit der
--- GUID der Liste nichts, auch nicht beim Aufraeumen danach; ihr eigenes Hallo klaert es.
--- Aufruf: nice -n 15 luajit beleg_d01_sperre_und_wahl.lua <Projektkopie>. Alle Namen erfunden.
+-- 1.2.1 after the final hunt: (1) waiting messages do not age while a long lock lasts, even when
+-- events nudge the queue in between; (2) after a lock of more than 70 minutes the timer restarts
+-- on a second lock; (3) a binding chosen by the player loses nothing through a stranger's hello with the
+-- list's GUID, not even in the cleanup afterwards; her own hello settles it.
+-- Usage: nice -n 15 luajit beleg_d01_sperre_und_wahl.lua <project copy>. All names made up.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf_c.lua")
 local M = H.M
 local G = "Die Testgilde"
@@ -34,22 +34,22 @@ H.lauf("(2) nach 80 min Sperre: zweite Sperre mitten im Leeren, der Zeitgeber la
   local sperre = true
   a.env.C_ChatInfo.InChatMessagingLockdown = function() return sperre end
   for i = 1, 6 do M.epoch = M.epoch + 60; H.tod(a, "Taeter" .. string.char(96 + i), "Lamm"); W.run(5) end
-  W.run(80 * 60)   -- der Zeitgeber hat aufgehoert (20 + 30 Runden)
+  W.run(80 * 60)   -- the timer has stopped (20 + 30 rounds)
   H.erwartet("Vorbedingung: alles wartet", a.ns.Guild.QueueSize() == 6, a.ns.Guild.QueueSize())
   sperre = false
-  a.fire("PLAYER_REGEN_ENABLED"); W.run(0.2)   -- eine geht hinaus, dann wieder Sperre
+  a.fire("PLAYER_REGEN_ENABLED"); W.run(0.2)   -- one goes out, then locked again
   sperre = true
   W.run(120)
   local rest = a.ns.Guild.QueueSize()
-  sperre = false   -- endet ohne Ereignis
+  sperre = false   -- ends without an event
   W.run(20 * 60)
   H.erwartet("Vorbedingung: beim zweiten Sperren wartete noch etwas", rest >= 1, rest)
   H.erwartet("20 min nach dem Ende der zweiten Sperre ist die Schlange leer", a.ns.Guild.QueueSize() == 0, a.ns.Guild.QueueSize())
   H.erwartet("alle 6 Taten drueben", b.ns.Guild.Count("guild") == 6, b.ns.Guild.Count("guild"))
 end)
 
--- Lage wie ein Buch aus 1.2.0: Freundin "Berta" ohne Nachnamen auf der Liste, vom Spieler an "Berta Senf" gebunden,
--- ohne gemerkte Hallo-GUID. Die Liste nennt jetzt ihre GUID. Ein Namensvetter fluestert ein Hallo mit ihrer GUID.
+-- Situation like a book from 1.2.0: friend "Berta" listed without surname, bound by the player to "Berta Senf",
+-- no remembered hello GUID. The list now gives her GUID. A namesake whispers a hello with her GUID.
 H.lauf("(3) gewaehlte Bindung und ein Hallo mit gefaelschter GUID", function()
   local W = H.welt()
   W.guids = true
@@ -72,7 +72,7 @@ H.lauf("(3) gewaehlte Bindung und ein Hallo mit gefaelschter GUID", function()
   fluestern(a, a.ns.Guild.Proto.EncodeHello(0, "1.2.1", gb), "Berta Fremd-Forever"); W.run(5)
   H.erwartet("Vorbedingung: 12 Taten", vorher == 12, vorher)
   H.erwartet("nach dem gefaelschten Hallo: alle Taten da", a.ns.Guild.Count("friends") == vorher, a.ns.Guild.Count("friends"))
-  -- Aufraeumen beim naechsten Listen-Lauf (in 1.2.0 gingen die Daten hier)
+  -- cleanup on the next list run (in 1.2.0 the data were lost here)
   W.run(60); a.fire("FRIENDLIST_UPDATE"); W.run(10)
   H.erwartet("nach dem Aufraeumen: alle Taten da", a.ns.Guild.Count("friends") == vorher, a.ns.Guild.Count("friends"))
   H.erwartet("Freigabe bleibt", a.ns.Guild.Hunt("Ziel-Eins", "friends") ~= nil)
@@ -81,10 +81,10 @@ H.lauf("(3) gewaehlte Bindung und ein Hallo mit gefaelschter GUID", function()
     and tie.rival == "Berta Fremd", tostring(tie.full) .. "/" .. tostring(tie.rival))
   local imp = a.ns.Friends.stats.impostor
   H.erwartet("die Gewaehlte wird nicht als Fremde genannt", not (imp and imp.name == "Berta Senf"), imp and imp.name)
-  -- ein zweites Hallo des Faelschers aendert nichts
+  -- a second hello from the forger changes nothing
   W.run(400); fluestern(a, a.ns.Guild.Proto.EncodeHello(0, "1.2.1", gb), "Berta Fremd-Forever"); W.run(5)
   H.erwartet("zweites gefaelschtes Hallo: alle Taten da", a.ns.Guild.Count("friends") == vorher, a.ns.Guild.Count("friends"))
-  -- das eigene Hallo der echten Berta klaert es
+  -- the real Berta's own hello settles it
   b2.login(); W.run(90)
   tie = a.env.DeathNoteDB.friends.ties["Berta"]
   H.erwartet("ihr Hallo beweist sie, der Konflikt ist weg", tie.full == "Berta Senf" and tie.guid == gb and tie.rival == nil,

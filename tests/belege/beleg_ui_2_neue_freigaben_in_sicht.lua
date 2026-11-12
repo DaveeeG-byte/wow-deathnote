@@ -1,13 +1,13 @@
--- Beleg UI 2: "Neue Freigaben als Chatzeile, ausser das Ziel ist in Sicht: dann der Alarm" (Extras.lua, fix-3).
--- Aufruf: nice -n 15 luajit beleg_ui_2_neue_freigaben_in_sicht.lua <Projektkopie>
--- Teil 1 (Gegenprobe): ein neues Ziel in Sicht -> Alarm, keine Chatzeile; nicht in Sicht -> eine Chatzeile.
--- Teil 2: drei neue Ziele kommen zusammen (Sammelmeldung), eines davon steht in Sicht -> erwartet: Alarm fuer
---         dieses eine. (Die Sammelmeldung nennt nur das erste Ziel, die Sicht-Pruefung laeuft nur bei genau einem.)
--- Teil 3: Schalter "Abschussliste melden" aus, "Bei Zielen der Abschussliste warnen" an, ein neues Ziel in Sicht
---         -> erwartet: der Alarm kommt (er hat seinen eigenen Schalter), keine Chatzeile.
--- Teil 4 (Gegenproben): Warnen aus -> Chatzeile statt Alarm; ausgeblendetes Ziel -> nichts; Ziel kommt kurz nach
---         der Chatzeile in Sicht -> genau ein Alarm; Pipe-Zeichen in Name und Grund kommen nicht in den Chat.
--- Alle Namen sind erfunden. Sprache egal (geprueft wird, ob Zeilen und Fenster kommen, nicht ihr Wortlaut).
+-- Proof UI 2: "new calls as a chat line, unless the target is in sight: then the alert" (Extras.lua, fix-3).
+-- Usage: nice -n 15 luajit beleg_ui_2_neue_freigaben_in_sicht.lua <project copy>
+-- Part 1 (counter-check): a new target in sight -> alert, no chat line; not in sight -> one chat line.
+-- Part 2: three new targets arrive together (summary message), one of them is in sight -> expected: alert for
+--         that one. (The summary names only the first target, the sight check runs only for exactly one.)
+-- Part 3: switch "Report hit list" off, "Warn for hit list targets" on, a new target in sight
+--         -> expected: the alert comes (it has its own switch), no chat line.
+-- Part 4 (counter-checks): warn off -> chat line instead of alert; hidden target -> nothing; target comes into
+--         sight shortly after the chat line -> exactly one alert; pipe characters in name and reason do not reach the chat.
+-- All names are made up. Language does not matter (checks whether lines and windows come, not their wording).
 package.path = (arg[0]:match("^(.*)/[^/]+$") or ".") .. "/?.lua;" .. package.path
 local K = require("_kopf_ui")
 
@@ -25,7 +25,7 @@ local function fresh()
 end
 local function sauber(W, name) local n, e = W.errs(); K.check(name .. ": keine Fehler", n == 0, e) end
 
--- Teil 1
+-- Part 1
 do
   local W = fresh()
   W.sicht("Neu", "Eins"); W.hunt("Neu-Eins", "Neu Eins"); W.tick(10)
@@ -38,7 +38,7 @@ do
   sauber(W, "1b")
 end
 
--- Teil 2
+-- Part 2
 for _, pos in ipairs({ 1, 2, 3 }) do
   local W = fresh()
   local names = { "Eins", "Zwei", "Drei" }
@@ -50,7 +50,7 @@ for _, pos in ipairs({ 1, 2, 3 }) do
   sauber(W, "2." .. pos)
 end
 
--- Teil 3
+-- Part 3
 do
   local W = fresh()
   W.ns.Store.Setting("guild.announceHunt", false)
@@ -61,7 +61,7 @@ do
   sauber(W, "3")
 end
 
--- Teil 4
+-- Part 4
 do
   local W = fresh()
   W.ns.Store.Setting("guild.alertHunt", false)
@@ -82,7 +82,7 @@ do
   W.hunt("Neu-Eins", "|cffff0000Neu|r |TInterface\\Icons\\x:64|t Eins|", "ein |cffff0000roter|r Grund |Hunit:1|h[klick]|h |")
   W.tick(10)
   local l = W.lines()[1] or ""
-  local rest = l:gsub("^|c%x%x%x%x%x%x%x%x[^|]*|r", "")     -- der eigene farbige Vorspann der Chatzeile
+  local rest = l:gsub("^|c%x%x%x%x%x%x%x%x[^|]*|r", "")     -- the chat line's own coloured prefix
   K.check("4 Pipe-Zeichen aus Name und Grund kommen nicht in den Chat", #W.lines() == 1 and not rest:find("|", 1, true), rest)
   sauber(W, "4d")
   W = fresh()

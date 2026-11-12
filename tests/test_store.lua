@@ -94,12 +94,12 @@ test("Deckelung: 30 Taten je Feind, 100 Tode im Journal", function()
   eq(#S.Deaths(), 100); eq(S.Deaths()[1].t, 105)
 end)
 
--- 1.2.0: Tode durch Monster und Umwelt (pve) bekommen keine Journalzeile, zaehlen aber in db.tally;
--- alte pve-Zeilen bleiben in der Datei und fehlen nur in der Ansicht (Store.Journal)
+-- 1.2.0: deaths by monsters and environment (pve) get no journal line but count in db.tally;
+-- old pve lines stay in the file and are only missing from the view (Store.Journal)
 test("pve: keine Journalzeile, Zaehler laeuft, alte Zeilen bleiben in der Datei", function()
   local ns = M.Load(); local S = ns.Store
   local db = S.DB()
-  db.deaths[1] = { t = 5, kind = "pve", counted = true }      -- alte Zeile aus 1.1.0
+  db.deaths[1] = { t = 5, kind = "pve", counted = true }      -- old line from 1.1.0
   S.TouchJournal()
   S.RecordDeath({ t = 10, kind = "pvp", counted = true, candidates = {} })
   S.RecordDeath({ t = 11, kind = "pve", counted = true })
@@ -181,7 +181,7 @@ test("AssignDeath: Journal-Eintrag wird sicherer Kill, Umhängen korrigiert den 
   local j = S.Deaths()[1]
   eq(j.killerKey, "Aa-X"); eq(j.sure, true); eq(j.source, "manual")
   ok(S.AssignDeath(1, "Bb-Y"))
-  -- 1.1.0 (Abschlussjagd): wem nach dem Umhängen nichts bleibt, der steht nicht mehr als Gesuchter mit 0 im Buch
+  -- 1.1.0 (final hunt): whoever has nothing left after reassigning is no longer in the book as wanted with 0
   no(S.Get("Aa-X"), "alter Kill zurückgenommen, leerer Eintrag gestrichen")
   eq(S.Get("Bb-Y").kills, 1)
   no(S.AssignDeath(99, "Bb-Y"))

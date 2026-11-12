@@ -1,23 +1,23 @@
--- Zusammenspiel mehrere eigene Chars und Freundes-Abgleich: "Sende mir, was neuer ist als ..." rechnet bei den
--- Freunden mit EINEM accountweiten Zeitpunkt (friends.lastOnline, bei jedem Logout jedes Chars gesetzt). Die
--- Freundesliste gehoert aber dem Char. Spielt man einige Tage einen Zweit-Char, fragt der Haupt-Char danach nur
--- noch drei Tage zurueck: Taten seiner Freunde aus der Zeit davor kommen nie mehr an. (In der Gilde hat jede
--- Gildenliste ihren eigenen Zeitpunkt, dort stimmt es.)
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen; Kopf: tests/beleg_helfer.lua
+-- Several own chars and the friends sync: "send me what is newer than ..." uses ONE account-wide time for
+-- friends (friends.lastOnline, set at every logout of every char). But the friend list belongs to the
+-- char. After playing an alt for a few days, the main char then only asks three days back:
+-- deeds of its friends from before never arrive. (In the guild every guild list has its own time,
+-- so it is right there.)
+-- (fix-2) Proof test of the final hunt, taken into the suite; head: tests/beleg_helfer.lua
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
 
 local function ablauf(mitZweitchar)
   local W = H.welt()
-  -- ein Tag vergeht: Uhr plus ein Stueck Sitzungszeit (Fritz bleibt online, seine Sperrfristen laufen ab)
+  -- a day passes: clock plus a bit of session time (Fritz stays online, his lock periods run out)
   local function tag() H.tage(1); W.run(900) end
   local a = W.client("Anton", "Wurst", nil, { friends = { "Fritz Frei" } })
   local f = W.client("Fritz", "Frei", nil, { friends = { "Anton Wurst" } })
   a.login(); f.login(); W.run(60)
   local k0 = H.tod(f, "Alt", "Bekannt"); W.run(30)
   H.erwartet("Vorbedingung: Tat des Freunds kommt live an", a.ns.Guild.Get(k0, "friends") ~= nil)
-  -- Anton geht; Fritz stirbt am naechsten Tag (Anton ist nicht online)
+  -- Anton leaves; Fritz dies the next day (Anton is not online)
   a.fire("PLAYER_LOGOUT")
   local db = H.tiefe_kopie(a.env.DeathNoteDB)
   a.loggedIn = false
@@ -26,7 +26,7 @@ local function ablauf(mitZweitchar)
   tag()
   local key = H.tod(f, "Grimm", "Bart"); W.run(30)
   if mitZweitchar then
-    -- derselbe Account spielt vier Tage lang einen Zweit-Char, der Fritz nicht kennt
+    -- the same account plays an alt for four days that does not know Fritz
     for _ = 1, 4 do
       tag()
       local z = W.client("Zweitchar", "Wurst", nil, { friends = { "Carla" }, db = db })

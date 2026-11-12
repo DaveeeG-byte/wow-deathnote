@@ -1,8 +1,8 @@
--- Feld 8: Upgrade und Zurueck mit den NEUEN Feldern (Bindung mit GUID, Konflikt, Spieltage,
--- Leeren-Gedaechtnis, Humor-Merker, Seite "Mehr"), Zwischenstand (stand-nach-fix1) -> fertiger Stand, und
--- Mischbetrieb mit den neuen Nachrichten (Hallo mit GUID, Z) gegen 1.1.0 und gegen den Zwischenstand.
--- Aufruf: luajit beleg_a05_hoch_zurueck_mischbetrieb.lua <Projektkopie> [Addon-Ordner des Zwischenstands]
--- 1.1.0 kommt aus <Projektkopie>/tests/fixtures/addon-1.1.0 (nur Logik).
+-- Field 8: upgrade and downgrade with the NEW fields (binding with GUID, conflict, play days,
+-- empty memory, humor markers, page "More"), interim build (stand-nach-fix1) -> final build, and
+-- mixed versions with the new messages (hello with GUID, Z) against 1.1.0 and against the interim build.
+-- Usage: luajit beleg_a05_hoch_zurueck_mischbetrieb.lua <project copy> [addon folder of the interim build]
+-- 1.1.0 comes from <project copy>/tests/fixtures/addon-1.1.0 (logic only).
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf.lua")
 local M = H.M
 local G = "Die Testgilde"
@@ -25,7 +25,7 @@ H.lauf("(1) neue Felder: 1.2.0 -> 1.1.0 -> 1.2.0", function()
   local z = W.client("Zeuge", "Still", G, { fullSender = true })
   a.login(); z.login(); W.run(60)
   local P = a.ns.Guild.Proto
-  -- Konflikt bei Berta, Wahl bei Carla, Freigaben, Leeren, Ausblenden, Humor-Merker, Seite Mehr
+  -- conflict for Berta, choice for Carla, calls, emptying, hiding, humor markers, page More
   H.fluestern(a, H.J(P, "Falsch-Lamm", "Berta Fremd"), "Berta Fremd-Forever")
   H.fluestern(a, H.J(P, "Echt-Lamm", "Berta Senf"), "Berta Senf-Forever")
   H.fluestern(a, H.J(P, "C1-Lamm", "Carla Eins"), "Carla Eins-Forever")
@@ -41,7 +41,7 @@ H.lauf("(1) neue Felder: 1.2.0 -> 1.1.0 -> 1.2.0", function()
   local vorher = H.tiefe_kopie(H.raus(W, a))
   H.erwartet("Vorbedingung: Konflikt, Wahl, Leeren-Gedaechtnis in der Datei", vorher.friends.ties["Berta"].rival ~= nil
     and vorher.friends.ties["Carla"].sure == true and vorher.guild.lists[G].huntCleared ~= nil and vorher.friends.days ~= nil)
-  -- zurueck auf 1.1.0: einen Abend spielen, sterben, alle neuen Nachrichten hoeren
+  -- back to 1.1.0: play one evening, die, hear all new messages
   H.tage(1)
   local o = W.client("Anton", "Wurst", G, { db = H.tiefe_kopie(vorher), dir = OLD, files = OLDFILES, lang = false })
   o.login(); W.run(60)
@@ -59,7 +59,7 @@ H.lauf("(1) neue Felder: 1.2.0 -> 1.1.0 -> 1.2.0", function()
   local gl = mitte.guild.lists[G]
   H.erwartet("1.1.0 laesst Leeren-Gedaechtnis, Ausgeblendetes und eigene Freigabe der Gilde stehen",
     gl.huntCleared ~= nil and mitte.guild.huntHidden["A1-Lamm"] ~= nil and gl.hunts["A1-Lamm"] ~= nil and gl.hunts["X-Lamm"] == nil)
-  -- wieder hoch
+  -- up again
   H.tage(1)
   local n = W.client("Anton", "Wurst", G, { db = mitte, friends = { "Berta", "Carla" }, fullSender = true })
   n.login(); W.run(90)
@@ -82,7 +82,7 @@ H.lauf("(2) Mischbetrieb: 1.1.0 neben zwei 1.2.0 in der Gilde, alle Typen", func
   local ka = H.tod(a, "Taeter", "Lamm"); W.run(20)
   a.ns.Guild.Release("Ziel-Lamm", { to = "guild", why = "Grund mit Umlaut äöü" }); W.run(10)
   a.ns.Guild.CallOff("Ziel-Lamm"); a.ns.Guild.Release("Zwei-Lamm", { to = "guild", why = "x" }); W.run(10)
-  o.login(); W.run(120)   -- Hallo von 1.1.0: beide 1.2.0 antworten mit R, J, A und Z
+  o.login(); W.run(120)   -- hello from 1.1.0: both 1.2.0 answer with R, J, A and Z
   local ko = H.tod(o, "Alter", "Wolf"); W.run(20)
   local typen = {}
   for _, m in ipairs(W.sent) do typen[m.text:match("^1\t(%u)\t") or "?"] = true end
@@ -105,7 +105,7 @@ H.lauf("(3) Zwischenstand: Datei weiterfuehren, und als Freund neben dem fertige
   H.erwartet("Vorbedingung (Zwischenstand): Tat und Freigabe beim Freund", a.ns.Guild.Get(key, "friends") ~= nil
     and a.ns.Guild.Hunt("Ziel-Lamm", "friends") ~= nil)
   local adb = H.raus(W, a); W.run(60)
-  -- Anton steigt um; Carla ist an diesem Abend nicht da; 20 Tage lang jeden Tag ein Login
+  -- Anton upgrades; Carla is away this evening; one login every day for 20 days
   local cdb = H.raus(W, c); W.run(60)
   for tag = 1, 20 do
     H.tage(1)
@@ -117,11 +117,11 @@ H.lauf("(3) Zwischenstand: Datei weiterfuehren, und als Freund neben dem fertige
     end
     adb = H.raus(W, x)
   end
-  -- Carla bleibt auf dem Zwischenstand, Anton ist fertig: Mischbetrieb unter Freunden
+  -- Carla stays on the interim build, Anton is final: mixed versions among friends
   local c2 = W.client("Carla", "Klein", nil, { db = cdb, friends = { "Anton Wurst" }, fullSender = true, dir = MID })
   local a2 = W.client("Anton", "Wurst", nil, { db = adb, friends = { "Carla Klein" }, fullSender = true })
   c2.login(); W.run(60)
-  local kc0 = H.tod(c2, "Frueher", "Wolf"); W.run(20)   -- Anton ist noch nicht da
+  local kc0 = H.tod(c2, "Frueher", "Wolf"); W.run(20)   -- Anton is not there yet
   a2.login(); W.run(180)
   H.erwartet("fertiger Stand fragt den Zwischenstand per Hallo: dessen Tat aus der Abwesenheit kommt an",
     a2.ns.Guild.Get(kc0, "friends") ~= nil, "kommt nicht: der Zwischenstand verwirft das Hallo mit fuenf Feldern ("

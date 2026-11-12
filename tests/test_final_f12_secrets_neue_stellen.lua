@@ -1,7 +1,7 @@
--- Secret-Values an den Stellen, die seit dem Fixer neu sind (Gegenprobe, erwartet gruen):
--- Gilden-Roster (Zahl, Namen), Freundesliste, Battle.net, Absender, Stufe, Eingaben der neuen Funktionen
--- (HideHunt, Release, CallOff, FindTarget, WhoIs, IsGuildmate, HasAddon, Sprachwahl).
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen; Kopf: tests/beleg_helfer.lua
+-- Secret values at the spots that are new since the fixer (counter-check, expected green):
+-- guild roster (count, names), friend list, Battle.net, sender, level, inputs of the new functions
+-- (HideHunt, Release, CallOff, FindTarget, WhoIs, IsGuildmate, HasAddon, language choice).
+-- (fix-2) Proof test of the final hunt, taken into the suite; head: tests/beleg_helfer.lua
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M

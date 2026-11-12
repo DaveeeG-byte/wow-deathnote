@@ -1,8 +1,8 @@
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen (Aufruf aus der Projektwurzel: luajit <datei> .)
--- Zusammenspiel in der Oberflaeche:
--- (1) Erster Start: kein Sprachwahl-Dialog mehr (seit Nachtrag 3), der Alarm steht frei.
--- (2) Sprachwechsel ohne /reload bei offenem Buch: Automatisch und alle 21 Sprachen durchschalten, Buch weiter bedienen.
--- (3) Sprache per Befehl gewaehlt und zurueck auf Automatisch.
+-- (fix-2) Proof test of the final hunt, taken into the suite (run from the project root: luajit <file> .)
+-- Interplay in the UI:
+-- (1) First start: no language dialog any more (since addendum 3), the alarm is unobstructed.
+-- (2) Language switch without /reload with the book open: Automatic and all 21 languages in turn, keep using the book.
+-- (3) Language chosen by command and back to Automatic.
 local DIR = (arg[1] or "."):gsub("/+$", "")
 package.path = DIR .. "/tests/ui/?.lua;" .. DIR .. "/tests/?.lua;" .. package.path
 arg[0] = DIR .. "/tests/ui/beleg.lua"
@@ -28,8 +28,8 @@ local function sauber(name)
   erwartet(name .. ": keine Fehler, keine Verstoesse", #AM.errors == 0 and #BM.violations == 0, AM.errors[1] or BM.violations[1])
 end
 
--- (1) frischer Account mit einem Gesuchten im Buch (Update von 1.1.0): kein Sprachwahl-Dialog, der Alarm steht frei.
--- Bei 1366 x 768 und der Groesse des Mocks.
+-- (1) fresh account with one wanted target in the book (update from 1.1.0): no language dialog, the alarm is unobstructed.
+-- At 1366 x 768 and the size of the mock.
 for _, size in ipairs({ { 1366, 768 }, false }) do
   local db = { version = 3, settings = { welcomed = true }, enemies = {}, deaths = {} }
   local ns = world({ lang = false, client = "deDE", db = db })
@@ -45,7 +45,7 @@ for _, size in ipairs({ { 1366, 768 }, false }) do
   sauber("Alarm ohne Dialog")
 end
 
--- (2) Sprachwechsel bei offenem Buch
+-- (2) language switch with the book open
 do
   local ns = world({ lang = "deDE" })
   local key = ns.Store.AddManual("Grimm", "Bart")
@@ -54,7 +54,7 @@ do
   local seen = {}
   for i = 1, 22 do
     ns.UI.StepLang = nil
-    -- der Pfeil der Hausordnung
+    -- the arrow of the house rules
     local S
     for _, f in ipairs(BM.frames) do if f.code and f.label and f.plus then S = f end end
     if S then S.plus._scripts.OnClick(S.plus, "LeftButton") else AM.ns.HandleSlash("lang " .. ns.Locale.CODES[i]) end
@@ -77,7 +77,7 @@ do
   sauber("Sprachwechsel bei offenem Buch")
 end
 
--- (3) Sprache per Befehl gewaehlt und wieder auf Automatisch
+-- (3) language chosen by command and back to Automatic
 do
   local ns = world({ lang = false, client = "deDE" })
   tick(6)

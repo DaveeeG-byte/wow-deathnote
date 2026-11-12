@@ -1,19 +1,19 @@
--- Feld 2: Konflikt-Dialog und "Bindung loesen" auf Rundwegen (Liste ohne GUID).
--- (1) Gegenprobe zu Fund 5 der vorigen Jagd: "von diesem Freund nie gehoert: ganz zurueck fragen" gilt nur,
---     wenn MEIN Hallo vor seinem ankommt. Loggt der Freund nach mir ein (sein Hallo kommt zuerst), setzt
---     schon sein Hallo den Merker "gehoert", mein Hallo fragt nur drei Tage zurueck, seine Geschichte fehlt.
---     Dasselbe nach Wahl im Konflikt und nach "Bindung loesen" (der Merker bleibt stehen).
--- (2) Konflikt offen, Freund wird von der Liste genommen und wieder hinzugefuegt (benannter Rueckweg): der
---     Konflikt ist weg, die Daten des vorlaeufig Gebundenen (hier: des Fremden) bleiben und alarmieren wieder.
--- (3) Eine vom Spieler getroffene Wahl geht verloren, wenn EIN einziger Scan den Freund nicht nennt (die
---     Liste ist dabei nicht leer); das Entfernen selbst braucht drei Scans und 14 Spieltage.
--- (4) Wahl treffen, waehrend der Abgewaehlte gerade sendet; loesen, sofort neuer Kontakt, wieder loesen.
+-- Field 2: conflict dialog and "unbind" on round trips (list without GUID).
+-- (1) Counter-check to finding 5 of the previous hunt: "never heard from this friend: ask all the way back" only
+--     holds if MY hello arrives before his. If the friend logs in after me (his hello comes first), his hello
+--     already sets the "heard" marker, my hello asks only three days back, his history is missing.
+--     The same after a choice in the conflict and after "unbind" (the marker stays).
+-- (2) Conflict open, the friend is removed from the list and added again (named way back): the
+--     conflict is gone, the data of the provisionally bound one (here: the stranger) stay and alert again.
+-- (3) A choice made by the player is lost if a SINGLE scan does not name the friend (the
+--     list is not empty); the removal itself needs three scans and 14 play days.
+-- (4) Make a choice while the deselected one is sending; unbind, new contact at once, unbind again.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf.lua")
 local M = H.M
 
--- Anton hat zwei Freunde; Carla sorgt dafuer, dass das Freundesbuch nie leer ist (ein leeres Buch fragt immer
--- ganz zurueck und wuerde den Fund verdecken). Berta starb vor 6 Tagen, Anton hat nie von ihr gehoert.
--- werZuerst = "ich": Berta ist schon im Spiel, Anton loggt ein. "sie": Anton ist im Spiel, Berta loggt ein.
+-- Anton has two friends; Carla keeps the friends' book from ever being empty (an empty book always asks
+-- all the way back and would hide the finding). Berta died 6 days ago, Anton never heard from her.
+-- werZuerst = "ich": Berta is already in game, Anton logs in. "sie": Anton is in game, Berta logs in.
 local function geschichte(werZuerst, saat)
   math.randomseed(saat)
   local W = H.welt()
@@ -22,9 +22,9 @@ local function geschichte(werZuerst, saat)
   local c = W.client("Carla", "Klein", nil, { friends = { "Anton Wurst" }, fullSender = true })
   b.login(); W.run(5)
   local key = H.tod(b, "Taeter", "Lamm")
-  W.run(90)   -- ihre Sitzung laeuft aus (kein Zeitgeber der alten Sitzung bleibt uebrig)
+  W.run(90)   -- her session ends (no timer of the old session is left)
   local bdb = H.raus(W, b)
-  H.tage(2)   -- Antons letzte Sitzung liegt nach der Tat (sonst deckt die Rueckschau sie zufaellig)
+  H.tage(2)   -- Anton's last session is after the deed (otherwise the look-back covers it by chance)
   a.login(); c.login(); W.run(90)
   H.tod(c, "Anderer", "Wolf"); W.run(10)
   local adb = H.raus(W, a)
@@ -78,7 +78,7 @@ H.lauf("(3) eine Wahl ueberlebt einen einzelnen Scan ohne den Freund", function(
   H.fluestern(a, H.J(P, "Falsch-Lamm", "Berta Fremd"), "Berta Fremd-Forever")
   H.fluestern(a, H.J(P, "Echt-Lamm", "Berta Senf"), "Berta Senf-Forever")
   H.erwartet("Vorbedingung: Wahl", a.ns.Friends.Choose("Berta", "Berta Senf") == true)
-  -- ein Scan, in dem die Liste Berta gerade nicht nennt (nicht leer), danach ist sie wieder da
+  -- one scan in which the list does not name Berta (not empty), then she is back
   a.friendNames = { "Carla" }; a.fire("FRIENDLIST_UPDATE"); W.run(2)
   a.friendNames = { "Berta", "Carla" }; a.fire("FRIENDLIST_UPDATE"); W.run(2)
   local tie = a.env.DeathNoteDB.friends.ties["Berta"]

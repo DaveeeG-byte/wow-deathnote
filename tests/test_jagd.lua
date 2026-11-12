@@ -1,5 +1,5 @@
--- 1.2.0: hunt list (Abschussliste). Release ("Zur Jagd freigeben"), call off ("Jagd abblasen"),
--- "erlegt" by an own killing blow, reasons, caps, channels, old clients. All names are made up.
+-- 1.2.0: hunt list (hit list). Release ("Put on hit list"), call off ("Call off the hunt"),
+-- "taken down" by an own killing blow, reasons, caps, channels, old clients. All names are made up.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local M = require("mock_wow")
 local test, eq, ok, no = M.test, M.eq, M.ok, M.no

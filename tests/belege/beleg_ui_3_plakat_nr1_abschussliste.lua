@@ -1,11 +1,11 @@
--- Beleg UI 3: Gildenbuch-Plakat der Nr. 1, die zugleich auf der Abschussliste steht (UI.lua, FillGuild).
--- Aufruf: nice -n 15 luajit beleg_ui_3_plakat_nr1_abschussliste.lua <Projektkopie>
--- Regel aus fix-3: am Fotoplatz steht ein Stempel (Nr. 1 vor ZUR JAGD FREIGEGEBEN); was nicht gestempelt ist, steht
--- als Steckbriefzeile ("Auf der Abschussliste"); unter einem Fotostempel steht kein Wort mehr.
--- Erwartet: das Plakat zeigt irgendwo, dass der Spieler auf der Abschussliste steht (Stempel, Steckbriefzeile oder,
--- bei eigener Freigabe, das Wort "abblasen"). Das eigene Plakat (Gegenprobe) zeigt die Zeile.
--- Dazu: jede Aktion bleibt erreichbar (Zeilenmenue), in allen Zustaenden.
--- Alle Namen sind erfunden; geprueft wird ueber Schluessel (enUS ist nur die Sprache der Welt).
+-- Proof UI 3: guild book poster of no. 1 who is also on the hit list (UI.lua, FillGuild).
+-- Usage: nice -n 15 luajit beleg_ui_3_plakat_nr1_abschussliste.lua <project copy>
+-- Rule from fix-3: the photo spot carries one stamp (no. 1 before CALLED FOR THE HUNT); what is not stamped stands
+-- as a profile line ("On the hit list"); no word stands under a photo stamp any more.
+-- Expected: the poster shows somewhere that the player is on the hit list (stamp, profile line or,
+-- for an own call, the word "call off"). The own poster (counter-check) shows the line.
+-- Also: every action stays reachable (row menu), in all states.
+-- All names are made up; checked via keys (enUS is only the world's language).
 package.path = (arg[0]:match("^(.*)/[^/]+$") or ".") .. "/?.lua;" .. package.path
 local K = require("_kopf_ui")
 
@@ -28,7 +28,7 @@ local function welt(own, hunt)
 end
 local function stempel(W, tex)
   if not tex:IsShown() then return nil end
-  -- Schluessel ueber den Wortlaut der aktiven Sprache (mehrere Schluessel koennen gleich lauten: fest vergleichen)
+  -- keys by the wording of the active language (several keys can read the same: compare fixed)
   local t = tex.label and tex.label.on and tex.label.text
   for _, k in ipairs({ "STAMP_GUILD_NR1", "STAMP_NR1", "STAMP_HUNT", "STAMP_PARDONED", "STAMP_SUSPECT", "STAMP_REVENGE" }) do
     if t == W.L[k] then return k end
@@ -82,7 +82,7 @@ for _, hunt in ipairs({ "mate", "friend", "mine", "mine+mate" }) do
   local n, e = W.errs(); K.check(hunt .. ": keine Fehler", n == 0, e)
 end
 
--- Gegenprobe: eigenes Plakat der eigenen Nr. 1 zeigt die Steckbriefzeile; Aktion im Zeilenmenue
+-- Counter-check: own poster of the own no. 1 shows the profile line; action in the row menu
 for _, hunt in ipairs({ "mate", "mine" }) do
   local W = welt(true, hunt)
   W.tab("wanted")
@@ -91,7 +91,7 @@ for _, hunt in ipairs({ "mate", "mine" }) do
   K.check("eigen/" .. hunt .. ": Stempel Nr. 1 und Steckbriefzeile", r ~= nil and stempel(W, W.E.stampNr1) == "STAMP_NR1" and zeile(W))
   local m = r and menue(W, r) or {}
   K.check("eigen/" .. hunt .. ": Aktion im Zeilenmenue", (hunt == "mine" and m.ACT_CALLOFF) or (hunt ~= "mine" and m.ACT_RELEASE))
-  -- Plakat der Abschussliste: Stempel, Knopf, Ausblenden im Zeilenmenue
+  -- hit list poster: stamp, button, hide in the row menu
   W.tab("guild"); W.ns.UI.SetGuildView("hunt"); W.tick()
   r = zeileVon(W, W.key)
   if r then W.click(r) end

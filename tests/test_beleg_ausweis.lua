@@ -1,9 +1,9 @@
--- Fund: Fuer J/A/E (und wie schon in 1.1.0 fuer K/M/X) wird nur das erste Wort von Absender und
--- Char verglichen. Kommt der Absender mit Nachnamen an und traegt die Nachricht einen ANDEREN
--- Nachnamen, wird sie trotzdem angenommen: fremde Freigabe abblasen, in fremdem Namen freigeben,
--- die zehn Plaetze eines Namensvetters belegen, die Freigabe-Zahl eines Ziels allein hochtreiben.
--- (fix-1: in die Suite uebernommen; Lauf "Liste ohne Nachnamen" nach der Entscheidung "Bindung beim ersten
--- gueltigen Kontakt" angepasst, Lauf "nur Vorname" neu.)
+-- Finding: for J/A/E (and, as in 1.1.0, for K/M/X) only the first word of sender and char is
+-- compared. If the sender arrives with a surname and the message carries a DIFFERENT surname,
+-- it is still accepted: calling off someone else's call, calling in someone else's name,
+-- filling a namesake's ten slots, driving up a target's call count alone.
+-- (fix-1: taken into the suite; run "list without surnames" adjusted after the decision "bind on the first
+-- valid contact", run "first name only" new.)
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -19,7 +19,7 @@ H.lauf("Gilde: Namensvetter mit anderem Nachnamen", function()
   W.run(5)
   local h = z.ns.Guild.Hunt("Opfer-Lamm", "guild")
   H.erwartet("Vorbedingung: Zeuge sieht die Freigabe von Anton Wurst", h and h.n == 1)
-  -- "Anton Falsch" ist ein anderer Char; der Absender kommt MIT Nachnamen an
+  -- "Anton Falsch" is a different char; the sender arrives WITH a surname
   H.gilde(z, P.EncodeCallOff("Opfer-Lamm", "Anton Wurst"), "Anton Falsch-Forever")
   H.erwartet("fremde Freigabe laesst sich nicht abblasen (Absender Anton Falsch, Feld Anton Wurst)",
     z.ns.Guild.Hunt("Opfer-Lamm", "guild") ~= nil, "Ziel ist weg")
@@ -39,14 +39,14 @@ H.lauf("Gilde: ein Mitglied, zehn Freigaben auf EIN Ziel", function()
   local b = W.client("Berta", "Senf", G)
   z.login(); b.login(); W.run(40)
   local P = z.ns.Guild.Proto
-  -- (fix-1) Absender mit Nachnamen: fremde Schreibweisen gehoeren nicht ihm und fallen schon weg
+  -- (fix-1) sender with surname: foreign spellings do not belong to him and are dropped right away
   for i = 1, 10 do
     H.gilde(z, P.EncodeHunt({ key = "Opfer-Lamm", display = "Opfer Lamm", t = time(), by = "Berta Senf" .. i, why = "x" }),
       "Berta Senf-Forever")
   end
   local h = z.ns.Guild.Hunt("Opfer-Lamm", "guild")
   H.erwartet("ein Absender zaehlt je Ziel hoechstens als eine Freigabe", not h or h.n <= 1, h and (h.n .. " Freigaben von einem Absender"))
-  -- Absender nur mit Vornamen: jede Schreibweise passt zum Vornamen, zaehlt aber nur einmal (die letzte gilt)
+  -- sender with first name only: every spelling fits the first name but counts only once (the last one wins)
   for i = 1, 10 do
     H.gilde(z, P.EncodeHunt({ key = "Zwei-Lamm", display = "Zwei Lamm", t = time(), by = "Berta Senf" .. i, why = "x" .. i }),
       "Berta-Forever")
@@ -75,14 +75,14 @@ H.lauf("Freunde: Liste ohne Nachnamen, Fremder mit gleichem Vornamen", function(
   local a = W.client("Anton", "Wurst", nil, { friends = { "Berta" } })
   a.login(); W.run(40)
   local P = a.ns.Guild.Proto
-  -- der erste gueltige Kontakt bindet den vollen Namen vorlaeufig an den Freund "Berta"
+  -- the first valid contact binds the full name provisionally to the friend "Berta"
   H.fluestern(a, P.EncodeHunt({ key = "Echt-Lamm", t = time(), by = "Berta Senf", why = "echt" }), "Berta Senf-Forever")
   H.erwartet("Vorbedingung: die echte Berta wird angenommen", a.ns.Guild.Hunt("Echt-Lamm", "friends") ~= nil)
   local before = a.ns.Friends.stats.received
   H.fluestern(a, P.EncodeHunt({ key = "Opfer-Lamm", t = time(), by = "Berta Fremd", why = "Fremder" }), "Berta Fremd-Forever")
   H.erwartet("Nachricht des Fremden wird nicht angenommen", a.ns.Friends.stats.received == before
     and a.ns.Guild.Hunt("Opfer-Lamm", "friends") == nil, "Freigabe eines Fremden steht im Freundesbuch")
-  -- fix-2 (Fund 1 der finalen Jagd): vorlaeufige Bindung -> Konflikt, der Spieler waehlt
+  -- fix-2 (finding 1 of the final hunt): provisional binding -> conflict, the player chooses
   local h = a.ns.Friends.Health()
   H.erwartet("die Statuszeile nennt beide vollen Namen", h.reason == "conflict" and h.text:find("Berta Fremd", 1, true) ~= nil
     and h.text:find("Berta Senf", 1, true) ~= nil, h.reason .. ": " .. tostring(h.text))
@@ -101,7 +101,7 @@ H.lauf("Freunde: Liste ohne Nachnamen, Fremder mit gleichem Vornamen", function(
     and a.ns.Friends.stats.strangers == n + 2)
   M.Advance(700)
   H.erwartet("der Vermerk verschwindet nach zehn Minuten", a.ns.Friends.Health().reason ~= "impostor", a.ns.Friends.Health().reason)
-  -- nach einem Neustart bleibt die Bindung (gespeichert)
+  -- after a restart the binding stays (saved)
   a.fire("PLAYER_LOGOUT")
   local db = H.tiefe_kopie(a.env.DeathNoteDB)
   a.loggedIn = false
@@ -129,7 +129,7 @@ H.lauf("Freunde: Liste MIT Nachnamen, Absender kommt ohne Nachnamen an (Form Nam
   local a = W.client("Anton", "Wurst", nil, { friends = { "Berta Senf" } })
   a.login(); W.run(40)
   local P = a.ns.Guild.Proto
-  -- der Fremde heisst "Berta Fremd", der Client meldet ihn als "Berta-Forever"; im Feld steht sein echter Name
+  -- the stranger is called "Berta Fremd", the client reports him as "Berta-Forever"; the field holds his real name
   H.fluestern(a, P.EncodeHunt({ key = "Opfer-Lamm", t = time(), by = "Berta Fremd", why = "Fremder" }), "Berta-Forever")
   local h = a.ns.Guild.Hunt("Opfer-Lamm", "friends")
   H.erwartet("Char-Feld mit anderem Nachnamen als der Freund auf der Liste wird verworfen", h == nil,

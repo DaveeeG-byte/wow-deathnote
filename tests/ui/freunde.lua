@@ -1,7 +1,7 @@
--- 1.2.0: Oberflaeche fuer Freundesbuch und Abschussliste mit der echten Logik (Sync.lua, Friends.lua).
--- Reiter "Gilde & Freunde", Quelle Alle | Gilde | Freunde, Leerzustaende, Kennzeichen Kollege/Freund,
--- Abschussliste mit 0, 1 und 40 Zielen, Freigeben-Blatt, Stempel, Alarm, Erlegt-Meldung, Hausordnung.
--- Alle Namen sind erfunden.
+-- 1.2.0: UI for the friends' book and the hit list with the real logic (Sync.lua, Friends.lua).
+-- Tab "Guild & Friends", source All | Guild | Friends, empty states, guildmate/friend markers,
+-- hit list with 0, 1 and 40 targets, post sheet, stamp, alarm, taken down message, house rules.
+-- All names are made up.
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. here .. "/../?.lua;" .. package.path
 local DIR = here .. "/../../DeathNote"
@@ -55,14 +55,14 @@ end
 local function whisper(text, from) AM.FireEvent("CHAT_MSG_ADDON", "DeathNote", text, "WHISPER", from or "Fritz-Forever") end
 local function guildMsg(text, from) AM.FireEvent("CHAT_MSG_ADDON", "DeathNote", text, "GUILD", from or "Kollege-Forever") end
 
-BM.measure = true       -- Textbreiten geschaetzt: Platz im Kopf der linken Seite pruefen
+BM.measure = true       -- text widths are estimated: check the room in the head of the left page
 ns:Fire("TOGGLE_UI")
-tick(30)          -- Freundesliste gelesen, Hallo an Fritz unterwegs
+tick(30)          -- friend list read, hello to Fritz on its way
 settle()
 local P = ns.Guild.Proto
 
 ------------------------------------------------------------------------
--- Reiter, Quelle, Ansichten
+-- tabs, source, views
 ------------------------------------------------------------------------
 local gt = frameWith(function(f) return f.id == "guild" and f.text end)
 check("Reiter heisst Gilde & Freunde", gt.text._text == "Gilde & Freunde", gt.text._text)
@@ -73,7 +73,7 @@ check("Reiter endet vor dem ?", gt:GetRight() and help:GetLeft() and gt:GetRight
 tab("guild")
 local SRCS = frameWith(function(f) return f.items and f.items[1] and f.items[1].src end)
 local VIEWS = frameWith(function(f) return f.items and f.items[1] and f.items[1].view end)
--- fix-3: die Quellenwahl erst, wenn es beide Quellen gibt (hier hat noch kein Freund DeathNote)
+-- fix-3: the source switch only once both sources exist (here no friend has DeathNote yet)
 check("Quellen-Umschalter verborgen, solange kein Freund DeathNote hat", SRCS and not SRCS:IsVisible())
 check("Drei Quellen: Alle, Gilde, Freunde", SRCS and #SRCS.items == 3 and SRCS.items[1].text._text == "Alle"
       and SRCS.items[2].text._text == "Gilde" and SRCS.items[3].text._text == "Freunde")
@@ -89,11 +89,11 @@ check("Quellen unten links, frei von der Sortierung", SRCS.items[3]:GetRight() a
 clean("Reiter")
 
 ------------------------------------------------------------------------
--- Leerzustaende je Quelle
+-- Empty states per source
 ------------------------------------------------------------------------
 check("Leer Alle: noch niemand gehoert", vis("Noch niemand mit DeathNote gehört.") ~= nil)
--- fix-3: die Leerzustaende je Quelle gibt es erst mit beiden Quellen (siehe unten); ohne Gilde und Freunde
--- der ruhige Leerzustand ohne rote Zeile, ohne Umschalter und ohne Abgleichen
+-- fix-3: the empty states per source only exist with both sources (see below); without guild and friends
+-- the calm empty state without a red line, without a switch and without sync
 ns.Store.Setting("guild.friends", false); tick(1)
 AM.units.player.guild = nil
 ns.UI.Refresh(); tick(1)
@@ -107,7 +107,7 @@ ns.UI.Refresh()
 clean("Leerzustaende")
 
 ------------------------------------------------------------------------
--- Daten von Freund und Kollege, Kennzeichen in "Nach Kollege"
+-- Data from friend and guildmate, markers in "By guildmate"
 ------------------------------------------------------------------------
 whisper(P.EncodeHello(0, "1.2.0"))
 whisper(P.EncodeKill({ key = "Grimm-Bart", display = "Grimm Bart", class = "MAGE", level = 40, zone = "Ödland",
@@ -118,7 +118,7 @@ tick(2); settle()
 clean("Daten empfangen")
 check("Freund im Freundesbuch", ns.Guild.Get("Grimm-Bart", "friends") ~= nil)
 check("Statuszeile Alle zaehlt beide", vis("Läuft: 2 mit DeathNote in Gilde und Freunden.") ~= nil)
--- nach Taeter, Alle: beide
+-- by killer, All: both
 VIEWS.items[2]._scripts.OnClick(VIEWS.items[2]); tick()
 local names = {}
 for _, r in ipairs(rows()) do names[#names + 1] = r.item.key end
@@ -129,7 +129,7 @@ names = {}
 for _, r in ipairs(rows()) do names[#names + 1] = r.item.key end
 check("Freunde zeigt nur den Freund", table.concat(names, ",") == "Grimm-Bart", table.concat(names, ","))
 click(SRCS.items[1])
--- nach Kollege: Kennzeichen
+-- by guildmate: markers
 VIEWS.items[1]._scripts.OnClick(VIEWS.items[1]); tick()
 local fritz, kollege
 for _, r in ipairs(rows()) do
@@ -141,14 +141,14 @@ check("Kopf Kollege ohne Kennzeichen (fix-3: nur der Freund)", kollege and (koll
 clean("Nach Kollege")
 
 ------------------------------------------------------------------------
--- Abschussliste: leer, Freigeben ueber das Plakat, Plakat mit Stempel
+-- Hit list: empty, post through the poster, poster with stamp
 ------------------------------------------------------------------------
 check("Ohne Freigabe keine Abschussliste-Ansicht (fix-3)", not VIEWS.items[3]:IsShown())
 VIEWS.items[2]._scripts.OnClick(VIEWS.items[2]); tick()
 local grimm
 for _, r in ipairs(rows()) do if r.item.key == "Grimm-Bart" then grimm = r end end
 click(grimm)
--- fix-3: Grimm ist Gildenfeind Nr. 1, sein Stempel liegt unter dem Foto: dort kein Wort, die Aktion im Zeilenmenue
+-- fix-3: Grimm is guild enemy No. 1, his stamp sits under the photo: no word there, the action is in the row menu
 check("Kein Wort unter dem Stempel", word("Zur Jagd freigeben") == nil)
 click(grimm, "RightButton")
 local hw = word("Zur Jagd freigeben")
@@ -174,19 +174,19 @@ check("Erlegt: noch nicht", vis("NOCH NICHT") ~= nil and vis("noch von niemandem
 local stamp = frameWith(function(f) return f._kind == "Texture" and f._tex and tostring(f._tex):find("stamp_hunt", 1, true) and f:IsVisible() end)
 check("Stempel ZUR JAGD FREIGEGEBEN", stamp ~= nil)
 check("Knopf Jagd abblasen", word("Jagd abblasen") ~= nil)
-tick(1)        -- (fix-1) die Schlange sendet mit 0,3 s Abstand, auch nach leerer Schlange
+tick(1)        -- (fix-1) the queue sends 0.3 s apart, also after an empty queue
 local sent = 0
 for _, m in ipairs(AM.addonSent) do if m.text:match("^1\tJ\t") then sent = sent + 1 end end
 check("J an Gilde (und an Fritz per Flüstern)", sent >= 2, sent)
 
 ------------------------------------------------------------------------
--- Voreinstellung: mit Freigaben ist die Abschussliste die erste Ansicht
+-- Default: with calls the hit list is the first view
 ------------------------------------------------------------------------
 tab("wanted"); tab("guild")
 check("Abschussliste bleibt gewaehlt", VIEWS.items[3].mark:IsShown())
 
 ------------------------------------------------------------------------
--- 40 Ziele, lange Namen, langer Grund
+-- 40 targets, long names, long reason
 ------------------------------------------------------------------------
 for i = 1, 40 do
   local who = ({ "Kollege Wurst", "Moppel Mops", "Anna Blume", "Bert Brot" })[(i % 4) + 1]
@@ -207,7 +207,7 @@ check("Grund auf 60 Zeichen gekuerzt", cut and select(2, cut:gsub("[^\128-\191]"
 clean("langes Plakat")
 
 ------------------------------------------------------------------------
--- Alarm fuer ein Ziel der Abschussliste, Erlegt-Meldung
+-- Alarm for a hit list target, taken down message
 ------------------------------------------------------------------------
 settle(); BM.Advance(200); AM.Advance(200)
 ns.Store.Setting("guild.sightings", true)
@@ -226,13 +226,13 @@ check("Meldung Erlegt", G.DeathNoteBanner and G.DeathNoteBanner:IsShown()
 clean("Erlegt")
 
 ------------------------------------------------------------------------
--- Hausordnung Blatt Gilde mit Freunden
+-- House rules, guild sheet with friends
 ------------------------------------------------------------------------
 ns.UI.OpenPanel("settings")
 local sheet = frameWith(function(f) return f.page == 3 and f._scripts.OnClick end)
 click(sheet)
--- fix-3: zwei ruhige Gruppen TEILEN und WARNEN mit fuenf Haken im 24er Raster; der Rest hinter "Mehr"
--- (zweite Seite des Blatts, Zustand gemerkt, zu als Standard)
+-- fix-3: two calm groups SHARE and WARN with five checkboxes on a 24 grid; the rest behind "More"
+-- (second page of the sheet, state remembered, closed by default)
 local function visibleChecks()
   local out = {}
   for _, f in ipairs(BM.frames) do if f._kind == "CheckButton" and f.opt and f.opt.guild and f:IsVisible() then out[#out + 1] = f end end
@@ -276,8 +276,8 @@ check("Stand der Freunde", vis("Freund") ~= nil)
 check("Stand sagt aus", vis("Teilen mit Freunden ist aus (Hausordnung, Blatt Gilde).") ~= nil)
 toggle(fcb)
 check("wieder an", ns.Store.Setting("guild.friends") == true)
--- Platz (Anker relativ zum Blatt, 490 hoch): Knoepfe "Gildenbuch leeren" und "Freundesbuch leeren" in einer
--- Reihe ueber dem Hinweis (unten 44, eine Zeile) und dem Wort Mehr; darueber zwei Standzeilen (je 14 + 3)
+-- Room (anchors relative to the sheet, 490 high): buttons "Empty guild book" and "Empty friends' book" in one
+-- row above the hint (bottom 44, one line) and the word More; above them two status lines (14 + 3 each)
 local clear = word("Gildenbuch leeren")
 local fclear = word("Freundesbuch leeren")
 local cy = clear._points[1][3]
@@ -290,7 +290,7 @@ check("Freundesbuch leeren neben Gildenbuch leeren, im Blatt", fclear and fclear
       fclear and fclear._points[1][2])
 local fst = vis(ns.Friends.Health().text)
 check("Stand je eine Zeile (voller Satz im Tooltip)", fst and fst._maxl == 1, fst and fst._maxl)
--- fix-2 (Sprach-Jagd E7): "Freigaben gelten: immer / 30 Tage" statt "verfallen nach: Nie"
+-- fix-2 (language hunt E7): "Calls last: always / 30 days" instead of "expire after: Never"
 local exp = vis("Freigaben gelten")
 check("Stufe: Freigaben gelten, Voreinstellung immer", exp ~= nil and vis("immer") ~= nil)
 local expV

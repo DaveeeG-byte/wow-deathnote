@@ -1,4 +1,4 @@
--- Gegenproben der Logik-Jagd: muessen gruen bleiben (unveraendert uebernommen).
+-- Counter-checks of the logic hunt: must stay green (taken over unchanged).
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local M = require("mock_wow")
 local test, eq, ok, no = M.test, M.eq, M.ok, M.no

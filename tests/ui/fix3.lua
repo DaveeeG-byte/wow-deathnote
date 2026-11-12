@@ -1,12 +1,12 @@
--- 1.2.0 (fix-3): das Buch wieder ruhig. Oberflaeche mit der echten Logik, auf Deutsch.
--- (1) Raenge je Quelle (Nach Taeter, Alle und Freunde): jeder Rang einmal, nur ein roter.
--- (2) Plakat: Notiz, Opferzeile und Grund-Feld mit zwei Ankern an derselben Oberkante; kein Wort unter einem
---     Fotostempel; "Auf der Abschussliste" vor Rasse und Gilde; Opferzahl ohne Rolle.
--- (3) Alarm: der eigene Name steht nie im Zusatz "auf der Abschussliste".
--- (4) Kennzeichen nur in "Alle" und nur beim Freund; Tooltip der Statuszeile ohne Wiederholung des Stands.
--- (5) "Keine Freunde auf der Freundesliste" gedaempft statt rot; ohne Gilde und ohne Freund der ruhige Leerzustand.
--- (6) Reisszwecke nur mit "Trockene Bemerkungen"; Gebrauchsanweisung mit acht Absaetzen und einer Fusszeile.
--- Alle Namen sind erfunden.
+-- 1.2.0 (fix-3): the book calm again. UI with the real logic, in German.
+-- (1) Ranks per source (By killer, All and Friends): every rank once, only one red.
+-- (2) Poster: note, victim line and reason field with two anchors on the same top edge; no word under a
+--     photo stamp; "On the hit list" before race and guild; victim count without a role.
+-- (3) Alarm: your own name never appears in the "on the hit list" addition.
+-- (4) Markers only in "All" and only for the friend; status line tooltip without repeating the status.
+-- (5) "No friends on the friends list" dimmed instead of red; without guild and friend the calm empty state.
+-- (6) Thumbtack only with "Dry remarks"; manual with eight paragraphs and a footer.
+-- All names are made up.
 local DIR0 = (arg[1] or "."):gsub("/+$", "")
 package.path = DIR0 .. "/tests/ui/?.lua;" .. DIR0 .. "/tests/?.lua;" .. package.path
 arg[0] = DIR0 .. "/tests/ui/fix3.lua"
@@ -64,7 +64,7 @@ local function tab(id) local t = frameWith(function(f) return f.id == id and f._
 
 tick(30); settle()
 local t0 = time()
--- Gilde: Rauf Bold 2 Tode, Zwei Ter 1 Tod; Freund: Grimm Bart 3 Tode (nur im Freundesbuch)
+-- Guild: Rauf Bold 2 deaths, Zwei Ter 1 death; friend: Grimm Bart 3 deaths (only in the friends' book)
 whisper(P.EncodeHello(0, "1.2.0"))
 for i = 1, 3 do
   whisper(P.EncodeKill({ key = "Grimm-Bart", display = "Grimm Bart", class = "MAGE", level = 40, zone = "Z", t = t0 - 60 * i,
@@ -86,7 +86,7 @@ local SRCS = frameWith(function(f) return f.items and f.items[1] and f.items[1].
 local VIEWS = frameWith(function(f) return f.items and f.items[1] and f.items[1].view end)
 
 ------------------------------------------------------------------------
--- (1) Raenge je Quelle
+-- (1) Ranks per source
 ------------------------------------------------------------------------
 local function ranks()
   local seen, list, reds = {}, {}, 0
@@ -114,7 +114,7 @@ check("Freunde: nur Rang 1, einmal", s == "1." and reds == 1, s)
 click(SRCS.items[2])
 s, dup = ranks()
 check("Gilde: 1. und 2.", s == "1. 2.", s)
--- Plakat in der Quelle Gilde: Rang aus der Quelle (Rauf Bold ist dort Nr. 1)
+-- Poster in the guild source: rank from the source (Rauf Bold is No. 1 there)
 for _, r in ipairs(rows()) do if r.item.key == "Rauf-Bold" then click(r) end end
 local stamp = frameWith(function(f) return f._kind == "Texture" and f._tex and tostring(f._tex):find("stamp_guild", 1, true) and f:IsVisible() end)
 check("Gilde: Plakat von Rauf Bold mit dem Stempel Nr. 1 der Quelle", stamp ~= nil)
@@ -125,16 +125,16 @@ check("Alle: Rauf Bold ist Nr. 2, kein Stempel Nr. 1", stamp == nil)
 clean("Raenge")
 
 ------------------------------------------------------------------------
--- (2) Plakat: Anker, Wort unter dem Stempel, Steckbrief, Opferzahl
+-- (2) Poster: anchors, word under the stamp, profile, victim count
 ------------------------------------------------------------------------
--- Opferzahl ohne Rolle, das Etikett OPFER nur einmal
+-- Victim count without a role, the VICTIMS label only once
 check("Gildenplakat: Opferzahl ohne Rolle", vis("1 Opfer") ~= nil and vis("KOLLEGE") == nil)
 local n = 0
 for _, f in ipairs(BM.frames) do if f._kind == "FontString" and f._text == "O P F E R" and f:IsVisible() then n = n + 1 end end
 check("Gildenplakat: Etikett OPFER einmal", n == 1, n)
--- kein Fotostempel: das Wort darunter steht
+-- no photo stamp: the word below is shown
 check("ohne Fotostempel: Wort Zur Jagd freigeben unter dem Foto", word("Zur Jagd freigeben") ~= nil)
--- Anker: kein Feld mit zwei senkrechten Mitten (LEFT plus RIGHT)
+-- Anchors: no field with two vertical centres (LEFT plus RIGHT)
 local function midAnchors(f)
   local m = 0
   for _, p in ipairs(f._points or {}) do if p[1] == "LEFT" or p[1] == "RIGHT" then m = m + 1 end end
@@ -146,12 +146,12 @@ local bad = {}
 for _, f in ipairs(BM.frames) do
   if (f._kind == "EditBox" or f._kind == "FontString") and midAnchors(f) >= 2 then
     local a, b = f._points[1], f._points[2]
-    -- erlaubt: zwei Mitten am selben Rahmen (gleiche Hoehe)
+    -- allowed: two centres on the same frame (same height)
     if not (a and b and a[2] == b[2]) then bad[#bad + 1] = tostring(f._kind) .. ":" .. tostring(f._text or f.key or "?") end
   end
 end
 check("keine zwei Mittel-Anker an verschiedenen Rahmen (Notiz, Opfer, Grund)", #bad == 0, table.concat(bad, ", "))
--- eigenes Buch: Nr. 1 und auf der Abschussliste, mit Rasse und Gilde
+-- own book: No. 1 and on the hit list, with race and guild
 local k = ns.Store.AddManual("Ober", "Feind")
 local e = ns.Store.Get(k)
 e.raceLoc, e.guild, e.level, e.classLoc = "Mensch", "Die Eisenwacht", 60, "Schurke"
@@ -185,7 +185,7 @@ check("Fotostempel Nr. 1: kein Wort darunter", word("Zur Jagd freigeben") == nil
 clean("Plakat")
 
 ------------------------------------------------------------------------
--- (3) Alarm: eigener Name nie im Zusatz
+-- (3) Alarm: own name never in the addition
 ------------------------------------------------------------------------
 local function quiet() for _ = 1, 4 do settle(); BM.Advance(120); AM.Advance(120) end end
 local own = ns.Store.AddManual("Selbst", "Gejagt")
@@ -210,7 +210,7 @@ quiet()
 clean("Alarm")
 
 ------------------------------------------------------------------------
--- (4) Kennzeichen und Tooltip
+-- (4) Markers and tooltip
 ------------------------------------------------------------------------
 tab("wanted"); tab("guild")
 ns.UI.SetGuildView("member"); tick()
@@ -236,7 +236,7 @@ check("Tooltip: wer und was geteilt wird", tl:find(L.TIP_SHARED, 1, true) ~= nil
 clean("Kennzeichen und Tooltip")
 
 ------------------------------------------------------------------------
--- (5) keine Freunde: gedaempft; niemand: ruhig
+-- (5) no friends: dimmed; nobody: calm
 ------------------------------------------------------------------------
 FRIENDS = {}
 ns.Friends.Scan(); tick(2)
@@ -249,7 +249,7 @@ local fs = vis(fh.text)
 check("Blatt Gilde, Mehr: Stand der Freunde in gedaempfter Tinte", fs and fs._tc and fs._tc[1] < 0.5, fs and fs._tc and fs._tc[1])
 click(word("Mehr"))
 ns.UI.ClosePanel()
--- niemand: keine Gilde, Teilen mit Freunden aus
+-- nobody: no guild, sharing with friends off
 AM.units.player.guild = nil
 ns.Store.Setting("guild.friends", false)
 AM.FireEvent("PLAYER_GUILD_UPDATE"); tick(2)
@@ -265,7 +265,7 @@ ns.UI.Refresh(); tick()
 clean("Ruhig")
 
 ------------------------------------------------------------------------
--- (6) Reisszwecke, Gebrauchsanweisung
+-- (6) thumbtack, manual
 ------------------------------------------------------------------------
 tab("wanted")
 ns.UI.ShowEnemy(k); tick()

@@ -1,6 +1,6 @@
--- Fund 10: Die Einhaengepunkte in UI.lua rufen Humor ohne pcall. Wirft Humor.EmptyWanted (hier: der Zufall wirft,
--- stellvertretend fuer jeden Fehler in Humor.lua), bricht ShowEmpty vor "P:Hide(); RP.empty:Show()" ab: die leere
--- Seite "Gesucht" bleibt weg. Ein Humor-Fehler darf die echte Anzeige nicht verhindern.
+-- Finding 10: the hook points in UI.lua call Humor without pcall. If Humor.EmptyWanted throws (here the random
+-- source throws, standing in for any error in Humor.lua), ShowEmpty aborts before "P:Hide(); RP.empty:Show()": the
+-- empty page "Wanted" stays missing. A humor error must not stop the real display.
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. package.path
 local H = require("_kopf_hu")

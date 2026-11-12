@@ -1,6 +1,6 @@
--- 1.2.1 nach der Abschluss-Jagd, Oberflaeche: der Kopf des Tooltips "gerächt" endet in keiner Sprache mit einem
--- Doppelpunkt (auch nicht mit dem vollbreiten in zhCN und zhTW) oder Leerraum.
--- Aufruf: nice -n 15 luajit beleg_ui_9_fix2.lua <Projektkopie>. Alle Namen erfunden.
+-- 1.2.1 after the final hunt, UI: the head of the "avenged" tooltip ends in no language with a
+-- colon (not even the full-width one in zhCN and zhTW) or white space.
+-- Usage: nice -n 15 luajit beleg_ui_9_fix2.lua <project copy>. All names made up.
 package.path = (arg[0]:match("^(.*)/[^/]+$") or ".") .. "/?.lua;" .. package.path
 local K = require("_kopf_ui")
 

@@ -1,9 +1,9 @@
--- Funde an Daten und Freitext:
--- (a) P.SanitizeHunts prueft bei lastSeen nur "ist eine Tabelle": ein verstuemmeltes lastSeen.t wirft
---     bei jedem Neuaufbau der Abschussliste (und beim Empfang einer Sichtung) einen Lua-Fehler.
--- (b) P.CleanReason laesst kaputtes UTF-8 durch (einzelne Fuehrungs- oder Folgebytes).
--- (c) Uhr zurueckgestellt: die eigene Freigabe "aus der Zukunft" faellt beim Login still weg, die
---     anderen behalten sie und niemand kann sie mehr abblasen.
+-- Findings in data and free text:
+-- (a) P.SanitizeHunts only checks "is a table" for lastSeen: a mangled lastSeen.t throws a Lua error
+--     on every rebuild of the hit list (and when a sighting arrives).
+-- (b) P.CleanReason lets broken UTF-8 through (single lead or continuation bytes).
+-- (c) Clock set back: the own call "from the future" silently disappears at login, the others
+--     keep it and nobody can call it off any more.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -55,7 +55,7 @@ H.lauf("Grund mit kaputtem UTF-8", function()
     local r = P.CleanReason(raw)
     H.erwartet(("CleanReason liefert gueltiges UTF-8 fuer %q"):format(raw), gueltig(r), ("%q"):format(r))
   end
-  -- ueber die Leitung: ein Kollege schickt den Grund roh
+  -- over the wire: a guildmate sends the reason raw
   local msg = "1\tJ\tOpfer-Lamm\t\t\t0\t" .. time() .. "\tDora Dick\tjagt ihn \195"
   H.gilde(a, msg, "Dora-Forever")
   local h = a.ns.Guild.Hunt("Opfer-Lamm", "guild")
@@ -71,7 +71,7 @@ H.lauf("Uhr zurueckgestellt", function()
   H.erwartet("Vorbedingung: Berta hat die Freigabe", b.ns.Guild.Hunt("Opfer-Lamm", "guild") ~= nil)
   a.fire("PLAYER_LOGOUT")
   local db = H.tiefe_kopie(a.env.DeathNoteDB)
-  M.epoch = M.epoch - 3600            -- Antons Rechner stellt die Uhr eine Stunde zurueck
+  M.epoch = M.epoch - 3600            -- Anton's computer sets the clock back one hour
   a.loggedIn = false
   local a2 = W.client("Anton", "Wurst", G, { db = db })
   a2.login(); W.run(40)

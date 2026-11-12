@@ -1,10 +1,10 @@
--- Fund: Steht ein Ziel der Abschussliste auch im eigenen Buch, entscheidet allein das eigene Buch.
--- (a) Begnadigt oder nur Verdacht im eigenen Buch: kein Alarm, obwohl die Gilde das Ziel freigegeben hat.
---     (fix-1, Entscheidung des Orchestrators: begnadigt gewinnt, kein Alarm, das Plakat nennt die Liste;
---     Verdacht ohne eigenen Alarm: Alarm der Abschussliste)
--- (b) Eigener Gesuchter, der zugleich freigegeben ist: der Alarm nennt die Abschussliste nicht.
--- (c) Eigener Todesstoss auf ein Ziel, das im eigenen Buch steht, ohne dass Rache gezaehlt wird
---     (z. B. begnadigt): gar kein Fenster, weder Rache noch Erlegt.
+-- Finding: if a hit list target is also in your own book, only your own book decides.
+-- (a) Pardoned or only suspected in your own book: no alarm, even though the guild posted the target.
+--     (fix-1, orchestrator decision: pardoned wins, no alarm, the poster names the list;
+--     suspicion without an own alarm: hit list alarm)
+-- (b) Own wanted target that is also posted: the alarm does not name the hit list.
+-- (c) Own killing blow on a target from your own book that counts no revenge
+--     (e.g. pardoned): no window at all, neither revenge nor taken down.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/../?.lua;" .. (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 package.path = H.DIR .. "/tests/ui/?.lua;" .. package.path
@@ -27,7 +27,7 @@ local function popupFor(name)
   return p and p:IsShown() and (p.name._text or ""):find(name, 1, true) ~= nil
 end
 local function sehen(token, name, surname, guid)
-  -- das vorige Popup laeuft von selbst ab (Zustand des Alarms bleibt sauber)
+  -- the previous popup expires on its own (the alarm state stays clean)
   for _ = 1, 4 do settle(); BM.Advance(120); AM.Advance(120) end
   local pp = rawget(G, "DeathNoteAlert")
   assert(not (pp and pp:IsShown()), "Popup steht noch")
@@ -36,14 +36,14 @@ local function sehen(token, name, surname, guid)
   AM.FireEvent("UPDATE_MOUSEOVER_UNIT"); tick()
 end
 
--- Kontrolle: Ziel, das nicht im eigenen Buch steht
+-- Control: a target that is not in your own book
 guildMsg(P.EncodeHunt({ key = "Frei-Wild", display = "Frei Wild", t = time(), by = "Kollege Wurst", why = "x" }))
 tick(1)
 sehen("mouseover", "Frei", "Wild", "Player-1-FW")
 H.erwartet("Kontrolle: Ziel der Abschussliste alarmiert", popupFor("Frei"))
 
--- (a) im eigenen Buch begnadigt: (fix-1, Entscheidung) die eigene Begnadigung gewinnt, kein Alarm;
--- das Plakat zeigt aber, dass das Ziel auf der Abschussliste steht
+-- (a) pardoned in your own book: (fix-1, decision) your own pardon wins, no alarm;
+-- the poster still shows that the target is on the hit list
 local k = ns.Store.AddManual("Gnade", "Vorrecht")
 ns.Store.SetStatus(k, "pardoned")
 guildMsg(P.EncodeHunt({ key = k, display = "Gnade Vorrecht", t = time(), by = "Kollege Wurst", why = "Gilde jagt ihn" }))
@@ -59,7 +59,7 @@ end
 H.erwartet("das Plakat des Begnadigten nennt die Abschussliste", onPoster)
 ns:Fire("TOGGLE_UI"); tick(1); settle()
 
--- (a2) im eigenen Buch nur Verdacht (Verdachtsalarm aus): der Alarm der Abschussliste kommt
+-- (a2) only a suspect in your own book (suspicion alarm off): the hit list alarm comes
 local ks = ns.Store.AddManual("Nur", "Verdacht")
 ns.Store.SetStatus(ks, "suspect")
 ns.Store.Setting("alert.suspects", false)
@@ -68,7 +68,7 @@ tick(1)
 sehen("mouseover", "Nur", "Verdacht", "Player-1-NV")
 H.erwartet("nur Verdacht im eigenen Buch: Alarm der Abschussliste", popupFor("Nur"), "kein Alarm")
 
--- (b) eigener Gesuchter und freigegeben: der Alarm nennt die Abschussliste
+-- (b) own wanted target and posted: the alarm names the hit list
 local k2 = ns.Store.AddManual("Beides", "Zugleich")
 guildMsg(P.EncodeHunt({ key = k2, display = "Beides Zugleich", t = time(), by = "Kollege Wurst", why = "Gilde jagt ihn" }))
 tick(1)
@@ -77,7 +77,7 @@ local p = rawget(G, "DeathNoteAlert")
 local h = ns.Guild.Hunt(k2, "all")
 local erwaehnt = false
 if p and p:IsShown() and h then
-  -- sprachneutral: der Text des Popups (Titel oder Zeile) gleicht dem eines reinen Abschuss-Ziels oder nennt den Freigebenden
+  -- language neutral: the popup text (title or line) equals that of a pure hit list target or names the poster
   local line, title = tostring(p.line._text or ""), tostring(p.title._text or "")
   erwaehnt = line:find("Kollege", 1, true) ~= nil or line:find("Gilde jagt ihn", 1, true) ~= nil
 end
@@ -85,7 +85,7 @@ H.erwartet("Vorbedingung: Alarm fuer den eigenen Gesuchten", popupFor("Beides"))
 H.erwartet("der Alarm nennt, dass es ein Ziel der Abschussliste ist (Freigebender oder Grund im Popup)", erwaehnt,
   p and (tostring(p.title._text) .. " / " .. tostring(p.line._text)))
 
--- (c) eigener Todesstoss auf das begnadigte Ziel: irgendein Fenster
+-- (c) own killing blow on the pardoned target: any window
 settle(); BM.Advance(60); AM.Advance(60)
 if rawget(G, "DeathNoteBanner") then rawget(G, "DeathNoteBanner"):Hide() end
 AM.units.mouseover = nil

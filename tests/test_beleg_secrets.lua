@@ -1,4 +1,4 @@
--- Gegenprobe (soll gruen sein): Secret-Values an jeder neuen Eingangsstelle werfen keinen Fehler.
+-- Counter-check (should be green): secret values at every new entry point throw no error.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -51,8 +51,8 @@ H.lauf("Secrets an den neuen Eingaengen", function()
   M.FireEvent("PARTY_KILL", "Player-93-0000AAAA", sec("t"))
   M.FireEvent("PARTY_KILL", sec("a"), "Player-1-X")
   ns.Guild.FindTarget(sec("text"))
-  -- Guild.Release/CallOff mit Secret als key oder why sind hier bewusst nicht dabei: die Aufrufer
-  -- (UI.lua GF.DoRelease, Core.lua Slash) pruefen vorher; die Funktionen selbst pruefen es nicht.
+  -- Guild.Release/CallOff with a secret as key or why are left out on purpose: the callers
+  -- (UI.lua GF.DoRelease, Core.lua slash) check first; the functions themselves do not.
   M.Advance(60)
   H.erwartet("keine Fehler mit Secret-Values", #M.errors == 0, M.errors[1])
   H.erwartet("kein Secret in den gespeicherten Daten", not M.ContainsSecret(_G.DeathNoteDB))

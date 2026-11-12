@@ -1,7 +1,7 @@
--- Humor.lua (1.2.0, bau-d) mit Oberflaeche und echter Logik: Spruch und Stempel an der Meldung, Erlegt aus der
--- Warteschlange, Schalter in der Hausordnung, Absatz in der Gebrauchsanweisung, leeres Buch, 1. April (gemockte
--- Zeit), Reisszwecke; in fiFI und zhCN passiert nichts davon.
--- Aufruf: luajit tests/ui/humor.lua
+-- Humor.lua (1.2.0, bau-d) with UI and real logic: quip and stamp on the message, taken down from the
+-- queue, switch in the house rules, paragraph in the manual, empty book, April 1st (mocked
+-- time), thumbtack; in fiFI and zhCN none of this happens.
+-- Usage: luajit tests/ui/humor.lua
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. here .. "/../?.lua;" .. package.path
 local root = here .. "/../.."
@@ -12,8 +12,8 @@ local function check(name, cond, detail)
   if cond then pass = pass + 1 else fail = fail + 1; print("ROT   " .. name .. (detail ~= nil and ("  -> " .. tostring(detail)) or "")) end
 end
 
--- fix-2: Humor.lua behaelt nach der Aktivierung nur die Texte der aktiven Sprache; die Tests lesen beide
--- Tabellen aus dem markierten Block der Datei
+-- fix-2: after activation Humor.lua keeps only the texts of the active language; the tests read both
+-- tables from the marked block of the file
 local SRC = (function()
   local h = assert(io.open(DIR .. "/Humor.lua", "rb"))
   local s = h:read("*a"); h:close()
@@ -37,7 +37,7 @@ local function world(code, opts)
   for _, f in ipairs({ "Alert.lua", "UI.lua", "Extras.lua", "Humor.lua" }) do BM.Load(DIR .. "/" .. f, ns) end
   AM.FireEvent("PLAYER_LOGIN")
   AM.FireEvent("PLAYER_ENTERING_WORLD")
-  if ns.Humor then for k in pairs(ns.Humor.CHANCE) do ns.Humor.CHANCE[k] = 1 end; ns.Humor.QUIET = 0 end -- fix-3: ohne Sperre
+  if ns.Humor then for k in pairs(ns.Humor.CHANCE) do ns.Humor.CHANCE[k] = 1 end; ns.Humor.QUIET = 0 end -- fix-3: without a lock
   return ns
 end
 local function settle() AM.Advance(0.1); BM.Advance(0.1) end
@@ -87,13 +87,13 @@ local function humorChat()
 end
 
 ------------------------------------------------------------------------
--- Deutsch und Englisch
+-- German and English
 ------------------------------------------------------------------------
 for _, code in ipairs({ "deDE", "enUS" }) do
   local ns = world(code)
   local T = ns.Humor.TEXTS[code]
   local n = code .. ": "
-  -- leeres Buch (Wahrscheinlichkeit 1): anderer Satz aus dem Topf, bleibt beim Neuaufbau stehen
+  -- empty book (probability 1): another sentence from the pool, stays when rebuilt
   ns:Fire("TOGGLE_UI"); settle()
   local X = emptyPage()
   check(n .. "leeres Buch sichtbar", X and X:IsShown())
@@ -102,7 +102,7 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   ns:Fire("ENEMY_UPDATED", "x"); settle()
   check(n .. "leeres Buch: Satz bleibt beim Neuaufbau", X.small:GetText() == s1, X.small:GetText())
   ns:Fire("TOGGLE_UI"); settle()
-  -- Hausordnung: Schalter auf dem Blatt Buch
+  -- House rules: switch on the book sheet
   ns:Fire("TOGGLE_UI"); settle()
   ns.UI.OpenPanel("settings"); settle()
   local cb = checkWith(T.OPT)
@@ -116,32 +116,32 @@ for _, code in ipairs({ "deDE", "enUS" }) do
     check(n .. "Schalter wieder an", ns.Store.Setting("humor") == true and ns.Humor.On())
   end
   ns.UI.OpenPanel("help"); settle()
-  -- fix-3: Impressum als eine Zeile am Fuss, kein Absatz
+  -- fix-3: imprint as one line in the footer, not a paragraph
   check(n .. "Gebrauchsanweisung: Zeile am Fuss", helpHas(T.MANUAL) and ns.UI.HELP_FOOT == T.MANUAL, T.MANUAL)
   check(n .. "Gebrauchsanweisung: 8 Absaetze", #ns.UI.HELP == 8, #ns.UI.HELP)
   ns.UI.ClosePanel(); settle()
-  -- Tode: 5. Tod Stammkunde-Spruch (fix-3: der 3. nicht mehr), 10. Tod Stempel
+  -- Deaths: 5th death regular customer quip (fix-3: no longer the 3rd), 10th death stamp
   local key
   for i = 1, 5 do key = kill(ns, "Grimm", "Bart"); if i == 3 then check(n .. "3. Tod: kein Spruch mehr", quip() == nil, quip()) end; if i < 5 then away() end end
   check(n .. "5. Tod: Spruch unter der Meldung", inPool(ns, code, "regular", quip()), quip())
   away()
   for i = 6, 10 do key = kill(ns, "Grimm", "Bart"); if i < 10 then away() end end
   check(n .. "10. Tod: Stempel " .. T.STAMP.regular, stampText() == T.STAMP.regular, stampText())
-  -- fix-3: roter Rahmen wie die anderen Stempel (der dunkle war auf dem schwarzen Streifen unsichtbar)
+  -- fix-3: red frame like the other stamps (the dark one was invisible on the black strip)
   check(n .. "10. Tod: Stempelrahmen leer, rot", tostring(banner().stamp._tex):find("stamp_rache_blank.tga", 1, true)
         and banner().stampText._tc and banner().stampText._tc[1] > 0.6, banner().stamp._tex)
   check(n .. "10. Tod: Meilenstein-Zeile", quip() == T.MILESTONE.regular, quip())
   away()
   check(n .. "Meldung weg: Spruch weg", quip() == nil)
-  -- neue Meldung ohne Humor-Anlass loescht den alten Spruch
+  -- a new message without a humour occasion clears the old quip
   kill(ns, "Neu", "Ling")
   check(n .. "neue Meldung ohne Anlass: kein alter Spruch", quip() == nil, quip())
   away()
-  -- Stufe deutlich darunter
+  -- level well below
   kill(ns, "Klein", "Wicht", { level = 20 })
   check(n .. "niedrige Stufe: Spruch", inPool(ns, code, "lowbie", quip()), quip())
   away()
-  -- Rache: erste Rache nicht an Rang 1, dann Staatsfeind
+  -- Revenge: first revenge not on rank 1, then public enemy
   ns.Store.AddRevenge("Klein-Wicht"); settle()
   check(n .. "erste Rache: Stempel", stampText() == T.STAMP.revenge1, stampText())
   away()
@@ -153,7 +153,7 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   check(n .. "weitere Rache: normaler Stempel, Spruch", inPool(ns, code, "revenge", quip()), quip())
   check(n .. "weitere Rache: kein Humor-Stempel", stampText() ~= T.STAMP.nr1 and stampText() ~= T.STAMP.revenge1, stampText())
   away()
-  -- Plakat: Reisszwecke
+  -- poster: thumbtack
   ns.UI.ShowEnemy(key); settle()
   local pinBtn
   for _, f in ipairs(BM.frames) do if f.fall and f.wobble then pinBtn = f end end
@@ -167,7 +167,7 @@ for _, code in ipairs({ "deDE", "enUS" }) do
     check(n .. "5 Klicks: faellt", pinBtn.fall:IsPlaying())
     check(n .. "5 Klicks: eine Zeile", humorChat() == 1, humorChat())
   end
-  -- Schalter aus: keine Sprueche, keine Stempel; versteckter Befehl bleibt
+  -- switch off: no quips, no stamps; the hidden command stays
   ns.Store.Setting("humor", false)
   for _ = 1, 10 do kill(ns, "Stamm", "Gast"); away() end
   ns.Store.AddRevenge(key); settle()
@@ -183,13 +183,13 @@ for _, code in ipairs({ "deDE", "enUS" }) do
 end
 
 ------------------------------------------------------------------------
--- Die Fachkraefte: Erlegt aus der Warteschlange mit eigenem Stempel
+-- Die Fachkraefte: taken down from the queue with its own stamp
 ------------------------------------------------------------------------
 do
   local ns = world("deDE", { guild = "Die Fachkräfte" })
   local T = ns.Humor.TEXTS.deDE
   check("Mitglied erkannt", ns.Humor.IsMember())
-  kill(ns, "Grimm", "Bart")             -- Meldung steht
+  kill(ns, "Grimm", "Bart")             -- message is shown
   ns:Fire("HUNT_BAGGED", "Ziel-Eins", "Hans", _G.time(), "guild"); settle()
   check("Erlegt wartet hinter der eigenen Meldung", (banner().kicker:GetText() or ""):find(ns.Extras.Spaced(ns.L.BANNER_AGAIN), 1, true)
     or (banner().kicker:GetText() or ""):find(ns.Extras.Spaced(ns.L.BANNER_NEW), 1, true), banner().kicker:GetText())
@@ -199,7 +199,7 @@ do
   check("Erlegt: Stempel FACHGERECHT ERLEDIGT", stampText() == T.STAMP.pro, stampText())
   check("Erlegt: Spruch (mit Gilden-Varianten)", inPool(ns, "deDE", "bagged", quip()), quip())
   away()
-  -- fremde Gilde: kein Fachkraefte-Stempel
+  -- other guild: no Fachkraefte stamp
   ns = world("deDE", { guild = "Andere Gilde" })
   ns:Fire("HUNT_BAGGED", "Ziel-Zwei", "Hans", _G.time(), "guild"); settle()
   check("fremde Gilde: Erlegt ohne Fachkraefte-Stempel", stampText() ~= T.STAMP.pro, stampText())
@@ -208,7 +208,7 @@ do
 end
 
 ------------------------------------------------------------------------
--- 1. April (gemockte Zeit): eigenes Plakat im leeren Buch
+-- April 1st (mocked time): own poster in the empty book
 ------------------------------------------------------------------------
 for _, code in ipairs({ "deDE", "enUS" }) do
   local ns = world(code, { date = { year = 2027, month = 4, day = 1, hour = 12, min = 0, sec = 0 } })
@@ -226,7 +226,7 @@ for _, code in ipairs({ "deDE", "enUS" }) do
 end
 
 ------------------------------------------------------------------------
--- fiFI und zhCN: nichts
+-- fiFI and zhCN: nothing
 ------------------------------------------------------------------------
 for _, code in ipairs({ "fiFI", "zhCN" }) do
   local ns = world(code, { guild = "Die Fachkräfte", date = { year = 2027, month = 4, day = 1, hour = 3, min = 0, sec = 0 } })

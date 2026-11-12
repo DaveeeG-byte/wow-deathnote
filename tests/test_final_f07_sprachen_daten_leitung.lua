@@ -1,9 +1,9 @@
--- Sprache gegen Daten: zwei Clients in verschiedenen Sprachen (Deutsch, Chinesisch) in Gilde und als Freunde.
--- (1) Kommt irgendein uebersetzter Text ueber die Leitung? (alle gesendeten Nachrichten gegen beide Sprachtabellen)
--- (2) Steht irgendein uebersetzter Text in DeathNoteDB? (alle Texte der Datei gegen die Sprachtabelle)
--- (3) Sichern auf Deutsch, Einlesen auf Chinesisch, und zurueck.
--- (4) Befehle: deutsch und englisch gemischt; Spieler, die wie ein Unterbefehl heissen (Hunt, Lang, Test, Jagd, Help).
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen; Kopf: tests/beleg_helfer.lua
+-- Language against data: two clients in different languages (German, Chinese) in a guild and as friends.
+-- (1) Does any translated text go over the wire? (all sent messages against both locale tables)
+-- (2) Is any translated text in DeathNoteDB? (all texts of the file against the locale table)
+-- (3) Save in German, import in Chinese, and back.
+-- (4) Commands: German and English mixed; players named like a subcommand (Hunt, Lang, Test, Jagd, Help).
+-- (fix-2) Proof test of the final hunt, taken into the suite; head: tests/beleg_helfer.lua
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -24,13 +24,13 @@ local function texte(ns)
       local plain = v:gsub("{[^{}]*}", "\0")
       for part in plain:gmatch("[^%z\n]+") do
         part = part:gsub("^%s+", ""):gsub("%s+$", "")
-        if #part >= 9 and k ~= "SAMPLE_ZONE" and k ~= "CHANNEL_MASTER" then out[part] = k end   -- Beispielzone und Kanalname sind keine Saetze
+        if #part >= 9 and k ~= "SAMPLE_ZONE" and k ~= "CHANNEL_MASTER" then out[part] = k end   -- sample zone and channel name are no sentences
       end
     end
   end
   return out
 end
--- alle Texte einer Tabelle; ohneNotiz: das Feld "note" (freier Text des Spielers) bleibt aussen vor
+-- all texts of a table; ohneNotiz: the field "note" (the player's free text) is left out
 local function strings(t, out, seen, ohneNotiz)
   out, seen = out or {}, seen or {}
   if seen[t] then return out end
@@ -72,7 +72,7 @@ H.lauf("zwei Sprachen, Gilde und Freunde", function()
   W.run(320)
   a.ns.Guild.SyncNow(); b.ns.Guild.SyncNow(); W.run(90)
   for _, x in ipairs({ a, b, c }) do x.ns.HandleSlash("probe"); x.ns.HandleSlash("gilde") end
-  -- Uebernehmen aus dem Gildenbuch (schreibt laut Bau-Bericht einmal eine Notiz in der aktiven Sprache)
+  -- take over from the guild book (writes a note in the active language once, per the build report)
   local nb = H.tod(b, "Nur", "Bertas"); W.run(20)
   local adopted = a.ns.Guild.Adopt(nb)
   H.erwartet("Vorbedingung: Uebernehmen aus dem Gildenbuch klappt", adopted ~= nil)
@@ -102,7 +102,7 @@ H.lauf("zwei Sprachen, Gilde und Freunde", function()
   H.erwartet("die uebernommene Notiz ist sprachneutral (Regel 9: nichts Uebersetztes in DeathNoteDB)",
     #treffer(strings(b.env.DeathNoteDB), dz) == 0 and #ha == 0, "Schluessel NOTE_FROM_GUILD steht als Satz in der Datei und im Export")
 
-  -- (3) Sichern auf Deutsch, Einlesen auf Chinesisch und umgekehrt
+  -- (3) save in German, import in Chinese and the other way round
   local text = a.ns.Store.Export(false)
   H.erwartet("Export traegt keinen deutschen Sprachtext", #treffer({ text }, da) == 0, table.concat(treffer({ text }, da), ","))
   local ok, added = c.ns.Store.Import(text)
@@ -127,7 +127,7 @@ H.lauf("Befehle gemischt, Namen wie Unterbefehle", function()
   end
   slash("del Hunt Nachname")
   H.erwartet("/dn del Hunt Nachname streicht", ns.Store.Get("Hunt-Nachname") == nil)
-  -- deutsche und englische Befehle in der englischen Sitzung, ohne Fehler und ohne "unbekannt"
+  -- German and English commands in the English session, without errors and without "unknown"
   local unknown = ns.L.CHAT_UNKNOWN_CMD
   for _, c in ipairs({ "hilfe", "help", "?", "ruhe", "still", "mute", "quiet", "gilde", "guild", "freunde", "friends", "sync",
       "jagd", "hunt", "abblasen Niemand", "calloff Niemand", "sprache", "lang", "language", "test", "debug", "debug" }) do

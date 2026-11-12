@@ -1,8 +1,8 @@
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen (Aufruf aus der Projektwurzel: luajit <datei> .)
--- Upgrade und Zurueck mit Logik UND Oberflaeche: Fixture 1.0.1 -> neuer Stand (alles Neue benutzt) -> 1.1.0 ->
--- wieder neuer Stand. Dazu Mischbetrieb 1.1.0 gegen neu mit allen Nachrichtentypen auf GUILD und WHISPER.
--- Aufruf: luajit beleg_f06_hoch_zurueck_hoch.lua <Projektkopie> [Ordner mit dem ganzen Addon 1.1.0]
--- Ohne zweiten Ordner laeuft 1.1.0 nur mit der Logik aus tests/fixtures/addon-1.1.0 (ohne dessen Oberflaeche).
+-- (fix-2) Proof test of the final hunt, taken into the suite (run from the project root: luajit <file> .)
+-- Upgrade and downgrade with logic AND UI: fixture 1.0.1 -> current state (everything new in use) -> 1.1.0 ->
+-- current state again. Plus mixed versions 1.1.0 against current with all message types on GUILD and WHISPER.
+-- Usage: luajit beleg_f06_hoch_zurueck_hoch.lua <project copy> [folder with the whole addon 1.1.0]
+-- Without the second folder 1.1.0 runs only with the logic from tests/fixtures/addon-1.1.0 (without its UI).
 local DIR = (arg[1] or "."):gsub("/+$", "")
 local OLDUI = arg[2] and arg[2]:gsub("/+$", "")
 package.path = DIR .. "/tests/ui/?.lua;" .. DIR .. "/tests/?.lua;" .. package.path
@@ -37,8 +37,8 @@ local function before()
     ShowFriends = function() end,
   }
 end
--- lang = Kennung: der Mock waehlt sie ausdruecklich; lang = false: nichts gewaehlt, es gilt allein die Datei
--- (datei = Kennung der Sprachdatei, die wie in der TOC mitgeladen wird)
+-- lang = code: the mock selects it explicitly; lang = false: nothing selected, only the file counts
+-- (datei = code of the locale file that is loaded along as in the TOC)
 local function neu(db, lang, datei)
   fresh()
   if datei then AM.locale = datei end
@@ -83,7 +83,7 @@ local function sauber(name)
 end
 local function zaehle(t) local n = 0; for _ in pairs(t or {}) do n = n + 1 end return n end
 
--- 1) Fixture in den neuen Stand, alles Neue benutzen
+-- 1) fixture to the current state, use everything new
 local fx = {}
 do local f = assert(loadfile(DIR .. "/tests/fixtures/sv_1.0.1_autor.lua")); setfenv(f, fx); f() end
 local eigeneVorher, todeVorher = zaehle(fx.DeathNoteDB.enemies), #(fx.DeathNoteDB.deaths or {})
@@ -113,7 +113,7 @@ erwartet("neuer Stand: Freigaben in beiden Listen, Bindung, Ausgeblendetes gespe
   gl1 and gl1.hunts["Vier-Wicht"] and gl1.hunts["Zwei-Wicht"] and db1.friends.hunts["Drei-Wicht"] and db1.friends.hunts["Vier-Wicht"]
   and db1.friends.ties["Fritz Frei"] and db1.guild.huntHidden["Zwei-Wicht"] and true)
 
--- 2) zurueck auf 1.1.0, dort spielen
+-- 2) back to 1.1.0, play there
 local o = alt(copy(db1))
 tick(40)
 gmsg(P.EncodeKill({ key = "Alt-Wicht", display = "Alt Wicht", class = "MAGE", level = 40, zone = "Zone", t = _G.time() - 5, victim = "Kollege Lang" }, "K"))
@@ -139,7 +139,7 @@ erwartet("1.1.0 laesst Sprache und neue Schalter stehen", db2.settings.lang == "
 erwartet("1.1.0 laesst Ausgeblendetes stehen", db2.guild.huntHidden and db2.guild.huntHidden["Zwei-Wicht"] ~= nil)
 io.write("  Hinweis: Ansicht des vierten Reiters nach 1.1.0: " .. tostring(db2.settings.ui.guildView) .. " (vorher hunt)\n")
 
--- 3) wieder hoch
+-- 3) up again
 ns = neu(copy(db2), false, "ruRU")
 tick(40)
 ui(ns)

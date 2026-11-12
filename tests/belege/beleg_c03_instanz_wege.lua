@@ -1,6 +1,6 @@
--- 1.2.1 nach der Jagd (M3, N1, N7): im Dungeon haelt eine Ablehnung nur ihren eigenen Weg (Gilde, Fluestern an
--- einen Freund, Battle.net an einen Freund); die Sonde sagt die Ablehnung; eine Chat-Sperre ohne Ereignis am Ende
--- haelt die Schlange nicht fuer immer.
+-- 1.2.1 after the hunt (M3, N1, N7): in a dungeon a refusal holds only its own route (guild, whisper to
+-- a friend, Battle.net to a friend); the probe reports the refusal; a chat lock that ends without an event
+-- does not hold the queue forever.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf_c.lua")
 local M = H.M
 local G = "Die Testgilde"
@@ -25,7 +25,7 @@ H.lauf("(1) Dungeon: ein abgelehntes Fluestern haelt nur das Fluestern an diesen
   H.erwartet("die Kollegin bekommt im Dungeon alles ueber GUILD", b.ns.Guild.Hunt("Ziel-Eins", "guild") ~= nil
     and b.ns.Guild.Hunt("Ziel-Zwei", "guild") ~= nil)
   H.erwartet("der andere Freund bekommt sein Fluestern", g.ns.Guild.Hunt("Ziel-Eins", "friends") ~= nil)
-  -- an Fritz gingen zwei Nachrichten (die Tat K und die Freigabe J): genau die warten
+  -- two messages went to Fritz (the deed K and the call J): exactly those wait
   H.erwartet("es wartet nur das Fluestern an Fritz", a.ns.Guild.QueueSize() == 2, a.ns.Guild.QueueSize())
   local s = a.env.DeathNoteDB.probe and a.env.DeathNoteDB.probe.guild and a.env.DeathNoteDB.probe.guild.instanceSend
   H.erwartet("Sonde: die Ablehnung steht drin (Weg Fluestern)", s and s.result == "refused" and s.channel == "WHISPER",

@@ -85,15 +85,15 @@ test("M und X: kaputte Nachrichten werden verworfen, nichts wirft", function()
   local P = ns.Guild.Proto
   local now = time()
   local bad = {
-    "1\tM\tGrimm-Bart\t\t\t0\t" .. now,                                     -- Feld fehlt
+    "1\tM\tGrimm-Bart\t\t\t0\t" .. now,                                     -- field missing
     "1\tM\tGrimm-Bart\t\t\t0\t" .. now .. "\tKollege\textra",
-    "1\tM\tGrimm-Bart\t\t\t0\t" .. (now + 3600) .. "\tKollege",             -- Zukunft
-    "1\tM\tGrimm-Bart\t\t\t0\t" .. (now - 6 * 365 * 86400) .. "\tKollege", -- zu alt
-    "1\tM\tGrimm-Bart\t\t\t0\t" .. now .. "\t",                             -- kein Char
-    "1\tM\tgrimm-bart\t\t\t0\t" .. now .. "\tKollege",                      -- nicht kanonisch
+    "1\tM\tGrimm-Bart\t\t\t0\t" .. (now + 3600) .. "\tKollege",             -- future
+    "1\tM\tGrimm-Bart\t\t\t0\t" .. (now - 6 * 365 * 86400) .. "\tKollege", -- too old
+    "1\tM\tGrimm-Bart\t\t\t0\t" .. now .. "\t",                             -- no char
+    "1\tM\tgrimm-bart\t\t\t0\t" .. now .. "\tKollege",                      -- not canonical
     "1\tM\tGrimm-Bart\t\trogue\t0\t" .. now .. "\tKollege",
     "1\tM\tGrimm-Bart\t\t\t999\t" .. now .. "\tKollege",
-    "1\tM\tGrimm-Bart\t\t\t0\t" .. now .. "\tKol%7Clege",                   -- '|' im Char
+    "1\tM\tGrimm-Bart\t\t\t0\t" .. now .. "\tKol%7Clege",                   -- '|' in the char
     "1\tM\tGrimm-Bart\t\t\t0\t" .. now .. "\t" .. string.rep("k", 65),
     "1\tX\tGrimm-Bart", "1\tX\tGrimm-Bart\t", "1\tX\tGrimm-Bart\tA\tB", "1\tX\tGrimm\tKollege",
   }
@@ -343,7 +343,7 @@ test("Alter Client (1.0.0, kennt M/X nicht): verwirft still, wirft nicht", funct
   W.run(30)
   a.ns.Store.AddManual("Grimm", "Bart")
   a.ns.Store.AddManual("Zwei", "Te")
-  -- (fix-1) erst raus, dann austragen: ein noch wartendes M nimmt das X zurueck (nur das letzte Wort zaehlt)
+  -- (fix-1) out first, then remove: a still waiting M cancels the X (only the last word counts)
   W.run(1)
   a.ns.Store.Remove("Zwei-Te")
   W.run(2)

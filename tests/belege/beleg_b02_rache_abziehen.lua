@@ -1,5 +1,5 @@
--- 1.2.1: Rache rueckgaengig machen (nur die von Hand vermerkte). Aufruf: luajit beleg_b02_rache_abziehen.lua <Projektkopie>
--- Logik und Daten; die Oberflaeche (Knopf "Rueckgaengig", Menue, Meldung, Meilenstein) prueft beleg_ui_7.
+-- 1.2.1: undo revenge (only the one noted by hand). Usage: luajit beleg_b02_rache_abziehen.lua <project copy>
+-- Logic and data; the UI (button "Undo", menu, message, milestone) is checked by beleg_ui_7.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf.lua")
 local M = H.M
 
@@ -36,7 +36,7 @@ H.lauf("(2) vom Buch erkannt (Todesstoss, Ehre) und Bestand aus 1.2.0: bleibt", 
   local ns, key = buch()
   local S = ns.Store
   local e = S.Get(key)
-  -- erkannt: Todesstoss (PARTY_KILL mit der eigenen GUID), in der offenen Welt
+  -- detected: killing blow (PARTY_KILL with the own GUID), in the open world
   M.units.target = nil
   M.AddEnemy("target", { name = "Grimm", surname = "Bart", guid = "Player-93-0BAD0BAD" })
   e.guid = "Player-93-0BAD0BAD"
@@ -47,7 +47,7 @@ H.lauf("(2) vom Buch erkannt (Todesstoss, Ehre) und Bestand aus 1.2.0: bleibt", 
   H.erwartet("erkannte Rache ist nicht abziehbar", S.HandRevenge(e) == 0 and S.UndoRevenge(key) == false and e.revenge == 1)
   S.AddRevenge(key, true)
   H.erwartet("von Hand dazu: nur diese abziehbar", S.UndoRevenge(key) and e.revenge == 1 and S.UndoRevenge(key) == false)
-  -- Buch aus 1.2.0: Rache ohne Merker gilt als erkannt
+  -- book from 1.2.0: revenge without marker counts as detected
   local alt = H.tiefe_kopie(_G.DeathNoteDB)
   alt.enemies[key].revenge, alt.enemies[key].revengeHand = 3, nil
   local ns2 = M.Load({ db = alt })
@@ -78,7 +78,7 @@ H.lauf("(4) Rueckweg: 1.2.0 liest das Buch mit Merker, 1.2.1 danach wieder", fun
   old.login(); W.run(30)
   local e = old.ns.Store.Get(key)
   H.erwartet("1.2.0: Rache 2, Merker steht noch", e.revenge == 2 and e.revengeHand == 1 and #M.errors == 0, M.errors[1])
-  old.ns.Store.AddRevenge(key)    -- unter 1.2.0 vermerkt (ohne Merker)
+  old.ns.Store.AddRevenge(key)    -- noted under 1.2.0 (without marker)
   local db2 = H.raus(W, old)
   local neu = W.client("Varorak", "Narenmar", nil, { db = db2 })
   neu.login(); W.run(30)

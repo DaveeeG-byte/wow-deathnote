@@ -1,11 +1,11 @@
--- Funde an der gemeinsamen Sendeschlange:
--- (a) Gleichlautende Nachrichten werden in der Schlange entdoppelt. Wartet die Schlange (Kampf,
---     Instanz, Drossel) und man gibt frei, blaest ab, gibt wieder frei, blaest wieder ab, faellt das
---     zweite A weg: beim Kollegen bleibt das Ziel freigegeben, bei mir ist es weg.
--- (b) Ein Freund steht auf der Freundesliste (mit Nachnamen oder Realm) UND als Battle.net-Freund
---     (nur Vorname): er wird als zwei Freunde gefuehrt und bekommt alles doppelt.
--- (c) Kommt ein Freund online, waehrend die Schlange voll ist, geht das Hallo verloren und wird in
---     der Sitzung nicht nachgeholt (helloAt/helloSent sind schon verbucht).
+-- Findings on the shared send queue:
+-- (a) Identical messages are deduplicated in the queue. If the queue waits (combat,
+--     instance, throttle) and you call, call off, call again, call off again, the second A
+--     is dropped: the guildmate keeps the target called, for me it is gone.
+-- (b) A friend is on the friend list (with surname or realm) AND a Battle.net friend
+--     (first name only): he is kept as two friends and gets everything twice.
+-- (c) If a friend comes online while the queue is full, the hello is lost and not retried
+--     in the session (helloAt/helloSent are already booked).
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -48,15 +48,15 @@ end)
 H.lauf("Freund kommt online, waehrend die Schlange voll ist", function()
   local W = H.welt()
   local a = W.client("Anton", "Wurst", G, { friends = { "Berta" } })
-  local b = W.client("Berta", "Senf", nil, { friends = {} })     -- Berta fragt nicht selbst (hat Anton noch nicht)
+  local b = W.client("Berta", "Senf", nil, { friends = {} })     -- Berta does not ask herself (does not have Anton yet)
   a.login(); W.run(45)
   a.combat = true
   for i = 1, a.ns.Guild.C.QUEUE_MAX do
     H.tod(a, "Feind" .. string.char(65 + i % 26) .. string.char(65 + math.floor(i / 26)), "Bart")
   end
   H.erwartet("Vorbedingung: Schlange voll", a.ns.Guild.QueueRoom() == 0, a.ns.Guild.QueueRoom())
-  b.login()                         -- Freund kommt online
-  W.run(45)                         -- sein Hallo waere jetzt faellig
+  b.login()                         -- friend comes online
+  W.run(45)                         -- his hello would be due now
   a.combat = false
   a.fire("PLAYER_REGEN_ENABLED")
   W.run(120)

@@ -1,16 +1,16 @@
--- Waechter (1.2.0): fest verdrahtete sichtbare Texte ausserhalb von Locales/ machen diesen Test rot.
--- Aufruf: luajit tests/test_locale_waechter.lua [addon-ordner]
--- Findet String-Literale (auch '...' und [[...]]) mit Umlaut/ß oder mit einem deutschen Wort der Liste.
--- Kommentare werden uebersprungen. Ausnahmen: Locale.lua (Eigennamen der Sprachen), ERLAUBT unten.
+-- Guard (1.2.0): hard-coded visible texts outside Locales/ turn this test red.
+-- Usage: luajit tests/test_locale_waechter.lua [addon folder]
+-- Finds string literals (also '...' and [[...]]) with umlaut/ß or with a German word from the list.
+-- Comments are skipped. Exceptions: Locale.lua (native names of the languages), ERLAUBT below.
 
 local DIR = arg[1] or ((arg[0]:match("^(.*)/tests/") or ".") .. "/DeathNote/")
 
--- Woerter, die in 1.1.0 sichtbar waren (Auswahl, kleingeschrieben verglichen, ganze Woerter)
+-- words that were visible in 1.1.0 (a selection, compared in lower case, whole words)
 local WORDS = { "buch", "gilde", "gildenbuch", "täter", "kollege", "kollegen", "gesucht", "hausordnung",
   "todesjournal", "alarm", "begnadigt", "verdacht", "staatsfeind", "rache", "nie", "vor", "und", "nicht",
   "kein", "keine", "noch", "ist", "aus", "an", "der", "die", "das", "dich", "du", "dein", "deine", "mit", "jetzt",
   "klick", "rechtsklick", "gesehen", "neueste", "rang", "kopfgeld", "notiz", "vermerk", "sek", "min", "std",
-  -- 1.2.0 dazu (Freunde, Abschussliste, Hausordnung)
+  -- added in 1.2.0 (friends, hit list, house rules)
   "ein", "eine", "einen", "von", "zum", "zur", "nach", "bis", "oder", "wird", "hat", "sind", "alle", "schon", "wieder",
   "freigegeben", "erlegt", "freund", "freundesbuch", "sichern", "einlesen", "teilen", "plakat", "stempel", "grund",
   "tod", "tode", "taten", "sichtung", "sichtungen", "zuletzt", "weitere", "weiterer", "abschussliste", "jagen",
@@ -18,20 +18,20 @@ local WORDS = { "buch", "gilde", "gildenbuch", "täter", "kollege", "kollegen", 
 local WORD = {}
 for _, w in ipairs(WORDS) do WORD[w] = true end
 
--- Literale, die bleiben duerfen (Protokoll, Pfade, Schluessel, WANTED, Befehle)
+-- Literals that may stay (protocol, paths, keys, WANTED, commands)
 local ERLAUBT = {
   ["WANTED"] = true, ["DeathNote"] = true, ["/dn"] = true,
-  -- deutsche Unterbefehle (gelten fuer immer, neben den englischen) und interne Kennungen (Stempelart)
+  -- German subcommands (valid for good, next to the English ones) and internal ids (stamp kind)
   ["gilde"] = true, ["freunde"] = true, ["jagd"] = true, ["abblasen"] = true, ["still"] = true, ["ruhe"] = true,
   ["hilfe"] = true, ["sprache"] = true, ["rache"] = true,
-  ["kopfgeld"] = true,   -- 1.2.1: /dn kopfgeld (neben /dn bounty)
+  ["kopfgeld"] = true,   -- 1.2.1: /dn kopfgeld (next to /dn bounty)
 }
--- technische Kennungen, die gespeichert werden (Sonde/Fehlersuche) und darum fest bleiben;
--- sie erscheinen nur als Wert in /dn probe, nie als Satz
+-- technical ids that are stored (probe/debugging) and so stay fixed;
+-- they only appear as a value in /dn probe, never as a sentence
 local ERLAUBT_IN = {
   ["Attribution.lua"] = { ["keine API"] = true, ["keine Daten"] = true, ["nicht registriert"] = true, ["keine Treffer"] = true },
   ["Probe.lua"] = { ["gekürzt"] = true },
-  -- fix-2: erkennt den alten gespeicherten Satz der uebernommenen Notiz (1.1.0) und stellt ihn auf einen Merker um
+  -- fix-2: recognises the old stored sentence of the taken-over note (1.1.0) and turns it into a marker
   ["Store.lua"] = { ["^Aus dem Gildenbuch übernommen %((%d+)× getötet in der Gilde%)%.$"] = true },
 }
 local SKIP_FILES = { ["Locale.lua"] = true }
@@ -93,10 +93,10 @@ local p = io.popen('ls "' .. DIR .. '"')
 for f in p:lines() do
   if f:match("%.lua$") and not SKIP_FILES[f] then
     local h = assert(io.open(DIR .. f, "rb")); local src = h:read("*a"); h:close()
-    -- Humor.lua (1.2.0, Autor): die Humor-Texte gibt es nur in Deutsch und Englisch, sie sind keine
-    -- Schluessel der Sprachtabelle und stehen darum im markierten Block HUMOR-TEXTE der Datei selbst;
-    -- nur dieser Block ist ausgenommen (Zeilenumbrueche bleiben fuer die Zeilennummern), der Rest
-    -- der Datei wird wie jede andere geprueft
+    -- Humor.lua (1.2.0, author): the humor texts exist only in German and English, they are not
+    -- keys of the locale table and so live in the marked HUMOR-TEXTE block of the file itself;
+    -- only this block is exempt (line breaks stay for the line numbers), the rest
+    -- of the file is checked like any other
     if f == "Humor.lua" then
       src = src:gsub("(%-%- >>> HUMOR%-TEXTE.-%-%- <<< HUMOR%-TEXTE)", function(b) return (b:gsub("[^\n]", "")) end)
     end
@@ -107,7 +107,7 @@ for f in p:lines() do
   end
 end
 p:close()
--- jeder im Code gelesene Schluessel (L.KEY) steht in enUS.lua; fehlte er, zeigte das Spiel den Schluessel
+-- every key read in the code (L.KEY) is in enUS.lua; if it were missing, the game would show the key
 do
   local h = assert(io.open(DIR .. "Locales/enUS.lua", "rb")); local en = h:read("*a"); h:close()
   local have = {}

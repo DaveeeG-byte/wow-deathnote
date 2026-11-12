@@ -1,6 +1,6 @@
--- 1.2.1 nach der Jagd (H1): "fuer dich erledigt" (V) und "erlegt" (E) nur fuer den, der wirklich getoetet wurde.
--- Kennt der Tracker oder das eigene Buch den Getoeteten unter vollem Namen, zaehlt kein Vorname eines anderen.
--- Dazu N4: V mit e=1, dessen E nie ankam, meldet trotzdem genau einmal.
+-- 1.2.1 after the hunt (H1): "done for you" (V) and "taken down" (E) only for the one really killed.
+-- If the tracker or the own book knows the victim by full name, no first name of someone else counts.
+-- Plus N4: V with e=1 whose E never arrived still reports exactly once.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf_c.lua")
 local M = H.M
 local G = "Die Testgilde"
@@ -34,7 +34,7 @@ H.lauf("(2) dasselbe bei 'erlegt' (E) und mit dem eigenen Buch als Quelle", func
   a.fire("PARTY_KILL", a.env.UnitGUID("player"), "Player-1-AAAA01"); W.run(10)
   H.erwartet("kein E fuer einen anderen Spieler", art(W, a, "E") == 0, art(W, a, "E"))
   H.erwartet("keine Meldung 'erlegt'", H.zaehle(b, "HUNT_BAGGED") == 0)
-  -- eigenes Buch kennt ihn (Tracker vergessen): ebenso nichts
+  -- the own book knows him (tracker forgotten): likewise nothing
   local W2 = welt()
   local a2 = W2.client("Anton", "Wurst", G, { fullSender = true })
   local b2 = W2.client("Berta", "Senf", G, { fullSender = true })
@@ -55,7 +55,7 @@ H.lauf("(3) Gegenprobe: unbekannte GUID, Vorname eindeutig: E und V gehen wie bi
   a.login(); b.login(); W.run(90)
   local key = H.tod(b, "Taeter", "Lamm"); W.run(10)
   b.ns.Guild.Release(key, { to = "guild", why = "x" }); W.run(10)
-  M.AddEnemy("nameplate8", { name = "Taeter", guid = "Player-1-AAAA03" })   -- nur Vorname bekannt
+  M.AddEnemy("nameplate8", { name = "Taeter", guid = "Player-1-AAAA03" })   -- only the first name known
   a.fire("PARTY_KILL", a.env.UnitGUID("player"), "Player-1-AAAA03"); W.run(10)
   H.erwartet("E geht", art(W, a, "E") == 1, art(W, a, "E"))
   H.erwartet("V geht", art(W, a, "V") == 1, art(W, a, "V"))
@@ -79,7 +79,7 @@ H.lauf("(4) N4: V mit e=1, das E kam nicht an (Deckel): trotzdem genau eine Meld
   W.run(10)
   local nachher = H.zaehle(b, "HUNT_BAGGED") + H.zaehle(b, "AVENGED")
   H.erwartet("genau eine Meldung fuer die Toetung", nachher - vorher == 1, nachher - vorher)
-  -- und wenn das E ankommt: weiter genau eine (erlegt)
+  -- and when the E arrives: still exactly one (taken down)
   M.Advance(700)
   local t2 = time()
   local v2 = H.zaehle(b, "HUNT_BAGGED") + H.zaehle(b, "AVENGED")

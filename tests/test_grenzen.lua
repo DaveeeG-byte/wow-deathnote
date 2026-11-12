@@ -1,9 +1,9 @@
--- Waechter (1.2.0, fix-2): Lua-Grenzen je Datei des Addons.
--- Aufruf: luajit tests/test_grenzen.lua [addon-ordner]
--- (1) Lokale Namen auf Dateiebene: Lua 5.1 erlaubt 200 gleichzeitig aktive lokale Namen je Funktion; die Datei
---     selbst ist eine Funktion. Gemessen wird genau, nicht geschaetzt: vor den Quelltext werden k zusaetzliche
---     lokale Namen gesetzt; das groesste k, mit dem die Datei noch laedt, ist die Luft. Rot ab 180 benutzten Namen.
--- (2) Upvalues je Funktion (Grenze 60): ueber jit.util.funcinfo jeder Funktion der Datei. Rot ab 55.
+-- Guard (1.2.0, fix-2): Lua limits per file of the addon.
+-- Usage: luajit tests/test_grenzen.lua [addon folder]
+-- (1) Locals at file level: Lua 5.1 allows 200 active local names at once per function; the file
+--     itself is a function. Measured exactly, not estimated: k extra local names are put in front of the
+--     source; the largest k with which the file still loads is the headroom. Red from 180 names used.
+-- (2) Upvalues per function (limit 60): via jit.util.funcinfo of every function in the file. Red from 55.
 local DIR = arg[1] or ((arg[0]:match("^(.*)/tests/") or ".") .. "/DeathNote/")
 if not DIR:find("/$") then DIR = DIR .. "/" end
 local LOCALS_RED, UPVAL_RED = 180, 55
@@ -24,10 +24,10 @@ local function readAll(p)
   return s
 end
 
--- lokale Namen auf Dateiebene (hoechste Zahl gleichzeitig aktiver), genau ueber die Ladeprobe
+-- locals at file level (highest number active at once), exactly via the load probe
 local function usedLocals(src)
   if not loadstring(src) then return nil end
-  local lo, hi = 0, 201        -- lo laedt, hi laedt nicht
+  local lo, hi = 0, 201        -- lo loads, hi does not
   while hi - lo > 1 do
     local k = math.floor((lo + hi) / 2)
     local pre = {}
@@ -54,14 +54,14 @@ local function maxUpvalues(fn)
   return best, at
 end
 
--- Dateien: alle *.lua des Addons und der Sprachdateien (ls, wie die anderen Tests)
+-- Files: all *.lua of the addon and of the locale files (ls, like the other tests)
 local files = {}
 local p = io.popen('ls "' .. DIR .. '"*.lua "' .. DIR .. 'Locales/"*.lua 2>/dev/null')
 for l in p:lines() do files[#files + 1] = l end
 p:close()
 check("Dateien gefunden", #files >= 10, #files)
 
--- Selbstprobe: die Messung erkennt eine Datei kurz vor der Grenze (199 Namen) und eine darueber
+-- Self-check: the measurement detects a file just below the limit (199 names) and one above it
 do
   local t = {}
   for i = 1, 199 do t[i] = "local v" .. i .. " = " .. i end

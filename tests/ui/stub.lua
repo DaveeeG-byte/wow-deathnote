@@ -1,5 +1,5 @@
--- Vertrags-Stub: ns mit Bus, ns.Store, ns.Util, ns.Tracker so wie in regeln-staatsfeind.md beschrieben.
--- Bewusst einfach; die echte Logik testet Bauer A. Fehler in Bus-Handlern werden gesammelt.
+-- Contract stub: ns with Bus, ns.Store, ns.Util, ns.Tracker as described in regeln-staatsfeind.md.
+-- Simple on purpose; the real logic is tested elsewhere. Errors in bus handlers are collected.
 
 return function(M)
   local ns = {}
@@ -34,7 +34,7 @@ return function(M)
   ------------------------------------------------------------------ Util
   local U = {}
   ns.Util = U
-  ns.units = {}      -- unit -> key (oder "SECRET_NAME" fuer ein Secret)
+  ns.units = {}      -- unit -> key (or "SECRET_NAME" for a secret)
   function U.KeyFor(n, r) return n .. "-" .. (r or "X") end
   function U.SplitKey(k) return k:match("^([^%-]+)%-(.*)$") end
   function U.KeyOfUnit(unit)
@@ -65,8 +65,8 @@ return function(M)
   local function changed(key) ns:Fire("ENEMY_UPDATED", key) end
   function S.Get(k) return db.enemies[k] end
   function S.All() return db.enemies end
-  -- Vertrag 1.1.0 (Gesamtschau): Count mit offenen Faellen, OpenCases, Weight; ns.oldLogic = true
-  -- schaltet die neuen Funktionen ab (aeltere Logik ohne Vertrag darf nichts werfen)
+  -- Contract 1.1.0 (overview): Count with open cases, OpenCases, Weight; ns.oldLogic = true
+  -- switches the new functions off (older logic without the contract must not throw)
   local function isOpen(j)
     return type(j) == "table" and j.kind == "pvp" and j.killerKey == nil and j.counted ~= false
       and type(j.candidates) == "table" and #j.candidates > 0
@@ -124,8 +124,8 @@ return function(M)
   end
   function S.Deaths() return db.deaths end
   function S.AssignDeath(i, k) local d = db.deaths[i]; if d then d.killerKey = k; d.sure = true; changed(k) end; return true end
-  -- ns.bigExport: grosses Buch (ueber 100 KB mit Taten); ns.exportShort = false: alte Store-Fassung,
-  -- die das Argument "kurz" nicht kennt
+  -- ns.bigExport: big book (over 100 KB with deeds); ns.exportShort = false: old Store version
+  -- that does not know the argument "short"
   function S.Export(short)
     if not ns.bigExport then return "DEATHNOTE1\nGrimmzahn-Probe;3" end
     local t = { "DEATHNOTE:1" }
@@ -143,7 +143,7 @@ return function(M)
     if text == "" then return false, "Kein Text." end
     return true, 2, 1
   end
-  -- wie Store.lua: Eintrag zieht auf einen neuen Schluessel um (gleiche GUID, vollerer Name)
+  -- like Store.lua: the entry moves to a new key (same GUID, fuller name)
   function S.Rekey(old, new, surname)
     local e = db.enemies[old]
     if not e or db.enemies[new] then return end
@@ -171,8 +171,8 @@ return function(M)
     ns:Fire("SETTINGS_CHANGED", path)
   end
 
-  ------------------------------------------------------------------ Guild (Schnittstelle aus Sync.lua)
-  -- ns.MakeGuild(n[, opts]) legt ns.Guild mit n Beispiel-Gildenfeinden an; ns.Guild = nil = ohne Sync.lua
+  ------------------------------------------------------------------ Guild (interface from Sync.lua)
+  -- ns.MakeGuild(n[, opts]) creates ns.Guild with n sample guild enemies; ns.Guild = nil = without Sync.lua
   function ns.MakeGuild(n, opts)
     opts = opts or {}
     local G = { calls = {}, synced = 0, cleared = 0, adopted = {} }
@@ -200,7 +200,7 @@ return function(M)
                   lastSeen = (i % 3 == 0) and { t = 1800000000 - 120, zone = "Schlingendorntal", by = "Bohnenjockel" } or nil,
                   mine = false }
     end
-    -- reine Hand-Eintraege (Schnittstelle 1.1.0): kills = 0, listedBy, listedOnly
+    -- pure hand entries (interface 1.1.0): kills = 0, listedBy, listedOnly
     for k = 1, (opts.listed or 0) do
       local e = { key = "Hand" .. k .. "-Eintrag" .. k, name = "Hand" .. k, surname = "Eintrag" .. k,
                   display = "Hand" .. k .. " Eintrag" .. k, class = "MAGE", kills = 0, deeds = {}, victims = {},
@@ -219,7 +219,7 @@ return function(M)
       end
     end
     G.list = list
-    -- ByMember: eigener Char zuerst (auch leer), dann nach Toden; Zeilen aus der Liste verteilt
+    -- ByMember: own character first (even if empty), then by deaths; rows spread from the list
     G.byMemberCalls = 0
     if opts.members ~= nil then
       function G.Touch() G._bym = nil end
@@ -269,9 +269,9 @@ return function(M)
         for _, e in ipairs(list) do if not e.ownOnly then f[#f + 1] = e end end
         return f
       end
-      return list   -- wie Sync.lua: gecachte Liste, die Oberflaeche darf sie nicht veraendern
+      return list   -- like Sync.lua: cached list, the UI must not change it
     end
-    -- Teilen-Zustand; G.health = Tabelle ueberschreibt ihn, opts.noHealth = alte Logik ohne Health
+    -- sharing state; G.health = table overrides it, opts.noHealth = old logic without Health
     if not opts.noHealth then
       function G.Health()
         if G.health then return G.health end
@@ -330,11 +330,11 @@ return function(M)
     return G
   end
 
-  ------------------------------------------------------------------ Sprache (1.2.0)
-  -- Locale.lua und die Sprachdateien wie im Spiel vor Alert/UI laden, dann eine ausdrueckliche
-  -- Wahl aktivieren (DN_LANG, Standard deDE: die bestehenden Pruefungen lesen deutsche Texte).
+  ------------------------------------------------------------------ Language (1.2.0)
+  -- Load Locale.lua and the locale files as in the game before Alert/UI, then activate an explicit
+  -- choice (DN_LANG, default deDE: the existing checks read German texts).
   M.LoadLocale(ns, os.getenv("DN_LANG") or "deDE")
-  -- Zeitform aus der Sprachtabelle (Deutsch: "vor 2 Tagen", "nie" wie bisher)
+  -- time format from the locale table (German: "vor 2 Tagen", "nie" as before)
   if ns.L and ns.F then
     function U.Ago(t) if type(t) ~= "number" then return ns.L.TIME_NEVER end return ns.F(ns.L.TIME_DAYS, { count = 2 }) end
   end

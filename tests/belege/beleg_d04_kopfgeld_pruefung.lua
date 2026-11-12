@@ -1,7 +1,7 @@
--- 1.2.1 nach der Abschluss-Jagd (Effizienz): ein eingehendes Kopfgeld, das schon genau so gespeichert ist (die
--- uebliche Wiederholung in jeder Antwort), fragt nicht mehr alle Kollegen und Freunde ab (Guild.WhoIs). Die Pruefung
--- gegen eigene Chars, Kollegen und Freunde mit DeathNote gilt weiter fuer jedes neue oder geaenderte Kopfgeld.
--- Aufruf: nice -n 15 luajit beleg_d04_kopfgeld_pruefung.lua <Projektkopie>. Alle Namen erfunden.
+-- 1.2.1 after the final hunt (efficiency): an incoming bounty already stored exactly like this (the
+-- usual repetition in every answer) no longer queries all guildmates and friends (Guild.WhoIs). The check
+-- against own characters, guildmates and friends with DeathNote still applies to every new or changed bounty.
+-- Usage: nice -n 15 luajit beleg_d04_kopfgeld_pruefung.lua <project copy>. All names made up.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf_c.lua")
 local G = "Die Testgilde"
 local function gilde(c, text, from) c.fire("CHAT_MSG_ADDON", "DeathNote", text, "GUILD", from) end
@@ -22,7 +22,7 @@ H.lauf("Wiederholung ohne Abfrage, Neues mit Pruefung", function()
   H.erwartet("fuenf Wiederholungen: keine Abfrage", n == 1, n)
   gilde(b, P.EncodeBounty("Ziel-Eins", "Anton Wurst", 120, t + 5), "Anton Wurst-Forever")
   H.erwartet("geaenderter Betrag: geprueft", n == 2, n)
-  -- weiter abgewiesen: auf den Empfaenger, auf einen Kollegen, auch wiederholt
+  -- still refused: on the receiver, on a guildmate, also when repeated
   for _ = 1, 3 do
     gilde(b, P.EncodeBounty("Berta-Senf", "Anton Wurst", 500, t), "Anton Wurst-Forever")
     gilde(b, P.EncodeBounty("Carl-Kurz", "Anton Wurst", 500, t), "Anton Wurst-Forever")

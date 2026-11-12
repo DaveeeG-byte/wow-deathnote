@@ -1,9 +1,9 @@
--- 1.2.0 (fix-1): Oberflaeche der Funde und Wuensche nach der Fehlerjagd, mit der echten Logik.
--- W2 Stufe im Alarm (hoeher, gleich, niedriger, unbekannt, Totenkopf, Secret, Popup-Masse, kein Aufruf im
--- heissen Pfad); Zeile der Abschussliste (Fund 13: Stufe, Freigebende, Grund, seit, gesehen, Erlegt,
--- Tooltip, 0/1/40 Ziele, lange Namen); Fuer mich ausblenden (Fund 12); Alle meine abblasen (W1);
--- Meldung neuer Ziele (Fund 6); Freundesbuch leeren (Fund 12); Abgleichen-Knopf waechst (Rest Sprach-Bau).
--- Laeuft auf Deutsch (der Mock waehlt deDE). Alle Namen sind erfunden.
+-- 1.2.0 (fix-1): UI of the findings and wishes after the bug hunt, with the real logic.
+-- W2 level in the alarm (higher, equal, lower, unknown, skull, secret, popup size, no call in the
+-- hot path); hit list row (finding 13: level, posters, reason, since, seen, taken down,
+-- tooltip, 0/1/40 targets, long names); Hide for me (finding 12); Call off all mine (W1);
+-- report of new targets (finding 6); Empty friends' book (finding 12); sync button grows (rest of the language build).
+-- Runs in German (the mock selects deDE). All names are made up.
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. here .. "/../?.lua;" .. package.path
 local DIR = here .. "/../../DeathNote"
@@ -58,11 +58,11 @@ end
 local function guildMsg(text, from) AM.FireEvent("CHAT_MSG_ADDON", "DeathNote", text, "GUILD", from or "Kollege-Forever") end
 local P = ns.Guild.Proto
 tick(30); settle()
--- nach dem eigenen Hallo: die Antwort-Minute ist vorbei, Freigaben sind ab jetzt "live"
+-- after our own hello: the answer minute is over, calls are "live" from now on
 AM.Advance(120)
 
 ------------------------------------------------------------------------
--- W2: Stufe im Alarm
+-- W2: level in the alarm
 ------------------------------------------------------------------------
 local popup
 local function sehen(name, surname, guid, lvl)
@@ -77,7 +77,7 @@ end
 BM.levels.player = 40
 local k1 = ns.Store.AddManual("Hoch", "Drueber")
 check("Alarm fuer den eigenen Gesuchten (hoeher)", sehen("Hoch", "Drueber", "Player-1-HD", 43))
--- fix-3: keine eigene Warnzeile mehr; die Stufe selbst traegt den Abstand und steht in Warnfarbe
+-- fix-3: no separate warning line any more; the level itself carries the difference and is in warning colour
 local function warnInk(fs) return fs._tc and fs._tc[1] == 1 and fs._tc[3] < 0.3 end
 -- 1.2.2: the level leads the text line (in its colour) instead of standing right of the name; Lvl() reads it back
 local function Lvl()
@@ -119,9 +119,9 @@ check("Alarm (keine Stufe vom Client)", sehen("Kein", "Wert", "Player-1-KW", fal
 check("kein Wert: Stufe ?? in Warnfarbe", Lvl()._text == "Stufe ??" and warnInk(Lvl()), Lvl()._text)
 ns.Store.Remove(k6)
 
--- Secret: erst pruefen, dann vergleichen; ersatzweise die gespeicherte Stufe ("zuletzt")
+-- Secret: check first, then compare; otherwise the stored level ("last")
 local k7 = ns.Store.AddManual("Geheim", "Wert")
--- wie im Client: type() meldet "number", jeder Vergleich wirft; beide Mocks kennen ihn als Secret
+-- as in the client: type() says "number", every comparison throws; both mocks know it as a secret
 local secretLevel = AM.Secret("level", "number")
 BM.secrets[secretLevel] = true
 BM.levelFn = function(u) if u == "player" then return 40 end return secretLevel end
@@ -138,13 +138,13 @@ BM.levelFn = nil
 AM.errors = {}
 ns.Store.Remove(k7)
 
--- unbekannt: Ziel der Abschussliste ohne Stufe und ohne Einheit
+-- unknown: hit list target without level and without a unit
 guildMsg(P.EncodeHunt({ key = "Ohne-Stufe", display = "Ohne Stufe", t = time(), by = "Kollege Wurst", why = "x" }))
 tick(1); quiet()
 ns:Fire("GUILD_ENEMY_SPOTTED", "Ohne-Stufe", nil, "other", "hunt"); tick()
 popup = rawget(G, "DeathNoteAlert")
 check("unbekannt: Alarm ohne Stufe", popup:IsShown() and popup.levelText == nil and not (popup.line._text or ""):find("^|c"), tostring(popup.levelText))
--- gespeicherte Stufe ohne Einheit: "zuletzt"
+-- stored level without a unit: "last"
 guildMsg(P.EncodeHunt({ key = "Mit-Stufe", display = "Mit Stufe", level = 44, t = time(), by = "Kollege Wurst", why = "x" }))
 tick(1); quiet()
 ns:Fire("GUILD_ENEMY_SPOTTED", "Mit-Stufe", nil, "other", "hunt"); tick()
@@ -152,7 +152,7 @@ check("ohne Einheit: zuletzt Stufe 44 (+4) in Warnfarbe", Lvl()._text == "zuletz
       tostring(Lvl()._text))
 clean("W2 Stufe im Alarm")
 
--- kein Aufruf im heissen Pfad: Namensplakette eines Feindes ohne Alarm fragt keine Stufe
+-- no call in the hot path: an enemy nameplate without an alarm asks for no level
 quiet()
 local calls = 0
 BM.levelFn = function(u) calls = calls + 1; return 40 end
@@ -163,7 +163,7 @@ check("Plakette ohne Alarm: kein UnitLevel aus dem Alarm", calls == 0, calls)
 BM.levelFn = nil
 
 ------------------------------------------------------------------------
--- Fund 13: Zeile der Abschussliste
+-- Finding 13: hit list row
 ------------------------------------------------------------------------
 quiet()
 ns:Fire("TOGGLE_UI"); tick(1); settle()
@@ -181,7 +181,7 @@ for _, r in ipairs(rows()) do if r.item.key == "Mit-Stufe" then row = r end end
 check("Zeile Mit Stufe da", row ~= nil)
 if row then
   local sub = row.sub._text or ""
-  -- fix-3: drei Angaben: wer, Grund, gesehen bzw. seit wann (Stufe und Zahl am Plakat und im Tooltip)
+  -- fix-3: three items: who, reason, seen or since when (level and count on the poster and in the tooltip)
   check("Zeile: drei Angaben, wer zuerst", sub:find("^Kollege · x · gesehen ") ~= nil, sub)
   check("Zeile: keine Stufe, kein Wort Freigabe", sub:find("Stufe", 1, true) == nil and sub:find("Freigabe", 1, true) == nil, sub)
   check("Zeile: Erlegt rechts", (row.mark._text or ""):find("ERLEGT", 1, true) ~= nil, row.mark._text)
@@ -189,7 +189,7 @@ if row then
   local tip = row.tipFn and row.tipFn(row.item)
   check("Tooltip mit allem (erst beim Zeigen gebaut)", type(tip) == "table" and #tip >= 5 and row.full == nil, type(tip) == "table" and #tip)
 end
--- langer Grund: in der Zeile gekuerzt, im Tooltip ganz
+-- long reason: shortened in the row, whole in the tooltip
 local long = string.rep("Lang ", 12)
 guildMsg(P.EncodeHunt({ key = "Lang-Grund", display = "Lang Grund", level = 30, t = time(), by = "Kollege Wurst", why = long }))
 tick(1); ns.UI.Refresh()
@@ -205,11 +205,11 @@ check("Untertext endet vor der Marke bzw. dem Rand", row.sub._points[2] and row.
 clean("Zeile der Abschussliste")
 
 ------------------------------------------------------------------------
--- Fund 12: Fuer mich ausblenden (Plakat), blass am Ende, kein Alarm, rueckholbar
+-- Finding 12: Hide for me (poster), dimmed at the end, no alarm, can be undone
 ------------------------------------------------------------------------
 for _, r in ipairs(rows()) do if r.item.key == "Mit-Stufe" then row = r end end
 click(row)
--- fix-3: am Plakat der Abschussliste steht der Stempel auf dem Foto, darunter kein Wort; die Aktion im Zeilenmenue
+-- fix-3: on the hit list poster the stamp sits on the photo, no word below; the action is in the row menu
 check("kein Wort unter dem Stempel", word("Für mich ausblenden") == nil)
 click(row, "RightButton")
 local hide = word("Für mich ausblenden")
@@ -235,13 +235,13 @@ check("nichts gesendet", #AM.addonSent == sentBefore)
 clean("Ausblenden")
 
 ------------------------------------------------------------------------
--- W1: Alle meine Freigaben abblasen (Menue der Abschussliste, mit Rueckfrage, ueber die Schlange)
+-- W1: Call off all my calls (hit list menu, with confirmation, through the queue)
 ------------------------------------------------------------------------
 ns.Guild.Release("Frei-Eins", { to = "all", why = "a" })
 ns.Guild.Release("Frei-Zwei", { to = "guild" })
 tick(5); ns.UI.Refresh()
 check("zwei eigene Freigaben", ns.Guild.OwnReleaseCount() == 2, ns.Guild.OwnReleaseCount())
--- fix-3: im Zeilenmenue einer eigenen Freigabe (der Sortierknopf ist in der Abschussliste nicht zu sehen)
+-- fix-3: in the row menu of an own call (the sort button is not visible in the hit list)
 local sortB = frameWith(function(f) return f.arrow and f.ul and f.text and f._scripts.OnClick end)
 check("kein Sortierknopf in der Abschussliste", not sortB:IsVisible())
 local own
@@ -269,7 +269,7 @@ local other
 for _, r in ipairs(rows()) do if not ns.Guild.Released(r.item.key) then other = r end end
 if other then click(other, "RightButton") end
 check("ohne eigene Freigaben kein Menuepunkt", other ~= nil and word("Alle meine abblasen") == nil)
--- eine einzige eigene Freigabe: der Punkt fehlt (Jagd abblasen reicht)
+-- a single own call: the item is missing (Call off the hunt is enough)
 ns.Guild.Release("Frei-Eins", { to = "guild" }); tick(5); ns.UI.Refresh()
 for _, r in ipairs(rows()) do if r.item.key == "Frei-Eins" then own = r end end
 click(own, "RightButton")
@@ -279,9 +279,9 @@ tick(); settle()
 clean("Alle abblasen")
 
 ------------------------------------------------------------------------
--- Fund 6: neue Ziele anderer, eine Meldung fuer mehrere
+-- Finding 6: new targets of others, one message for several
 ------------------------------------------------------------------------
--- fix-3: eine Chatzeile statt eines Fensters; ist das Ziel gerade in Sicht, der normale Alarm
+-- fix-3: one chat line instead of a window; if the target is in sight right now, the normal alarm
 quiet()
 if rawget(G, "DeathNoteBanner") then rawget(G, "DeathNoteBanner"):Hide() end
 local function chatSince(n) local t = {} for i = n + 1, #AM.chat do t[#t + 1] = AM.chat[i] end return t end
@@ -301,7 +301,7 @@ tick(10)
 lines = chatSince(c0)
 check("drei neue Ziele: eine Chatzeile", #lines == 1 and lines[1]:find("3 neue Ziele · neu auf der Abschussliste", 1, true) ~= nil, lines[1])
 check("drei neue Ziele: kein Fenster", not (bn and bn:IsShown()))
--- in Sicht: der normale Alarm, keine Chatzeile
+-- in sight: the normal alarm, no chat line
 quiet()
 AM.units.mouseover = nil
 AM.AddEnemy("mouseover", { name = "Neu", surname = "Sicht", guid = "Player-1-NS", level = 40 })
@@ -321,7 +321,7 @@ ns.Store.Setting("guild.announceHunt", true)
 clean("Neue Ziele")
 
 ------------------------------------------------------------------------
--- Fund 12: Freundesbuch leeren (mit Rueckfrage), eigene Freigaben bleiben
+-- Finding 12: Empty friends' book (with confirmation), own calls stay
 ------------------------------------------------------------------------
 AM.FireEvent("CHAT_MSG_ADDON", "DeathNote", P.EncodeHunt({ key = "Freund-Ziel", t = time(), by = "Fritz Frei", why = "f" }),
   "WHISPER", "Fritz-Forever")
@@ -331,7 +331,7 @@ check("Vorbedingung: zwei Ziele im Freundesbuch", ns.Guild.HuntCount("friends") 
 ns.UI.OpenPanel("settings")
 local sheet = frameWith(function(f) return f.page == 3 and f._scripts.OnClick end)
 click(sheet)
-local more = word("Mehr")             -- fix-3: Leeren steht hinter "Mehr"
+local more = word("Mehr")             -- fix-3: Empty sits behind "More"
 if more and not ns.Store.Setting("ui.guildMore") then click(more) end
 local fc = word("Freundesbuch leeren")
 check("Knopf Freundesbuch leeren", fc ~= nil)
@@ -347,7 +347,7 @@ ns.UI.ClosePanel()
 clean("Freundesbuch leeren")
 
 ------------------------------------------------------------------------
--- Rest aus dem Sprach-Bau: der Abgleichen-Knopf waechst mit dem Text
+-- Rest of the language build: the sync button grows with its text
 ------------------------------------------------------------------------
 BM.measure = true
 local sync = frameWith(function(f) return f.text and f.text._text == "Abgleichen" and f._scripts.OnClick end)

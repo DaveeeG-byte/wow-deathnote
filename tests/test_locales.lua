@@ -1,6 +1,6 @@
 -- Language scaffold (1.2.0): Locale.lua and every Locales/xxXX.lua.
 -- Stand-alone (own tiny harness, no mock_wow): runs as `luajit tests/test_locales.lua`.
--- Untranslated keys are a hint ("faellt auf Englisch zurueck"); STRICT=1 turns them into errors,
+-- Untranslated keys are a hint ("faellt auf Englisch zurueck", the test output stays German); STRICT=1 turns them into errors,
 -- together with a missing TOC-Notes sentence and Locale files missing in DeathNote.toc.
 
 local ROOT = (arg and arg[0] and arg[0]:match("^(.*)/tests/")) or "."
@@ -83,7 +83,7 @@ local base = newClient()
 local Locale = base.Locale
 local CODES = Locale.CODES
 local EN = assert(Locale.Raw("enUS"), "enUS baut")
--- (fix-2) Hoechstlaengen und Uebersetzer-Anleitung liegen nicht mehr im Addon-Ordner (das Spiel laedt sie nie)
+-- (fix-2) Length limits and translator guide no longer live in the addon folder (the game never loads them)
 local LIMITS = assert(loadfile(ROOT .. "/tests/sprachen/_limits.lua"))()
 
 ---------------------------------------------------------------------------
@@ -288,7 +288,7 @@ for _, code in ipairs(CODES) do
   end
 end
 
--- fix-2 (Fund 15 der finalen Jagd): Datumsformate nur mit Zeichen, die jede C-Bibliothek kennt
+-- fix-2 (finding 15 of the final hunt): date formats only with characters every C library knows
 test("Datumsformate aller Sprachen: nur %d %m %y %Y %H %M und %%", function()
   local bad = {}
   for _, code in ipairs(Locale.CODES) do
@@ -395,7 +395,7 @@ end)
 ---------------------------------------------------------------------------
 -- Choice and activation
 ---------------------------------------------------------------------------
--- Sprachwahl (Nachtrag 3, 11.11.2026): ohne Wahl die Sprache des Clients, sonst Englisch; kein Dialog
+-- Language choice (addendum 3, 11.11.2026): without a choice the client's language, else English; no dialog
 test("Sprachwahl: ohne Wahl die Client-Sprache, enGB/esMX/ptPT, unbekannt oder svSE: Englisch", function()
   local R = Locale.Resolve
   _G.GetLocale = function() return "deDE" end
@@ -444,11 +444,11 @@ test("Frischer deutscher Client: Deutsch aktiv; Bestand aus 1.1.0 bleibt deutsch
   local ns0 = newClient({ client = "deDE" })
   fire("ADDON_LOADED", "DeathNote")
   eq(ns0.Locale.code, "deDE"); eq(ns0.Locale.choice, nil); eq(ns0.L.TAB_WANTED, "Gesucht")
-  local db1 = { settings = { welcomed = true } }      -- Bestand aus 1.1.0 (deutscher Client): bleibt deutsch
+  local db1 = { settings = { welcomed = true } }      -- data from 1.1.0 (German client): stays German
   local ns1 = newClient({ client = "deDE", db = db1 })
   fire("ADDON_LOADED", "DeathNote")
   eq(ns1.Locale.code, "deDE"); eq(db1.settings.lang, nil, "keine Wahl gespeichert")
-  local db1b = { settings = { langAsked = true } }    -- Merker eines Zwischenstands: totes Feld, schadet nicht
+  local db1b = { settings = { langAsked = true } }    -- marker of an interim version: dead field, does no harm
   local ns1b = newClient({ client = "frFR", db = db1b })
   fire("ADDON_LOADED", "DeathNote")
   eq(ns1b.Locale.code, "frFR"); eq(db1b.settings.langAsked, true, "bleibt lesbar stehen")

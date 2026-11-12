@@ -1,7 +1,7 @@
--- 1.2.1, Oberflaeche: Kopfgeld am Plakat (Klick, Eingabe, Zeile, Summe, Muenze in der Liste), Rache rueckgaengig
--- (Knopf, Menue, Meldung, Meilenstein), "gerächt von" (Plakat, Zeile, Chat mit Ton), in allen 21 Sprachen ohne Fehler.
--- Aufruf: nice -n 15 luajit beleg_ui_7_kopfgeld_rache_geraecht.lua <Projektkopie>
--- Geprueft ueber Schluessel (enUS ist nur die Sprache der Welt). Alle Namen sind erfunden.
+-- 1.2.1, UI: bounty on the poster (click, input, line, sum, coin in the list), undo revenge
+-- (button, menu, message, milestone), "avenged by" (poster, line, chat with sound), in all 21 languages without errors.
+-- Usage: nice -n 15 luajit beleg_ui_7_kopfgeld_rache_geraecht.lua <project copy>
+-- Checked via keys (enUS is only the world's language). All names are made up.
 package.path = (arg[0]:match("^(.*)/[^/]+$") or ".") .. "/?.lua;" .. package.path
 local K = require("_kopf_ui")
 
@@ -43,7 +43,7 @@ local function zeileVon(W, key)
   for _, r in ipairs(W.rows()) do local it = r.item; if it and (it.key == key or (it.wrap and it.r and it.r.key == key)) then return r end end
 end
 
------------------------------------------------------------------------- (1) eigenes Kopfgeld am Plakat
+------------------------------------------------------------------------ (1) own bounty on the poster
 do
   local W = welt("enUS")
   local ns, E, L = W.ns, W.E, W.L
@@ -68,17 +68,17 @@ do
     local r = zeileVon(W, W.key); return r and r.coin:IsShown() end)())
   K.check("1 keine Muenze beim Taeter ohne Kopfgeld", (function()
     local r = zeileVon(W, "Ohne-Geld"); return r and not r.coin:IsShown() end)())
-  -- Esc: nichts aendert sich
+  -- Esc: nothing changes
   W.click(E.bountyHit); ed:SetText("7"); ed._scripts.OnEscapePressed(ed); W.tick()
   K.check("1 Esc bricht ab", ns.Guild.OwnBounty(W.key) == 1500 and not ed:IsShown())
-  -- Fokus weg: abbrechen, nicht speichern
+  -- focus lost: cancel, do not save
   W.click(E.bountyHit); ed:SetText("8"); ed._scripts.OnEditFocusLost(ed); W.tick()
   K.check("1 Fokus weg bricht ab", ns.Guild.OwnBounty(W.key) == 1500 and not ed:IsShown())
-  -- leer: zurueck auf den Wert des Buchs
+  -- empty: back to the book's value
   W.click(E.bountyHit); ed:SetText(""); ed._scripts.OnEnterPressed(ed); W.tick()
   W.zeigen(W.key)
   K.check("1 leer + Enter: zurueckgenommen, Wert des Buchs", ns.Guild.OwnBounty(W.key) == nil and E.bounty._text == auto, E.bounty._text)
-  -- andere Auslober: 4 Stueck, Summe gross, "und 1 weiterer"
+  -- other posters: 4 of them, large sum, "and 1 more"
   local P, t = W.P, _G.time()
   for i, n in ipairs({ "Anna", "Bert", "Cora", "Dirk" }) do
     W.gmsg(P.EncodeBounty(W.key, n .. " Wurst", 100 * i, t), n .. " Wurst-Forever")
@@ -91,7 +91,7 @@ do
   local n, e = W.errs(); K.check("1 keine Fehler", n == 0, e)
 end
 
------------------------------------------------------------------------- (2) Menue, Rechtsklick aufs Plakat, Gilde, Abschussliste
+------------------------------------------------------------------------ (2) menu, right click on the poster, guild, hit list
 do
   local W = welt("enUS")
   local ns, E, L, P, t = W.ns, W.E, W.L, W.P, _G.time()
@@ -106,7 +106,7 @@ do
   local menu2 = rawget(W.BM.G, "DeathNoteMenu")
   K.check("2 Rechtsklick aufs Plakat oeffnet das Menue", menu2 and menu2:IsShown())
   zu(menu2)
-  -- Gildenbuch: Kopfgeld als Zeile, Muenze, gerächt
+  -- guild book: bounty as a line, coin, avenged
   W.gmsg(P.EncodeKill({ key = "Gilde-Feind", display = "Gilde Feind", class = "MAGE", level = 40, zone = "Z", t = t - 60,
     victim = "Kollege Wurst" }, "K"))
   W.gmsg(P.EncodeBounty("Gilde-Feind", "Kollege Wurst", 250, t))
@@ -126,7 +126,7 @@ do
   E.bountyEdit:SetText("40"); E.bountyEdit._scripts.OnEnterPressed(E.bountyEdit); W.tick()
   K.check("2 am Gildenplakat gesetzt", ns.Guild.OwnBounty("Gilde-Feind") == 40)
   zu(menu3)
-  -- Abschussliste
+  -- hit list
   W.gmsg(P.EncodeHunt({ key = "Gilde-Feind", display = "Gilde Feind", class = "MAGE", level = 40, t = t - 50, by = "Kollege Wurst", why = "weil" }))
   W.tick(12); W.settle()
   ns.UI.SetGuildView("hunt"); W.tick()
@@ -136,7 +136,7 @@ do
   local n, e = W.errs(); K.check("2 keine Fehler", n == 0, e)
 end
 
------------------------------------------------------------------------- (3) Rache rueckgaengig
+------------------------------------------------------------------------ (3) undo revenge
 do
   local W = welt("deDE", { humor = true })
   local ns, E, L = W.ns, W.E, W.L
@@ -166,7 +166,7 @@ do
   m, menu = menue(W, zeileVon(W, W.key))
   K.check("3 ohne Rache von Hand: kein Abziehen im Menue", m.ACT_REVENGE_TAKE == nil)
   zu(menu)
-  -- erkannte Rache (nicht von Hand): nicht abziehbar
+  -- detected revenge (not by hand): cannot be taken back
   ns.Store.AddRevenge(W.key); W.tick()
   m, menu = menue(W, zeileVon(W, W.key))
   K.check("3 erkannte Rache: kein Abziehen", m.ACT_REVENGE_TAKE == nil)
@@ -174,7 +174,7 @@ do
   local n, er = W.errs(); K.check("3 keine Fehler", n == 0, er)
 end
 
------------------------------------------------------------------------- (4) "fuer dich erledigt": Chatzeile und Ton, keine Meldung
+------------------------------------------------------------------------ (4) "done for you": chat line and sound, no message
 do
   local W = welt("deDE")
   local P = W.P
@@ -195,7 +195,7 @@ do
   local n, e = W.errs(); K.check("4 keine Fehler", n == 0, e)
 end
 
------------------------------------------------------------------------- (5) alle 21 Sprachen: Plakat mit allem, Knoepfe und Menue passen
+------------------------------------------------------------------------ (5) all 21 languages: poster with everything, buttons and menu fit
 for _, code in ipairs(K.CODES) do
   local W = welt(code)
   local ns, E, L, P, t = W.ns, W.E, W.L, W.P, _G.time()

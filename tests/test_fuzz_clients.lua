@@ -1,17 +1,17 @@
--- Zufallslaeufe: zwei bis vier simulierte Clients, zufaellige Folgen aus Toden, Hand-Eintraegen,
--- Freigaben, Abblasen, Erlegt, Freundschaften, Login/Logout, Gildenwechsel, Nachrichtenverlust und
--- Reihenfolgetausch. Invarianten: keine Lua-Fehler; niemand haelt Fremddaten, die der genannte Char nicht
--- selbst erzeugt hat; Deckel halten; nach einer ruhigen Phase ohne Verlust (Abgleiche) haben Partner
--- denselben Stand. Aus der Fehlerjagd uebernommen (fix-1) und erweitert: zwei Chars mit gleichem Vornamen
--- (der Client nennt sie mit Nachnamen), Freundeslisten mit vollen Namen, wechselnde Gilden.
--- In der Suite: fester Startwert, kurze Laufzeit. Von Hand laenger:
---   luajit tests/test_fuzz_clients.lua [Projektkopie] [Laeufe=24] [Startsaat=4242] [Schritte=110]
+-- Random runs: two to four simulated clients, random sequences of deaths, manual entries,
+-- calls, call-offs, taken down, friendships, login/logout, guild changes, message loss and
+-- reordering. Invariants: no Lua errors; nobody holds foreign data the named char did not create
+-- itself; caps hold; after a quiet phase without loss (syncs) partners have
+-- the same state. Taken over from the bug hunt (fix-1) and extended: two chars with the same first name
+-- (the client names them with surname), friend lists with full names, changing guilds.
+-- In the suite: fixed seed, short run time. Longer by hand:
+--   luajit tests/test_fuzz_clients.lua [project copy] [runs=24] [seed=4242] [steps=110]
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
 local RUNS, SEED0, STEPS = tonumber(arg[2]) or 24, tonumber(arg[3]) or 4242, tonumber(arg[4]) or 110
 local GUILDS = { "Gilde Eins", "Gilde Zwei" }
--- Anton Wurst und Anton Falsch: gleicher Vorname, der Client nennt beide mit Nachnamen (fullSender)
+-- Anton Wurst and Anton Falsch: same first name, the client names both with surname (fullSender)
 local NAMES = { { "Anton", "Wurst" }, { "Berta", "Senf" }, { "Anton", "Falsch" }, { "Dora", "Dick" } }
 local FULL = { true, false, true, false }
 local ENEMIES = { { "Grimm", "Bart" }, { "Fies", "Ling" }, { "Rauf", "Bold" }, { "Zank", "Apfel" }, { "Wut", "Buerger" }, { "Hau", "Drauf" } }
@@ -34,7 +34,7 @@ local function run(seed)
   local W = M.NewWorld({ "HUNT_BAGGED" })
   local N = R(2, 4)
   local C, friendsOf, guildOf = {}, {}, {}
-  -- Wahrheit: was jeder Char je selbst erzeugt hat
+  -- Truth: what each char ever created itself
   local truth = { kills = {}, listed = {}, released = {}, gone = {} }
   for i = 1, N do
     local full = NAMES[i][1] .. " " .. NAMES[i][2]
@@ -58,10 +58,10 @@ local function run(seed)
   function W.deliver()
     if lossy and #W.wire > 1 and R() < 0.3 then
       local i, j = R(#W.wire), R(#W.wire)
-      W.wire[i], W.wire[j] = W.wire[j], W.wire[i]            -- Reihenfolge tauschen
+      W.wire[i], W.wire[j] = W.wire[j], W.wire[i]            -- swap the order
     end
     if lossy then
-      for i = #W.wire, 1, -1 do if R() < 0.08 then table.remove(W.wire, i) end end   -- Verlust
+      for i = #W.wire, 1, -1 do if R() < 0.08 then table.remove(W.wire, i) end end   -- loss
     end
     return deliver()
   end
@@ -79,33 +79,33 @@ local function run(seed)
   end
   local offline = {}
   local OPS = {
-    function(c)   -- sicherer Tod
+    function(c)   -- sure death
       if (killsBy[c.idx] or 0) >= 8 then return end
       killsBy[c.idx] = (killsBy[c.idx] or 0) + 1
       local e = ENEMIES[R(#ENEMIES)]
       local key = H.tod(c, e[1], e[2])
       truth.kills[c.full][key .. "\t" .. time()] = true
     end,
-    function(c)   -- von Hand eintragen / entfernen
+    function(c)   -- add / remove by hand
       local e = ENEMIES[R(#ENEMIES)]
       local key = ekey(e)
       local own = c.ns.Store.Get(key)
       if own and own.manual and R() < 0.5 then
         c.ns.Store.Remove(key)
-        -- selbst geloeschte Taten muss niemand mehr bekommen
+        -- deeds deleted by the owner need not reach anyone any more
         for id in pairs(truth.kills[c.full]) do if id:match("^(.-)\t") == key then truth.gone[c.full .. "\t" .. id] = true end end
       elseif not own then
         c.ns.Store.AddManual(e[1], e[2]); truth.listed[c.full][key] = true
       end
     end,
-    function(c)   -- freigeben
+    function(c)   -- release
       local key = ekey(ENEMIES[R(#ENEMIES)])
       local g, f = c.ns.Guild.Release(key, { to = ({ "all", "guild", "friends" })[R(3)], why = R() < 0.5 and "Grund |cffff0000x|r " .. R(9) or nil })
       if g or f then truth.released[c.full][key] = true end
     end,
     function(c) c.ns.Guild.CallOff(ekey(ENEMIES[R(#ENEMIES)]), ({ nil, "guild", "friends" })[R(3)]) end,
     function(c) c.fire("PARTY_KILL", "Player-1-" .. c.name, "Player-9-E" .. R(#ENEMIES)) end,
-    function(c)   -- Freundschaft schliessen oder loesen
+    function(c)   -- make or end a friendship
       local j = R(N)
       if j == c.idx then return end
       local l, name = friendsOf[c.idx], NAMES[j][1] .. " " .. NAMES[j][2]
@@ -113,13 +113,13 @@ local function run(seed)
       l[#l + 1] = name
       c.fire("FRIENDLIST_UPDATE")
     end,
-    function(c)   -- Logout, spaeter Login
+    function(c)   -- logout, later login
       if R() < 0.4 then offline[c.idx] = relog(c.idx) end
     end,
     function(c) c.combat = not c.combat; if not c.combat then c.fire("PLAYER_REGEN_ENABLED") end end,
     function(c) if R() < 0.3 then c.ns.Guild.SyncNow(); c.ns.Friends.SyncNow() end end,
     function(c) c.ns.Guild.OnUnit(ekey(ENEMIES[R(#ENEMIES)]), "nameplate1", "plate", false) end,
-    function(c)   -- Gilde wechseln, verlassen oder beitreten (fix-1)
+    function(c)   -- change, leave or join a guild (fix-1)
       if R() < 0.5 then return end
       local g = ({ GUILDS[1], GUILDS[2], nil })[R(3)]
       if g == c.guild then return end
@@ -137,7 +137,7 @@ local function run(seed)
     W.run(R() < 0.2 and R(1, 60) or R(1, 5))
     if #M.errors > 0 then problem(seed, "Lua-Fehler: " .. tostring(M.errors[1]):gsub("^.-([%w_]+%.lua:%d+)", "%1"), "Schritt " .. step); return end
   end
-  -- ruhige Phase: alle online, kein Verlust, zweimal abgleichen
+  -- quiet phase: everyone online, no loss, sync twice
   lossy = false
   for i = 1, N do if offline[i] then spawn(i, offline[i]); offline[i] = nil end; C[i].combat = false; C[i].fire("PLAYER_REGEN_ENABLED") end
   for _ = 1, 3 do
@@ -150,7 +150,7 @@ local function run(seed)
   if #M.errors > 0 then problem(seed, "Lua-Fehler (Abgleich): " .. tostring(M.errors[1]), ""); return end
 
   tally.sent = tally.sent + #W.sent
-  -- Invarianten
+  -- invariants
   local function hasFriend(i, j) for _, n in ipairs(friendsOf[i]) do if n == NAMES[j][1] .. " " .. NAMES[j][2] then return true end end return false end
   for i = 1, N do
     local c = C[i]
@@ -190,7 +190,7 @@ local function run(seed)
     end
     if Gd.QueueSize() > Cst.QUEUE_MAX then problem(seed, "Deckel: Schlange", Gd.QueueSize()) end
   end
-  -- gleicher Stand unter Partnern
+  -- same state among partners
   for i = 1, N do for j = 1, N do if i ~= j then
     local x, y = C[i], C[j]
     local sameGuild = guildOf[i] ~= nil and guildOf[i] == guildOf[j]

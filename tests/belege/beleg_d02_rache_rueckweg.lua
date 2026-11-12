@@ -1,8 +1,8 @@
--- 1.2.1 nach der Abschluss-Jagd: die Felder des Fix-Stands (tie.hg, revengeHandAt, revengeAutoAt) auf dem Weg
--- 1.2.1 -> 1.1.0 -> 1.2.0 -> 1.2.1: keine Lua-Fehler, nichts verloren, Abziehen geht danach weiter, und eine auf 1.2.0
--- erkannte Rache bleibt nach dem Abziehen die letzte (nicht die aeltere Zeit von vor dem Rueckweg).
--- Dazu die Fixture 1.0.1 direkt in diesen Stand und von dort zurueck nach 1.1.0 (nie zitiert, nur gezaehlt).
--- Aufruf: nice -n 15 luajit beleg_d02_rache_rueckweg.lua <Projektkopie>. Alle Namen erfunden.
+-- 1.2.1 after the final hunt: the fields of the fix build (tie.hg, revengeHandAt, revengeAutoAt) on the way
+-- 1.2.1 -> 1.1.0 -> 1.2.0 -> 1.2.1: no Lua errors, nothing lost, taking back still works afterwards, and a revenge
+-- detected on 1.2.0 stays the last one after taking back (not the older time from before the way back).
+-- Plus the 1.0.1 fixture straight into this build and from there back to 1.1.0 (never quoted, only counted).
+-- Usage: nice -n 15 luajit beleg_d02_rache_rueckweg.lua <project copy>. All names made up.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf_c.lua")
 local M = H.M
 local G = "Die Testgilde"
@@ -51,7 +51,7 @@ H.lauf("Fix-Felder auf dem Rueckweg", function()
   H.erwartet("alte Staende lassen die Felder stehen", type(e.revengeHandAt) == "table" and #e.revengeHandAt == 2 and e.revengeHand == 2 and e.revenge == 4,
     tostring(e.revenge) .. "/" .. tostring(e.revengeHand))
   H.erwartet("Kopfgeld der Freundin steht noch im Freundesbuch", zaehle(db.friends.bounty) == fb, zaehle(db.friends.bounty))
-  -- wieder 1.2.1
+  -- 1.2.1 again
   a = stufe(nil, nil, db, "1.2.1"); W.run(60)
   H.erwartet("1.2.1: keine Fehler", #M.errors == 0, M.errors[1])
   local x = a.ns.Store.Get(k)
@@ -59,7 +59,7 @@ H.lauf("Fix-Felder auf dem Rueckweg", function()
   H.erwartet("zwei Hand-Rachen weiter abziehbar", a.ns.Store.HandRevenge(x) == 2)
   a.ns.Store.UndoRevenge(k); a.ns.Store.UndoRevenge(k)
   H.erwartet("nach zweimal Abziehen: 2 erkannte bleiben", x.revenge == 2 and x.revengeHand == nil, tostring(x.revenge))
-  -- die auf 1.2.0 erkannte Rache ist die neueste; revengeAutoAt stammt aber von vor dem Rueckweg
+  -- the revenge detected on 1.2.0 is the newest; revengeAutoAt however dates from before the way back
   print(("   lastRevenge nach dem Abziehen: %s, Zeit der auf 1.2.0 erkannten Rache: %s, revengeAutoAt: %s"):format(tostring(x.lastRevenge), tostring(last120), tostring(x.revengeAutoAt)))
   H.erwartet("'letzte Rache' zeigt die auf 1.2.0 erkannte (neueste), nicht eine aeltere", x.lastRevenge == last120, (last120 or 0) - (x.lastRevenge or 0) .. " s zu alt")
   tie = a.env.DeathNoteDB.friends.ties["Berta"]

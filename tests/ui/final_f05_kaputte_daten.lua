@@ -1,11 +1,11 @@
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen (Aufruf aus der Projektwurzel: luajit <datei> .)
--- Verstuemmelte SavedVariables mit Logik UND Oberflaeche (Fund 16 der ersten Jagd, Gegenprobe, und neue Felder).
--- (1) gezielt: lastSeen.t eines Eintrags im Gilden- bzw. Freundesbuch ist keine Zahl (P.Sanitize prueft nur "Tabelle");
---     der Brief an den Fixer nannte genau diese Stelle.
--- (2) gezielt: settings.lang als Zahl, Tabelle, unbekannte Kennung; settings als Text; huntExpire kaputt.
--- (3) Zufall: N Runden, je 1 bis 3 zufaellig zerstoerte Felder in settings, guild, friends; danach Login, Buch auf,
---     alle Reiter, Ansichten, Quellen, Hausordnung, je eine Nachricht S/J/E/K von Kollege und Freund.
--- Aufruf: luajit beleg_f05_kaputte_daten.lua <Projektkopie> [Runden=400] [Saat=1]
+-- (fix-2) Proof test of the final hunt, taken into the suite (run from the project root: luajit <file> .)
+-- Mangled SavedVariables with logic AND UI (finding 16 of the first hunt, counter check, and new fields).
+-- (1) targeted: lastSeen.t of an entry in the guild or friends' book is not a number (P.Sanitize only checks "table");
+--     the brief to the fixer named exactly this spot.
+-- (2) targeted: settings.lang as number, table, unknown code; settings as text; broken huntExpire.
+-- (3) random: N rounds, each with 1 to 3 randomly destroyed fields in settings, guild, friends; then login, open
+--     the book, all tabs, views, sources, house rules, one S/J/E/K message each from guildmate and friend.
+-- Usage: luajit beleg_f05_kaputte_daten.lua <project copy> [rounds=400] [seed=1]
 local DIR = (arg[1] or "."):gsub("/+$", "")
 package.path = DIR .. "/tests/ui/?.lua;" .. DIR .. "/tests/?.lua;" .. package.path
 arg[0] = DIR .. "/tests/ui/beleg.lua"
@@ -63,14 +63,14 @@ local function fill(ns)
   ns.Guild.Release("Vier-Wicht", { to = "all", why = "meins" })
   ns.Guild.HideHunt("Zwei-Wicht", true)
   ns.Store.Setting("guild.sightings", true)
-  -- eine Sichtung, damit lastSeen in beiden Buechern und beiden Listen steht
+  -- one sighting, so lastSeen is in both books and both lists
   AM.AddEnemy("mouseover", { name = "Boese", surname = "Wicht", guid = "Player-1-BW", level = 40 })
   AM.FireEvent("UPDATE_MOUSEOVER_UNIT"); tick(1)
   AM.units.mouseover = nil
   tick(10)
 end
 
--- alles einmal anfassen; liefert die Zahl der Fehler
+-- touch everything once; returns the number of errors
 local function drive(ns)
   local P = ns.Guild.Proto
   local t = _G.time()
@@ -116,7 +116,7 @@ local function drive(ns)
   return #AM.errors + #BM.violations, AM.errors[1] or BM.violations[1]
 end
 
--- Grundbestand einmal erzeugen
+-- build the base data once
 local base
 do
   local ns = world(nil)
@@ -133,7 +133,7 @@ do
   erwartet("Vorbedingung: unversehrter Bestand laeuft ohne Fehler", n == 0, err)
 end
 
--- (1) gezielt
+-- (1) targeted
 for _, bad in ipairs({ "gestern", true, {} }) do
   local db = copy(base)
   db.guild.lists["Die Testgilde"].enemies["Boese-Wicht"].lastSeen.t = bad
@@ -145,7 +145,7 @@ for _, bad in ipairs({ "gestern", true, {} }) do
   erwartet("Freundesbuch: lastSeen.t = " .. type(bad) .. " wirft keinen Fehler", n == 0, tostring(n) .. " Fehler, erster: " .. tostring(err))
 end
 
--- (2) Einstellungen
+-- (2) settings
 local SETTINGS = {
   { "lang als Zahl", function(db) db.settings.lang = 5 end },
   { "lang als Tabelle", function(db) db.settings.lang = { "deDE" } end },
@@ -170,7 +170,7 @@ for _, s in ipairs(SETTINGS) do
   erwartet("Einstellung " .. s[1], ok and n == 0, ok and (tostring(n) .. " Fehler, erster: " .. tostring(err)) or n)
 end
 
--- (3) Zufall
+-- (3) randomness
 math.randomseed(SEED)
 local JUNK = { function() return "text" end, function() return 12345 end, function() return -1 end, function() return true end,
   function() return {} end, function() return { t = "x", by = 5 } end, function() return 0 / 0 end, function() return math.huge end,
@@ -195,7 +195,7 @@ for round = 1, ROUNDS do
       if math.random() < 0.15 then
         local fk = JUNK[math.random(#JUNK)]()
         if fk == nil or fk ~= fk then fk = "x" end
-        p[1][fk] = j   -- fremder Schluessel
+        p[1][fk] = j   -- foreign key
       else p[1][p[2]] = j end
       what[#what + 1] = tostring(p[2]) .. "=" .. type(j)
     end

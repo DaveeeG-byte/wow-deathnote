@@ -1,9 +1,9 @@
--- Gemeinsamer Kopf der Humor-Belege (Abschlussjagd). Aufruf je Datei:
---   nice -n 15 luajit <datei> <Projektkopie>
--- Nutzt tests/mock_wow.lua und tests/ui/mock.lua der angegebenen Kopie. Alle Namen sind erfunden.
--- Geprueft werden Daten, Merker und der Vergleich mit den Tabellen aus Humor.lua, keine Wortlaute.
+-- Shared head of the humor proofs (final hunt). Usage per file:
+--   nice -n 15 luajit <file> <project copy>
+-- Uses tests/mock_wow.lua and tests/ui/mock.lua of the given copy. All names are made up.
+-- Checks data, markers and the comparison with the tables from Humor.lua, no wording.
 local DIR = assert(arg and arg[1], "Aufruf: luajit <datei> <Projektkopie>"):gsub("/+$", "")
--- mock_wow.lua leitet den Addon-Ordner aus arg[0] ab ("<x>/tests/...")
+-- mock_wow.lua derives the addon folder from arg[0] ("<x>/tests/...")
 arg[0] = DIR .. "/tests/ui/beleg.lua"
 package.path = DIR .. "/tests/?.lua;" .. DIR .. "/tests/ui/?.lua;" .. package.path
 local ADDON = DIR .. "/DeathNote"
@@ -15,14 +15,14 @@ function H.check(name, cond, detail)
   else H.rot = H.rot + 1; print("rot   " .. name .. (detail ~= nil and ("  -> " .. tostring(detail)) or "")) end
 end
 
--- beide Texttabellen aus dem markierten Block der Datei (zur Laufzeit bleibt nur die aktive Sprache)
+-- both text tables from the marked block of the file (at runtime only the active language remains)
 H.SRC = (function()
   local h = assert(io.open(ADDON .. "/Humor.lua", "rb"))
   local s = h:read("*a"); h:close()
   return assert(loadstring("return " .. assert(s:match("local TEXTS = (%b{})"))))()
 end)()
 
--- alle Texte des Blocks als Menge (Text -> Pfad), fuer "ist das ein Humor-Text?"
+-- all texts of the block as a set (text -> path), for "is this a humor text?"
 function H.alleTexte(code)
   local out = {}
   local function walk(t, path)
@@ -35,9 +35,9 @@ function H.alleTexte(code)
   return out
 end
 
--- frische Welt mit Oberflaeche. opts: db, guild (Text oder Funktion), date (Tabelle oder Funktion),
--- chance (Zahl fuer alle Anlaesse, Standard 1), quiet (Standard 0), before(G), keep (Sperre/Chancen lassen),
--- epoch (Kalenderzeit dieser Sitzung; jede Welt beginnt sonst wieder bei 1700000000), vorLogin(ns)
+-- Fresh world with UI. opts: db, guild (text or function), date (table or function),
+-- chance (number for all occasions, default 1), quiet (default 0), before(G), keep (keep lock/chances),
+-- epoch (calendar time of this session; otherwise every world starts at 1700000000 again), vorLogin(ns)
 function H.welt(code, opts)
   opts = opts or {}
   package.loaded.mock_wow, package.loaded.mock = nil, nil
@@ -55,7 +55,7 @@ function H.welt(code, opts)
     local d = opts.date
     rawset(G, "date", type(d) == "function" and d or function(f, t) if f == "*t" then return d end return os.date(f, t) end)
   end
-  -- eine Uhr fuer beide Mocks: time() = AM.epoch + AM.now (der UI-Mock liefert sonst eine feste Zahl)
+  -- one clock for both mocks: time() = AM.epoch + AM.now (the UI mock returns a fixed number otherwise)
   rawset(G, "time", function() return math.floor(AM.epoch + AM.now) end)
   local ns = AM.Load({ noLogin = true, db = opts.db, before = function()
     AM.units.player.guild = "Die Probegilde"
@@ -77,7 +77,7 @@ function H.welt(code, opts)
   return ns
 end
 
--- Kalenderzeit vorstellen (Rechner war aus): nur die Uhr, nicht die Sitzungszeit
+-- Move calendar time forward (computer was off): only the clock, not the session time
 function H.tage(n) H.AM.epoch = H.AM.epoch + n * 86400 end
 function H.settle() H.AM.Advance(0.1); H.BM.Advance(0.1) end
 function H.vor(sec) H.AM.Advance(sec); H.BM.Advance(sec) end
@@ -89,7 +89,7 @@ function H.quip()
 end
 function H.stampText() local b = H.banner(); return b and b.stampText:IsShown() and b.stampText:GetText() or nil end
 
--- ein Tod durch einen erfundenen Taeter (wie Attribution.finalize: Tat, Journal, Ereignis)
+-- A death by a made-up killer (like Attribution.finalize: deed, journal, event)
 function H.kill(ns, name, surname, o)
   o = o or {}
   local S = ns.Store
@@ -102,7 +102,7 @@ function H.kill(ns, name, surname, o)
   return key
 end
 
--- ein Tod ohne Taeter (Sturz, Monster) in der offenen Welt
+-- A death without killer (fall, monster) in the open world
 function H.sturz(ns)
   local j = { t = _G.time(), kind = "pve", sure = false, counted = true, myLevel = 40, candidates = {} }
   ns.Store.RecordDeath(j)
@@ -138,7 +138,7 @@ function H.gleich(a, b, path, out)
   return out
 end
 
--- Rechteck eines Frames in UIParent-Einheiten: l, b, r, t
+-- Rectangle of a frame in UIParent units: l, b, r, t
 function H.rect(f) return H.BM.RectUI(f) end
 
 function H.ende(name)

@@ -1,18 +1,18 @@
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen (Aufruf aus der Projektwurzel: luajit <datei> .)
--- Oberflaeche messen in mehreren Sprachen (Standard: deDE enUS ruRU fiFI zhCN, weitere als Argumente).
--- Aufruf: nice -n 15 luajit beleg_f10_oberflaeche_messen.lua <Projektkopie> [Kennung ...]
--- Der UI-Mock liefert Rechtecke; Textbreiten werden geschaetzt (Zeichen x Schriftgrad x Faktor der Schrift,
--- CJK-Zeichen als volle Geviertbreite). Gemeldet wird:
---   FEST   eine feste Beschriftung (Text ist genau ein Sprachtext) ist breiter als ihr einzeiliges Feld
---   KNOPF  eine Beschriftung ragt ueber ihren Knopf hinaus
---   LAGE   zwei sichtbare Texte desselben Rahmens ueberdecken sich
--- Schluessel statt Wortlaut: jede Meldung nennt den Sprachschluessel. Rot, wenn es FEST/KNOPF/LAGE gibt.
+-- (fix-2) Proof test of the final hunt, taken into the suite (run from the project root: luajit <file> .)
+-- Measures the UI in several languages (default: deDE enUS ruRU fiFI zhCN, more as arguments).
+-- Usage: nice -n 15 luajit beleg_f10_oberflaeche_messen.lua <project copy> [code ...]
+-- The UI mock returns rectangles; text widths are estimated (characters x font size x font factor,
+-- CJK characters as a full em). Reported:
+--   FEST   a fixed label (text is exactly one locale text) is wider than its single line field
+--   KNOPF  a label sticks out of its button
+--   LAGE   two visible texts of the same frame overlap
+-- Keys instead of wording: every report names the locale key. Red if there is any FEST/KNOPF/LAGE.
 local DIR = (arg[1] or "."):gsub("/+$", "")
 package.path = DIR .. "/tests/ui/?.lua;" .. DIR .. "/tests/?.lua;" .. package.path
 arg[0] = DIR .. "/tests/ui/beleg.lua"
 local CODES = {}
 for i = 2, #arg do CODES[#CODES + 1] = arg[i] end
--- (fix-2) in der Suite alle 21 Sprachen (unter einer Sekunde)
+-- (fix-2) all 21 languages in the suite (under one second)
 if #CODES == 0 then CODES = { "enUS", "deDE", "frFR", "esES", "itIT", "ptBR", "ruRU", "koKR", "zhCN", "zhTW", "svSE", "nbNO",
   "daDK", "fiFI", "nlNL", "plPL", "csCZ", "huHU", "hrHR", "ukUA", "trTR" } end
 local ADDON = DIR .. "/DeathNote"
@@ -64,7 +64,7 @@ local function world(code)
     }
   end })
   for _, f in ipairs({ "Alert.lua", "UI.lua", "Extras.lua" }) do BM.Load(ADDON .. "/" .. f, ns) end
-  -- eigene Breitenschaetzung in den Mock haengen (auch fuer die dehnbaren Reiter und Knoepfe)
+  -- hook our own width estimate into the mock (also for the stretching tabs and buttons)
   local mt = getmetatable(BM.frames[1])
   local i = 1
   while true do
@@ -109,7 +109,7 @@ local function run(code)
         local key = keyOf[f._text]
         local one = f._wrap == false or f._maxl == 1
         if key and f._wset and one then stat.fest = stat.fest + 1 end
-        -- Standzeilen (Gilde, Freunde) sind mit Absicht einzeilig und zeigen den ganzen Satz im Tooltip
+        -- status lines (guild, friends) are single line on purpose and show the whole sentence in the tooltip
         local status = key and (key:find("^FRIENDS_") or key:find("^SYNC_") or key:find("^HEALTH_"))
         if key and f._wset and one and est > f._w + 1 and not status then
           note("FEST", where, ("%s: Text %d px, Feld %d px"):format(key, est, f._w))
@@ -146,7 +146,7 @@ local function run(code)
     end
   end
 
-  -- Bestand: eigene Gesuchte, Gildenbuch, Abschussliste mit langen Namen und langem Grund
+  -- Data: own wanted, guild book, hit list with long names and a long reason
   local P = ns.Guild.Proto
   tick(30); settle(); AM.Advance(120)
   local function gmsg(text, from) AM.FireEvent("CHAT_MSG_ADDON", "DeathNote", text, "GUILD", from or "Kollege-Forever") end
@@ -175,7 +175,7 @@ local function run(code)
     end
     tick(); settle()
   end
-  -- Reiter: Rechtecke, Abstand, Ende vor dem Fragezeichen
+  -- Tabs: rectangles, spacing, end before the question mark
   do
     local tabs = {}
     for _, f in ipairs(BM.frames) do
@@ -215,8 +215,8 @@ local function run(code)
     end
     scan("Hausordnung " .. s[1])
     if s[1] == "SHEET_GUILD" then
-      -- passt alles ins Blatt? Die Seite fuellt ihr Blatt (zwei Anker), darum aus den Ankern gerechnet:
-      -- tiefste Unterkante der Haken, Stufen und Knoepfe gegen die Oberkante der Hinweiszeile (unten bei 44).
+      -- does everything fit on the sheet? The page fills its sheet (two anchors), so compute from the anchors:
+      -- lowest bottom edge of the checkboxes, steppers and buttons against the top edge of the hint line (at 44).
       local page
       for _, f in ipairs(BM.frames) do
         if f._kind == "CheckButton" and f:IsVisible() and type(f.opt) == "table" and f.opt.guild then page = f._parent end
@@ -251,7 +251,7 @@ local function run(code)
   ns.UI.OpenIO("export"); tick(); scan("Sichern")
   ns.UI.OpenIO("import"); tick(); scan("Einlesen")
   ns.UI.ClosePanel(); tick()
-  -- Alarm: eigener Gesuchter drei Stufen hoeher, zugleich auf der Abschussliste; Warnzeile
+  -- Alarm: own wanted target three levels higher, also on the hit list; warning line
   BM.levels.player = 40
   BM.levels.mouseover = 60
   AM.AddEnemy("mouseover", { name = "Maximilianus", surname = "Donnerschlagbringer", guid = "Player-1-MD", level = 60, class = "MAGE" })
@@ -260,7 +260,7 @@ local function run(code)
   if popup and popup:IsShown() then
     scan("Alarm")
     local nameW, lvlW = estimate(popup.name), 0
-    -- fix-3: keine Warnzeile mehr; die Stufe traegt den Abstand ("Stufe 60 (+20)") in Warnfarbe
+    -- fix-3: no warning line any more; the level carries the difference ("Level 60 (+20)") in warning colour
     io.write(("  Alarm %s: Popup %dx%d, Name~%d px, Stufe~%d px (%s)\n"):format(code, popup:GetWidth(), popup:GetHeight(),
       nameW, lvlW, tostring(popup.levelText)))
     if lvlW + 60 > popup:GetWidth() / 2 then note("LAGE", "Alarm", "Stufe nimmt mehr als die halbe Popup-Breite: " .. lvlW .. " px") end

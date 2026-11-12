@@ -1,8 +1,8 @@
--- Fund: Das Aufraeumen entfernter Freunde (Friends.Purge) haelt jeden fuer "entfernt", der im
--- letzten Scan nicht vorkam. (a) Battle.net-Freunde stehen nur im Scan, solange sie online und im
--- Spiel sind: gehen sie offline, sind ihre Eintraege weg. (b) Die Freundesliste gehoert dem Char,
--- das Freundesbuch dem Account: ein Login mit einem Zweit-Char loescht die Daten der Freunde des
--- Haupt-Chars. (c) Eine einmal leer gelieferte Freundesliste leert das Buch.
+-- Finding: cleaning up removed friends (Friends.Purge) treats everyone as "removed" who was missing
+-- from the last scan. (a) Battle.net friends are only in the scan while they are online and in the
+-- game: when they go offline, their entries are gone. (b) The friend list belongs to the char,
+-- the friends' book to the account: a login with an alt deletes the data of the main char's
+-- friends. (c) A friend list that comes back empty once empties the book.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -34,7 +34,7 @@ H.lauf("Zweit-Char mit anderer Freundesliste", function()
     a.ns.Guild.Get(key, "friends") ~= nil and a.ns.Guild.Hunt("Opfer-Lamm", "friends") ~= nil)
   a.fire("PLAYER_LOGOUT")
   local db = H.tiefe_kopie(a.env.DeathNoteDB)
-  -- derselbe Account, anderer Char, dessen Freundesliste Berta nicht enthaelt
+  -- same account, another char whose friend list does not contain Berta
   local a2 = W.client("Zweitchar", "Wurst", nil, { friends = { "Carla" }, db = db })
   a.loggedIn = false
   a2.login(); W.run(30)
@@ -54,7 +54,7 @@ H.lauf("Freundesliste kommt einmal leer", function()
   W.run(60)
   H.erwartet("Vorbedingung: Tat kam an", a.ns.Guild.Get(key, "friends") ~= nil)
   local keep = a.friendNames
-  a.friendNames = {}                 -- der Server liefert kurz nichts (Ladebildschirm, Neuverbindung)
+  a.friendNames = {}                 -- the server briefly returns nothing (loading screen, reconnect)
   a.fire("FRIENDLIST_UPDATE"); W.run(3)
   a.friendNames = keep
   a.fire("FRIENDLIST_UPDATE"); W.run(3)

@@ -142,7 +142,7 @@ test("Recap: Kreatur tötet -> pve, kein Eintrag", function()
   M.recap = { id = 4, events = { ev({ guid = "Creature-0-1", name = "Raptor", overkill = 5 }) } }
   M.ClearFired()
   die()
-  -- 1.2.0: der Tod geht als pve hinaus (DEATH_RECORDED), bekommt aber keine Journalzeile
+  -- 1.2.0: the death goes out as pve (DEATH_RECORDED) but gets no journal line
   local j = M.Fired("DEATH_RECORDED")[1][2]
   eq(j.kind, "pve"); no(j.killerKey); eq(next(ns.Store.All()), nil)
   eq(lastJournal(ns), nil, "keine Journalzeile fuer pve")

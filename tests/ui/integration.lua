@@ -1,10 +1,10 @@
--- Zusatzlauf: B's Dateien zusammen mit A's echten Core/Store/Tracker/Attribution/Probe.
--- A's Dateien laufen in A's Mock (tests/mock_wow.lua, globale Umgebung), B's Dateien im
--- strengen UI-Mock. Gemeinsam ist nur ns, wie im Spiel.
+-- Extra run: the UI files together with the real Core/Store/Tracker/Attribution/Probe.
+-- The logic files run in the logic mock (tests/mock_wow.lua, global environment), the UI files in the
+-- strict UI mock. Only ns is shared, as in the game.
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. here .. "/../?.lua;" .. package.path
 local root = here .. "/../.."
--- Addon-Ordner: DeathNote/ (nach der Umbenennung) oder noch Staatsfeind/
+-- Addon folder: DeathNote/ (after the rename) or still Staatsfeind/
 local function addonDir(root)
   for _, d in ipairs({ "DeathNote", "Staatsfeind" }) do
     local f = io.open(root .. "/" .. d .. "/Alert.lua", "r")
@@ -81,7 +81,7 @@ AM.Advance(0.1); BM.Advance(0.1)
 clean("Loeschen")
 
 ------------------------------------------------------------------------
--- Gilde mit der echten Sync.lua (falls vorhanden)
+-- Guild with the real Sync.lua (if present)
 ------------------------------------------------------------------------
 if ns.Guild and ns.Guild.Proto and ns.Guild.Proto.EncodeKill then
   check("Gilden-Reiter sichtbar", (function()
@@ -92,7 +92,7 @@ if ns.Guild and ns.Guild.Proto and ns.Guild.Proto.EncodeKill then
       zone = "Arathihochland", t = time() - 60, victim = o.victim or "Kollege Wurst" }, "K")
     AM.FireEvent("CHAT_MSG_ADDON", "DeathNote", text, "GUILD", o.sender or "Kollege-Forever")
   end
-  BM.Advance(10); BM.FinishAnims()     -- die Rache-Meldung von oben ist durch
+  BM.Advance(10); BM.FinishAnims()     -- the revenge message from above is done
   hear({})
   AM.Advance(2); BM.Advance(2)
   clean("Gildenmeldung empfangen")
@@ -137,7 +137,7 @@ else
 end
 
 ------------------------------------------------------------------------
--- Funde der UI-Jagd mit A's echtem Store (Belegtests U1 bis U7, F7)
+-- Findings of the UI hunt with the real Store (proof tests U1 to U7, F7)
 ------------------------------------------------------------------------
 local function tick(s) AM.Advance(s or 0.1); BM.Advance(s or 0.1) end
 local function settle() BM.Advance(13); BM.FinishAnims(); BM.Advance(1); BM.FinishAnims(); BM.Advance(1) end
@@ -146,7 +146,7 @@ local function tab(id) local t = frameWith(function(f) return f.id == id and f._
 settle(); BM.Advance(300); AM.Advance(300)
 tab("wanted")
 
--- U1: Zeilenumbruch im Nachnamen ergibt keine weitere Makrozeile
+-- U1: a line break in the surname gives no extra macro line
 do
   local k = ns.Store.AddManual("Boese", "Bube")
   local e = ns.Store.Get(k)
@@ -162,7 +162,7 @@ do
   clean("U1")
 end
 
--- U2: Notiz bleibt beim Eintrag, wenn die Auswahl bei Fokus wechselt
+-- U2: the note stays with its entry when the selection changes while focused
 do
   local a = ns.Store.AddManual("Anton", "Alpha")
   local b = ns.Store.AddManual("Berta", "Beta")
@@ -180,7 +180,7 @@ do
   clean("U2")
 end
 
--- U3: Enter im Suchfeld des Todesjournals traegt nichts ein
+-- U3: Enter in the search field of the death log enters nothing
 do
   local before = ns.Store.Count()
   tab("journal")
@@ -193,7 +193,7 @@ do
   clean("U3")
 end
 
--- U4 + U5: Warteschlange
+-- U4 + U5: queue
 do
   settle()
   local a, b, c = ns.Store.AddManual("Eins", "Erster"), ns.Store.AddManual("Zwei", "Zweiter"), ns.Store.AddManual("Drei", "Dritter")
@@ -221,7 +221,7 @@ do
   clean("U4/U5")
 end
 
--- U6: SetUnit liefert false
+-- U6: SetUnit returns false
 do
   settle()
   local a = ns.Store.AddManual("Modell", "Leer")
@@ -237,7 +237,7 @@ do
   clean("U6")
 end
 
--- U7: Journal-Auswahl folgt dem Eintrag, nicht der Position (Tode mit unklarem Taeter; pve steht seit 1.2.0 nicht im Journal)
+-- U7: the log selection follows the entry, not the position (deaths with unclear killer; pve is not in the log since 1.2.0)
 do
   local list = ns.Store.Deaths()
   table.insert(list, 1, { t = 1000, zone = "Alt", kind = "unknown", me = "X" })
@@ -253,7 +253,7 @@ do
   clean("U7")
 end
 
--- F7: echte Kurzform des Stores im Dialog "Buch sichern"
+-- F7: the real short form of the Store in the "Save the book" dialog
 do
   local k = ns.Store.AddManual("Sicher", "Kopie")
   local e = ns.Store.Get(k)
@@ -272,7 +272,7 @@ do
 end
 
 ------------------------------------------------------------------------
--- 1.1.0 mit A's echter Sync.lua: Gilde nach Mitglied, Hand-Eintraege, Ton
+-- 1.1.0 with the real Sync.lua: guild by member, manual entries, sound
 ------------------------------------------------------------------------
 local function anyTextI(needle)
   for _, f in ipairs(BM.frames) do
@@ -283,7 +283,7 @@ local VW = frameWith(function(f) return f.items and f.items[1] and f.items[1].vi
 if ns.Guild and type(ns.Guild.ByMember) == "function" and ns.Guild.Proto and ns.Guild.Proto.EncodeListed then
   settle(); BM.Advance(300); AM.Advance(300)
   local P = ns.Guild.Proto
-  -- zwei Kills an zwei Kollegen, ein reiner Hand-Eintrag von Moppel
+  -- two kills on two guildmates, one pure manual entry from Moppel
   for i, v in ipairs({ "Kollege Wurst", "Moppel Mops" }) do
     local text = P.EncodeKill({ key = "Fiesling" .. i .. "-Gemein", display = "Fiesling" .. i .. " Gemein", class = "WARRIOR",
       level = 50, zone = "Ödland", t = time() - 600 * i, victim = v }, "K")
@@ -298,7 +298,7 @@ if ns.Guild and type(ns.Guild.ByMember) == "function" and ns.Guild.Proto and ns.
         hand and tostring(hand.listedOnly))
   tab("guild"); tick()
   check("1.1 Umschalter sichtbar mit echter ByMember", VW and VW:IsShown())
-  -- nach Feind: Hand-Eintrag am Ende, blass
+  -- by enemy: manual entry at the end, dimmed
   local rowsI = {}
   for _, f in ipairs(BM.frames) do if f._kind == "Button" and f.item and f._shown and f.under then rowsI[#rowsI + 1] = f end end
   table.sort(rowsI, function(a, b) return (a.index or 0) < (b.index or 0) end)
@@ -308,7 +308,7 @@ if ns.Guild and type(ns.Guild.ByMember) == "function" and ns.Guild.Proto and ns.
   last._scripts.OnClick(last, "LeftButton"); tick()
   check("1.1 Plakat: VON HAND EINGETRAGEN", anyTextI("VON HAND EINGETRAGEN") ~= nil and anyTextI("Im Buch von: Moppel") ~= nil)
   clean("1.1 nach Feind")
-  -- nach Mitglied
+  -- by member
   VW.items[1]._scripts.OnClick(VW.items[1]); tick()
   clean("1.1 nach Mitglied")
   local heads, kids = {}, {}
@@ -342,14 +342,14 @@ if ns.Guild and type(ns.Guild.ByMember) == "function" and ns.Guild.Proto and ns.
   end
   check("1.1 ui.guildView im echten Store", ns.Store.Setting("ui.guildView") == "member")
   clean("1.1 Klappen")
-  -- Tooltip fuer den reinen Hand-Eintrag
+  -- tooltip for the pure manual entry
   AM.AddEnemy("mouseover", { name = "Handfeind", surname = "Nur" })
   local tt = G.GameTooltip
   tt._unitName, tt._unit, tt._lines = "Handfeind", "mouseover", {}
   if BM.tooltipHook then BM.tooltipHook(tt, {}) end
   check("1.1 Tooltip GILDE: im Buch von", tt._lines[1] and tt._lines[1]:find("im Buch von Moppel", 1, true) ~= nil, tt._lines[1])
   AM.units.mouseover = nil
-  -- Hausordnung mit echtem Store: drei Blaetter, Ton
+  -- house rules with the real Store: three sheets, sound
   ns.UI.OpenPanel("settings"); tick()
   for _, page in ipairs({ 2, 3, 1 }) do
     local t = frameWith(function(f) return f.page == page and f._scripts.OnClick end)
@@ -374,13 +374,13 @@ else
 end
 
 ------------------------------------------------------------------------
--- Gesamtschau gegen A's echte Vertragsfunktionen (Rollen, offene Faelle, Health, fremde Gildeneintraege)
+-- Overview against the real contract functions (roles, open cases, Health, foreign guild entries)
 ------------------------------------------------------------------------
 do
   local S = ns.Store
   check("GS Vertrag vorhanden: OpenCases, Weight, Count mit 4 Werten", type(S.OpenCases) == "function" and type(S.Weight) == "function"
         and select("#", S.Count()) == 4)
-  -- Mittaeter mit echter Rolle
+  -- accomplice with a real role
   local k = S.AddManual("Mit", "Laeufer"); local e = S.Get(k)
   e.manual = false
   S.ApplyKill({ name = "Mit", surname = "Laeufer" }, { t = time() - 30, zone = "Ödland", source = "recap", role = "assist" }, false)
@@ -388,7 +388,7 @@ do
   ns.UI.ShowEnemy(k); tick()
   check("GS echte Rolle assist: Zeile 1× beteiligt", anyTextI("1× beteiligt") ~= nil, e.assists)
   check("GS Tat endet auf beteiligt", frameWith(function(f) return f.tag and f.tag._text == "beteiligt" and f:IsVisible() end) ~= nil)
-  -- offener Fall im echten Journal
+  -- open case in the real log
   local J = S.Deaths()
   table.insert(J, 1, { t = time() - 5, zone = "Ödland", kind = "pvp", candidates = { k }, counted = true, me = "Varorak Narenmar" })
   if S.TouchJournal then S.TouchJournal() end
@@ -399,14 +399,14 @@ do
   local cand = frameWith(function(f) return f.fn and f.text and f.text._text == "Mit Laeufer" and f:IsVisible() end)
   if cand then cand._scripts.OnClick(cand, "LeftButton"); tick() end
   check("GS Taeter festgelegt ueber Zu klären", J[1].killerKey == k and (S.OpenCases()) == 0)
-  -- Gilde: Statuszeile ist Health().text, Reiterzahl der vierte Wert von Count
+  -- Guild: status line is Health().text, tab count is the fourth value of Count
   if ns.Guild and ns.Guild.Health then
     tab("guild"); tick()
     local h = ns.Guild.Health()
     check("GS Gilden-Statuszeile = Health().text", anyTextI(h.text) ~= nil, h.text)
     local _, _, _, foreign = ns.Guild.Count()
     local gt = frameWith(function(f) return f.id == "guild" and f.text end)
-    -- 1.2.0: mit dem Freundesbuch heisst der Reiter "Gilde & Freunde" (gezaehlt wird die gewaehlte Quelle)
+    -- 1.2.0: with the friends' book the tab is called "Guild & Friends" (it counts the selected source)
     local _, _, _, foreignAll = ns.Guild.Count("all")
     local label = ns.Friends and "Gilde & Freunde" or "Gilde"
     local n = ns.Friends and foreignAll or foreign

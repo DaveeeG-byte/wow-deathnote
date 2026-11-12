@@ -1,8 +1,8 @@
--- 1.2.0 (fix-1): Pruefungen zu den Entscheidungen nach der Fehlerjagd, die die Belege nicht abdecken.
--- W1 Verfall der Freigaben (Nie als Voreinstellung, 200 Tage, Deckel, alle abblasen), Erlegt (eindeutig,
--- 10 Minuten, Deckel je Absender, Zaehler), Ausweis ueber den Gilden-Roster, Kollege ohne Roster-API,
--- Ablehnung je Freund, Hallo-Fenster, Schlange (M/X), Sanitize. Alle Namen sind erfunden.
--- Aufruf: luajit tests/test_beleg_fix1.lua [Projektkopie]
+-- 1.2.0 (fix-1): checks for the decisions after the bug hunt that the proofs do not cover.
+-- W1 expiry of calls (Never as default, 200 days, cap, call off all), taken down (unique,
+-- 10 minutes, cap per sender, counter), identity through the guild roster, guildmate without roster API,
+-- refusal per friend, hello window, queue (M/X), sanitize. All names are made up.
+-- Usage: luajit tests/test_beleg_fix1.lua [project copy]
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -17,7 +17,7 @@ local function eigeneDB(c)
 end
 
 ------------------------------------------------------------------------
--- W1: Verfall einstellbar, Voreinstellung Nie
+-- W1: expiry can be set, default Never
 ------------------------------------------------------------------------
 for _, case in ipairs({ { days = 0, keep = true }, { days = 90, keep = false } }) do
   H.lauf("W1: 200 Tage Abwesenheit bei " .. (case.days == 0 and "Nie" or (case.days .. " Tagen")), function()
@@ -120,7 +120,7 @@ H.lauf("W1: Alle meine Freigaben abblasen, gedrosselt ueber die Schlange", funct
 end)
 
 ------------------------------------------------------------------------
--- Erlegt: eindeutig, Zeitfenster, Deckel je Absender, Zaehler klein
+-- Taken down: unique, time window, cap per sender, small counter
 ------------------------------------------------------------------------
 H.lauf("Erlegt: jede Toetung zaehlt einmal, Deckel je Absender, Zukunft verworfen", function()
   local W = H.welt({ "HUNT_BAGGED" })
@@ -132,7 +132,7 @@ H.lauf("Erlegt: jede Toetung zaehlt einmal, Deckel je Absender, Zukunft verworfe
   local now = time()
   H.gilde(a, P.EncodeBagged("Opfer-Lamm", "Berta Senf", now - 500), "Berta-Forever")
   H.gilde(a, P.EncodeBagged("Opfer-Lamm", "Berta Senf", now - 350), "Berta-Forever")
-  H.gilde(a, P.EncodeBagged("Opfer-Lamm", "Berta Senf", now - 500), "Berta-Forever")   -- dieselbe noch einmal
+  H.gilde(a, P.EncodeBagged("Opfer-Lamm", "Berta Senf", now - 500), "Berta-Forever")   -- the same one again
   local h = a.ns.Guild.Hunt("Opfer-Lamm", "guild")
   H.erwartet("zwei verschiedene Toetungen zaehlen zwei", h.bagged == 2, h.bagged)
   H.gilde(a, P.EncodeBagged("Opfer-Lamm", "Berta Senf", now - 200), "Berta-Forever")
@@ -141,7 +141,7 @@ H.lauf("Erlegt: jede Toetung zaehlt einmal, Deckel je Absender, Zukunft verworfe
   H.erwartet("Deckel je Absender: hoechstens drei in zehn Minuten", h.bagged == 3, h.bagged)
   H.gilde(a, P.EncodeBagged("Opfer-Lamm", "Berta Senf", now + 1000), "Berta-Forever")
   H.erwartet("aus der Zukunft: verworfen", a.ns.Guild.Hunt("Opfer-Lamm", "guild").bagged == 3)
-  -- Zaehler mit kleinem Deckel (99), auch in den Daten
+  -- counter with a small cap (99), in the data too
   local hunts = a.ns.Guild.DB().lists[G].hunts
   hunts["Opfer-Lamm"].bagged = 5000
   P.SanitizeHunts(hunts, time())
@@ -152,14 +152,14 @@ H.lauf("Erlegt: jede Toetung zaehlt einmal, Deckel je Absender, Zukunft verworfe
 end)
 
 ------------------------------------------------------------------------
--- Ausweis in der Gilde ueber den Roster (wo der Client den Nachnamen dort fuehrt)
+-- Identity in the guild through the roster (where the client keeps the surname there)
 ------------------------------------------------------------------------
 H.lauf("Gilde: der Roster nennt den Nachnamen, das Feld muss passen", function()
   local W = H.welt()
   local a = W.client("Anton", "Wurst", G)
   local z = W.client("Zeuge", "Still", G)
   a.login(); z.login(); W.run(40)
-  -- der Roster dieses Clients fuehrt volle Namen (Absender kommen trotzdem nur mit Vornamen)
+  -- this client's roster has full names (senders still arrive with first names only)
   z.env.GetNumGuildMembers = function() return 2 end
   z.env.GetGuildRosterInfo = function(i) return ({ "Anton Wurst-Forever", "Zeuge Still-Forever" })[i] end
   z.ns.Guild.ReadRoster()
@@ -172,7 +172,7 @@ H.lauf("Gilde: der Roster nennt den Nachnamen, das Feld muss passen", function()
   H.erwartet("die Sonde vermerkt die Namensform des Absenders", pr == "first", pr)
 end)
 
--- fix-2 (Fund 6 der finalen Jagd): Kollege nur mit vollem Namen; der Client nennt hier den Nachnamen mit
+-- fix-2 (finding 6 of the final hunt): guildmate only with full name; the client gives the surname here
 H.lauf("Kollege ohne Roster-API: nur wer kuerzlich auf GUILD zu hoeren war", function()
   local W = H.welt()
   local a = W.client("Anton", "Wurst", G, { friends = { "Berta Senf" }, noRoster = true, fullSender = true })
@@ -186,7 +186,7 @@ H.lauf("Kollege ohne Roster-API: nur wer kuerzlich auf GUILD zu hoeren war", fun
 end)
 
 H.lauf("Kollege: Roster nur mit Vornamen, Namensvetter hat die Gilde verlassen", function()
-  -- (a) nur ich heisse Anton in der Gilde: der eigene Char zaehlt im Roster nicht mit
+  -- (a) only I am called Anton in the guild: the own char does not count in the roster
   local W = H.welt()
   local a = W.client("Anton", "Wurst", G, { fullSender = true })
   local f = W.client("Anton", "Falsch", G, { fullSender = true })
@@ -196,7 +196,7 @@ H.lauf("Kollege: Roster nur mit Vornamen, Namensvetter hat die Gilde verlassen",
   f.guild = nil; f.fire("PLAYER_GUILD_UPDATE")
   a.fire("GUILD_ROSTER_UPDATE")
   H.erwartet("ausgetreten: der Roster hat nur noch mich als Anton", a.ns.Guild.IsGuildmate("Anton Falsch") == false)
-  -- (b) ein zweiter Anton ist noch drin: der Ausgetretene zaehlt nur, solange er kuerzlich gehoert wurde
+  -- (b) a second Anton is still in: the one who left only counts while he was heard recently
   W = H.welt()
   a = W.client("Anton", "Wurst", G, { fullSender = true })
   f = W.client("Anton", "Falsch", G, { fullSender = true })
@@ -213,7 +213,7 @@ end)
 
 H.lauf("Freund verlaesst die Gilde: beim naechsten Roster-Ereignis sofort per Fluestern bedient", function()
   local W = H.welt()
-  -- fix-2: mit vollen Namen (nur so sind beide sicher Kollegen; mit Vornamen allein flüstern sie ohnehin)
+  -- fix-2: with full names (only then are both surely guildmates; with first names alone they whisper anyway)
   local a = W.client("Anton", "Wurst", G, { friends = { "Berta Senf" }, fullSender = true })
   local b = W.client("Berta", "Senf", G, { friends = { "Anton Wurst" }, fullSender = true })
   a.login(); b.login(); W.run(60)
@@ -233,7 +233,7 @@ H.lauf("Freund verlaesst die Gilde: beim naechsten Roster-Ereignis sofort per Fl
 end)
 
 ------------------------------------------------------------------------
--- Ablehnung je Freund, Battle.net als Ausweg, Hallo im gleitenden Fenster
+-- Refusal per friend, Battle.net as fallback, hello in a sliding window
 ------------------------------------------------------------------------
 H.lauf("Drei Ablehnungen an einen Freund: nur er ruht, die anderen nicht", function()
   local W = H.welt()
@@ -273,7 +273,7 @@ H.lauf("Hallo: gleitendes Fenster statt fester Zahl je Sitzung", function()
   H.erwartet("hoechstens 30 Hallo im Fenster", h1 <= 30, h1)
   M.Advance(700)
   a.fire("FRIENDLIST_UPDATE"); W.run(5)
-  -- neue Freunde kommen spaeter online: nach dem Fenster werden sie wieder gegruesst
+  -- new friends come online later: after the window they are greeted again
   local late = W.client("Spaet", "Kommer", nil, { friends = {} })
   a.friendNames[#a.friendNames + 1] = "Spaet"
   late.login(); W.run(60)
@@ -283,7 +283,7 @@ H.lauf("Hallo: gleitendes Fenster statt fester Zahl je Sitzung", function()
 end)
 
 ------------------------------------------------------------------------
--- Schlange: Eintragen und Austragen (M/X) nehmen einander zurueck wie J/A
+-- Queue: adding and removing (M/X) cancel each other like J/A
 ------------------------------------------------------------------------
 H.lauf("Schlange: M und X desselben Eintrags, nur das letzte Wort geht raus", function()
   local W = H.welt()
@@ -303,7 +303,7 @@ H.lauf("Schlange: M und X desselben Eintrags, nur das letzte Wort geht raus", fu
 end)
 
 ------------------------------------------------------------------------
--- Schlange: eine Nachricht fuer die Gilde geht nur in diese Gilde (Zufallslauf mit Gildenwechsel)
+-- Queue: a message for the guild only goes to that guild (random run with guild changes)
 ------------------------------------------------------------------------
 H.lauf("Schlange: wartende Gilden-Nachricht nach Gildenwechsel nicht in die neue Gilde", function()
   local W = H.welt()
@@ -321,7 +321,7 @@ H.lauf("Schlange: wartende Gilden-Nachricht nach Gildenwechsel nicht in die neue
 end)
 
 ------------------------------------------------------------------------
--- Daten: verstuemmelte Freundes-Bindungen und Ausgeblendete laden ohne Fehler
+-- Data: mangled friend bindings and hidden entries load without errors
 ------------------------------------------------------------------------
 H.lauf("Verstuemmelte ties und huntHidden in den SavedVariables", function()
   local W = H.welt()

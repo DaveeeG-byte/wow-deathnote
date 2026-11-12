@@ -1,5 +1,5 @@
--- Fund 9: /dn FACHKRAFT und /dn Fachkr(ae)fte gehen, /dn FACHKR(AE)FTE mit grossem Umlaut ist "unbekannter Befehl":
--- string.lower wandelt nur ASCII, der Tabellenschluessel hat den kleinen Umlaut.
+-- Finding 9: /dn FACHKRAFT and /dn Fachkr(ae)fte work, /dn FACHKR(AE)FTE with a capital umlaut is "unknown command":
+-- string.lower converts ASCII only, the table key has the lower-case umlaut.
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. package.path
 local H = require("_kopf_hu")

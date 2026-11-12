@@ -1,4 +1,4 @@
--- 1.1.0 Abschlussjagd: Funde Z1 bis Z3 (ein Tod = ein Kill, Umhaengen, leeres Buch einlesen).
+-- 1.1.0 final hunt: findings Z1 to Z3 (one death = one kill, reassigning, importing an empty book).
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local M = require("mock_wow")
 local test, eq, ok, no = M.test, M.eq, M.ok, M.no
@@ -20,7 +20,7 @@ test("Z1: Bestätigen eines Beteiligten nimmt dem bisherigen Täter den Kill (ei
   ok(S.ConfirmSuspect(b))
   eq(killsAt(S, 500), 1, "genau ein Kill für diesen Tod")
   eq(S.Get(b).kills, 1); eq(S.Get(b).assists, 0)
-  -- der Recap hat Antons Schaden belegt: er bleibt beteiligt
+  -- the recap proved Anton's damage: he stays involved
   eq(S.Get(a).kills, 0); eq(S.Get(a).assists, 1); eq(S.Get(a).deaths[1].role, "assist")
   eq(S.Get(a).status, "wanted")
   eq(S.Deaths()[1].killerKey, b)
@@ -38,7 +38,7 @@ test("Z2: Umhängen lässt niemanden mit 0 als Gesuchten zurück und rückt last
   ok(S.AssignDeath(1, "Dora-D"))
   eq(S.Get("Carl-C").kills, 1); eq(S.Get("Carl-C").lastKill, 100, "lastKill zeigt wieder auf den älteren Kill")
   eq(S.Get("Dora-D").kills, 1)
-  -- nur Verdacht übrig: zurück nach "Zu klären"
+  -- only suspicion left: back to "Unsolved"
   S.ApplyKill({ name = "Emil", surname = "E" }, { t = 950, source = "suspect" }, false)
   S.RecordDeath({ t = 960, kind = "pvp", candidates = { "Emil-E", "Dora-D" } })
   ok(S.AssignDeath(1, "Emil-E")); eq(S.Get("Emil-E").status, "wanted")

@@ -1,5 +1,5 @@
--- 1.2.0 Mehrsprachigkeit, Logik-Seite: Sprache des Clients als Standard (kein Dialog), englische
--- Befehle, Hilfe in der aktiven Sprache, /dn lang, sprachneutrale Daten, Export Deutsch -> Einlesen Englisch.
+-- 1.2.0 multiple languages, logic side: the client's language as default (no dialog), English
+-- commands, help in the active language, /dn lang, language-neutral data, export German -> import English.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local M = require("mock_wow")
 local test, eq, ok, no = M.test, M.eq, M.ok, M.no
@@ -99,7 +99,7 @@ test("Zeitformen und Geld je Sprache", function()
   ok(U.When(now):match("^%d%d%.%d%d%. %d%d:%d%d$"), U.When(now))
 end)
 
--- alle Strings einer Tabelle (rekursiv), Schluessel und Werte
+-- All strings of a table (recursive), keys and values
 local function strings(t, out, seen)
   out, seen = out or {}, seen or {}
   if seen[t] then return out end
@@ -115,7 +115,7 @@ test("Daten bleiben sprachneutral: kein Text der deutschen Tabelle in DeathNoteD
   local en = {}
   for k, v in pairs(M.Load({ lang = "enUS" }).L) do en[k] = v end
   local ns = M.Load({ lang = "deDE" })
-  -- ein Tod, ein Hand-Eintrag, Stand und Sonde: alles, was beim Spielen in die Datei geht
+  -- a death, a manual entry, state and probe: everything that goes into the file while playing
   ns.Store.AddManual("Grimm", "Bart")
   slash("gilde"); slash("probe"); slash("freunde")
   M.Advance(40)
@@ -123,7 +123,7 @@ test("Daten bleiben sprachneutral: kein Text der deutschen Tabelle in DeathNoteD
   for k, v in pairs(ns.L) do
     if type(v) == "string" and #v > 3 and v ~= ns.L.TIME_FMT_WHEN then de[v] = k end
   end
-  -- Texte, die auf Englisch gleich lauten ("Master", "Gong"), sind Kennungen und duerfen bleiben
+  -- texts that read the same in English ("Master", "Gong") are ids and may stay
   local bad = {}
   for _, s in ipairs(strings(_G.DeathNoteDB)) do
     if de[s] and en[de[s]] ~= s then bad[#bad + 1] = de[s] .. "=" .. s end
@@ -144,13 +144,13 @@ test("Export auf Deutsch, Einlesen auf Englisch: gleiche Daten, Kopfzeile sprach
   ok(okI, tostring(added)); eq(added, 2)
   eq(ns2.Store.Get("Grimm-Bart").note, "Notiz bleibt Notiz", "Freitext unveraendert")
   eq(ns2.Store.Get("Grimm-Bart").status, ns.Store.Get("Grimm-Bart").status)
-  -- Fehlermeldungen in der aktiven Sprache
+  -- error messages in the active language
   local bad, msg = ns2.Store.Import("Quatsch")
   eq(bad, false); ok(msg:find("Not a DeathNote export", 1, true), msg)
   local ns3 = M.Load({ lang = "deDE" })
   bad, msg = ns3.Store.Import("Quatsch")
   ok(msg:find("Kein DeathNote-Export", 1, true), msg)
-  -- und zurueck: ein englischer Export liest sich auf Deutsch
+  -- and back: an English export reads in German
   local okB = ns3.Store.Import(ns2.Store.Export())
   ok(okB)
   ok(ns3.Store.Get("Zwei-Te"))

@@ -1,10 +1,10 @@
--- W1 (Verfall einstellbar, Voreinstellung Nie) gegen den Zweck: Freigaben, die niemand mehr zuruecknehmen kann.
--- (1) Ich stelle "30 Tage" ein: meine eigene Freigabe faellt bei mir nach 30 Tagen still weg (kein Abblasen geht
---     raus). Alle anderen (Voreinstellung Nie) behalten sie fuer immer, und ich kann sie nicht mehr abblasen.
--- (2) Ich blase ab, waehrend ein Kollege laenger als 30 Tage weg ist (das Merken der Abblasen haelt 30 Tage):
---     bei ihm bleibt meine Freigabe bei "Nie" fuer immer, obwohl ich sie in jeder Antwort NICHT mehr nenne.
--- (3) Der Freigebende verlaesst die Gilde: seine Freigaben bleiben bei allen fuer immer und alarmieren weiter.
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen; Kopf: tests/beleg_helfer.lua
+-- W1 (expiry can be set, default Never) against its purpose: calls nobody can take back any more.
+-- (1) I set "30 days": my own call silently disappears for me after 30 days (no call-off goes
+--     out). All others (default Never) keep it forever, and I can no longer call it off.
+-- (2) I call off while a guildmate is away for more than 30 days (call-offs are remembered for 30 days):
+--     with "Never" my call stays with him forever, although I NO longer name it in any answer.
+-- (3) The caller leaves the guild: his calls stay with everyone forever and keep alerting.
+-- (fix-2) Proof test of the final hunt, taken into the suite; head: tests/beleg_helfer.lua
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -39,7 +39,7 @@ H.lauf("(2) Abblasen verpasst, Merkfrist 30 Tage vorbei", function()
   a.ns.Guild.Release("Opfer-Lamm", { to = "guild", why = "Grund" })
   W.run(10)
   H.erwartet("Vorbedingung: Zeuge hat die Freigabe", z.ns.Guild.Hunt("Opfer-Lamm", "guild") ~= nil)
-  -- Zeuge geht fuer 40 Tage; am ersten Tag blaest Anton ab
+  -- the witness leaves for 40 days; on the first day Anton calls off
   z.fire("PLAYER_LOGOUT"); local zdb = H.tiefe_kopie(z.env.DeathNoteDB)
   z.loggedIn = false
   for i = #W.clients, 1, -1 do if W.clients[i] == z then table.remove(W.clients, i) end end

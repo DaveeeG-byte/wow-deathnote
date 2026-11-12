@@ -1,6 +1,6 @@
--- Fund: "erlegt" (E) laesst sich von einem einzelnen Mitglied beliebig oft wiederholen.
--- Dieselbe Nachricht (anderes t als das juengste) zaehlt jedes Mal neu, zwei abwechselnde Zeiten
--- loesen jedes Mal HUNT_BAGGED aus (ein Fenster je Nachricht), auch mit Monate altem t.
+-- Finding: "taken down" (E) can be repeated by a single member any number of times.
+-- The same message (with a t other than the newest) counts anew each time, two alternating times
+-- trigger HUNT_BAGGED each time (one window per message), even with a t months old.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -18,7 +18,7 @@ H.lauf("Erlegt per Wiederholung", function()
   local h = a.ns.Guild.Hunt(key, "guild")
   H.erwartet("Vorbedingung: Freigabe steht", h ~= nil)
   local now = time()
-  -- Berta hat nie jemanden getoetet und meldet trotzdem
+  -- Berta never killed anyone and reports anyway
   H.gilde(a, P.EncodeBagged(key, "Berta Senf", now), "Berta-Forever")
   for _ = 1, 40 do H.gilde(a, P.EncodeBagged(key, "Berta Senf", now - 500), "Berta-Forever") end
   h = a.ns.Guild.Hunt(key, "guild")

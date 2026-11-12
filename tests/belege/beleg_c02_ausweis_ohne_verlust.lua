@@ -1,12 +1,12 @@
--- 1.2.1 nach der Jagd (H2, M1, M2): der Ausweis verwirft nie Daten auf Verdacht.
--- (1) echte Freundin, die Liste nennt ihre GUID erst spaeter: ihr Hallo trug sie schon, die Bindung ist damit bewiesen,
---     nichts geht, sie wird nicht als Fremde genannt.
--- (2) Fremder gebunden, sein Hallo trug eine andere GUID: bleibt mit seinen Daten, bis das Hallo der echten Freundin
---     entscheidet; dann gehen seine Daten, er wird einmal genannt.
--- (3) M1: Battle.net-Freundin zuerst, Fremder per Char-Fluestern gebunden; spaeter steht sie mit Nachnamen und GUID
---     auf der Liste (dasselbe Battle.net-Konto): Bindung und Daten des Fremden gehen, auch nach Tagen nicht zurueck.
--- (4) M2: Kollegin und Freundin ohne Nachnamen auf der Liste: ohne brauchbare GUID im Gildenverzeichnis wird ihre
---     Freigabe "nur fuer Freunde" angenommen wie in 1.2.0; eine fremde GUID im Verzeichnis wird verworfen.
+-- 1.2.1 after the hunt (H2, M1, M2): the identity check never drops data on suspicion.
+-- (1) real friend, the list gives her GUID only later: her hello already carried it, so the binding is proven,
+--     nothing goes, she is not named as a stranger.
+-- (2) stranger bound, his hello carried another GUID: stays with his data until the real friend's hello
+--     decides; then his data go and he is named once.
+-- (3) M1: Battle.net friend first, stranger bound by character whisper; later she is on the list with surname and GUID
+--     (same Battle.net account): the stranger's binding and data go, and do not come back even after days.
+-- (4) M2: guildmate and friend listed without surname: without a usable GUID in the guild roster her
+--     call "friends only" is accepted as in 1.2.0; a foreign GUID in the roster is dropped.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf_c.lua")
 local M = H.M
 local G = "Die Testgilde"
@@ -32,7 +32,7 @@ H.lauf("(1) echte Freundin, GUID der Liste kommt spaeter", function()
     and not tie.guid and tie.hg ~= nil and vorher == 40, tostring(tie and tie.full) .. "/" .. tostring(vorher))
   local bdb = H.raus(W, b)
   guids = true
-  W.client("Berta", "Senf", nil, { friends = { "Anton Wurst" }, fullSender = true, db = bdb })   -- (offline, nennt die GUID)
+  W.client("Berta", "Senf", nil, { friends = { "Anton Wurst" }, fullSender = true, db = bdb })   -- (offline, names the GUID)
   a.fire("FRIENDLIST_UPDATE"); W.run(5)
   tie = a.env.DeathNoteDB.friends.ties["Berta"]
   local imp = a.ns.Friends.stats.impostor
@@ -47,7 +47,7 @@ H.lauf("(2) Fremder mit eigener Hallo-GUID: bleibt bis zum Hallo der Echten, dan
   W.guids = true
   local x = W.client("Berta", "Fremd", nil, { friends = { "Anton Wurst" }, fullSender = true })
   local a = W.client("Anton", "Wurst", nil, { friends = { "Berta" }, fullSender = true })
-  -- die Liste nennt zuerst keine GUID (die echte Berta ist noch nicht da)
+  -- the list first gives no GUID (the real Berta is not there yet)
   local guids = false
   local gfi = a.env.C_FriendList.GetFriendInfoByIndex
   a.env.C_FriendList.GetFriendInfoByIndex = function(i) local f = gfi(i); if f and not guids then f.guid = nil end; return f end
@@ -105,7 +105,7 @@ H.lauf("(3b) M1 Gegenprobe: dieselbe Lage, aber ein anderes Battle.net-Konto: ni
   b.login(); d.login(); W.run(120)
   local P = b.ns.Guild.Proto
   H.fluestern(b, H.J(P, "Ziel-Fremd", "Dora Fremd"), "Dora Fremd-Forever")
-  -- das Battle.net-Konto der Bindung ist ein anderes (Hash passt nicht zu dem der gelisteten Dora)
+  -- the binding's Battle.net account is another one (hash does not match the listed Dora's)
   b.env.DeathNoteDB.friends.ties["Dora"].bnTag = "00000000"
   b.friendNames[#b.friendNames + 1] = "Dora Dick"
   b.fire("FRIENDLIST_UPDATE"); W.run(5)

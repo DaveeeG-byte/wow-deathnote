@@ -54,7 +54,7 @@ test("Zwei Freunde ohne Gilde: Hallo, Antwort, Live-Tat, beide sehen einander", 
   local e = b.ns.Guild.Get(key, "friends")
   ok(e, "Live-Tat beim Freund"); eq(e.kills, 1); eq(e.lastVictim, "Anton Wurst")
   ok(b.ns.Guild.Get(key, "all"), "auch in Alle")
-  -- "Nach Kollege" for friends: the section of the friend says it is a friend
+  -- "By guildmate" for friends: the section of the friend says it is a friend
   local bm = b.ns.Guild.ByMember("friends")
   local found
   for _, g in ipairs(bm) do if g.name == "Anton Wurst" then found = g end end
@@ -66,7 +66,7 @@ test("Zwei Freunde ohne Gilde: Hallo, Antwort, Live-Tat, beide sehen einander", 
   noErrors()
 end)
 
--- fix-2 (Fund 6 der finalen Jagd): Kollege nur mit vollem Namen (Liste und Absender mit Nachnamen)
+-- fix-2 (finding 6 of the final hunt): guildmate only with full name (list and sender with surname)
 test("Freund zugleich in der Gilde: nichts per Flüstern, keine Doppel", function()
   local W = world()
   local a = W.client("Anton", "Wurst", GUILD, { friends = { "Berta Senf" }, fullSender = true })
@@ -145,7 +145,7 @@ test("Fremder flüstert gültige Nachrichten: verworfen, ohne zu dekodieren", fu
   noErrors()
 end)
 
--- fix-2 (Fund 2 der finalen Jagd): 14 eigene Spieltage (Tage mit Login), nicht 14 Kalendertage
+-- fix-2 (finding 2 of the final hunt): 14 own play days (days with a login), not 14 calendar days
 test("Freund wird entfernt: seine Einträge gehen erst nach drei Scans ohne ihn und 14 Spieltagen", function()
   local W = world()
   local a = W.client("Anton", "Wurst", nil, { friends = { "Berta" } })
@@ -165,7 +165,7 @@ test("Freund wird entfernt: seine Einträge gehen erst nach drei Scans ohne ihn 
   b.fire("FRIENDLIST_UPDATE")
   W.run(3)
   ok(b.ns.Guild.Get(key, "friends"), "15 Kalendertage, aber nur 2 Spieltage: noch da")
-  -- 13 weitere Tage mit Spielzeit (die Sitzung laeuft ueber Mitternacht, je Tag ein Scan)
+  -- 13 more days with play time (the session runs past midnight, one scan per day)
   for _ = 1, 12 do M.Advance(86400); b.fire("FRIENDLIST_UPDATE"); W.run(3) end
   ok(b.ns.Guild.Get(key, "friends"), "14 Spieltage nach dem letzten Sehen: noch da")
   M.Advance(86400); b.fire("FRIENDLIST_UPDATE"); W.run(3)
@@ -192,7 +192,7 @@ test("Freund kommt später online: Hallo nach dem Einloggen, danach Live-Taten",
   for _, m in ipairs(W.sent) do
     if m.sender == a and m.channel == "WHISPER" and m.to == "Berta" and m.text:match("^1\tH\t") then toB = toB + 1 end
   end
-  -- fix-2: eine Antwort an einen Freund beginnt mit dem eigenen Hallo (GUID als Ausweis): Gruss plus Kopf der Antwort
+  -- fix-2: an answer to a friend starts with the own hello (GUID as identity): greeting plus head of the answer
   ok(toB >= 1 and toB <= 2, "A grüßt B, als B online kommt: " .. toB)
   local key = kill(b, "Fies", "Ling")
   W.run(3)

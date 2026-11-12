@@ -1,11 +1,11 @@
--- Beleg UI 4: Unterzeile der Abschussliste, Grund "ab 24 Bytes gekuerzt" (UI.lua, GF.WHY_ROW, GF.BindHuntRow).
--- Aufruf: nice -n 15 luajit beleg_ui_4_grund_bytes.lua <Projektkopie>
--- Die Grenze zaehlt Bytes, nicht Zeichen: ein Grund in kyrillischer Schrift (2 Bytes je Buchstabe) zeigt halb so
--- viele Buchstaben wie derselbe Grund in lateinischer Schrift, CJK ein Drittel. Dazu faellt ein vollstaendiges
--- Mehrbyte-Zeichen weg, das genau an der Grenze endet.
--- Gegenproben (gruen): der Schnitt zerreisst nie ein Zeichen (gueltiges UTF-8), Farbcodes und Pipes kommen nicht an,
--- kurzer Grund bleibt ganz.
--- Alle Namen sind erfunden; geprueft werden Zeichenzahlen, kein Wortlaut.
+-- Proof UI 4: hit list sub-line, reason "cut from 24 bytes" (UI.lua, GF.WHY_ROW, GF.BindHuntRow).
+-- Usage: nice -n 15 luajit beleg_ui_4_grund_bytes.lua <project copy>
+-- The finding: the limit counted bytes, not characters: a reason in Cyrillic (2 bytes per letter) showed half as
+-- many letters as the same reason in Latin script, CJK a third. Also a complete
+-- multi-byte character ending exactly at the limit was dropped. (Fixed since, see below.)
+-- Counter-checks (green): the cut never splits a character (valid UTF-8), colour codes and pipes do not get through,
+-- a short reason stays whole.
+-- All names are made up; checks character counts, not wording.
 package.path = (arg[0]:match("^(.*)/[^/]+$") or ".") .. "/?.lua;" .. package.path
 local K = require("_kopf_ui")
 
@@ -21,7 +21,7 @@ local function gueltig(s)
   end
   return true
 end
--- laengster Anfang des Grunds (ganze Zeichen), der in der Unterzeile steht
+-- longest start of the reason (whole characters) that stands in the sub-line
 local function gezeigt(sub, why)
   local best, i = 0, 1
   while i <= #why do
@@ -37,11 +37,11 @@ end
 local W = K.world("deDE")
 local ns, P, t = W.ns, W.P, _G.time()
 local FAELLE = {
-  { "lat24", ("abcdefghijklmnopqrstuvwx") },                         -- 24 Buchstaben, 24 Bytes
-  { "kyr24", ("абвгдежзийклмнопрстуфхцч") },                         -- 24 Buchstaben, 48 Bytes
-  { "cjk24", ("一二三四五六七八九十一二三四五六七八九十一二三四") },      -- 24 Zeichen, 72 Bytes
-  { "grenze", ("abcdefghijklmnopqrstuv") .. "é" .. "xyz" },          -- é endet genau auf Byte 24
-  { "mitte", ("abcdefghijklmnopqrstuvw") .. "é" .. "xyz" },          -- é liegt auf Byte 24 und 25
+  { "lat24", ("abcdefghijklmnopqrstuvwx") },                         -- 24 letters, 24 bytes
+  { "kyr24", ("абвгдежзийклмнопрстуфхцч") },                         -- 24 letters, 48 bytes
+  { "cjk24", ("一二三四五六七八九十一二三四五六七八九十一二三四") },      -- 24 characters, 72 bytes
+  { "grenze", ("abcdefghijklmnopqrstuv") .. "é" .. "xyz" },          -- é ends exactly on byte 24
+  { "mitte", ("abcdefghijklmnopqrstuvw") .. "é" .. "xyz" },          -- é sits on bytes 24 and 25
   { "kurz", "Umlaute äöü kurz" },
   { "farbe", "ein |cffff0000roter|r Grund |Hunit:1|h[klick]|h und mehr Text" },
 }
@@ -69,7 +69,7 @@ K.check("lat24: 24 lateinische Buchstaben stehen ganz da", shown.lat24 == 24, sh
 K.check("kurz: kurzer Grund mit Umlauten bleibt ganz", shown.kurz == zeichen("Umlaute äöü kurz"), shown.kurz)
 K.check("kyr24: 24 kyrillische Buchstaben so viele wie lateinische (24)", shown.kyr24 == shown.lat24, shown.kyr24 .. " statt " .. shown.lat24)
 K.check("cjk24: wenigstens 12 CJK-Zeichen (doppelt breit, halbe Zahl)", shown.cjk24 >= 12, shown.cjk24)
--- seit der Behebung zaehlt die Grenze Zeichen: ein Mehrbyte-Zeichen an Stelle 23 ist eines von 24
+-- since the fix the limit counts characters: a multi-byte character at position 23 is one of 24
 K.check("grenze: das Zeichen an der Grenze bleibt ganz (24 Zeichen)", shown.grenze == 24, shown.grenze)
 K.check("mitte: kein zerrissenes Zeichen (24 Zeichen)", shown.mitte == 24, shown.mitte)
 local n, e = W.errs()

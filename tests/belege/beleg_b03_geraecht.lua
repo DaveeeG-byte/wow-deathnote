@@ -1,8 +1,8 @@
--- 1.2.1: "Für dich gerächt" (V). Aufruf: luajit beleg_b03_geraecht.lua <Projektkopie>
--- Ein Spieler mit DeathNote toetet per eigenem Todesstoss (PARTY_KILL) einen Taeter, der im Gilden- oder Freundesbuch
--- gegen ANDERE steht. Geprueft: wer die Nachricht bekommt, wer die Zeile mit Ton bekommt (nur, wem der Taeter im eigenen
--- Buch etwas getan hat), Zaehler, genau eine Meldung bei einem Ziel der Abschussliste, 1.2.0/1.1.0 zaehlen nichts doppelt,
--- Schutzregeln wie bei E. Alle Namen sind erfunden.
+-- 1.2.1: "Avenged for you" (V). Usage: luajit beleg_b03_geraecht.lua <project copy>
+-- A player with DeathNote kills with his own killing blow (PARTY_KILL) a killer who stands in the guild or friends' book
+-- against OTHERS. Checked: who gets the message, who gets the line with sound (only those whom the killer harmed in their
+-- own book), counters, exactly one message for a hit list target, 1.2.0/1.1.0 count nothing twice,
+-- protection rules as for E. All names are made up.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf.lua")
 local M = H.M
 local G = "Die Testgilde"
@@ -15,7 +15,7 @@ local GUID = "Player-1-7461657465"
 
 local function welt(watch)
   local W = H.welt(watch or { "GUILD_KILL", "GUILD_UPDATED", "HUNT_BAGGED", "AVENGED" })
-  -- der Taeter als Einheit (GetPlayerInfoByGUID liefert seinen Namen)
+  -- the killer as a unit (GetPlayerInfoByGUID returns his name)
   M.AddEnemy("nameplate9", { name = "Taeter", surname = "Lamm", guid = GUID })
   return W
 end
@@ -34,7 +34,7 @@ H.lauf("(1) Gilde: Nachricht an die Gilde, Zeile und Ton nur fuer das Opfer, Zae
   local b = W.client("Berta", "Senf", G, { fullSender = true })
   local c = W.client("Carla", "Klee", G, { fullSender = true })
   a.login(); b.login(); c.login(); W.run(90)
-  local key = H.tod(b, "Taeter", "Lamm"); W.run(10)          -- Berta: im eigenen Buch und im Gildenbuch der anderen
+  local key = H.tod(b, "Taeter", "Lamm"); W.run(10)          -- Berta: in the own book and in the others' guild book
   H.erwartet("Vorbedingung: Taeter im Gildenbuch von Anton", a.ns.Guild.Get(key, "guild") ~= nil)
   toetet(a); W.run(10)
   H.erwartet("ein V auf GUILD", vs(W, a) == 1, vs(W, a))
@@ -45,13 +45,13 @@ H.lauf("(1) Gilde: Nachricht an die Gilde, Zeile und Ton nur fuer das Opfer, Zae
   local ra, na = a.ns.Guild.Avenged(key)
   H.erwartet("Zaehler: bei Berta, Carla und Anton je 1 von Anton", nb == 1 and nc == 1 and na == 1 and rb[1].char == "Anton Wurst")
   H.erwartet("der Stempel RACHE GENOMMEN bleibt der eigenen Rache vorbehalten", (b.ns.Store.Get(key).revenge or 0) == 0)
-  -- dieselbe Toetung noch einmal gemeldet (Echo, zweiter Kanal): zaehlt einmal
+  -- the same kill reported again (echo, second channel): counts once
   local P = b.ns.Guild.Proto
   local t = time()
   for _ = 1, 3 do H.gilde(b, P.EncodeAvenged(key, "Anton Wurst", t - 9, false), "Anton Wurst-Forever") end
   local _, nb2 = b.ns.Guild.Avenged(key)
   H.erwartet("dieselbe Toetung zaehlt einmal", nb2 == 1, nb2)
-  -- eine zweite Raecherin: zweite Meldung, zwei Namen (Zeile und Ton zeigt beleg_ui_7)
+  -- a second avenger: second message, two names (line and sound are shown by beleg_ui_7)
   H.gilde(b, P.EncodeAvenged(key, "Carla Klee", time(), false), "Carla Klee-Forever"); W.run(5)
   H.erwartet("zweite Meldung, zwei Raecher", H.zaehle(b, "AVENGED") == 2 and #b.ns.Guild.Avenged(key) == 2)
 end)
@@ -61,21 +61,21 @@ H.lauf("(2) keine Nachricht fuer Gegner, die niemanden aus Gilde und Freunden ge
   local a = W.client("Anton", "Wurst", G, { fullSender = true })
   local b = W.client("Berta", "Senf", G, { fullSender = true })
   a.login(); b.login(); W.run(90)
-  local key = H.tod(a, "Taeter", "Lamm"); W.run(10)          -- nur Anton selbst wurde getoetet
+  local key = H.tod(a, "Taeter", "Lamm"); W.run(10)          -- only Anton himself was killed
   toetet(a); W.run(10)
   H.erwartet("eigener Taeter, sonst niemand: kein V", vs(W) == 0)
   H.erwartet("... und kein Zaehler", select(2, a.ns.Guild.Avenged(key)) == 0)
-  -- unbekannter Spieler
+  -- unknown player
   M.AddEnemy("nameplate8", { name = "Fremd", surname = "Ling", guid = "Player-1-46524D44" })
   a.fire("PARTY_KILL", a.env.UnitGUID("player"), "Player-1-46524D44"); W.run(5)
   H.erwartet("Unbekannter: kein V", vs(W) == 0)
-  -- Instanz: kein V (wie bei erlegt)
+  -- instance: no V (as for taken down)
   H.tod(b, "Taeter", "Lamm"); W.run(10)
   M.instance = { true, "party" }
   toetet(a); W.run(5)
   H.erwartet("in der Instanz: kein V", vs(W) == 0)
   M.instance = { false, "none" }
-  -- ein Monster
+  -- a monster
   a.fire("PARTY_KILL", a.env.UnitGUID("player"), "Creature-0-1-2-3-4-5"); W.run(5)
   H.erwartet("ein Monster: kein V, kein Fehler", vs(W) == 0 and #M.errors == 0, M.errors[1])
 end)
@@ -118,7 +118,7 @@ H.lauf("(4) Freunde: nur die betroffenen Freunde bekommen V, Ausweis wie gehabt"
   H.erwartet("V nur an Berta", an["Berta Senf"] and not an["Fritz Frei"])
   H.erwartet("Berta: Meldung", H.zaehle(b, "AVENGED") == 1)
   H.erwartet("Fritz: nichts", H.zaehle(f, "AVENGED") == 0 and select(2, f.ns.Guild.Avenged(key)) == 0)
-  -- gefaelschter Absender
+  -- forged sender
   local P = b.ns.Guild.Proto
   H.fluestern(b, P.EncodeAvenged(key, "Anton Wurst", time(), false), "Fritz Frei-Forever")
   H.erwartet("fremder Absender: verworfen", select(2, b.ns.Guild.Avenged(key)) == 1)
@@ -140,10 +140,10 @@ H.lauf("(5) Schutzregeln: nur live bis 10 Minuten, Deckel je Absender, Zaehler g
   end
   local rows = b.ns.Guild.Avenged(key)
   H.erwartet("Zaehler je Raecher gedeckelt (99)", rows[1].n <= C.BAGGED_MAX, rows[1].n)
-  -- unbekanntes Ziel: nicht gemerkt
+  -- unknown target: not remembered
   H.gilde(b, P.EncodeAvenged("Nie-Gesehen", "Carla Klee", time(), false), "Carla Klee-Forever")
   H.erwartet("Ziel, das niemand kennt: nicht gemerkt", select(2, b.ns.Guild.Avenged("Nie-Gesehen")) == 0)
-  -- Schalter "Abschussliste melden": aus = keine Zeile, Zaehler weiter
+  -- switch "report hit list": off = no line, counter keeps counting
   W.run(5)
   b.ns.Store.Setting("guild.announceHunt", false)
   local vor = H.zaehle(b, "AVENGED")

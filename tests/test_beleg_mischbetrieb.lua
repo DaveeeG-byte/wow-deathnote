@@ -1,9 +1,9 @@
--- Funde im Mischbetrieb Gilde/Freunde:
--- (a) Ein Freund, der die Gilde verlassen hat, gilt weiter als Gildenkollege (members-Tabelle, 60 Tage):
---     sein Fluestern wird verworfen, er bekommt kein Hallo. (b) Nach dem eigenen Gildenaustritt
---     alarmiert die Abschussliste der alten Gilde weiter, obwohl die Ansicht sie nicht mehr zeigt.
--- (c) Ein einziger harter Fehlschlag beim ersten Fluestern sperrt alle Freunde fuer die Sitzung.
--- (d) Eine volle Antwort an einen Freund ist groesser als der Platz, auf den sie wartet.
+-- Findings in mixed guild/friends use:
+-- (a) A friend who left the guild still counts as a guildmate (members table, 60 days):
+--     his whisper is dropped, he gets no hello. (b) After leaving the guild yourself
+--     the old guild's hit list keeps alerting although the view no longer shows it.
+-- (c) A single hard failure on the first whisper blocks all friends for the session.
+-- (d) A full answer to a friend is larger than the room it waits for.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -14,10 +14,10 @@ H.lauf("Freund hat die Gilde verlassen", function()
   local a = W.client("Anton", "Wurst", G, { friends = { "Berta" } })
   local b = W.client("Berta", "Senf", G, { friends = { "Anton" } })
   a.login(); b.login(); W.run(45)
-  H.tod(b, "Alt", "Feind"); W.run(5)          -- Anton hoert Berta auf GUILD
+  H.tod(b, "Alt", "Feind"); W.run(5)          -- Anton hears Berta on GUILD
   b.guild = nil
   b.fire("PLAYER_GUILD_UPDATE"); W.run(2)
-  M.Advance(400)                               -- Hallo-Abstand vorbei
+  M.Advance(400)                               -- hello gap over
   b.ns.Friends.SyncNow(); a.ns.Friends.SyncNow()
   W.run(60)
   local key = H.tod(b, "Grimm", "Bart")
@@ -35,7 +35,7 @@ H.lauf("Eigener Gildenaustritt: Abschussliste der alten Gilde", function()
   H.erwartet("Vorbedingung: Freigabe kam an", a.ns.Guild.Hunt("Opfer-Lamm", "all") ~= nil)
   a.guild = nil
   a.fire("PLAYER_GUILD_UPDATE"); W.run(2)
-  a.ns.Guild.OnUnit("Opfer-Lamm", "nameplate1", "plate", false)   -- erste Sichtung: Ansichten werden neu gebaut
+  a.ns.Guild.OnUnit("Opfer-Lamm", "nameplate1", "plate", false)   -- first sighting: views are rebuilt
   W.run(120)
   local shown = a.ns.Guild.Hunt("Opfer-Lamm", "all") ~= nil
   a.events = {}
@@ -50,7 +50,7 @@ H.lauf("Ein harter Fehlschlag sperrt alle Freunde", function()
   local a = W.client("Anton", "Wurst", nil, { friends = { "Geist", "Berta" } })
   local b = W.client("Berta", "Senf", nil, { friends = { "Anton" } })
   local g = W.client("Geist", "Fern", nil, { friends = {} })
-  -- nur das Fluestern an "Geist" lehnt der Server hart ab (Code 4, z. B. Ziel nicht erreichbar)
+  -- only the whisper to "Geist" is refused hard by the server (code 4, e.g. target unreachable)
   local CI = a.env.C_ChatInfo
   local send = CI.SendAddonMessage
   CI.SendAddonMessage = function(prefix, text, channel, target)

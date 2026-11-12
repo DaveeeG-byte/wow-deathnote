@@ -1,7 +1,7 @@
--- Fund 6: Mem() repariert db.humor nur grob (Tabelle, m, deaths als Zahl). lastDeath als Text oder Tabelle wirft bei
--- jedem Login einen Lua-Fehler (Rechnung in OnReady), bis zum naechsten Tod. deaths = NaN bleibt fuer immer NaN
--- (100 Tode kommt nie, die Beichte zeigt die Unzahl), negative Zahlen zaehlen von unten hoch.
--- Die echten Meldungen bleiben in allen Faellen unberuehrt (Vorbedingung).
+-- Finding 6: Mem() repairs db.humor only roughly (table, m, deaths as number). lastDeath as text or table throws
+-- a Lua error at every login (arithmetic in OnReady) until the next death. deaths = NaN stays NaN forever
+-- (100 deaths never comes, the confession shows the nonsense number), negative numbers count up from below.
+-- The real messages stay untouched in all cases (precondition).
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. package.path
 local H = require("_kopf_hu")

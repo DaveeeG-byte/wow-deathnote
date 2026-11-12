@@ -1,11 +1,11 @@
--- Feld 4: Fristen in Spieltagen.
--- (1) Nach einer eigenen Pause von mehr als 90 Tagen genuegen drei Spieltage auf dem Hauptchar, und alle
---     Freunde, die nur der Zweitchar auf der Liste hat, gelten als losgelassen: ihre Taten und Freigaben
---     werden geloescht (der Zweitchar war "90 Tage nicht eingeloggt, waehrend der Account weiterspielte").
---     Das ist der Fall "nach Monaten wiederkommen und es ist weg", jetzt fuer die Freunde der Zweitchars.
--- (2) Uhr zurueckgestellt: jeder Wechsel des Kalendertags (auch rueckwaerts) zaehlt als neuer Spieltag.
--- (3) Gegenproben (gruen): 400 Tage Pause und ein Login loescht nichts; 13 Spieltage nach dem Entfernen noch
---     da, nach 14 weg; mehrere Chars am selben Tag zaehlen einen Tag; Login um Mitternacht; kaputte Zaehler.
+-- Field 4: deadlines in play days.
+-- (1) After an own break of more than 90 days, three play days on the main character are enough and all
+--     friends only the alt has on its list count as let go: their deeds and calls
+--     are deleted (the alt was "not logged in for 90 days while the account kept playing").
+--     This is the case "come back after months and it is gone", now for the alts' friends.
+-- (2) Clock set back: every change of the calendar day (also backwards) counts as a new play day.
+-- (3) Counter-checks (green): a 400-day break and one login deletes nothing; 13 play days after removal still
+--     there, gone after 14; several characters on the same day count one day; login at midnight; broken counters.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf.lua")
 local M = H.M
 
@@ -21,12 +21,12 @@ H.lauf("(1) Pause ueber 90 Tage, dann drei Tage Hauptchar: Freunde des Zweitchar
   H.erwartet("Vorbedingung: der Zweitchar hat Tat und Freigabe der Freundin", z.ns.Guild.Get(key, "friends") ~= nil
     and z.ns.Guild.Hunt("Ziel-Lamm", "friends") ~= nil)
   local db = H.raus(W, z); H.raus(W, c); W.run(120)
-  -- eigene Pause, danach drei Abende auf dem Hauptchar (anderer Char, eigene Freundesliste, gleicher Account)
+  -- own break, then three evenings on the main character (other character, own friend list, same account)
   H.tage(100)
   for tag = 1, 3 do
     local h = W.client("Haupt", "Wurst", nil, { db = db, friends = { "Dora Gross" } })
     h.login(); W.run(60)
-    h.fire("FRIENDLIST_UPDATE"); W.run(60)   -- die Freundesliste meldet sich im Lauf der Sitzung (Aufraeumen)
+    h.fire("FRIENDLIST_UPDATE"); W.run(60)   -- the friend list reports during the session (cleanup)
     db = H.raus(W, h); W.run(120)
     H.tage(1)
   end
@@ -44,7 +44,7 @@ H.lauf("(2) Uhr zurueck und wieder vor: Spieltage", function()
   local d0 = fdb(a).days
   local db = H.raus(W, a)
   for i = 1, 6 do
-    H.tage(i % 2 == 1 and -1 or 1)   -- einen Tag zurueck, einen Tag vor: am Ende derselbe Kalendertag
+    H.tage(i % 2 == 1 and -1 or 1)   -- one day back, one day forward: ends on the same calendar day
     local x = W.client("Anton", "Wurst", nil, { db = db, friends = { "Carla Klein" } })
     x.login(); W.run(30)
     db = H.raus(W, x)
@@ -54,7 +54,7 @@ H.lauf("(2) Uhr zurueck und wieder vor: Spieltage", function()
 end)
 
 H.lauf("(3) Gegenproben", function()
-  -- lange Pause: nichts weg
+  -- long break: nothing gone
   local W = H.welt()
   local c = W.client("Carla", "Klein", nil, { friends = { "Anton Wurst" }, fullSender = true })
   local a = W.client("Anton", "Wurst", nil, { friends = { "Carla Klein" } })
@@ -65,7 +65,7 @@ H.lauf("(3) Gegenproben", function()
   local a2 = W.client("Anton", "Wurst", nil, { db = db, friends = { "Carla Klein" } })
   a2.login(); W.run(120)
   H.erwartet("160 Tage Pause, ein Login: Tat der Freundin noch da", a2.ns.Guild.Get(key, "friends") ~= nil)
-  -- entfernt: 13 Spieltage noch da, nach 14 weg; drei Chars am selben Tag zaehlen einen Tag
+  -- removed: still there after 13 play days, gone after 14; three characters on the same day count one day
   db = H.raus(W, a2)
   local d0 = db.friends.days
   for _, n in ipairs({ "Anton", "Zweit", "Dritt" }) do
@@ -76,14 +76,14 @@ H.lauf("(3) Gegenproben", function()
   local da13
   for tag = 1, 15 do
     H.tage(1)
-    local x = W.client("Anton", "Wurst", nil, { db = db, friends = { "Emil Kurz" } })   -- Carla entfernt
+    local x = W.client("Anton", "Wurst", nil, { db = db, friends = { "Emil Kurz" } })   -- Carla removed
     x.login(); W.run(40); x.fire("FRIENDLIST_UPDATE"); W.run(5); x.fire("FRIENDLIST_UPDATE"); W.run(5)
     if tag == 13 then da13 = x.ns.Guild.Get(key, "friends") ~= nil end
     if tag == 15 then H.erwartet("entfernt: nach 15 Spieltagen weg", x.ns.Guild.Get(key, "friends") == nil) end
     db = H.raus(W, x)
   end
   H.erwartet("entfernt: nach 13 Spieltagen noch da", da13 == true)
-  -- kaputte Zaehler in der Datei
+  -- broken counters in the file
   for _, v in ipairs({ -5, 1 / 0, 0 / 0, "x", true, {}, 2 ^ 60 }) do
     local d2 = H.tiefe_kopie(db)
     d2.friends.days, d2.friends.dayAt = v, v

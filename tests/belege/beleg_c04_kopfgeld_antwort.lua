@@ -1,7 +1,7 @@
--- 1.2.1 nach der Jagd (M4, M5, N2, N3): Kopfgelder kommen mit der Antwort zuverlaessig an, auch unter der Drossel
--- des Clients und wenn das eigene Hallo warten musste; Y wirkt nur auf eine vollstaendige Lieferung; das Kopfgeld
--- eines Ausgetretenen geht wie seine Freigabe; Y auf GUILD raeumt auch die Kopie im Freundesbuch; niemand setzt ein
--- Kopfgeld auf den Empfaenger selbst.
+-- 1.2.1 after the hunt (M4, M5, N2, N3): bounties arrive reliably with the answer, also under the client's
+-- throttle and when the own hello had to wait; Y acts only on a complete delivery; the bounty
+-- of someone who left goes like his call; Y on GUILD also clears the copy in the friends' book; nobody sets a
+-- bounty on the receiver himself.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf_c.lua")
 local M = H.M
 local G = "Die Testgilde"
@@ -47,7 +47,7 @@ H.lauf("(2) Y wirkt nicht auf eine unvollstaendige Lieferung (ein B ging verlore
   for i = 1, 3 do a.ns.Guild.SetBounty("Gold" .. string.char(96 + i) .. "-Lamm", 50) end
   W.run(30)
   H.erwartet("Vorbedingung: 3 bei Berta", H.anzahl(gbounty(b)) == 3)
-  -- Bertas naechstes Hallo; aus Antons Antwort geht ein B verloren
+  -- Berta's next hello; one B of Anton's answer is lost
   local deliver = W.deliver
   local weg = false
   function W.deliver()

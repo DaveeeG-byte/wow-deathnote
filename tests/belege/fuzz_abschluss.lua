@@ -1,35 +1,35 @@
--- Belegtests: erweitert um GUID-Hallos, Z (auch gefaelscht), Konflikte, Uhr-Spruenge, Humor, fiFI.
--- Zusaetzliche Invarianten: eine Z loescht nie, was der Absender nicht selbst freigegeben hat; kein Humor-Text in
--- gespeicherten oder gesendeten Daten; Humor nie aktiv ausserhalb von Deutsch und Englisch.
--- (Vorlage) Zufallslauf der finalen Jagd, in der Suite kurz mit festem Startwert (lang von Hand: luajit tests/test_fuzz_final.lua . 400 1000 200)
--- Zufallslaeufe der finalen Jagd: der Fuzzer aus tests/test_fuzz_clients.lua, erweitert um
---   Sprachen je Client (deDE, enUS, ruRU, zhCN) und Sprachwechsel beim Login, Freundeslisten nur mit Vornamen,
---   Battle.net-Freunde, Zeitspruenge (alle offline, Tage vergehen), Verfall der Freigaben (0/30/90/180),
---   "Fuer mich ausblenden".
--- Invarianten wie in der ersten Jagd, dazu: kein Sprachtext in gesendeten oder gespeicherten Daten (Feld Notiz
--- ausgenommen), ein ausgeblendetes Ziel alarmiert nie, Zaehler und neue Tabellen bleiben unter ihren Deckeln.
--- Verstoesse, die auf bekannte Funde dieser Jagd zurueckgehen (Verfall, Merkfrist der Abblasen), werden getrennt
--- als "bekannt" gezaehlt und machen den Lauf nicht rot.
--- 1.2.1 (nach der Jagd): Kopfgelder setzen und zuruecknehmen (B, Y), Todesstoss mit der eigenen GUID auch in Laeufen
--- mit GUIDs (E und V), Herkunft und Stand der Kopfgelder, "geraecht" nie ueber den echten Toetungen. Einordnung genau:
--- jeder Sprung der Uhr (auch die Operation "Uhr" und das Zurueckstellen am Ende) zaehlt mit Vorzeichen fuer die Taten,
--- die davor entstanden; die Absender gefaelschter Hallos gelten als Fremde.
--- Aufruf: luajit fuzz_final.lua <Projektkopie> [Laeufe=60] [Startsaat=1] [Schritte=140] [ohneverlust]
+-- Proof tests: extended with GUID hellos, Z (forged too), conflicts, clock jumps, humor, fiFI.
+-- Extra invariants: a Z never deletes what the sender did not share itself; no humor text in
+-- stored or sent data; humor never active outside German and English.
+-- (Template) random run of the final hunt, short with a fixed seed in the suite (long by hand: luajit tests/test_fuzz_final.lua . 400 1000 200)
+-- Random runs of the final hunt: the fuzzer from tests/test_fuzz_clients.lua, extended with
+--   a language per client (deDE, enUS, ruRU, zhCN) and language switches at login, friend lists with first names only,
+--   Battle.net friends, time jumps (everyone offline, days pass), expiry of shared entries (0/30/90/180),
+--   "Hide for me".
+-- Invariants as in the first hunt, plus: no locale text in sent or stored data (note field
+-- excepted), a hidden target never alerts, counters and new tables stay under their caps.
+-- Violations that trace back to known findings of this hunt (expiry, how long call-offs are remembered) are counted
+-- separately as "known" and do not turn the run red.
+-- 1.2.1 (after the hunt): set and take back bounties (B, Y), killing blow with the own GUID also in runs
+-- with GUIDs (E and V), origin and state of bounties, "avenged" never above the real kills. Exact classification:
+-- every clock jump (including the "clock" operation and the reset at the end) counts with its sign for the deeds
+-- created before it; senders of forged hellos count as strangers.
+-- Usage: luajit fuzz_final.lua <project copy> [runs=60] [seed=1] [steps=140] [ohneverlust]
 local DIRARG = (arg[1] or "."):gsub("/+$", "")
 package.path = DIRARG .. "/tests/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
 local RUNS, SEED0, STEPS = tonumber(arg[2]) or 60, tonumber(arg[3]) or 1000, tonumber(arg[4]) or 120
 local LANGS = { "deDE", "enUS", "ruRU", "zhCN", "fiFI" }
-local NOLOSS = arg[5] == "ohneverlust"   -- Gegenprobe: ohne Verlust und Tausch darf auch nach Zeitspruengen nichts fehlen
+local NOLOSS = arg[5] == "ohneverlust"   -- counter-check: without loss and swaps nothing may be missing, even after time jumps
 local GUILDS = { "Gilde Eins", "Gilde Zwei" }
--- Anton Wurst und Anton Falsch: gleicher Vorname, der Client nennt beide mit Nachnamen (fullSender)
+-- Anton Wurst and Anton Falsch: same first name, the client names both with surname (fullSender)
 local NAMES = { { "Anton", "Wurst" }, { "Berta", "Senf" }, { "Anton", "Falsch" }, { "Dora", "Dick" } }
 local FULL = { true, false, true, false }
 local ENEMIES = { { "Grimm", "Bart" }, { "Fies", "Ling" }, { "Rauf", "Bold" }, { "Zank", "Apfel" }, { "Wut", "Buerger" }, { "Hau", "Drauf" } }
 local function ekey(e) return e[1] .. "-" .. e[2] end
 
--- Sprachtexte aller vier Sprachen (Teile ab 9 Bytes, ohne Beispielzone und Kanalnamen)
+-- Locale texts of all four languages (pieces of 9 bytes and more, without sample zone and channel names)
 local DICT = {}
 do
   local ns = {}
@@ -49,7 +49,7 @@ end
 local function sprachtext(s)
   for i = 1, #DICT do if s:find(DICT[i][1], 1, true) then return DICT[i][2] end end
 end
--- Belegtests: alle Texte aus dem Block HUMOR-TEXTE von Humor.lua (Stuecke ab 9 Bytes)
+-- Proof tests: all texts from the HUMOR-TEXTE block of Humor.lua (pieces of 9 bytes and more)
 local HUMOR = {}
 do
   local h = assert(io.open(M.ADDON_DIR .. "Humor.lua", "rb")); local s = h:read("*a"); h:close()
@@ -97,22 +97,22 @@ local function run(seed)
   M.Reset()
   local W = M.NewWorld({ "HUNT_BAGGED", "GUILD_ENEMY_SPOTTED" })
   local langOf, bnOf, tainted, expireOf, jumped, maxJump = {}, {}, {}, {}, 0, 0
-  local everExpire = {}   -- 1.2.1: wer je einen Verfall eingestellt hatte (eigene Kopfgelder koennen dabei ablaufen)
+  local everExpire = {}   -- 1.2.1: whoever ever set an expiry (own bounties may run out then)
   W.guids = R() < 0.5
   if W.guids then tally.guidRuns = tally.guidRuns + 1 end
   local strangers = {}
-  local forgedGuid = {}   -- 1.2.1: Faelscher und die fremde GUID, die er im Hallo trug
+  local forgedGuid = {}   -- 1.2.1: forgers and the foreign GUID they carried in the hello
   local clockBack = 0
-  local FIRSTONLY = R() < 0.5     -- Berta und Dora stehen nur mit Vornamen auf den Listen
+  local FIRSTONLY = R() < 0.5     -- Berta and Dora are on the lists with first names only
   local function listName(j)
     if FIRSTONLY and (j == 2 or j == 4) then return NAMES[j][1] end
     return NAMES[j][1] .. " " .. NAMES[j][2]
   end
   local jumpLog = {}
-  -- 1.2.1: jede Tat merkt sich, wie viele Spruenge es bei ihrem Entstehen gab (Uhr-Operationen eingeschlossen)
+  -- 1.2.1: every deed remembers how many jumps there were when it was created (clock operations included)
   local bornAt = {}
-  -- Tage, um die die Uhr nach dem Entstehen der Tat id vorging (Zeitspruenge, Uhr vor/zurueck, Zurueckstellen am Ende;
-  -- ab 3 Tagen deckt die Rueckschau eines Hallo die Tat nicht mehr)
+  -- Days the clock moved forward after deed id was created (time jumps, clock forward/back, reset at the end;
+  -- from 3 days on the look-back of a hello no longer covers the deed)
   local function tageNach(id)
     local n = 0
     for k = (bornAt[id] or 0) + 1, #jumpLog do n = n + jumpLog[k][2] end
@@ -120,7 +120,7 @@ local function run(seed)
   end
   local N = R(2, 4)
   local C, friendsOf, guildOf = {}, {}, {}
-  -- Wahrheit: was jeder Char je selbst erzeugt hat
+  -- Truth: what each char ever created itself
   local truth = { kills = {}, listed = {}, released = {}, gone = {}, bounty = {}, bountyEver = {}, pk = {} }
   for i = 1, N do
     local full = NAMES[i][1] .. " " .. NAMES[i][2]
@@ -133,17 +133,17 @@ local function run(seed)
   for i = 1, N do for j = 1, N do
     if i ~= j and R() < 0.6 then friendsOf[i][#friendsOf[i] + 1] = listName(j) end
   end end
-  -- Battle.net-Freundschaften (gegenseitig) zwischen Chars mit eindeutigem Vornamen; der Mock nennt dort nur Vornamen
+  -- Battle.net friendships (mutual) between chars with a unique first name; the mock gives only first names there
   local UNIQUE = { [2] = true, [4] = true }
   if N >= 4 and R() < 0.5 then bnOf[2][1], bnOf[4][1] = NAMES[4][1], NAMES[2][1]; tally.bn = tally.bn + 1 end
   local function spawn(i, db)
-    -- Sprachwechsel beim Login: die Wahl steht in der Datei, der Client laedt die Sprachdatei wie aus der TOC
+    -- Language switch at login: the choice is in the file, the client loads the locale file as from the TOC
     if db and R() < 0.3 then
       langOf[i] = LANGS[R(#LANGS)]
       if type(db.settings) == "table" then db.settings.lang = langOf[i] end
       tally.langs = tally.langs + 1
     end
-    local c = W.client(NAMES[i][1], NAMES[i][2], guildOf[i], { friends = friendsOf[i], db = db, fullSender = FULL[i] or FIRSTONLY,   -- einheitliche Namensform: mit Listen ohne Nachnamen nennt der Client alle Absender voll
+    local c = W.client(NAMES[i][1], NAMES[i][2], guildOf[i], { friends = friendsOf[i], db = db, fullSender = FULL[i] or FIRSTONLY,   -- one name form: with lists without surnames the client names every sender in full
       bn = bnOf[i], lang = langOf[i], files = filesFor(langOf[i]) })
     if c.ns.Locale.code ~= langOf[i] then problem(seed, "Sprache nicht aktiv", langOf[i] .. " gewaehlt, aktiv " .. tostring(c.ns.Locale.code)) end
     c.ns:On("GUILD_ENEMY_SPOTTED", function(key, _, _, kind)
@@ -162,12 +162,12 @@ local function run(seed)
   function W.deliver()
     if lossy and #W.wire > 1 and R() < 0.3 then
       local i, j = R(#W.wire), R(#W.wire)
-      W.wire[i], W.wire[j] = W.wire[j], W.wire[i]            -- Reihenfolge tauschen
+      W.wire[i], W.wire[j] = W.wire[j], W.wire[i]            -- swap the order
     end
     if lossy then
-      for i = #W.wire, 1, -1 do if R() < 0.08 then table.remove(W.wire, i) end end   -- Verlust
+      for i = #W.wire, 1, -1 do if R() < 0.08 then table.remove(W.wire, i) end end   -- loss
     end
-    -- Belegtests: Zustellung von Hand, damit bei jeder Z der wahre Absender bekannt ist
+    -- Proof tests: deliver by hand so the true sender of every Z is known
     local n = 0
     while #W.wire > 0 do
       local m = table.remove(W.wire, 1)
@@ -222,7 +222,7 @@ local function run(seed)
   end
   local offline = {}
   local OPS = {
-    function(c)   -- sicherer Tod
+    function(c)   -- sure death
       if (killsBy[c.idx] or 0) >= 8 then return end
       killsBy[c.idx] = (killsBy[c.idx] or 0) + 1
       local e = ENEMIES[R(#ENEMIES)]
@@ -230,27 +230,27 @@ local function run(seed)
       truth.kills[c.full][key .. "\t" .. time()] = true
       bornAt[c.full .. "\t" .. key .. "\t" .. time()] = #jumpLog
     end,
-    function(c)   -- von Hand eintragen / entfernen
+    function(c)   -- add / remove by hand
       local e = ENEMIES[R(#ENEMIES)]
       local key = ekey(e)
       local own = c.ns.Store.Get(key)
       if own and own.manual and R() < 0.5 then
         c.ns.Store.Remove(key)
-        -- 1.2.1: gestrichen, und kein anderes Buch zeigt ihn: das eigene Kopfgeld geht mit
+        -- 1.2.1: struck, and no other book shows them: the own bounty goes with it
         if truth.bounty[c.full][key] and not c.ns.Guild.OwnBounty(key) then truth.bounty[c.full][key] = nil end
-        -- selbst geloeschte Taten muss niemand mehr bekommen
+        -- deeds deleted by the owner need not reach anyone any more
         for id in pairs(truth.kills[c.full]) do if id:match("^(.-)\t") == key then truth.gone[c.full .. "\t" .. id] = true end end
       elseif not own then
         c.ns.Store.AddManual(e[1], e[2]); truth.listed[c.full][key] = true
       end
     end,
-    function(c)   -- freigeben
+    function(c)   -- release
       local key = ekey(ENEMIES[R(#ENEMIES)])
       local g, f = c.ns.Guild.Release(key, { to = ({ "all", "guild", "friends" })[R(3)], why = R() < 0.5 and "Grund |cffff0000x|r " .. R(9) or nil })
       if g or f then truth.released[c.full][key] = true end
     end,
     function(c) c.ns.Guild.CallOff(ekey(ENEMIES[R(#ENEMIES)]), ({ nil, "guild", "friends" })[R(3)]) end,
-    function(c)   -- eigener Todesstoss (1.2.1: mit der eigenen GUID, auch in Laeufen mit GUIDs: E und V entstehen)
+    function(c)   -- own killing blow (1.2.1: with the own GUID, also in runs with GUIDs: E and V are created)
       local n = R(#ENEMIES)
       local key = ekey(ENEMIES[n])
       local e0, v0 = 0, 0
@@ -264,10 +264,10 @@ local function run(seed)
       for k = was + 1, #W.sent do local m = W.sent[k]
         if m.text:find("^1\tE\t") then tally.eSent = tally.eSent + 1 elseif m.text:find("^1\tV\t") then tally.vSent = tally.vSent + 1 end end
     end,
-    function(c)   -- 1.2.1: eigenes Kopfgeld setzen, aendern oder zuruecknehmen
+    function(c)   -- 1.2.1: set, change or take back an own bounty
       local key = ekey(ENEMIES[R(#ENEMIES)])
       local g = ({ 1, 50, 500, 99999 })[R(4)]
-      if R() < 0.4 then   -- zuruecknehmen: meist ein eigenes, das es gibt
+      if R() < 0.4 then   -- take back: usually an own one that exists
         g = 0
         local own = {}
         for k in pairs(truth.bounty[c.full]) do own[#own + 1] = k end
@@ -279,7 +279,7 @@ local function run(seed)
         else truth.bounty[c.full][key] = g; truth.bountyEver[c.full][key .. "\t" .. g] = true; tally.bset = tally.bset + 1 end
       end
     end,
-    function(c)   -- Freundschaft schliessen oder loesen
+    function(c)   -- make or end a friendship
       local j = R(N)
       if j == c.idx then return end
       local l, name = friendsOf[c.idx], listName(j)
@@ -291,38 +291,38 @@ local function run(seed)
       l[#l + 1] = name
       c.fire("FRIENDLIST_UPDATE")
     end,
-    function(c)   -- Logout, spaeter Login
+    function(c)   -- logout, later login
       if R() < 0.4 then offline[c.idx] = relog(c.idx) end
     end,
     function(c) c.combat = not c.combat; if not c.combat then c.fire("PLAYER_REGEN_ENABLED") end end,
     function(c) if R() < 0.3 then c.ns.Guild.SyncNow(); c.ns.Friends.SyncNow() end end,
     function(c) c.ns.Guild.OnUnit(ekey(ENEMIES[R(#ENEMIES)]), "nameplate1", "plate", false) end,
-    function(c)   -- Verfall der Freigaben einstellen (W1)
+    function(c)   -- set the expiry of shared entries (W1)
       if R() < 0.4 then
         expireOf[c.idx] = ({ 0, 0, 30, 90, 180 })[R(5)]
         if expireOf[c.idx] > 0 then everExpire[c.idx] = true end
         c.ns.Store.Setting("guild.huntExpire", expireOf[c.idx])
       end
     end,
-    function(c)   -- fuer mich ausblenden / wieder einblenden
+    function(c)   -- hide for me / show again
       local key = ekey(ENEMIES[R(#ENEMIES)])
       c.ns.Guild.HideHunt(key, R() < 0.6); tally.hidden = tally.hidden + 1
     end,
-    function(c)   -- Befehle in der Sprache des Clients
-      local slash = c.ns.HandleSlash   -- nicht SlashCmdList: die Tabelle teilen sich alle Clients der Welt
+    function(c)   -- commands in the client's language
+      local slash = c.ns.HandleSlash   -- not SlashCmdList: all clients of the world share that table
       if slash then slash(({ "gilde", "friends", "probe", "hilfe", "lang", "jagd " .. ENEMIES[R(#ENEMIES)][1] })[R(6)]) end
       for _, e in ipairs(ENEMIES) do
         local g, f = c.ns.Guild.Released(ekey(e))
         if g or f then truth.released[c.full][ekey(e)] = true end
       end
     end,
-    function(c)   -- gefaelschte Z und gefaelschtes Hallo mit GUID von einem Fremden bzw. im Namen eines anderen
+    function(c)   -- forged Z and forged hello with GUID from a stranger or in someone else's name
       local j = R(N)
       local victim = NAMES[j][1] .. " " .. NAMES[j][2]
       local P = c.ns.Guild.Proto
       local liar = ({ "Fremd Ling", NAMES[j][1] .. " Fremd", NAMES[R(N)][1] .. " " .. NAMES[R(N)][2] })[R(3)]
       if liar == victim or liar == c.full then return end
-      -- 1.2.1: wer ein Hallo faelscht und kein Char des Laufs ist, ist ein Fremder (er kann gebunden werden)
+      -- 1.2.1: whoever forges a hello and is no char of the run is a stranger (they can be bound)
       if not truth.kills[liar] then strangers[liar] = true end
       if C[j] then forgedGuid[liar .. "\t" .. W.guidOf(C[j])] = true end
       local z = P.EncodeSnapshot(victim, R(0, 2))
@@ -332,7 +332,7 @@ local function run(seed)
       end
       tally.forged = tally.forged + 1
     end,
-    function(c)   -- Fremde mit dem Vornamen eines Freundes fluestern eine Freigabe (voller Name, zwei verschiedene)
+    function(c)   -- strangers with a friend's first name whisper a shared entry (full name, two different ones)
       local j = ({ 2, 4 })[R(2)]
       if j > N or j == c.idx then return end
       local P = c.ns.Guild.Proto
@@ -342,7 +342,7 @@ local function run(seed)
       W.wire[#W.wire + 1] = { prefix = "DeathNote", text = P.EncodeHunt({ key = key, t = time(), by = stranger, why = "x" }), channel = "WHISPER", from = stranger .. "-Forever", to = c.full, forged = true, forgedAs = stranger }
       tally.forged = tally.forged + 1
     end,
-    function(c)   -- Konflikt: waehlen oder Bindung loesen
+    function(c)   -- conflict: choose or release the binding
       local F = c.ns.Friends
       if not (F and F.Conflicts) then return end
       local cf = F.Conflicts()[1]
@@ -355,15 +355,15 @@ local function run(seed)
         if b then F.Unbind(b.list); for j = 1, N do tainted[c.idx .. ">" .. j] = true end end
       end
     end,
-    function(c)   -- Uhr einen Tag zurueck oder vor (alle teilen die Uhr des Mocks)
+    function(c)   -- clock one day back or forward (everyone shares the mock's clock)
       if R() < 0.1 then
         local d = R() < 0.5 and -86400 or 86400
         M.epoch = M.epoch + d; tally.clock = tally.clock + 1
         if d < 0 then clockBack = clockBack + 1 end
-        jumpLog[#jumpLog + 1] = { time(), d / 86400 }   -- 1.2.1: die Uhr-Operation zaehlt mit Vorzeichen
+        jumpLog[#jumpLog + 1] = { time(), d / 86400 }   -- 1.2.1: the clock operation counts with its sign
       end
     end,
-    function(c)   -- Humor-Anlaesse: Rache, Begnadigen, versteckte Befehle
+    function(c)   -- humor occasions: revenge, pardon, hidden commands
       local e = ENEMIES[R(#ENEMIES)]
       local key = ekey(e)
       local S = c.ns.Store
@@ -374,7 +374,7 @@ local function run(seed)
       c.ns.HandleSlash(({ "fachkraft", "42", "beichte", "danke", "confess", "thanks" })[R(6)])
       tally.humor = tally.humor + 1
     end,
-    function(c)   -- Gilde wechseln, verlassen oder beitreten (fix-1)
+    function(c)   -- change, leave or join a guild (fix-1)
       if R() < 0.5 then return end
       local g = ({ GUILDS[1], GUILDS[2], nil })[R(3)]
       if g == c.guild then return end
@@ -390,7 +390,7 @@ local function run(seed)
       OPS[R(#OPS)](C[i])
     end
     W.run(R() < 0.2 and R(1, 60) or R(1, 5))
-    -- Zeitsprung: alle gehen offline, Tage vergehen (zusammen hoechstens 55: darueber greift ein bekannter Fund)
+    -- Time jump: everyone goes offline, days pass (at most 55 in total: above that a known finding applies)
     if R() < 0.03 and jumped < 55 then
       for k = 1, N do if not offline[k] then offline[k] = relog(k) end end
       local d = math.min(55 - jumped, ({ 1, 3, 8, 15, 20, 35 })[R(6)])
@@ -402,10 +402,10 @@ local function run(seed)
     end
     if #M.errors > 0 then problem(seed, "Lua-Fehler: " .. tostring(M.errors[1]):gsub("^.-([%w_]+%.lua:%d+)", "%1"), "Schritt " .. step); return end
   end
-  -- ruhige Phase: alle online, kein Verlust, zweimal abgleichen
+  -- quiet phase: everyone online, no loss, sync twice
   lossy = false
-  M.epoch = M.epoch + clockBack * 86400   -- die Uhr stimmt wieder (sonst laegen Taten in der Zukunft)
-  if clockBack > 0 then jumpLog[#jumpLog + 1] = { time(), clockBack } end   -- 1.2.1: auch das zaehlt
+  M.epoch = M.epoch + clockBack * 86400   -- the clock is right again (otherwise deeds would lie in the future)
+  if clockBack > 0 then jumpLog[#jumpLog + 1] = { time(), clockBack } end   -- 1.2.1: this counts too
   for i = 1, N do if offline[i] then spawn(i, offline[i]); offline[i] = nil end; C[i].combat = false; C[i].fire("PLAYER_REGEN_ENABLED") end
   for _ = 1, 3 do
     W.run(60); M.Advance(400)
@@ -423,7 +423,7 @@ local function run(seed)
     local hh = humortext(m.text)
     if hh then problem(seed, "Humor-Text auf der Leitung", hh) end
   end
-  -- Invarianten
+  -- invariants
   local function hasFriend(i, j) for _, n in ipairs(friendsOf[i]) do if n == listName(j) then return true end end return false end
   for i = 1, N do
     local c = C[i]
@@ -460,9 +460,9 @@ local function run(seed)
               local tie = fdb.ties[ln] or {}
               local fx = c.ns.Friends.FriendOf(ln)
               if fx and fx.guid and not tie.rival then
-                -- 1.2.1 (Entscheidung nach der Jagd): nichts wird auf Verdacht geloescht. Eine nie bewiesene Bindung an den
-                -- Fremden bleibt, bis das Hallo des echten Freunds entscheidet; das kann nur ausbleiben, wenn der echte
-                -- Freund den Betrachter nicht auf seiner Liste hat (er antwortet ihm nie). Sonst ist es ein Verstoss.
+                -- 1.2.1 (decision after the hunt): nothing is deleted on suspicion. A never proven binding to the
+                -- stranger stays until the real friend's hello decides; that can only fail to happen if the real
+                -- friend does not have the viewer on their list (they never answer them). Otherwise it is a violation.
                 local real
                 for jj = 1, N do if NAMES[jj][1] == ln and listName(jj) == ln then real = jj end end
                 local detail = c.full .. ": " .. key .. " von " .. char .. (" | Bindung %s/%s/%s/%s, GUID der Liste %s, auf der Liste %s"):format(tostring(tie.full), tostring(tie.rival), tostring(tie.sure), tostring(tie.guid), tostring(fx and fx.guid), tostring(fx and fx.listed))
@@ -481,7 +481,7 @@ local function run(seed)
         end
         if not any then problem(seed, "Ziel ohne Freigabe in den Daten", c.full .. ": " .. key) end
       end
-      -- 1.2.1: Kopfgelder anderer: nur von dem Char, der es selbst gesetzt hat, mit einem Betrag, den er gesetzt hat
+      -- 1.2.1: other players' bounties: only from the char that set it, with an amount it set
       local nb = 0
       for key, x in pairs(s[4]) do
         nb = nb + 1
@@ -506,7 +506,7 @@ local function run(seed)
         if (h.bagged or 0) > Cst.BAGGED_MAX or #(h.bags or {}) > Cst.BAGS_MAX then problem(seed, "Deckel: Erlegt", key) end
       end
     end
-    -- 1.2.1: "geraecht" nie ueber der Zahl echter eigener Todesstoesse dieses Chars auf dieses Ziel
+    -- 1.2.1: "avenged" never above the number of real own killing blows of this char on this target
     for key, a in pairs(c.env.DeathNoteDB.avenged or {}) do
       for char, k in pairs(a.by or {}) do
         tally.avenged = tally.avenged + k
@@ -519,7 +519,7 @@ local function run(seed)
     for _ in pairs(fdb.ties or {}) do nt = nt + 1 end
     if nh > Cst.HIDDEN_MAX then problem(seed, "Deckel: Ausgeblendete", nh) end
     if nt > c.ns.Friends.C.MAX_TIES then problem(seed, "Deckel: Bindungen", nt) end
-    -- kein Sprachtext in den gespeicherten Daten (Feld Notiz ausgenommen)
+    -- no locale text in the stored data (note field excepted)
     c.ns.HandleSlash("probe")
     c.fire("PLAYER_LOGOUT")
     local function walk(t, seen)
@@ -541,7 +541,7 @@ local function run(seed)
     walk(c.env.DeathNoteDB, {})
     if langOf[i] ~= "deDE" and langOf[i] ~= "enUS" and false then end
   end
-  -- gleicher Stand unter Partnern
+  -- same state among partners
   for i = 1, N do for j = 1, N do if i ~= j then
     local x, y = C[i], C[j]
     local sameGuild = guildOf[i] ~= nil and guildOf[i] == guildOf[j]
@@ -557,20 +557,20 @@ local function run(seed)
           if a and not b and (expireOf[j] > 0 or jumped > 30) then
             bekannt(seed, "Waise: Freigabe steht beim Partner, der Freigebende hat sie nicht mehr (Verfall bzw. Merkfrist)", detail)
           elseif b and not a and expireOf[i] > 0 then
-            -- beim Betrachter verfallen: so eingestellt, kein Verstoss
+            -- expired at the viewer: set up that way, no violation
           else
             local fx = x.ns.Friends
             local tie = fx.DB().ties[listName(j)] or {}
             local back = y.ns.Friends.DB().ties[listName(i)] or {}
-            if back.rival or strangers[back.full or ""] then tie = back end   -- der Konflikt der Gegenseite sperrt auch deren Antworten
+            if back.rival or strangers[back.full or ""] then tie = back end   -- the other side's conflict blocks their answers too
             if tie.rival or strangers[tie.full or ""] then bekannt(seed, "Konflikt offen oder Fremder vorlaeufig gebunden (ohne GUID): vom Freund wird nichts angenommen (" .. tag .. ")", detail)
             else problem(seed, "Stand ungleich: Freigabe (" .. tag .. ")", detail .. (" | GUIDs %s, nurVorname %s, Bindung %s/%s/%s, letzter Grund %s"):format(tostring(W.guids), tostring(FIRSTONLY), tostring(tie.full), tostring(tie.rival), tostring(tie.sure), tostring(fx.stats.lastReason))) end
           end
         end
       end
     end
-    -- 1.2.1: das Kopfgeld von y, wie x es sieht, gleicht dem, das y selbst hat (Verfall eingestellt: ausgenommen)
-    -- (verglichen wird mit dem, was y selbst hat; dass y nichts verliert, prueft der Abgleich mit der Wahrheit unten)
+    -- 1.2.1: y's bounty as x sees it equals the one y has itself (expiry set: excepted)
+    -- (compared with what y has itself; that y loses nothing is checked against the truth below)
     local function bcmp(tag, bx)
       if everExpire[i] then return end
       local seen = {}
@@ -601,7 +601,7 @@ local function run(seed)
       end
     end
     if i == 1 or (i == 2 and j == 1) then
-      -- eigene Kopfgelder von y: genau die gesetzten (Verfall eingestellt: ablaufen darf es)
+      -- y's own bounties: exactly the ones set (expiry set: they may run out)
       local own = y.env.DeathNoteDB.bounty or {}
       for key, g in pairs(truth.bounty[y.full]) do
         local r = own[key] and own[key][y.full]
@@ -639,7 +639,7 @@ local function run(seed)
             local fx = x.ns.Friends
             local tie = fx.DB().ties[listName(j)] or {}
             local back = y.ns.Friends.DB().ties[listName(i)] or {}
-            if back.rival or strangers[back.full or ""] then tie = back end   -- der Konflikt der Gegenseite sperrt auch deren Antworten
+            if back.rival or strangers[back.full or ""] then tie = back end   -- the other side's conflict blocks their answers too
             if tie.rival or strangers[tie.full or ""] then bekannt(seed, "Konflikt offen oder Fremder vorlaeufig gebunden (ohne GUID): vom Freund wird nichts angenommen (Tat)", x.full .. " fehlt " .. key .. " von " .. y.full)
             else problem(seed, "Stand ungleich: Tat fehlt (Freunde)", x.full .. " fehlt " .. key .. " von " .. y.full .. (" | GUIDs %s, nurVorname %s, Bindung %s/%s/%s, letzter Grund %s, Alter der Tat %d Tage"):format(tostring(W.guids), tostring(FIRSTONLY), tostring(tie.full), tostring(tie.rival), tostring(tie.sure), tostring(fx.stats.lastReason), math.floor((time() - tonumber(t)) / 86400))) end
           end

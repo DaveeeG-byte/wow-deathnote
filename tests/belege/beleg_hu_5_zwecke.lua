@@ -1,7 +1,7 @@
--- Fund 5: Reisszwecke. (a) An der Karteikarte (Akte, ungeklaerter Tod) ist die Zwecke ausgeblendet (PosterMode), der
--- unsichtbare Knopf darueber bleibt aber klickbar und meldet nach 5 Klicks, die Zwecke habe gekuendigt.
--- (b) Klicks waehrend des Falls zaehlen weiter: ein einzelner Klick danach laesst sie sofort wieder fallen.
--- (c) Der Knopf faengt die Maus an einer Stelle, an der vorher nur das Buch (zum Ziehen) lag.
+-- Finding 5: thumbtack. (a) On the index card (case file, unsolved death) the tack is hidden (PosterMode), but the
+-- invisible button over it stays clickable and reports after 5 clicks that the tack has quit.
+-- (b) Clicks during the fall keep counting: a single click afterwards drops it again at once.
+-- (c) The button catches the mouse at a spot where before only the book (for dragging) was.
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. package.path
 local H = require("_kopf_hu")
@@ -25,13 +25,13 @@ for _, f in ipairs(H.BM.frames) do
     if a and a <= cx and d >= cx and c <= cy and e >= cy and f._scripts.OnDragStart then drunter[#drunter + 1] = f._name or f._kind end
   end
 end
--- (c) bleibt offen (niedrig): der Knopf nimmt 28 x 28 die Maus; hier nur vermerkt, nicht geprueft
+-- (c) stays open (low): the button takes the mouse over 28 x 28; only noted here, not checked
 print(("  offen (c): unter der Zwecke liegt ziehbar: %d"):format(#drunter))
 -- (b)
 for _ = 1, 5 do b._scripts.OnClick(b) end
 H.check("Vorbedingung: 5 Klicks, sie faellt", b.fall:IsPlaying())
-for _ = 1, 5 do b._scripts.OnClick(b) end       -- ungeduldig weitergeklickt, waehrend sie faellt
-b.fall:Stop()                                    -- Fall und Wiederaufhaengen sind durch (unter 2 s)
+for _ = 1, 5 do b._scripts.OnClick(b) end       -- clicked on impatiently while it falls
+b.fall:Stop()                                    -- fall and re-hanging are done (under 2 s)
 H.AM.chat = {}
 b._scripts.OnClick(b)
 H.check("(b) ein Klick nach dem Wiederaufhaengen wackelt nur", not b.fall:IsPlaying() and H.humorChat() == 0,

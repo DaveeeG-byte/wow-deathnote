@@ -1,8 +1,8 @@
--- Todesjournal nur mit Toden durch Spieler (1.2.0, Nachtrag 4): Tode der Art "pve" (Monster, Umwelt) stehen nicht
--- im Journal, zaehlen nicht am Reiter und nicht in der Suche; "unknown" bleibt. Neue pve-Tode bekommen keine Zeile
--- (nur den Zaehler db.tally), alte pve-Zeilen bleiben in der Datei. Export und Einlesen unveraendert, die Fixture
--- (1.0.1) verliert beim Hochladen nichts.
--- Aufruf: luajit tests/belege/beleg_ui_6_journal_ohne_pve.lua <Projektkopie>. Alle Namen sind erfunden.
+-- Death journal with player deaths only (1.2.0, addendum 4): deaths of kind "pve" (monster, environment) are not
+-- in the journal and count neither on the tab nor in the search; "unknown" stays. New pve deaths get no row
+-- (only the counter db.tally), old pve rows stay in the file. Export and import unchanged, the fixture
+-- (1.0.1) loses nothing on upgrade.
+-- Usage: luajit tests/belege/beleg_ui_6_journal_ohne_pve.lua <project copy>. All names are made up.
 package.path = (arg[0]:match("^(.*)/[^/]+$") or ".") .. "/?.lua;" .. package.path
 local K = require("_kopf_ui")
 
@@ -20,7 +20,7 @@ local function zonesShown(W)
 end
 local function has(list, x) for _, v in ipairs(list) do if v == x then return true end end return false end
 
--- gemischtes Buch: eine alte pve-Zeile aus 1.1.0 in der Datei, dazu ein PvP-Tod, ein pve-Tod, ein unklarer Tod
+-- mixed book: an old pve row from 1.1.0 in the file, plus a PvP death, a pve death, an unclear death
 local W = K.world("deDE")
 local ns = W.ns
 local db = ns.Store.DB()
@@ -51,7 +51,7 @@ search(W, "Nebel")
 K.check("Suche findet den unklaren Tod", #W.rows() == 1 and W.rows()[1].item.zone == "Nebel", #W.rows())
 search(W, "")
 
--- Export und Einlesen: unveraendert (das Journal gehoert nicht zum Export; die Taten reisen wie bisher)
+-- export and import: unchanged (the journal is not part of the export; deeds travel as before)
 local text = ns.Store.Export()
 local old = table.remove(db.deaths, 3)
 ns.Store.TouchJournal()
@@ -64,7 +64,7 @@ K.check("Einlesen: der Taeter mit seiner Tat ist da", okI and g2 and g2.kills ==
 local n, e = W.errs()
 K.check("keine Fehler", n == 0, e)
 
--- Fixture 1.0.1: nichts geht verloren, pve-Zeilen bleiben in der Datei
+-- fixture 1.0.1: nothing is lost, pve rows stay in the file
 local f = assert(loadfile(K.DIR .. "/tests/fixtures/sv_1.0.1_autor.lua"))
 local env = {}
 setfenv(f, env); f()

@@ -1,6 +1,6 @@
--- Gegenprobe Fund 20 (Secret-Regel): die seit der vorigen Jagd neuen oeffentlichen Funktionen.
--- Regel 5: erst issecretvalue pruefen, dann vergleichen oder rechnen. Kein heutiger Aufrufer reicht ein Secret
--- hinein (Werte aus der eigenen Datei bzw. nach Util.Str); die Regel ist in der Funktion selbst nicht erfuellt.
+-- Counter-check finding 20 (secret rule): the public functions new since the previous hunt.
+-- Rule 5: check issecretvalue first, then compare or compute. No current caller passes a secret
+-- (values from the own file or after Util.Str); the function itself does not meet the rule.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf.lua")
 local M = H.M
 H.lauf("neue Funktionen mit Secret als Eingabe", function()
@@ -8,7 +8,7 @@ H.lauf("neue Funktionen mit Secret als Eingabe", function()
   local a = W.client("Anton", "Wurst", "Die Testgilde", { friends = { "Berta" } })
   a.login(); W.run(40)
   local P, F, G = a.ns.Guild.Proto, a.ns.Friends, a.ns.Guild
-  -- ein offener Konflikt, damit die Stumm-Liste nicht leer ist
+  -- an open conflict, so the mute list is not empty
   H.fluestern(a, H.J(P, "Falsch-Lamm", "Berta Fremd"), "Berta Fremd-Forever")
   H.fluestern(a, H.J(P, "Echt-Lamm", "Berta Senf"), "Berta Senf-Forever")
   local S = M.Secret("s", "string")
@@ -21,7 +21,7 @@ H.lauf("neue Funktionen mit Secret als Eingabe", function()
   probe("P.ValidGUID", P.ValidGUID, S)
   probe("P.EncodeHello (guid)", P.EncodeHello, 0, "1.2.0", S)
   probe("P.EncodeSnapshot", P.EncodeSnapshot, S, 1)
-  -- Gegenproben (gruen)
+  -- counter-checks (green)
   for name, fn in pairs({ Choose = function() return F.Choose("Berta", S) end, Loosen = function() return F.Loosen(S) end,
     Unbind = function() return F.Unbind(S) end, IsOwnChar = function() return G.IsOwnChar(S) end,
     Rank = function() return G.Rank(S, "all") end, HuntHidden = function() return G.HuntHidden(S) end,

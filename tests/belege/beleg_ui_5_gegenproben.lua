@@ -1,14 +1,14 @@
--- Gegenproben UI (sollen gruen sein): was am Design-Rueckbau von fix-3 gemessen und in Ordnung befunden wurde.
--- Aufruf: nice -n 15 luajit beleg_ui_5_gegenproben.lua <Projektkopie>
--- (1) Hausordnung, Blatt Gilde, Seite 1 und Seite "Mehr" in 21 Sprachen: keine Ueberdeckung, kein Ueberlauf
---     (Standzeilen sind mit Absicht einzeilig gekuerzt), zehn Haken, zwei Stufen, zwei Leeren-Knoepfe mit Pfaden.
--- (2) Rundwege der Seite "Mehr": Neuladen, Blattwechsel, Buch zu/auf, kaputte Werte, Kampf, Sprachpfeil (21 Sprachen).
--- (3) Alarm: Stufenzeile mit Grenzwerten und Secrets (kein Fehler, kein Rechnen mit einem Secret), Lage von Name
---     und Stufe in 21 Sprachen.
--- (4) Gebrauchsanweisung in 21 Sprachen: Luft bis Fusszeile bzw. Knopf (Zeilenhoehe = Schriftgrad).
--- (5) Rang je Quelle: Rangzahl der Zeile, Guild.Rank und Stempel Nr. 1 am Plakat stimmen ueberein.
--- Breiten sind geschaetzt (Zeichen x Schriftgrad x Faktor, CJK als Geviert), wie in der finalen Jagd.
--- Alle Namen sind erfunden.
+-- UI counter-checks (should be green): what was measured on the design rollback of fix-3 and found fine.
+-- Usage: nice -n 15 luajit beleg_ui_5_gegenproben.lua <project copy>
+-- (1) House rules, sheet Guild, page 1 and page "More" in 21 languages: no overlap, no overflow
+--     (status lines are cut to one line on purpose), ten checkboxes, two levels, two empty buttons with paths.
+-- (2) Round trips of page "More": reload, sheet change, book closed/open, broken values, combat, language arrow (21 languages).
+-- (3) Alert: level line with limit values and secrets (no error, no arithmetic on a secret), position of name
+--     and level in 21 languages.
+-- (4) Manual in 21 languages: room to the footer or button (line height = font size).
+-- (5) Rank per source: row rank number, Guild.Rank and stamp no. 1 on the poster agree.
+-- Widths are estimated (characters x font size x factor, CJK as em square), as in the final hunt.
+-- All names are made up.
 package.path = (arg[0]:match("^(.*)/[^/]+$") or ".") .. "/?.lua;" .. package.path
 local K = require("_kopf_ui")
 

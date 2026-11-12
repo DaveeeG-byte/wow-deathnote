@@ -1,6 +1,6 @@
--- Gildenliste (1.2.0): GUILD_ROSTER_UPDATE kommt oft (andere Addons fragen die Liste alle paar Sekunden an).
--- Neu gelesen wird nur, wenn sich die Zahl der Mitglieder geaendert hat oder das letzte Lesen ROSTER_MIN Sekunden
--- her ist; ein Austritt wirkt also hoechstens so viel spaeter. Alle Namen sind erfunden.
+-- Guild roster (1.2.0): GUILD_ROSTER_UPDATE comes often (other addons request the list every few seconds).
+-- It is only read again when the member count changed or the last read was ROSTER_MIN seconds
+-- ago; so a member leaving takes effect at most that much later. All names are made up.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local G = "Die Testgilde"
@@ -22,13 +22,13 @@ H.lauf("Gildenliste: neu lesen nur bei geaenderter Mitgliederzahl oder nach ROST
   W.run(1)
   for _ = 1, 3 do a.fire("GUILD_ROSTER_UPDATE"); frage(); W.run(1) end
   H.erwartet("drei Ereignisse in kurzer Folge, gleiche Zahl: kein neues Lesen", reads == r1, reads - r1)
-  -- ein neues Mitglied: die Zahl aendert sich, sofort neu gelesen
+  -- a new member: the count changes, read again at once
   local c = W.client("Carla", "Klein", G, { fullSender = true })
   c.login(); W.run(0.5)
   a.fire("GUILD_ROSTER_UPDATE"); frage()
   local r2 = reads
   H.erwartet("geaenderte Zahl: neu gelesen", r2 > r1, r2 - r1)
-  -- nach ROSTER_MIN wird auch bei gleicher Zahl wieder gelesen
+  -- after ROSTER_MIN it is read again even with the same count
   W.run(min + 1)
   a.fire("GUILD_ROSTER_UPDATE"); frage()
   H.erwartet("nach ROSTER_MIN: neu gelesen", reads > r2, reads - r2)

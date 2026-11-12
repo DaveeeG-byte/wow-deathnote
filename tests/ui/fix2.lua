@@ -1,12 +1,12 @@
--- 1.2.0 (fix-2): Oberflaeche der Fixe nach der finalen Jagd, mit der echten Logik, auf Deutsch.
--- (1) Fund 1: Freund ohne Nachnamen, zwei volle Namen -> beide Namen in "Nach Kollege" mit Hinweis, Rechtsklick:
---     "Mein Freund: ..." je Name und "Bindung loesen" (mit Rueckfrage, loescht seine Daten).
--- (2) Fund 14: uebernommene Notiz: gespeichert nur ein Merker, angezeigt der Satz, Speichern ohne Aenderung
---     schreibt nichts; alte deutsche Notiz aus 1.1.0 wird beim Laden umgestellt.
--- (3) Breiten: Knopf-Beschriftung zu lang -> 9 pt statt abgeschnitten; Stempel mit 25 Zeichen in zwei Zeilen;
---     Popup-Titel Nr. 1 mit 30 Zeichen passt; Wertfelder Ton (132) und Verfall (84).
--- (4) Rueckfrage "Gildenbuch leeren" nennt die Abschussliste.
--- Alle Namen sind erfunden.
+-- 1.2.0 (fix-2): UI of the fixes after the final hunt, with the real logic, in German.
+-- (1) Finding 1: friend without surname, two full names -> both names in "By guildmate" with a hint, right click:
+--     "My friend: ..." per name and "Unlink" (with confirmation, deletes their data).
+-- (2) Finding 14: taken over note: only a marker is stored, the sentence is shown, saving without a change
+--     writes nothing; an old German note from 1.1.0 is converted on load.
+-- (3) Widths: button label too long -> 9 pt instead of cut off; stamp with 25 characters on two lines;
+--     popup title No. 1 with 30 characters fits; value fields sound (132) and expiry (84).
+-- (4) The "Empty guild book" confirmation names the hit list.
+-- All names are made up.
 local DIR0 = (arg[1] or "."):gsub("/+$", "")
 package.path = DIR0 .. "/tests/ui/?.lua;" .. DIR0 .. "/tests/?.lua;" .. package.path
 arg[0] = DIR0 .. "/tests/ui/fix2.lua"
@@ -58,7 +58,7 @@ end
 tick(30); settle()
 
 ------------------------------------------------------------------------
--- (1) Fund 1: Konflikt in "Nach Kollege", Wahl und Bindung loesen
+-- (1) Finding 1: conflict in "By guildmate", choice and unlink
 ------------------------------------------------------------------------
 local t = time()
 whisper(P.EncodeKill({ key = "Grimm-Bart", display = "Grimm Bart", t = t - 30, zone = "Z", victim = "Berta Fremd" }, "K"), "Berta Fremd-Forever")
@@ -105,7 +105,7 @@ if menuF and menuF.blocker:IsShown() then menuF.blocker._scripts.OnClick(menuF.b
 clean("Bindung")
 
 ------------------------------------------------------------------------
--- (2) Fund 14: uebernommene Notiz als Merker
+-- (2) Finding 14: taken over note as a marker
 ------------------------------------------------------------------------
 AM.FireEvent("CHAT_MSG_ADDON", "DeathNote", P.EncodeKill({ key = "Gilden-Feind", display = "Gilden Feind", t = t - 60,
   zone = "Z", victim = "Kollege Wurst" }, "K"), "GUILD", "Kollege-Forever")
@@ -129,7 +129,7 @@ check("Sanitize wirft nicht", ok)
 clean("Notiz")
 
 ------------------------------------------------------------------------
--- (3) Breiten
+-- (3) widths
 ------------------------------------------------------------------------
 BM.measure = true
 ns.UI.OpenPanel("settings"); settle()
@@ -144,7 +144,7 @@ end
 local tone = frameWith(function(f) return f._kind == "FontString" and f.label and f.minus and f._w == 132 end)
 local hexp = frameWith(function(f) return f._kind == "FontString" and f.label and f.minus and f._w == 84 end)
 check("Wertfeld Ton 132 px, Verfall 84 px", tone ~= nil and hexp ~= nil)
--- (4) Rueckfrage Gildenbuch leeren: nennt die Abschussliste (wie die des Freundesbuchs)
+-- (4) "Empty guild book" confirmation: names the hit list (like the one of the friends' book)
 local gc = G.StaticPopupDialogs.DEATHNOTE_GUILD_CLEAR
 check("Rueckfrage Gildenbuch leeren nennt die Abschussliste", gc and gc.text:find("Abschussliste", 1, true) ~= nil, gc and gc.text)
 ns.UI.ClosePanel(); settle()

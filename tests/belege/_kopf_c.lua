@@ -1,8 +1,8 @@
--- Kopf der Belegtests nach der Jagd auf 1.2.1 (beleg_c0*). Aufruf: nice -n 15 luajit <datei> <Projektkopie>
--- Rot heisst: der Fund besteht. Alle Namen erfunden.
+-- Head of the proof tests after the hunt on 1.2.1 (beleg_c0*). Usage: nice -n 15 luajit <file> <project copy>
+-- Red means: the finding still exists. All names made up.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf.lua")
 local M = H.M
--- Nachrichtentypen auf der Leitung (ab Index ab, optional nur von einem Client)
+-- Message types on the wire (from index ab on, optionally only from one client)
 function H.typen(W, von, ab)
   local t = {}
   for i = (ab or 0) + 1, #W.sent do
@@ -11,7 +11,7 @@ function H.typen(W, von, ab)
   end
   return t
 end
--- Drossel wie im Client angenommen (Addon-Nachrichten: 10 auf einmal, dann 1 je Sekunde; 3 = AddonMessageThrottle)
+-- Throttle as assumed in the client (addon messages: 10 at once, then 1 per second; 3 = AddonMessageThrottle)
 function H.drossel(c)
   local send = c.env.C_ChatInfo.SendAddonMessage
   local tokens, last = 10, M.now

@@ -1,6 +1,6 @@
--- Fund 2: Die Vorbelegung der Merker laeuft beim ersten Login (leeres Buch). Wer danach sein gesichertes Buch
--- einliest (neuer Rechner, neuer Account), bekommt "erste Rache" bei einem Taeter, an dem laengst Rache steht, und
--- den Stempel "zehnmal derselbe Name" beim ersten eigenen Tod durch einen Taeter, der mit 9 Toden eingelesen wurde.
+-- Finding 2: the markers are preset at the first login (empty book). Whoever then imports a saved book
+-- (new computer, new account) gets "first revenge" on a killer with revenge long noted, and
+-- the stamp "ten times the same name" on the first own death by a killer imported with 9 deaths.
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. package.path
 local H = require("_kopf_hu")

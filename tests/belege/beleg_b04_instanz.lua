@@ -1,13 +1,13 @@
--- 1.2.1: im Dungeon senden statt pauschal warten. Aufruf: luajit beleg_b04_instanz.lua <Projektkopie>
--- Dungeon/Schlachtzug: gesendet wird wie draussen; lehnt der Client ab, wartet die Schlange fuer diese Instanz (kein
--- Dauerversuch, nichts geht verloren, nichts altert) und geht beim Zonenwechsel weiter. Schlachtfeld, Arena, Kampf und
--- Chat-Sperre: warten. Empfang in Instanzen geht. Die Sonde merkt den ersten Versuch (probe.guild.instanceSend).
+-- 1.2.1: send in dungeons instead of always waiting. Usage: luajit beleg_b04_instanz.lua <project copy>
+-- Dungeon/raid: sends as outside; if the client refuses, the queue waits for this instance (no
+-- retry loop, nothing lost, nothing ages) and resumes on zone change. Battleground, arena, combat and
+-- chat lock: wait. Receiving in instances works. The probe records the first attempt (probe.guild.instanceSend).
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf.lua")
 local M = H.M
 
 local function laden()
   local ns = M.Load({ before = function() M.units.player.guild = "Gilde X" end })
-  M.Advance(90)                      -- Hallo beim Login und die Sperre von /dn sync sind durch
+  M.Advance(90)                      -- hello at login and the /dn sync lock are done
   M.addonSent = {}
   return ns
 end
@@ -31,7 +31,7 @@ H.lauf("(1) Dungeon ausserhalb des Kampfes: senden wie draussen, Sonde merkt den
   H.erwartet("kein Wartegrund", ns.Guild.HoldReason() == nil, ns.Guild.HoldReason())
   local pg = _G.DeathNoteDB.probe and _G.DeathNoteDB.probe.guild and _G.DeathNoteDB.probe.guild.instanceSend
   H.erwartet("Sonde: erster Versuch im Dungeon ok", pg and pg.kind == "party" and pg.result == "ok", pg and pg.result)
-  -- Empfang im Dungeon
+  -- receiving in a dungeon
   M.FireEvent("CHAT_MSG_ADDON", "DeathNote", P.EncodeKill({ key = "Grimm-Bart", display = "Grimm Bart", class = "MAGE", level = 40,
     zone = "Z", t = time() - 30, victim = "Kollege Wurst" }, "K"), "GUILD", "Kollege Wurst-Forever")
   H.erwartet("Empfang im Dungeon", ns.Guild.Get("Grimm-Bart") ~= nil)
@@ -49,7 +49,7 @@ H.lauf("(2) der Client lehnt im Dungeon ab: einmal versucht, nichts verloren, we
     ns:Fire("DEATH_RECORDED", { t = time() - i, zone = "Z", me = "Varorak Narenmar", kind = "pvp", sure = true, counted = true,
       killerKey = "Taeter" .. string.char(96 + i) .. "-Lamm" }, "Taeter" .. string.char(96 + i) .. "-Lamm") end
   local q = ns.Guild.QueueSize()
-  M.Advance(40 * 60)                                       -- 40 Minuten im Dungeon
+  M.Advance(40 * 60)                                       -- 40 minutes in the dungeon
   H.erwartet("genau ein Versuch in der Instanz", zahl() == 1, zahl())
   H.erwartet("die Schlange haelt alles", ns.Guild.QueueSize() == q and q >= 2, ns.Guild.QueueSize() .. "/" .. q)
   H.erwartet("Wartegrund: Instanz", ns.Guild.HoldReason() == "instance")
@@ -58,16 +58,16 @@ H.lauf("(2) der Client lehnt im Dungeon ab: einmal versucht, nichts verloren, we
   local pg = _G.DeathNoteDB.probe.guild.instanceSend
   H.erwartet("Sonde: abgelehnt mit Kennzahl", pg and pg.result == "refused" and pg.code == "11", pg and pg.code)
   H.erwartet("kein Fehlschlag gezaehlt (der Zustand der Gilde bleibt gut)", (ns.Guild.stats.failStreak or 0) == 0 and not ns.Guild.stats.hardFail)
-  -- noch ein Ereignis im Dungeon (Kampfende): kein neuer Versuch
+  -- another event in the dungeon (combat end): no new attempt
   M.FireEvent("PLAYER_REGEN_ENABLED")
   H.erwartet("kein Dauerversuch", zahl() == 1)
-  -- raus: alles geht hinaus, nichts ist in den 40 Minuten verfallen
+  -- out: everything goes out, nothing expired in the 40 minutes
   zahl = versuche()
   zonenwechsel(nil)
   M.Advance(30)
   H.erwartet("nach dem Verlassen ging alles hinaus", zahl() == q and ns.Guild.QueueSize() == 0, zahl() .. "/" .. q)
   H.erwartet("nichts verworfen", ns.Guild.stats.dropped == 0, ns.Guild.stats.dropped)
-  -- naechster Dungeon: neuer Versuch
+  -- next dungeon: new attempt
   zahl = versuche()
   zonenwechsel("raid")
   ns.Guild.SyncNow(); M.Advance(65); ns.Guild.SyncNow(); M.Advance(2)

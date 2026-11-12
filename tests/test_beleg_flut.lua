@@ -1,10 +1,10 @@
--- Funde an Deckeln und Grenzen der Abschussliste:
--- (a) Kein Tempo-Deckel fuer Freigaben: ein Mitglied kann durch Freigeben und Abblasen in einer
---     Minute Dutzende verschiedene Ziele ueber die Liste aller schicken (jedes loest in der Naehe Alarm aus).
--- (b) Man kann sich selbst und Gildenkollegen/Freunde zur Jagd freigeben.
--- (c) "Gildenbuch leeren" laesst die Abschussliste der Gilde stehen; fremde Freigaben lassen sich
---     lokal gar nicht entfernen.
--- (d) Ein Freund, der auch in der Gilde ist, bekommt eine Freigabe "nur fuer Freunde" nie zu sehen.
+-- Findings on caps and limits of the hit list:
+-- (a) No rate cap for calls: by calling and calling off, one member can push dozens of different
+--     targets over everyone's list in a minute (each one alerts when near).
+-- (b) You can put yourself and guildmates/friends on the hunt.
+-- (c) "Empty guild book" leaves the guild's hit list in place; other people's calls cannot be
+--     removed locally at all.
+-- (d) A friend who is also in the guild never gets to see a "friends only" call.
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
@@ -34,11 +34,11 @@ end)
 
 H.lauf("Sich selbst und Kollegen freigeben", function()
   local W = H.welt()
-  -- fix-2 (Fund 7 der finalen Jagd): "einer von euch" nur mit vollem Namen; der Client nennt ihn hier mit
+  -- fix-2 (finding 7 of the final hunt): "one of you" only with full name; the client gives him here with
   local a = W.client("Anton", "Wurst", G, { fullSender = true })
   local b = W.client("Berta", "Senf", G, { fullSender = true })
   a.login(); b.login(); W.run(40)
-  H.tod(b, "Grimm", "Bart"); W.run(5)        -- Anton kennt Berta als Kollegin mit DeathNote
+  H.tod(b, "Grimm", "Bart"); W.run(5)        -- Anton knows Berta as a guildmate with DeathNote
   local g1 = a.ns.Guild.Release("Anton-Wurst", { to = "guild" })
   H.erwartet("der eigene Char laesst sich nicht freigeben", not g1, "Anton Wurst steht auf der Abschussliste")
   local g2 = a.ns.Guild.Release("Berta-Senf", { to = "guild", why = "Kollegin" })
@@ -54,8 +54,8 @@ H.lauf("Gildenbuch leeren und die Abschussliste", function()
   H.erwartet("Vorbedingung: fremde Freigabe steht", a.ns.Guild.Hunt("Opfer-Lamm", "guild") ~= nil)
   a.ns.Guild.Release("Mein-Lamm", { to = "guild" })
   a.ns.Guild.Clear()
-  -- (fix-1, Entscheidung) beides: Gildenbuch leeren leert die fremden Freigaben der Gilde, eigene bleiben;
-  -- dazu "Fuer mich ausblenden" je Ziel
+  -- (fix-1, decision) both: emptying the guild book clears the guild's foreign calls, own ones stay;
+  -- plus "Hide for me" per target
   H.erwartet("nach 'Gildenbuch leeren' ist die fremde Freigabe weg", a.ns.Guild.Hunt("Opfer-Lamm", "guild") == nil,
     a.ns.Guild.HuntCount("guild") .. " Ziel(e)")
   H.erwartet("die eigene Freigabe bleibt (nur ich kann sie abblasen)", a.ns.Guild.Hunt("Mein-Lamm", "guild") ~= nil)

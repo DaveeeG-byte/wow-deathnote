@@ -25,7 +25,7 @@ end)
 test("KeyFor: Umlaute (UTF-8) werden groß geschrieben, Rest bleibt", function()
   eq(U.KeyFor("ärger", "öde"), "Ärger-Öde")
   eq(U.KeyFor("Ärger", "Öde"), "Ärger-Öde")
-  eq(U.KeyFor("élise ßmith"), "Élise-ßmith")   -- ß hat keinen Großbuchstaben: bleibt
+  eq(U.KeyFor("élise ßmith"), "Élise-ßmith")   -- ß has no capital letter: stays
   eq(U.KeyFor("McDonald", "vanHelsing"), "McDonald-VanHelsing")
 end)
 

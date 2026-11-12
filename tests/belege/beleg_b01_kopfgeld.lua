@@ -1,6 +1,6 @@
--- 1.2.1: eigenes Kopfgeld, geteilt mit Gilde und Freunden (B und Y). Aufruf: luajit beleg_b01_kopfgeld.lua <Projektkopie>
--- Geprueft werden Daten und Nachrichten, keine Wortlaute. Alle Namen sind erfunden.
--- 1.1.0 kommt aus tests/fixtures/addon-1.1.0, 1.2.0 aus tests/fixtures/addon-1.2.0 (nur lesen).
+-- 1.2.1: own bounty, shared with guild and friends (B and Y). Usage: luajit beleg_b01_kopfgeld.lua <project copy>
+-- Checks data and messages, not wording. All names are made up.
+-- 1.1.0 comes from tests/fixtures/addon-1.1.0, 1.2.0 from tests/fixtures/addon-1.2.0 (read only).
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf.lua")
 local M = H.M
 local G = "Die Testgilde"
@@ -48,13 +48,13 @@ H.lauf("(1) setzen: Kollegin und Freund sehen Betrag und Auslober, Rueckgabe nim
   local ab, asum = zeilen(a, "Grimm-Bart")
   H.erwartet("eigenes Buch: als eigenes erkennbar", ab["Anton Wurst"] == 500 and asum == 500 and a.ns.Guild.Bounties("Grimm-Bart")[1].mine == true)
   H.erwartet("HasBounty bei allen", a.ns.Guild.HasBounty("Grimm-Bart") and b.ns.Guild.HasBounty("Grimm-Bart") and f.ns.Guild.HasBounty("Grimm-Bart"))
-  -- unabhaengig von der Abschussliste und davon, ob der Taeter in einem Buch steht
+  -- independent of the hit list and of whether the killer is in a book
   H.erwartet("kein Eintrag auf der Abschussliste noetig", b.ns.Guild.Hunt("Grimm-Bart", "all") == nil)
-  -- erhoehen: ersetzt, nicht addiert
+  -- raising: replaces, does not add
   a.ns.Guild.SetBounty("Grimm-Bart", 750); W.run(10)
   bb, bs = zeilen(b, "Grimm-Bart")
   H.erwartet("neuer Betrag ersetzt den alten", bb["Anton Wurst"] == 750 and bs == 750, tostring(bs))
-  -- zuruecknehmen
+  -- take back
   ok = a.ns.Guild.SetBounty("Grimm-Bart", 0); W.run(10)
   H.erwartet("0 nimmt zurueck", ok == true and a.ns.Guild.OwnBounty("Grimm-Bart") == nil)
   H.erwartet("bei Kollegin und Freund weg", not b.ns.Guild.HasBounty("Grimm-Bart") and not f.ns.Guild.HasBounty("Grimm-Bart"))
@@ -80,10 +80,10 @@ H.lauf("(2) Betrag ist eine Zahl: beim Senden und beim Empfang hart geprueft", f
   end
   local m = P.Decode(base:format("250"), t, {})
   H.erwartet("Decode nimmt 250", m and m.kind == "B" and m.g == 250 and m.by == "Anton Wurst")
-  -- eine zu lange Nachricht, fremde Felder, falsche Feldzahl
+  -- a message too long, foreign fields, wrong field count
   H.erwartet("8 Felder: verworfen", P.Decode(base:format("250") .. "\tabcd1234\tx", t, {}) == nil)
   H.erwartet("V mit falschem Kennzeichen: verworfen", P.Decode("1\tV\tGrimm-Bart\tAnton Wurst\t" .. t .. "\t2", t, {}) == nil)
-  -- am Empfang: nichts davon landet im Buch
+  -- on receipt: none of it lands in the book
   for _, g in ipairs(schlecht) do H.gilde(b, base:format(g), "Anton Wurst-Forever") end
   H.erwartet("nichts angenommen", not b.ns.Guild.HasBounty("Grimm-Bart"))
 end)
@@ -96,7 +96,7 @@ H.lauf("(3) Ausweis: nur das eigene, nur der passende Absender; Rueckgabe nur de
   b.login(); f.login(); W.run(120)
   local P = b.ns.Guild.Proto
   local t = time()
-  -- Gilde: Absender Carl nennt Anton als Auslober
+  -- guild: sender Carl names Anton as the poster
   H.gilde(b, P.EncodeBounty("Ziel-Eins", "Anton Wurst", 100, t), "Carl Kurz-Forever")
   H.erwartet("fremder Auslober auf GUILD verworfen", not b.ns.Guild.HasBounty("Ziel-Eins"))
   H.gilde(b, P.EncodeBounty("Ziel-Eins", "Anton Wurst", 100, t), "Anton Wurst-Forever")
@@ -107,13 +107,13 @@ H.lauf("(3) Ausweis: nur das eigene, nur der passende Absender; Rueckgabe nur de
   H.erwartet("aeltere Rueckgabe nimmt kein neueres Kopfgeld", b.ns.Guild.HasBounty("Ziel-Eins"))
   H.gilde(b, P.EncodeBounty("Ziel-Eins", "Anton Wurst", 0, t), "Anton Wurst-Forever")
   H.erwartet("eigene Rueckgabe nimmt es", not b.ns.Guild.HasBounty("Ziel-Eins"))
-  -- Freund ohne Nachnamen auf der Liste, Liste nennt die GUID: ein Fremder mit gleichem Vornamen kommt nicht herein
+  -- friend without surname on the list, the list gives the GUID: a stranger with the same first name stays out
   H.erwartet("Vorbedingung: Fritz ueber GUID gebunden", b.env.DeathNoteDB.friends.ties["Fritz"].guid ~= nil)
   H.fluestern(b, P.EncodeBounty("Ziel-Zwei", "Fritz Falsch", 300, t), "Fritz Falsch-Forever")
   H.erwartet("Fremder mit dem Vornamen des Freunds: verworfen", not b.ns.Guild.HasBounty("Ziel-Zwei"))
   f.ns.Guild.SetBounty("Ziel-Zwei", 300); W.run(10)
   H.erwartet("der echte Freund: angenommen", (zeilen(b, "Ziel-Zwei"))["Fritz Frei"] == 300)
-  -- niemand reicht weiter: Berta hat Fritz' Kopfgeld, sendet aber nur eigenes
+  -- nobody relays: Berta has Fritz' bounty but sends only her own
   local weiter = false
   for _, m in ipairs(W.sent) do if m.sender == b and m.text:find("Fritz Frei", 1, true) and m.text:find("^1\tB\t") then weiter = true end end
   H.erwartet("niemand reicht fremdes Kopfgeld weiter", not weiter)
@@ -130,7 +130,7 @@ H.lauf("(4) Mischbetrieb: 1.1.0 und 1.2.0 verwerfen B, Y und V still und behalte
   local vo = H.tiefe_kopie(o.env.DeathNoteDB.guild.lists[G])
   local vn, vnf = H.tiefe_kopie(n.env.DeathNoteDB.guild.lists[G]), H.tiefe_kopie(n.env.DeathNoteDB.friends)
   local st = n.ns.Guild.stats.received
-  -- alles Neue: Kopfgeld setzen, zuruecknehmen, Antwort mit Y, gerächt
+  -- everything new: set bounty, take back, answer with Y, avenged
   a.ns.Guild.SetBounty("Taeter-Lamm", 1234); W.run(10)
   a.ns.Guild.SetBounty("Ziel-Lamm", 5); W.run(10)
   a.ns.Guild.SetBounty("Ziel-Lamm", 0); W.run(10)
@@ -138,7 +138,7 @@ H.lauf("(4) Mischbetrieb: 1.1.0 und 1.2.0 verwerfen B, Y und V still und behalte
   for _, txt in ipairs({ P.EncodeBountySnapshot("Anton Wurst", 1, "abcd1234"), P.EncodeAvenged(kt, "Anton Wurst", time(), true) }) do
     H.gilde(o, txt, "Anton Wurst-Forever"); H.gilde(n, txt, "Anton Wurst-Forever"); H.fluestern(n, txt, "Anton Wurst-Forever")
   end
-  o.ns.Guild.SyncNow(); n.ns.Guild.SyncNow(); n.ns.Friends.SyncNow(); W.run(120)   -- Antworten mit B und Y an beide
+  o.ns.Guild.SyncNow(); n.ns.Guild.SyncNow(); n.ns.Friends.SyncNow(); W.run(120)   -- answers with B and Y to both
   local t = typen(W, a)
   H.erwartet("auf der Leitung: B und Y von 1.2.1", t.B and t.Y)
   H.erwartet("keine Fehler (alle drei)", #M.errors == 0, M.errors[1])
@@ -160,18 +160,18 @@ H.lauf("(5) Nachreichen und Ruecknahme ueber die Momentaufnahme (Y mit Buchkennu
   local b = W.client("Berta", "Senf", G, { fullSender = true })
   a.login(); W.run(60)
   a.ns.Guild.SetBounty("Eins-Ziel", 100); a.ns.Guild.SetBounty("Zwei-Ziel", 200); W.run(10)
-  b.login(); W.run(120)   -- Berta war nicht da: ihr Hallo, Antons Antwort bringt beide
+  b.login(); W.run(120)   -- Berta was away: her hello, Anton's answer brings both
   local bb = zeilen(b, "Eins-Ziel")
   local bz = zeilen(b, "Zwei-Ziel")
   H.erwartet("nachgereicht: beide Kopfgelder", bb["Anton Wurst"] == 100 and bz["Anton Wurst"] == 200)
   local bdb = H.raus(W, b); W.run(10)
-  a.ns.Guild.SetBounty("Zwei-Ziel", 0); W.run(10)       -- Berta verpasst die Ruecknahme
-  W.run(300)                                              -- (ein Hallo desselben Mitglieds wird hoechstens alle 5 Minuten beantwortet)
+  a.ns.Guild.SetBounty("Zwei-Ziel", 0); W.run(10)       -- Berta misses the take-back
+  W.run(300)                                              -- (a hello from the same member is answered at most every 5 minutes)
   H.tage(1)
   local b2 = W.client("Berta", "Senf", G, { db = bdb, fullSender = true })
   b2.login(); W.run(120)
   H.erwartet("verpasste Ruecknahme kommt mit der Momentaufnahme", b2.ns.Guild.HasBounty("Eins-Ziel") and not b2.ns.Guild.HasBounty("Zwei-Ziel"))
-  -- ein anderes Geraet (andere Buchkennung) desselben Chars: dessen Kopfgeld nimmt Y nicht zurueck
+  -- another device (other book ID) of the same character: Y does not take back its bounty
   local P = b2.ns.Guild.Proto
   H.gilde(b2, P.EncodeBounty("Drei-Ziel", "Anton Wurst", 300, time(), "zzzz9999"), "Anton Wurst-Forever")
   b2.ns.Guild.SyncNow(); W.run(120)
@@ -182,7 +182,7 @@ end)
 H.lauf("(6) Deckel: je Absender 20, Tempo live 5 in 10 Minuten, je Buch 200 Ziele, Flut", function()
   local W = H.welt()
   local b = W.client("Berta", "Senf", G, { fullSender = true })
-  b.login(); W.run(90)                                    -- das Antwortfenster nach dem eigenen Hallo ist zu
+  b.login(); W.run(90)                                    -- the answer window after the own hello is closed
   local P, C = b.ns.Guild.Proto, b.ns.Guild.C
   local function zahl()
     local n = 0
@@ -196,7 +196,7 @@ H.lauf("(6) Deckel: je Absender 20, Tempo live 5 in 10 Minuten, je Buch 200 Ziel
     for i = 1, 5 do H.gilde(b, P.EncodeBounty("Ziel-R" .. runde .. string.char(96 + i), "Anton Wurst", 10, time()), "Anton Wurst-Forever") end
   end
   H.erwartet("je Absender hoechstens 20", zahl() == C.BOUNTY_PER_SENDER, zahl())
-  -- viele Absender: hoechstens 200 Ziele je Buch
+  -- many senders: at most 200 targets per book
   for s = 1, 60 do
     for i = 1, 5 do
       H.gilde(b, P.EncodeBounty("Ziel-S" .. s .. "x" .. i, "Kerl" .. s .. " Wurst", 1, time()), "Kerl" .. s .. " Wurst-Forever")
@@ -205,7 +205,7 @@ H.lauf("(6) Deckel: je Absender 20, Tempo live 5 in 10 Minuten, je Buch 200 Ziel
   local keys = 0
   for _ in pairs(b.env.DeathNoteDB.guild.lists[G].bounty) do keys = keys + 1 end
   H.erwartet("hoechstens 200 Ziele", keys <= C.BOUNTY_MAX, keys)
-  -- Flut: 400 Nachrichten in einer Minute von einem Absender
+  -- flood: 400 messages in one minute from one sender
   local before = b.ns.Guild.stats.dropped
   for i = 1, 400 do H.gilde(b, P.EncodeBounty("Flut-Ziel", "Flut Kerl", i % 99 + 1, time()), "Flut Kerl-Forever") end
   H.erwartet("Flut gebremst (Flutwaechter und Deckel)", b.ns.Guild.stats.dropped - before >= 250, b.ns.Guild.stats.dropped - before)
@@ -234,10 +234,10 @@ H.lauf("(7) eigene Grenzen: 20 eigene, nicht auf eigene Leute, Verfall wie Freig
     H.erwartet("Betrag " .. g .. ": gold", ok == nil and why == "gold", why)
   end
   W.run(30)
-  -- Verfall: "Freigaben gelten 30 Tage"
+  -- expiry: "Calls last 30 days"
   a.ns.Store.Setting("guild.huntExpire", 30); b.ns.Store.Setting("guild.huntExpire", 30)
   local P = b.ns.Guild.Proto
-  W.run(b.ns.Guild.C.HUNT_LIVE_WINDOW + 1)              -- der Tempo-Deckel fuer Anton ist wieder frei
+  W.run(b.ns.Guild.C.HUNT_LIVE_WINDOW + 1)              -- Anton's rate cap is free again
   H.gilde(b, P.EncodeBounty("Alt-Ziel", "Anton Wurst", 9, time() - 31 * 86400), "Anton Wurst-Forever")
   H.gilde(b, P.EncodeBounty("Neu-Ziel", "Anton Wurst", 9, time() - 29 * 86400), "Anton Wurst-Forever")
   H.erwartet("Gegenprobe: juenger als die Frist: angenommen", b.ns.Guild.HasBounty("Neu-Ziel"))

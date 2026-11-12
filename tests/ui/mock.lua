@@ -1,12 +1,12 @@
--- Mini-Mock der WoW-Oberflaeche fuer den Rauchtest von Alert/UI/Extras (luajit, Lua 5.1).
--- Widget-Methoden nur laut Liste je Objekttyp (WHITELIST unten): eine nicht gelistete Methode ist wie im
--- Spiel nil (Aufruf wirft, "if f.X then" faellt zurueck). Unbekannte GLOBALE Namen werfen einen Fehler,
--- damit Tippfehler in API-Namen auffallen. Zusaetzlich prueft der Mock:
---  * Secure-Frames: Show/Hide/SetAttribute/SetPoint/... im Kampf  -> Verstoss
---  * Frame-Typen und Templates gegen eine Liste
---  * Backdrop-Methoden nur mit BackdropTemplate
---  * eigene Texturpfade muessen als Datei existieren, Schriften muessen Client-Schriften sein
---  * neue globale Variablen nur aus einer erlaubten Liste
+-- Mini mock of the WoW UI for the smoke test of Alert/UI/Extras (luajit, Lua 5.1).
+-- Widget methods only as listed per object type (WHITELIST below): an unlisted method is nil as in the
+-- game (calling it throws, "if f.X then" falls back). Unknown GLOBAL names throw an error,
+-- so typos in API names show up. The mock also checks:
+--  * secure frames: Show/Hide/SetAttribute/SetPoint/... in combat  -> violation
+--  * frame types and templates against a list
+--  * backdrop methods only with BackdropTemplate
+--  * own texture paths must exist as files, fonts must be client fonts
+--  * new global variables only from an allowed list
 
 local M = {}
 M.violations = {}
@@ -18,15 +18,15 @@ M.popups = {}
 M.anims = {}
 M.combat = false
 M.now = 1000
-M.mediaDir = nil          -- vom Lauf gesetzt
-M.addon = "DeathNote"     -- Ordnername, wie ihn der Client uebergibt
+M.mediaDir = nil          -- set by the run
+M.addon = "DeathNote"     -- folder name as the client passes it
 M.secrets = { SECRET_NAME = true, SECRET_UNIT = true, SECRET_GUID = true }
--- Schalter fuer Rueckfall-Tests
-M.fontFails = false       -- SetFont liefert false (Schrift nicht ladbar)
-M.textureFails = false    -- SetTexture liefert false (Datei fehlt)
-M.setUnitResult = true    -- Rueckgabe von PlayerModel:SetUnit (Client: false, wenn kein Modell)
-M.secureHideFails = false -- Hide an Secure-Frames bleibt wirkungslos (blockierte Aktion)
-M.uiScale = 1             -- Skalierung von UIParent (GetEffectiveScale)
+-- switches for fallback tests
+M.fontFails = false       -- SetFont returns false (font cannot be loaded)
+M.textureFails = false    -- SetTexture returns false (file missing)
+M.setUnitResult = true    -- return value of PlayerModel:SetUnit (client: false if there is no model)
+M.secureHideFails = false -- Hide on secure frames has no effect (blocked action)
+M.uiScale = 1             -- scale of UIParent (GetEffectiveScale)
 
 local function violation(msg)
   M.violations[#M.violations + 1] = msg
@@ -37,11 +37,11 @@ local FRAME_TYPES = { Frame = true, Button = true, CheckButton = true, EditBox =
 local TEMPLATES = { BackdropTemplate = true, SecureActionButtonTemplate = true, UIPanelCloseButton = true,
   UICheckButtonTemplate = true, UIPanelScrollFrameTemplate = true, UIPanelButtonTemplate = true,
   InputBoxTemplate = true, GameTooltipTemplate = true }
--- Client-Schriften, die in installierten Addons belegt sind (OpenMap, ElvUI-LibSharedMedia)
+-- client fonts that are attested in installed addons (OpenMap, ElvUI-LibSharedMedia)
 local FONTS = { ["Fonts\\MORPHEUS.TTF"] = true, ["Fonts\\MORPHEUS_CYR.TTF"] = true, ["Fonts\\FRIZQT__.TTF"] = true,
   ["Fonts\\NIM_____.ttf"] = true, ["Fonts\\SKURRI.TTF"] = true, ["Fonts\\SKURRI_CYR.TTF"] = true,
   ["Fonts\\ARIALN.TTF"] = true,
-  -- 1.2.0: Schriften je Schriftsystem (Locale.FONTS), belegt in den installierten Addons
+  -- 1.2.0: fonts per script system (Locale.FONTS), attested in the installed addons
   -- (DBM-Core StandardFont.lua, LibSharedMedia-3.0 in ForeverAuras)
   ["Fonts\\FRIZQT___CYR.TTF"] = true, ["Fonts\\2002.TTF"] = true, ["Fonts\\2002B.TTF"] = true,
   ["Fonts\\ARKai_T.ttf"] = true, ["Fonts\\ARHei.ttf"] = true, ["Fonts\\bKAI00M.ttf"] = true,
@@ -51,8 +51,8 @@ local SECURE_GUARDED = { Show = true, Hide = true, SetShown = true, SetAttribute
   ClearAllPoints = true, SetSize = true, SetWidth = true, SetHeight = true, SetAllPoints = true,
   StartMoving = true, SetParent = true, EnableMouse = true }
 
--- Methoden je Objekttyp (mit Vererbung), nach der WoW-Widget-API. Neue Methoden hier eintragen,
--- nachdem sie in einem installierten Addon belegt sind.
+-- Methods per object type (with inheritance), following the WoW widget API. Add new methods here
+-- once they are attested in an installed addon.
 local function set(list, base)
   local t = {}
   if base then for k in pairs(base) do t[k] = true end end
@@ -133,7 +133,7 @@ M.new = new
 
 local methods = {}
 Obj.__index = function(o, k)
-  -- API-Methoden (gross geschrieben) nur laut Liste des Typs; eigene Felder sind nil, wenn nicht gesetzt
+  -- API methods (capitalised) only as listed for the type; own fields are nil unless set
   if type(k) ~= "string" or not k:find("^%u") then return nil end
   local wl = WHITELIST[o._kind]
   if not (wl and wl[k]) and not (BACKDROP[k] and o._backdrop) then
@@ -161,7 +161,7 @@ Obj.__index = function(o, k)
   return noop
 end
 
--- Ebene und Unterebene merken (fuer das Standbild aus dem Mock, tests/ui/render)
+-- remember layer and sublayer (for the still image from the mock, tests/ui/render)
 function methods.CreateTexture(self, _, layer, _, sub)
   local t = new("Texture", nil, self); t._layer, t._sub = layer or "ARTWORK", sub or 0; return t
 end
@@ -191,7 +191,7 @@ function methods.SetToFinalAlpha(self, v) self._toFinal = v and true or false en
 
 function methods.Show(self) self._shown = true; local f = self._scripts.OnShow; if f then f(self) end end
 function methods.Hide(self)
-  if self._secure and M.secureHideFails then return end   -- blockiert: der Frame bleibt sichtbar
+  if self._secure and M.secureHideFails then return end   -- blocked: the frame stays visible
   local was = self._shown
   self._shown = false
   local f = self._scripts.OnHide
@@ -216,7 +216,7 @@ function methods.HookScript(self, k, f)
 end
 function methods.HasScript() return true end
 
-M.texts = {}               -- jeder je gesetzte Text (Waechter fuer Wortwahl und Zeitformen)
+M.texts = {}               -- every text ever set (guards for wording and time formats)
 function methods.SetText(self, t)
   if t ~= nil and type(t) ~= "string" and type(t) ~= "number" then
     error("SetText mit " .. type(t), 2)
@@ -253,9 +253,9 @@ function methods.SetBackdropBorderColor(self, r, g, b, a) self._bdb = { r, g, b,
 function methods.SetBlendMode(self, m) self._blend = m end
 function methods.GetWidth(self) return self._w end
 function methods.GetHeight(self) return self._h end
--- Geometrie wie im Client: Rechteck aus dem einen Ankerpunkt und der Groesse, in UIParent-Einheiten
--- gerechnet (Versatz und Groesse im Massstab des Frames), Rueckgabe im Massstab des Frames.
--- Frames ohne Anker, mit mehreren Ankern oder ausserhalb von UIParent: nil (wie ein ungelayouteter Frame).
+-- Geometry as in the client: rectangle from the single anchor point and the size, computed in UIParent
+-- units (offset and size in the frame's scale), returned in the frame's scale.
+-- Frames without an anchor, with several anchors or outside UIParent: nil (like a frame not laid out yet).
 local ANCH = { TOPLEFT = { 0, 1 }, TOP = { 0.5, 1 }, TOPRIGHT = { 1, 1 }, LEFT = { 0, 0.5 }, CENTER = { 0.5, 0.5 },
   RIGHT = { 1, 0.5 }, BOTTOMLEFT = { 0, 0 }, BOTTOM = { 0.5, 0 }, BOTTOMRIGHT = { 1, 0 } }
 local function relScale(f)
@@ -364,7 +364,7 @@ function methods.SetFrameLevel(self, l) self._level = l end
 function methods.GetFrameLevel(self) return self._level or 5 end
 function methods.EnableMouse(self, v) self._mouse = v and true or false end
 function methods.IsMouseEnabled(self) return self._mouse end
--- wie der Client: ein gezogener, benannter Frame landet in layout-local.txt, bis SetUserPlaced(false)
+-- like the client: a dragged, named frame ends up in layout-local.txt until SetUserPlaced(false)
 function methods.StartMoving(self) self._moving = true; self._userPlaced = true end
 function methods.StopMovingOrSizing(self) self._moving = false end
 function methods.SetUserPlaced(self, v) self._userPlaced = v and true or false end
@@ -560,7 +560,7 @@ end
 function methods.GetUnit(self) return self._unitName, self._unit end
 
 ------------------------------------------------------------------------
--- Globale Umgebung
+-- global environment
 ------------------------------------------------------------------------
 local G = {}
 M.G = G
@@ -587,7 +587,7 @@ G.CreateFrame = function(typ, name, parent, template)
 end
 
 G.UIParent = new("Frame", "UIParent")
--- Bildschirm 2560x1440; UIParent-Einheiten = Pixel / UI-Skalierung (Autor unter ElvUI: 0,6)
+-- screen 2560x1440; UIParent units = pixels / UI scale (author under ElvUI: 0.6)
 function M.SetUIScale(sc)
   M.uiScale = sc
   G.UIParent._w, G.UIParent._h = 2560 / sc, 1440 / sc
@@ -610,7 +610,7 @@ G.GetTime = function() return M.now end
 G.time = function() return 1800000000 end
 G.date = os.date
 G.GetCursorPosition = function() return 100, 200 end
--- Bildschirm in Bildpunkten (OpenMap/Map/Stitch.lua:1858); M.ppu = Bildpunkte je UI-Einheit
+-- screen in pixels (OpenMap/Map/Stitch.lua:1858); M.ppu = pixels per UI unit
 M.ppu = 1.5
 G.GetPhysicalScreenSize = function() return G.UIParent._w * M.ppu, G.UIParent._h * M.ppu end
 G.SetPortraitTexture = function(tex, unit)
@@ -621,7 +621,7 @@ G.UnitTokenFromGUID = function(guid)
   return nil
 end
 G.issecretvalue = function(v) return M.secrets[v] == true end
--- Chat-Eingabe (Umschalt-Klick): nur einfuegen, wenn eine Eingabe offen ist; nie senden
+-- chat input (shift click): only insert when an input is open; never send
 M.chatOpen = false
 M.chatInserted = {}
 M.shift = false
@@ -637,8 +637,8 @@ G.UnitName = function(unit)
   if unit == "player" then return M.playerName, M.playerSurname end
   return nil
 end
--- 1.2.0 (fix-1, W2): Stufe einer Einheit fuer den Alarm. M.levels[unit] (Zahl, nil oder ein Secret ueber
--- M.levelFn); ohne Eintrag 40 wie der eigene Char (dann keine Warnzeile).
+-- 1.2.0 (fix-1, W2): level of a unit for the alarm. M.levels[unit] (number, nil or a secret through
+-- M.levelFn); without an entry 40 like your own character (so no level difference).
 M.levels = {}
 M.levelFn = nil
 G.UnitLevel = function(unit)
@@ -657,8 +657,8 @@ G.PlaySound = function(kit, ch)
   M.soundCalls[#M.soundCalls + 1] = { kit = kit, channel = ch }
   return true, #M.sounds
 end
--- wie der Client: willPlay, handle. Eigene Dateien muessen exakt so (Gross/Klein) im Media-Ordner liegen.
-M.soundFileResult = nil   -- false erzwingt "spielt nicht"
+-- like the client: willPlay, handle. Own files must be in the Media folder with exactly this case.
+M.soundFileResult = nil   -- false forces "does not play"
 M.soundCalls = {}
 M.stopped = {}
 G.PlaySoundFile = function(f, ch)
@@ -698,7 +698,7 @@ G.select, G.pcall, G.error, G.unpack, G.next = select, pcall, error, unpack, nex
 G.setmetatable, G.getmetatable, G.rawget = setmetatable, getmetatable, rawget
 G.print = function() end
 
--- erlaubte neue Globals aus B's Dateien
+-- allowed new globals from the UI files
 local ALLOWED_NEW = { DeathNote_OnCompartmentClick = true, DeathNote_OnCompartmentEnter = true,
                       DeathNote_OnCompartmentLeave = true }
 
@@ -732,8 +732,8 @@ setmetatable(G, {
   end,
 })
 
--- Welcher der Frames bekaeme einen Mausklick an derselben Stelle? (sichtbar, Maus an, hoechste Schicht,
--- dann hoechste Ebene; bei Gleichstand der zuletzt genannte). Die Frames muessen sich ueberdecken.
+-- Which of the frames would get a mouse click at the same spot? (visible, mouse on, highest strata,
+-- then highest level; on a tie the last one named). The frames must overlap.
 function M.TopFrame(...)
   local best, bs, bl
   for i = 1, select("#", ...) do
@@ -746,7 +746,7 @@ function M.TopFrame(...)
   return best
 end
 
--- Zeit vorspulen und faellige Timer ausfuehren
+-- advance time and run due timers
 function M.Advance(sec)
   M.now = M.now + sec
   local guard = 0
@@ -765,7 +765,7 @@ function M.Advance(sec)
   end
 end
 
--- alle laufenden Animationsgruppen beenden (OnFinished ausloesen)
+-- finish all running animation groups (fire OnFinished)
 function M.FinishAnims()
   for _, g in ipairs(M.anims) do
     if g._playing then
@@ -783,9 +783,9 @@ function M.Load(path, ns)
   chunk(M.addon, ns)
 end
 
--- 1.2.0: Sprachgeruest in ns laden (Locale.lua, Englisch, Deutsch, die gewaehlte Sprache) und die
--- Sprache ausdruecklich aktivieren. dir: Addon-Ordner (Standard: der des Mocks). Ein alter Stand ohne
--- Locale.lua bleibt ohne Geruest.
+-- 1.2.0: load the language framework into ns (Locale.lua, English, German, the chosen language) and
+-- activate the language explicitly. dir: addon folder (default: the mock's). An old state without
+-- Locale.lua stays without the framework.
 local here = (debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$")) or "."
 function M.LoadLocale(ns, code, dir)
   dir = dir or (here .. "/../../DeathNote")

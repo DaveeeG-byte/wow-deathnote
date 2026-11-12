@@ -1,28 +1,28 @@
--- (fix-2) Zufallslauf der finalen Jagd, in der Suite kurz mit festem Startwert (lang von Hand: luajit tests/test_fuzz_final.lua . 400 1000 200)
--- Zufallslaeufe der finalen Jagd: der Fuzzer aus tests/test_fuzz_clients.lua, erweitert um
---   Sprachen je Client (deDE, enUS, ruRU, zhCN) und Sprachwechsel beim Login, Freundeslisten nur mit Vornamen,
---   Battle.net-Freunde, Zeitspruenge (alle offline, Tage vergehen), Verfall der Freigaben (0/30/90/180),
---   "Fuer mich ausblenden".
--- Invarianten wie in der ersten Jagd, dazu: kein Sprachtext in gesendeten oder gespeicherten Daten (Feld Notiz
--- ausgenommen), ein ausgeblendetes Ziel alarmiert nie, Zaehler und neue Tabellen bleiben unter ihren Deckeln.
--- Verstoesse, die auf bekannte Funde dieser Jagd zurueckgehen (Verfall, Merkfrist der Abblasen), werden getrennt
--- als "bekannt" gezaehlt und machen den Lauf nicht rot.
--- Aufruf: luajit fuzz_final.lua <Projektkopie> [Laeufe=60] [Startsaat=1] [Schritte=140] [ohneverlust]
+-- (fix-2) Random run of the final hunt, short with a fixed seed in the suite (long by hand: luajit tests/test_fuzz_final.lua . 400 1000 200)
+-- Random runs of the final hunt: the fuzzer from tests/test_fuzz_clients.lua, extended with
+--   a language per client (deDE, enUS, ruRU, zhCN) and language switches at login, friend lists with first names only,
+--   Battle.net friends, time jumps (everyone offline, days pass), expiry of calls (0/30/90/180),
+--   "Hide for me".
+-- Invariants as in the first hunt, plus: no locale text in sent or stored data (note field
+-- excepted), a hidden target never alerts, counters and new tables stay under their caps.
+-- Violations that trace back to known findings of this hunt (expiry, how long call-offs are remembered) are counted
+-- separately as "known" and do not turn the run red.
+-- Usage: luajit fuzz_final.lua <project copy> [runs=60] [seed=1] [steps=140] [ohneverlust]
 local DIRARG = (arg[1] or "."):gsub("/+$", "")
 package.path = DIRARG .. "/tests/?.lua;" .. package.path
 local H = require("beleg_helfer")
 local M = H.M
 local RUNS, SEED0, STEPS = tonumber(arg[2]) or 12, tonumber(arg[3]) or 1000, tonumber(arg[4]) or 120
 local LANGS = { "deDE", "enUS", "ruRU", "zhCN" }
-local NOLOSS = arg[5] == "ohneverlust"   -- Gegenprobe: ohne Verlust und Tausch darf auch nach Zeitspruengen nichts fehlen
+local NOLOSS = arg[5] == "ohneverlust"   -- counter-check: without loss and swaps nothing may be missing, even after time jumps
 local GUILDS = { "Gilde Eins", "Gilde Zwei" }
--- Anton Wurst und Anton Falsch: gleicher Vorname, der Client nennt beide mit Nachnamen (fullSender)
+-- Anton Wurst and Anton Falsch: same first name, the client names both with surname (fullSender)
 local NAMES = { { "Anton", "Wurst" }, { "Berta", "Senf" }, { "Anton", "Falsch" }, { "Dora", "Dick" } }
 local FULL = { true, false, true, false }
 local ENEMIES = { { "Grimm", "Bart" }, { "Fies", "Ling" }, { "Rauf", "Bold" }, { "Zank", "Apfel" }, { "Wut", "Buerger" }, { "Hau", "Drauf" } }
 local function ekey(e) return e[1] .. "-" .. e[2] end
 
--- Sprachtexte aller vier Sprachen (Teile ab 9 Bytes, ohne Beispielzone und Kanalnamen)
+-- Locale texts of all four languages (pieces of 9 bytes and more, without sample zone and channel names)
 local DICT = {}
 do
   local ns = {}
@@ -73,7 +73,7 @@ local function run(seed)
   local W = M.NewWorld({ "HUNT_BAGGED", "GUILD_ENEMY_SPOTTED" })
   local langOf, bnOf, tainted, expireOf, jumped, maxJump = {}, {}, {}, {}, 0, 0
   local jumpLog = {}
-  -- Tage, die nach dem Zeitpunkt t uebersprungen wurden (ab 3 Tagen deckt die Rueckschau eines Hallo t nicht mehr)
+  -- Days skipped after time t (from 3 days on the look-back of a hello no longer covers t)
   local function tageNach(t)
     local n = 0
     for _, j in ipairs(jumpLog) do if j[1] > t then n = n + j[2] end end
@@ -81,7 +81,7 @@ local function run(seed)
   end
   local N = R(2, 4)
   local C, friendsOf, guildOf = {}, {}, {}
-  -- Wahrheit: was jeder Char je selbst erzeugt hat
+  -- Truth: what each char ever created itself
   local truth = { kills = {}, listed = {}, released = {}, gone = {} }
   for i = 1, N do
     local full = NAMES[i][1] .. " " .. NAMES[i][2]
@@ -93,11 +93,11 @@ local function run(seed)
   for i = 1, N do for j = 1, N do
     if i ~= j and R() < 0.6 then friendsOf[i][#friendsOf[i] + 1] = NAMES[j][1] .. " " .. NAMES[j][2] end
   end end
-  -- Battle.net-Freundschaften (gegenseitig) zwischen Chars mit eindeutigem Vornamen; der Mock nennt dort nur Vornamen
+  -- Battle.net friendships (mutual) between chars with a unique first name; the mock gives only first names there
   local UNIQUE = { [2] = true, [4] = true }
   if N >= 4 and R() < 0.5 then bnOf[2][1], bnOf[4][1] = NAMES[4][1], NAMES[2][1]; tally.bn = tally.bn + 1 end
   local function spawn(i, db)
-    -- Sprachwechsel beim Login: die Wahl steht in der Datei, der Client laedt die Sprachdatei wie aus der TOC
+    -- Language switch at login: the choice is in the file, the client loads the locale file as from the TOC
     if db and R() < 0.3 then
       langOf[i] = LANGS[R(#LANGS)]
       if type(db.settings) == "table" then db.settings.lang = langOf[i] end
@@ -120,10 +120,10 @@ local function run(seed)
   function W.deliver()
     if lossy and #W.wire > 1 and R() < 0.3 then
       local i, j = R(#W.wire), R(#W.wire)
-      W.wire[i], W.wire[j] = W.wire[j], W.wire[i]            -- Reihenfolge tauschen
+      W.wire[i], W.wire[j] = W.wire[j], W.wire[i]            -- swap the order
     end
     if lossy then
-      for i = #W.wire, 1, -1 do if R() < 0.08 then table.remove(W.wire, i) end end   -- Verlust
+      for i = #W.wire, 1, -1 do if R() < 0.08 then table.remove(W.wire, i) end end   -- loss
     end
     return deliver()
   end
@@ -141,33 +141,33 @@ local function run(seed)
   end
   local offline = {}
   local OPS = {
-    function(c)   -- sicherer Tod
+    function(c)   -- sure death
       if (killsBy[c.idx] or 0) >= 8 then return end
       killsBy[c.idx] = (killsBy[c.idx] or 0) + 1
       local e = ENEMIES[R(#ENEMIES)]
       local key = H.tod(c, e[1], e[2])
       truth.kills[c.full][key .. "\t" .. time()] = true
     end,
-    function(c)   -- von Hand eintragen / entfernen
+    function(c)   -- add / remove by hand
       local e = ENEMIES[R(#ENEMIES)]
       local key = ekey(e)
       local own = c.ns.Store.Get(key)
       if own and own.manual and R() < 0.5 then
         c.ns.Store.Remove(key)
-        -- selbst geloeschte Taten muss niemand mehr bekommen
+        -- deeds deleted by the owner need not reach anyone any more
         for id in pairs(truth.kills[c.full]) do if id:match("^(.-)\t") == key then truth.gone[c.full .. "\t" .. id] = true end end
       elseif not own then
         c.ns.Store.AddManual(e[1], e[2]); truth.listed[c.full][key] = true
       end
     end,
-    function(c)   -- freigeben
+    function(c)   -- release
       local key = ekey(ENEMIES[R(#ENEMIES)])
       local g, f = c.ns.Guild.Release(key, { to = ({ "all", "guild", "friends" })[R(3)], why = R() < 0.5 and "Grund |cffff0000x|r " .. R(9) or nil })
       if g or f then truth.released[c.full][key] = true end
     end,
     function(c) c.ns.Guild.CallOff(ekey(ENEMIES[R(#ENEMIES)]), ({ nil, "guild", "friends" })[R(3)]) end,
     function(c) c.fire("PARTY_KILL", "Player-1-" .. c.name, "Player-9-E" .. R(#ENEMIES)) end,
-    function(c)   -- Freundschaft schliessen oder loesen
+    function(c)   -- make or end a friendship
       local j = R(N)
       if j == c.idx then return end
       local l, name = friendsOf[c.idx], NAMES[j][1] .. " " .. NAMES[j][2]
@@ -179,31 +179,31 @@ local function run(seed)
       l[#l + 1] = name
       c.fire("FRIENDLIST_UPDATE")
     end,
-    function(c)   -- Logout, spaeter Login
+    function(c)   -- logout, later login
       if R() < 0.4 then offline[c.idx] = relog(c.idx) end
     end,
     function(c) c.combat = not c.combat; if not c.combat then c.fire("PLAYER_REGEN_ENABLED") end end,
     function(c) if R() < 0.3 then c.ns.Guild.SyncNow(); c.ns.Friends.SyncNow() end end,
     function(c) c.ns.Guild.OnUnit(ekey(ENEMIES[R(#ENEMIES)]), "nameplate1", "plate", false) end,
-    function(c)   -- Verfall der Freigaben einstellen (W1)
+    function(c)   -- set the expiry of calls (W1)
       if R() < 0.4 then
         expireOf[c.idx] = ({ 0, 0, 30, 90, 180 })[R(5)]
         c.ns.Store.Setting("guild.huntExpire", expireOf[c.idx])
       end
     end,
-    function(c)   -- fuer mich ausblenden / wieder einblenden
+    function(c)   -- hide for me / show again
       local key = ekey(ENEMIES[R(#ENEMIES)])
       c.ns.Guild.HideHunt(key, R() < 0.6); tally.hidden = tally.hidden + 1
     end,
-    function(c)   -- Befehle in der Sprache des Clients
-      local slash = c.ns.HandleSlash   -- nicht SlashCmdList: die Tabelle teilen sich alle Clients der Welt
+    function(c)   -- commands in the client's language
+      local slash = c.ns.HandleSlash   -- not SlashCmdList: all clients of the world share that table
       if slash then slash(({ "gilde", "friends", "probe", "hilfe", "lang", "jagd " .. ENEMIES[R(#ENEMIES)][1] })[R(6)]) end
       for _, e in ipairs(ENEMIES) do
         local g, f = c.ns.Guild.Released(ekey(e))
         if g or f then truth.released[c.full][ekey(e)] = true end
       end
     end,
-    function(c)   -- Gilde wechseln, verlassen oder beitreten (fix-1)
+    function(c)   -- change, leave or join a guild (fix-1)
       if R() < 0.5 then return end
       local g = ({ GUILDS[1], GUILDS[2], nil })[R(3)]
       if g == c.guild then return end
@@ -219,7 +219,7 @@ local function run(seed)
       OPS[R(#OPS)](C[i])
     end
     W.run(R() < 0.2 and R(1, 60) or R(1, 5))
-    -- Zeitsprung: alle gehen offline, Tage vergehen (zusammen hoechstens 55: darueber greift ein bekannter Fund)
+    -- Time jump: everyone goes offline, days pass (at most 55 in total: above that a known finding applies)
     if R() < 0.03 and jumped < 55 then
       for k = 1, N do if not offline[k] then offline[k] = relog(k) end end
       local d = math.min(55 - jumped, ({ 1, 3, 8, 15, 20, 35 })[R(6)])
@@ -231,7 +231,7 @@ local function run(seed)
     end
     if #M.errors > 0 then problem(seed, "Lua-Fehler: " .. tostring(M.errors[1]):gsub("^.-([%w_]+%.lua:%d+)", "%1"), "Schritt " .. step); return end
   end
-  -- ruhige Phase: alle online, kein Verlust, zweimal abgleichen
+  -- quiet phase: everyone online, no loss, sync twice
   lossy = false
   for i = 1, N do if offline[i] then spawn(i, offline[i]); offline[i] = nil end; C[i].combat = false; C[i].fire("PLAYER_REGEN_ENABLED") end
   for _ = 1, 3 do
@@ -248,7 +248,7 @@ local function run(seed)
     local hit = sprachtext(m.text)
     if hit then problem(seed, "Sprachtext auf der Leitung: " .. hit, m.text:sub(1, 80)) end
   end
-  -- Invarianten
+  -- invariants
   local function hasFriend(i, j) for _, n in ipairs(friendsOf[i]) do if n == NAMES[j][1] .. " " .. NAMES[j][2] then return true end end return false end
   for i = 1, N do
     local c = C[i]
@@ -297,7 +297,7 @@ local function run(seed)
     for _ in pairs(fdb.ties or {}) do nt = nt + 1 end
     if nh > Cst.HIDDEN_MAX then problem(seed, "Deckel: Ausgeblendete", nh) end
     if nt > c.ns.Friends.C.MAX_TIES then problem(seed, "Deckel: Bindungen", nt) end
-    -- kein Sprachtext in den gespeicherten Daten (Feld Notiz ausgenommen)
+    -- no locale text in the stored data (note field excepted)
     c.ns.HandleSlash("probe")
     c.fire("PLAYER_LOGOUT")
     local function walk(t, seen)
@@ -316,7 +316,7 @@ local function run(seed)
     end
     walk(c.env.DeathNoteDB, {})
   end
-  -- gleicher Stand unter Partnern
+  -- same state among partners
   for i = 1, N do for j = 1, N do if i ~= j then
     local x, y = C[i], C[j]
     local sameGuild = guildOf[i] ~= nil and guildOf[i] == guildOf[j]
@@ -332,7 +332,7 @@ local function run(seed)
           if a and not b and (expireOf[j] > 0 or jumped > 30) then
             bekannt(seed, "Waise: Freigabe steht beim Partner, der Freigebende hat sie nicht mehr (Verfall bzw. Merkfrist)", detail)
           elseif b and not a and expireOf[i] > 0 then
-            -- beim Betrachter verfallen: so eingestellt, kein Verstoss
+            -- expired at the viewer: set up that way, no violation
           else
             problem(seed, "Stand ungleich: Freigabe (" .. tag .. ")", detail)
           end

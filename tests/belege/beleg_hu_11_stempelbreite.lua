@@ -1,7 +1,7 @@
--- Fund 11 (Schaetzung des UI-Mocks, im Spiel nachmessen): Humor.Apply setzt den Stempeltext fest in 13 pt, ohne die
--- Einpassung, die Extras.Banner (ab 1,6-facher Feldbreite 11 pt) und das Plakat (16/13/11 pt) haben. Das Feld ist
--- 96 breit, zwei Zeilen. Ein einzelnes Wort, das breiter ist als das Feld, wird mitten im Wort umbrochen oder
--- abgeschnitten. Gemessen mit der Breitenschaetzung des Mocks (Zeichen x Grad x Faktor der Schrift).
+-- Finding 11 (estimate of the UI mock, measure in game): Humor.Apply sets the stamp text fixed at 13 pt, without the
+-- fitting that Extras.Banner (11 pt from 1.6 times the field width) and the poster (16/13/11 pt) have. The field is
+-- 96 wide, two lines. A single word wider than the field is broken mid-word or
+-- cut off. Measured with the mock's width estimate (characters x size x font factor).
 local here = arg[0]:match("^(.*)/[^/]+$") or "."
 package.path = here .. "/?.lua;" .. package.path
 local H = require("_kopf_hu")

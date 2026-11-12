@@ -1,8 +1,8 @@
--- (fix-2) Belegtest der finalen Jagd, in die Suite uebernommen (Aufruf aus der Projektwurzel: luajit <datei> .)
--- Ladefehler rund um die Sprachdateien, mit Oberflaeche (Gegenprobe, erwartet gruen):
--- (1) die gewaehlte Sprachdatei fehlt (nicht geladen), (2) ihr Aufbau wirft mittendrin einen Fehler,
--- (3) sie liefert Unsinn (Zahlen, Tabellen, leere Texte, fremde Schluessel), (4) ADDON_LOADED anderer Addons zuerst,
--- auch mit Secret als Name, (5) ADDON_LOADED fuer DeathNote kommt nie (nur PLAYER_LOGIN), (6) Englisch fehlt ganz.
+-- (fix-2) Proof test of the final hunt, taken into the suite (run from the project root: luajit <file> .)
+-- Load errors around the locale files, with UI (counter check, expected green):
+-- (1) the selected locale file is missing (not loaded), (2) building it throws an error halfway,
+-- (3) it returns nonsense (numbers, tables, empty texts, unknown keys), (4) ADDON_LOADED of other addons first,
+-- also with a secret as name, (5) ADDON_LOADED for DeathNote never comes (only PLAYER_LOGIN), (6) English missing entirely.
 local DIR = (arg[1] or "."):gsub("/+$", "")
 package.path = DIR .. "/tests/ui/?.lua;" .. DIR .. "/tests/?.lua;" .. package.path
 arg[0] = DIR .. "/tests/ui/beleg.lua"
@@ -13,8 +13,8 @@ local function erwartet(name, cond, detail)
   if cond then pass = pass + 1 else fail = fail + 1; lines[#lines + 1] = "  ROT: " .. name .. (detail ~= nil and ("  -> " .. tostring(detail)) or "") end
 end
 local LOGIC = { "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Probe.lua", "Sync.lua", "Friends.lua", "Bounty.lua" }
--- opts: locales = Liste der Sprachdateien, die "in der TOC" geladen werden; inject = function(ns) nach Locale.lua;
--- events = function() vor dem Login; noAddonLoaded
+-- opts: locales = list of locale files loaded "in the TOC"; inject = function(ns) after Locale.lua;
+-- events = function() before login; noAddonLoaded
 local function world(db, opts)
   package.loaded.mock_wow, package.loaded.mock = nil, nil
   AM = require("mock_wow"); BM = require("mock")

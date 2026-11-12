@@ -1,7 +1,7 @@
--- 1.2.1 nach der Abschluss-Jagd: eine Bindung, die die GUID der Liste nicht beweist (die Freundin listet den Spieler
--- nicht, ihr Hallo kommt nie), fragt nicht die ganze Sitzung lang alle 5 Minuten: hoechstens 3 Hallos je Sitzung.
--- Gegenprobe: eine bewiesene Bindung bekommt bei Listen-Ereignissen kein Hallo; wer online kommt, wird wie immer gefragt.
--- Aufruf: nice -n 15 luajit beleg_d03_hallo_unbewiesen.lua <Projektkopie>. Alle Namen erfunden.
+-- 1.2.1 after the final hunt: a binding that the list's GUID does not prove (the friend does not list the player,
+-- her hello never comes) does not ask every 5 minutes for the whole session: at most 3 hellos per session.
+-- Counter-check: a proven binding gets no hello on list events; whoever comes online is asked as always.
+-- Usage: nice -n 15 luajit beleg_d03_hallo_unbewiesen.lua <project copy>. All names made up.
 local H = dofile((arg[0]:match("^(.*)/") or ".") .. "/_kopf_c.lua")
 
 local function lage(bewiesen)
@@ -32,7 +32,7 @@ H.lauf("(1) unbewiesen, jede Minute ein Listen-Ereignis, 2 h", function()
   local n = hallos(s0)
   H.erwartet("mindestens ein Hallo (sie wird gefragt)", n >= 1, n)
   H.erwartet("hoechstens 3 Hallos in 2 h", n <= 3, n)
-  -- sie geht offline und kommt wieder: wie immer ein Hallo
+  -- she goes offline and comes back: a hello as always
   W.setOnline(b, false); a.fire("FRIENDLIST_UPDATE"); W.run(60)
   local s1 = #W.sent
   W.setOnline(b, true); a.fire("FRIENDLIST_UPDATE"); W.run(120)
