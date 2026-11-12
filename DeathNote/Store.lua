@@ -60,6 +60,7 @@ local db           -- DeathNoteDB
 local enemies      -- db.enemies
 local guidIndex = {}
 local rankCache    -- array of wanted keys in rank order, or nil when dirty
+local debtCache = {}   -- 1.3.0: filter -> list in the order "debt", emptied with rankCache (Store.Ranked hands out copies)
 -- first-name index: lower(first name) -> { [key] = true }. Serves Find (quick "not listed")
 -- and placeholder entries (no known surname, key "Name-<realm>"), which a sighting with the
 -- full name moves to the full key.
@@ -124,6 +125,7 @@ end
 
 local function changed(key)
   rankCache = nil
+  if next(debtCache) then debtCache = {} end
   ns:Fire("ENEMY_UPDATED", key)
 end
 
@@ -342,6 +344,7 @@ function Store.Init()
     end
   end
   rankCache = nil
+  debtCache = {}
   Store.TouchJournal()
   rebuildIndex()
   -- 4: the rap sheet (DeathNoteDB.ledger). The start only repairs it and keeps its keys in line with the book; it
@@ -509,11 +512,22 @@ end
 
 -- open debt first (biggest first), open cases without debt next, then even and ahead; inside each the old rank.
 -- Debts are read once per sort, not per comparison.
+-- 1.3.0 (package B, measured): an entry without any revenge and without a victim of the rap sheet stands at 0 : his
+-- kills, open; only the others need the standing (a book of 400: 1275 -> see the report)
+local function quickDebt(e, Lg)
+  if e.status == "wanted" and (tonumber(e.revenge) or 0) == 0 and not Lg.Victim(e.key) then
+    return math.min(tonumber(e.kills) or 0, Lg.COUNT_MAX or 9999), true
+  end
+end
 local function debtSort(list)
   local debt, open = {}, {}
+  local Lg = ns.Ledger
+  local quick = Lg and Lg.Victim and Lg.Enabled and Lg.Enabled()
   for i = 1, #list do
     local e = list[i]
-    debt[e], open[e] = Store.Debt(e)
+    local d, o
+    if quick then d, o = quickDebt(e, Lg) end
+    if d then debt[e], open[e] = d, o else debt[e], open[e] = Store.Debt(e) end
   end
   table.sort(list, function(a, b)
     if debt[a] ~= debt[b] then return debt[a] > debt[b] end
@@ -547,11 +561,23 @@ local SORTS = {
 -- book switches over
 function Store.Ranked(filter, sort)
   filter = filter or "wanted"
+  local cached = sort == "debt" and debtCache[filter]
+  if cached then
+    local copy = {}
+    for i = 1, #cached do copy[i] = cached[i] end
+    return copy
+  end
   local out = {}
   for _, e in pairs(enemies or {}) do
     if filter == "all" or e.status == filter then out[#out + 1] = e end
   end
-  if sort == "debt" then return debtSort(out) end
+  if sort == "debt" then
+    debtSort(out)
+    local keep = {}
+    for i = 1, #out do keep[i] = out[i] end
+    debtCache[filter] = keep
+    return out
+  end
   table.sort(out, SORTS[sort] or rankLess)
   return out
 end
@@ -560,6 +586,7 @@ end
 -- standing is settled (even or ahead) has no rank at all. So rank 1, the top title (public enemy No. 1), is always an
 -- open case, and with every enemy settled there is none. With the rap sheet off: the rank of 1.2.x.
 local function settledState(e)
+  if quickDebt(e, ns.Ledger) then return false end
   local _, _, state = ns.Ledger.Standing(e.key)
   return state == "even" or state == "ahead"
 end
@@ -603,8 +630,8 @@ function Store.RankBefore(key)
   return n
 end
 -- the standing of an enemy changed (own kill, Ledger.Clear) or the rap sheet was switched: ranks anew
-ns:On("STANDING_CHANGED", function() rankCache = nil end)
-ns:On("SETTINGS_CHANGED", function(path) if path == "ledger.enabled" then rankCache = nil end end)
+ns:On("STANDING_CHANGED", function() rankCache = nil; if next(debtCache) then debtCache = {} end end)
+ns:On("SETTINGS_CHANGED", function(path) if path == "ledger.enabled" then rankCache = nil; debtCache = {} end end)
 
 -- Fun value in copper, deterministic.
 function Store.Bounty(e)

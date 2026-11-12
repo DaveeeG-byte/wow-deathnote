@@ -2866,11 +2866,13 @@ function RS.Line(parent, y)
   b:Hide()
   return b
 end
+RS.FIT_KILL = { sizes = { 13, 11 } }
 function RS.SetLine(b, text, tag, row, tipFn)
-  b.text:SetText(text or "")
   b.tag:SetText(tag or "")
   local w = tag and math.floor(312 - TextWidth(b.tag, 60) - 10) or 312
   if b.tagged ~= w then b.tagged = w; b.text:SetWidth(w) end
+  -- 13 pt, else 11 pt, else cut with the whole line (and more) in the tooltip
+  Look.FitText(b.text, text or "", RS.FIT_KILL)
   b.tipItem, b.tipFn = row, tipFn
   b:Show()
 end
@@ -3205,8 +3207,8 @@ function RS.FillLog()
   for i = 1, RS.LOG_LINES do
     local row = log[i]
     if i <= n and type(row) == "table" then
-      RS.SetLine(G.lines[i], Look.Join(Look.When(row.t), tostring(row.name or "?"), RS.Level(row.vl), Look.BandWord(row.band),
-        Look.KillPoints(row)), RS.Tag(row.f), row, RS.LogTip)
+      -- date, victim, points; level and colour in the tooltip
+      RS.SetLine(G.lines[i], Look.Join(Look.When(row.t), tostring(row.name or "?"), Look.KillPoints(row)), RS.Tag(row.f), row, RS.LogTip)
     else
       G.lines[i]:Hide()
     end
@@ -3253,7 +3255,7 @@ function RS.FillVictim(v)
         local b = V.lines[shown]
         b:ClearAllPoints()
         b:SetPoint("TOPLEFT", 20, -(y + (shown - 1) * 16))
-        RS.SetLine(b, Look.Join(Look.When(row.t), RS.Level(row.vl), Look.BandWord(row.band), Look.KillPoints(row)), RS.Tag(row.f), row, RS.LogTip)
+        RS.SetLine(b, Look.Join(Look.When(row.t), Look.BandWord(row.band), Look.KillPoints(row)), RS.Tag(row.f), row, RS.LogTip)
       else
         more = more + 1
       end
