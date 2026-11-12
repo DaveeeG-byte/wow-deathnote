@@ -82,8 +82,10 @@ local function warnInk(fs) return fs._tc and fs._tc[1] == 1 and fs._tc[3] < 0.3 
 -- 1.2.2: the level leads the text line (in its colour) instead of standing right of the name; Lvl() reads it back
 local function Lvl()
   local t = popup.levelText or ""
-  local lead = (popup.line._text or ""):match("^|cff%x%x%x%x%x%x(.-)|r · ")
-  return { _text = (lead == t) and t or ("<line: " .. tostring(lead) .. ">"), _tc = popup.levelWarn and { 1, 0.62, 0.18 } or { 0.93, 0.9, 0.82 } }
+  -- colour and text as shown at the front of the line (not the flag popup.levelWarn)
+  local r, g, b, lead = (popup.line._text or ""):match("^|cff(%x%x)(%x%x)(%x%x)(.-)|r · ")
+  local tc = r and { tonumber(r, 16) / 255, tonumber(g, 16) / 255, tonumber(b, 16) / 255 } or {}
+  return { _text = (lead == t) and t or ("<line: " .. tostring(lead) .. ">"), _tc = tc }
 end
 check("Stufe rechts neben dem Namen, mit Abstand", Lvl()._text == "Stufe 43 (+3)", Lvl()._text)
 check("Stufe in Warnfarbe", warnInk(Lvl()))

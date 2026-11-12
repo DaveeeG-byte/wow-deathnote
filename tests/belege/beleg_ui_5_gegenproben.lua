@@ -179,8 +179,11 @@ do
         local nl, _, nr = W2.frameBox(popup.name)
         local feld = nr - nl
         if feld < worst then worst = feld end
-        local lead = (popup.line._text or ""):match("^|cff%x%x%x%x%x%x(.-)|r")
-        if not (popup.levelWarn == true and lead == popup.levelText and nr - pl <= 384 - 12 + 0.5 and feld >= 280) then okAll, err = false, case .. ": Lage" end
+        -- the colour as shown at the front of the line: the warning colour of the book (Look.WARN)
+        local c = W2.ns.Look.WARN
+        local warnCode = ("|cff%02x%02x%02x"):format(c[1] * 255, c[2] * 255, c[3] * 255)
+        local code6, lead = (popup.line._text or ""):match("^(|cff%x%x%x%x%x%x)(.-)|r")
+        if not (popup.levelWarn == true and code6 == warnCode and lead == popup.levelText and nr - pl <= 384 - 12 + 0.5 and feld >= 280) then okAll, err = false, case .. ": Lage" end
       end
       local n2, e2 = W2.errs(); if n2 > 0 then okAll, err = false, e2 end
     end
