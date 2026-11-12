@@ -686,6 +686,12 @@ local function applyInfo(e, info)
   local hasSurname = false
   local sn = info.surname
   if not Util.IsSecret(sn) and type(sn) == "string" and sn ~= "" then hasSurname = true end
+  -- 1.3.0: the GUID beats the first name. Info of another GUID never lands on an entry with a GUID unless both
+  -- name the player in full (a first name alone is a namesake, not this player)
+  local ig = plainField(info.guid)
+  if type(e.guid) == "string" and type(ig) == "string" and ig ~= e.guid and not (hasSurname and e.surname ~= nil) then
+    return
+  end
   for i = 1, #INFO_FIELDS do
     local f = INFO_FIELDS[i]
     local v = plainField(info[f])

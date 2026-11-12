@@ -107,9 +107,9 @@ for run = 1, RUNS do
         local r = math.random(6)
         if ghost then r = 1 elseif r == 1 then r = 2 end
         if r > 1 then
-          -- always with surname: a namesake's plate without surname shares one tracker record with the other (a
-          -- known fault of the tracker, see the report of fixer C); the ghosts cover the first name
-          enemy(i, j, lv)
+          -- one plate in four without surname: the GUID tells the namesakes apart (the tracker gives the second one
+          -- a namesake key of its own); the ghosts cover players never seen
+          enemy(i, j, lv, math.random(4) == 1)
           if math.random(3) > 1 then M.FireEvent("NAME_PLATE_UNIT_ADDED", "nameplate" .. (i * 2 + j)) end
         else
           -- never seen: the client knows the first name only

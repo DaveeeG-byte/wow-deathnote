@@ -128,6 +128,30 @@ local function identity(unit)
 end
 Tracker.Identity = identity
 
+-- 1.3.0: the GUID beats the first name. A unit known by first name only is not the one listed (or buffered) under
+-- "Name-Realm" when that one carries another GUID: he is a namesake. His buffer key is "Name-Realm#<GUID part>"
+-- (the same form as a namesake victim in Ledger.lua), never a book key. Reads the GUID for surnameless units only.
+local function namesakeKey(plain, guid)
+  return plain .. "#" .. (guid:match("^Player%-(.+)$") or guid)
+end
+Tracker.NamesakeKey = namesakeKey
+
+-- is the unit (identity key, surname) the player listed under key? A first name alone needs a fitting GUID.
+local function fitsListed(unit, key, second)
+  if second then return true end
+  local e = ns.Store and ns.Store.Get(key)
+  local lg = e and Str(e.guid)
+  if not lg then return true end
+  local g = Str(Call(UnitGUID, unit))
+  return g == nil or g == lg
+end
+
+-- is this unit the player listed (or seen) under key?
+function Tracker.IsUnitOf(unit, key)
+  local k, _, second = identity(unit)
+  return k ~= nil and k == key and fitsListed(unit, key, second)
+end
+
 -- Fills the identity fields of a record (only plain values).
 local function readInfo(unit, r)
   local guid = Str(Call(UnitGUID, unit))
@@ -186,6 +210,28 @@ function Tracker.OnUnit(unit, how)
   if hostile == false then return nil end
   local Store = ns.Store
   local listed = Store and Store.Get(key)
+  if not second then
+    -- first name only: the GUID decides who this is (see fitsListed)
+    local g = Str(Call(UnitGUID, unit))
+    if g then
+      local lg = listed and Str(listed.guid)
+      local r0 = buffer[key]
+      if lg and lg ~= g then
+        listed, key = nil, namesakeKey(key, g)
+      elseif listed then
+        -- the listed one takes the plain key back from a namesake buffered there before
+        if r0 and r0.guid and r0.guid ~= g then
+          local nk = namesakeKey(key, r0.guid)
+          if buffer[nk] then remove(nk) end
+          buffer[key], buffer[nk] = nil, r0
+          r0.key = nk
+          byGUID[r0.guid] = nk
+        end
+      elseif r0 and r0.guid and r0.guid ~= g then
+        key = namesakeKey(key, g)
+      end
+    end
+  end
   if not listed and second and Store and Store.HasPlaceholders and Store.HasPlaceholders() then
     -- entered by hand or known by GUID with the first name only: take the full name now
     -- (the GUID is read only while such placeholder entries exist)
@@ -285,10 +331,10 @@ local FIXED_UNITS = { "target", "focus", "mouseover" }
 function Tracker.UnitFor(key)
   for i = 1, #FIXED_UNITS do
     local u = FIXED_UNITS[i]
-    if identity(u) == key then return u end
+    if Tracker.IsUnitOf(u, key) then return u end
   end
   for u in pairs(plates) do
-    if identity(u) == key then return u end
+    if Tracker.IsUnitOf(u, key) then return u end
   end
   return nil
 end

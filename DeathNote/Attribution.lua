@@ -703,15 +703,18 @@ local function stageOn(name)
   return v ~= false
 end
 
+-- the tracker's buffer key of a namesake ("Name-Realm#...") never reaches the journal: the key there is the name's
+local function plainKey(key) return (key:gsub("#.*$", "")) end
+
 local function snapshotSuspects(deathGT)
   local Tracker = ns.Tracker
   local out = { targeters = {}, recent = {} }
   if not Tracker then return out end
   for _, r in ipairs(Tracker.Targeters(A.SUSPECT_WINDOW, deathGT)) do
-    out.targeters[#out.targeters + 1] = { key = r.key, info = infoFromRecord(r), ago = deathGT - r.targetedMe }
+    out.targeters[#out.targeters + 1] = { key = plainKey(r.key), info = infoFromRecord(r), ago = deathGT - r.targetedMe }
   end
   for _, r in ipairs(Tracker.Targeters(A.CANDIDATE_WINDOW, deathGT)) do
-    out.recent[#out.recent + 1] = { key = r.key, info = infoFromRecord(r), ago = deathGT - r.targetedMe }
+    out.recent[#out.recent + 1] = { key = plainKey(r.key), info = infoFromRecord(r), ago = deathGT - r.targetedMe }
   end
   return out
 end
@@ -749,6 +752,20 @@ local function candidateInfo(result)
   return out
 end
 
+-- 1.3.0: the GUID beats the first name. A player known by first name only (no surname) whose GUID the book does
+-- not know is not the one the book lists under "Name-Realm" with another GUID: Store.Upsert would take that entry by
+-- its key. Such a deed is credited to nobody (the journal keeps his name).
+local function namesakeOfEntry(info)
+  local Store = ns.Store
+  if type(info) ~= "table" or Str(info.surname) then return false end
+  local g = Str(info.guid)
+  if not g or Store.ByGUID(g) then return false end
+  local key = Util.KeyFor(Str(info.name), Str(info.realm))
+  local e = key and Store.Get(key)
+  local eg = e and Str(e.guid)
+  return eg ~= nil and eg ~= g
+end
+
 local function finalize(p, result)
   local Store = ns.Store
   if not Store then return end
@@ -772,7 +789,9 @@ local function finalize(p, result)
       t = p.t, zone = p.zone, subzone = p.subzone, mapID = p.mapID, x = p.x, y = p.y, me = p.me,
       myLevel = p.myLevel, spell = result.spell, source = result.source, others = result.others,
     }
-    if result.killerKey and result.killerInfo then
+    if result.killerKey and result.killerInfo and namesakeOfEntry(result.killerInfo) then
+      journal.killerName = Util.Display(result.killerInfo)
+    elseif result.killerKey and result.killerInfo then
       local rLevel = result.killerInfo.level
       rec.theirLevel = type(rLevel) == "number" and rLevel or nil
       local key = Store.ApplyKill(result.killerInfo, rec, result.sure)
@@ -786,7 +805,7 @@ local function finalize(p, result)
     -- from the other stages (meter may hold an older fight) only "suspect"
     for _, k in ipairs(result.others or {}) do
       local info = result.othersInfo and result.othersInfo[k]
-      if info then
+      if info and not namesakeOfEntry(info) then
         local orec = {}
         for kk, v in pairs(rec) do orec[kk] = v end
         orec.others = { journal.killerKey }
@@ -914,8 +933,9 @@ end
 
 local function engaged(key, window, onlyMine)
   local Tracker = ns.Tracker
-  -- my current target: a long fight on the same target has no fresh target change
-  if Tracker and Tracker.Identity and Tracker.Identity("target") == key then return true end
+  -- my current target: a long fight on the same target has no fresh target change (a namesake known by first
+  -- name only is not him: Tracker.IsUnitOf checks the GUID)
+  if Tracker and Tracker.IsUnitOf and Tracker.IsUnitOf("target", key) then return true end
   local r = Tracker and Tracker.Get(key)
   if not r then return false end
   local t = GetTime()
@@ -944,7 +964,8 @@ local function keyForGUID(guid)
   local key = Store and Store.ByGUID(guid)
   if key then return key end
   local r = ns.Tracker and ns.Tracker.ByGUID(guid)
-  if r and Store.Get(r.key) then return r.key end
+  local re = r and Store.Get(r.key)
+  if re and guidFits(Str(re.guid), guid) then return r.key end
   local _, _, _, _, _, name = Call(_G.GetPlayerInfoByGUID, guid)
   name = Str(name)
   if name then

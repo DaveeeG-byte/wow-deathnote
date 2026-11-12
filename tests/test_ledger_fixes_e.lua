@@ -277,4 +277,94 @@ test("A caller who changes Repute() changes no account, mark or award, also afte
   eq(ns.Ledger.Repute().total, before.total)
 end)
 
+---------------------------------------------------------------------------
+-- The tracker with namesakes known by first name only: the GUID beats the first name (finding 7, also in 1.2.2)
+---------------------------------------------------------------------------
+local G1, G2 = "Player-93-G1", "Player-93-G2"
+-- G1 kills me while seen without surname: the book lists "Gerd-<realm>" with GUID G1; then he is out of sight
+local function listedG1()
+  fresh()
+  M.AddEnemy("nameplate1", { name = "Gerd", level = 34, guid = G1 })
+  M.FireEvent("NAME_PLATE_UNIT_ADDED", "nameplate1")
+  dieBy(G1, "Gerd")
+  M.units.nameplate1 = nil
+  M.Advance(600); ns.Tracker.Prune(true)
+  local key = next(ns.Store.All())
+  eq(key, "Gerd-Forever")
+  return key, ns.Store.Get(key)
+end
+local function plateG2(n)
+  M.AddEnemy("nameplate" .. (n or 2), { name = "Gerd", level = 58, guid = G2 })
+  M.FireEvent("NAME_PLATE_UNIT_ADDED", "nameplate" .. (n or 2))
+end
+
+test("A namesake without surname raises no alarm and is no sighting of the listed one", function()
+  local key, e = listedG1()
+  local spotted, seen0, n0 = 0, e.lastSeen and e.lastSeen.t, e.sightings
+  ns:On("ENEMY_SPOTTED", function(k) if k == key then spotted = spotted + 1 end end)
+  plateG2()
+  eq(spotted, 0, "ENEMY_SPOTTED")
+  eq(e.lastSeen and e.lastSeen.t, seen0, "last seen"); eq(e.sightings, n0, "sightings")
+  eq(e.level, 34); eq(e.guid, G1)
+  local r = ns.Tracker.ByGUID(G2)
+  eq(r and r.key, "Gerd-Forever#93-G2", "the namesake's own buffer key")
+  eq(ns.Tracker.UnitFor(key), nil, "his plate is no unit of the listed one")
+end)
+
+test("A death by the namesake is no second kill of the listed one; the journal keeps his name", function()
+  local key, e = listedG1()
+  plateG2()
+  dieBy(G2, "Gerd")
+  eq(e.kills, 1, "kills of the listed one")
+  eq(ns.Store.Count(), 1, "no entry under another key")
+  local j = ns.Store.Deaths()[1]
+  eq(j.killerKey, nil); eq(j.killerName, "Gerd")
+end)
+
+test("The listed one seen again takes the plain buffer key back; reading order changes nothing", function()
+  local res = {}
+  for _, order in ipairs({ { 1, 2 }, { 2, 1 } }) do
+    local key, e = listedG1()
+    M.AddEnemy("nameplate1", { name = "Gerd", level = 34, guid = G1 })
+    M.AddEnemy("nameplate2", { name = "Gerd", level = 58, guid = G2 })
+    for _, n in ipairs(order) do ns.Tracker.OnUnit("nameplate" .. n, "nameplate") end
+    res[#res + 1] = ("%s/%s/%s/%s"):format(tostring(e.level), tostring(e.guid), ns.Tracker.ByGUID(G1).key,
+      ns.Tracker.ByGUID(G2).key)
+  end
+  eq(res[1], "34/Player-93-G1/Gerd-Forever/Gerd-Forever#93-G2")
+  eq(res[2], res[1], "order 1,2 and 2,1")
+  -- unlisted namesakes: the first one seen keeps the plain key, the other one gets his own
+  fresh()
+  M.AddEnemy("nameplate1", { name = "Gerd", level = 34, guid = G1 })
+  M.AddEnemy("nameplate2", { name = "Gerd", level = 58, guid = G2 })
+  ns.Tracker.OnUnit("nameplate1", "nameplate"); ns.Tracker.OnUnit("nameplate2", "nameplate")
+  eq(ns.Tracker.ByGUID(G1).level, 34); eq(ns.Tracker.ByGUID(G2).level, 58)
+  eq(ns.Tracker.Count(), 2)
+end)
+
+test("My kill on the namesake (or his honour line with my target on him) is no revenge on the listed one", function()
+  local key, e = listedG1()
+  plateG2()
+  M.Advance(30); kill(G2)
+  eq(e.revenge, 0, "PARTY_KILL on the namesake")
+  M.units.target = M.units.nameplate2
+  M.FireEvent("PLAYER_TARGET_CHANGED")
+  M.Advance(30)
+  ns.Attribution.OnHonorGain("Gerd stirbt (Ehrenhafter Sieg: Rang 3). Ihr erhaltet 12 Ehre.")
+  eq(e.revenge, 0, "honour line with the namesake in the target")
+  M.units.target = nil
+end)
+
+test("Store: info of another GUID never lands on an entry with a GUID, unless both name the player in full", function()
+  local key, e = listedG1()
+  ns.Store.Seen(key, { name = "Gerd", guid = G2, level = 58, class = "MAGE" }, { t = time() }, false)
+  eq(e.level, 34); eq(e.guid, G1); eq(e.class, "ROGUE")
+  ns.Store.Seen(key, { name = "Gerd", guid = G1, level = 35 }, { t = time() }, false)
+  eq(e.level, 35, "his own GUID")
+  local g = seen("Hans", "Hart", 40)
+  local f = ns.Store.Get(select(1, ns.Store.Upsert({ name = "Hans", surname = "Hart", guid = g }, true)))
+  ns.Store.Seen("Hans-Hart", { name = "Hans", surname = "Hart", guid = "Player-93-NEU", level = 41 }, { t = time() }, false)
+  eq(f.guid, "Player-93-NEU", "a full name with a new GUID is still taken (as in 1.2.x)")
+end)
+
 M.done("ledger_fixes_e")
