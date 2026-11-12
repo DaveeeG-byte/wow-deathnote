@@ -31,7 +31,7 @@ L.SHEET_ALERT = "Riasztás"  -- [max 14]
 -- Stamps on the wanted poster (capitals, short; WANTED itself is never translated) ----------------
 L.STAMP_NR1 = "1. SZÁMÚ KÖZELLENSÉG"  -- [max 24]
 L.STAMP_REVENGE = "MEGBOSSZULVA"  -- [max 16]
-L.STAMP_PARDONED = "MEGKEGYELMEZVE"  -- [max 16]
+L.STAMP_PARDONED = "KEGYELEM"  -- [max 16]
 L.STAMP_SUSPECT = "GYANÚSÍTOTT"  -- [max 16]
 
 -- Alarm popup (top of the screen, angular font, capitals) -----------------------------------------

@@ -394,9 +394,10 @@ local function Apply(banner, d)
     if banner.stampAnim then banner.stampAnim:Stop(); banner.stampAnim:Play() end
     local fs = banner.stampText
     if fs then
-      -- 1.2.2: the same ladder as the regular stamp of the notice (13, 11, 9 pt on up to two lines), through
-      -- Look.FitText: the field was fitted for the regular stamp word just before, plain SetText kept that state
-      Look.FitText(fs, t.STAMP[d.stamp], ns.Extras and ns.Extras.FIT_STAMP or FIT_STAMP)
+      -- 1.2.2: the same ladder as the regular stamp of the notice (Extras.FitStamp: 13, 11, 9 pt on up to two
+      -- lines, then three at 9 pt), through Look.FitText: the field was fitted for the regular stamp word just
+      -- before, plain SetText kept that state
+      if ns.Extras and ns.Extras.FitStamp then ns.Extras.FitStamp(fs, t.STAMP[d.stamp]) else Look.FitText(fs, t.STAMP[d.stamp], FIT_STAMP) end
       fs:SetTextColor(f[3][1], f[3][2], f[3][3], 0.95)
       if fs.SetRotation then pcall(fs.SetRotation, fs, math.rad(-f[2])) end
       fs:Show()

@@ -426,5 +426,53 @@ do
   end
 end
 
+------------------------------------------------------------------------
+-- B10: the stamp of the notice has no tooltip (the notice can come in combat with the mouse off): a stamp word that
+-- does not fit two lines at 9 pt takes a third ("JAVNI / NEPRIJATELJ / BR. 1", hrHR). Capitals at 0.80 em: the
+-- picture tool measures "NEPRIJATELJ B" at 92 of 96 px in Nimrod, the mock's wide end (0.70) leaves 2.4 px.
+-- Also the Hungarian stamp word for "pardoned" on the poster now fits its frame (decision of the round: "KEGYELEM").
+------------------------------------------------------------------------
+do
+  local ns = K.world("hrHR", { before = function(_, BM) BM.CAPS = 0.80 end })
+  local AM, BM, G = K.AM, K.BM, K.G
+  local t = _G.time()
+  local k = ns.Store.AddManual("Maximilianus", "Wunderkammer")
+  for i = 1, 3 do ns.Store.ApplyKill({ name = "Maximilianus", surname = "Wunderkammer", class = "MAGE", level = 60 }, { t = t - 100 * i, zone = "Z" }, true) end
+  K.tick(30); for _ = 1, 4 do K.settle() end
+  -- the notice of a death by the wanted no. 1 (killed you again: stamp "no. 1")
+  ns:Fire("DEATH_RECORDED", { kind = "pvp", sure = true, t = t, zone = "Z" }, k); K.tick()
+  local banner = rawget(G, "DeathNoteBanner")
+  local fs = banner and banner.stampText
+  K.check("B10 hrHR notice with the stamp of no. 1 came", banner and banner:IsShown() and fs and fs:IsVisible() and fs._text == ns.L.STAMP_NR1,
+    fs and fs._text)
+  if fs and fs._text == ns.L.STAMP_NR1 then
+    K.check("B10 hrHR stamp of the notice is whole (three lines at 9 pt)", not fs:IsTruncated() and BM.Lines(fs) <= 3,
+      ("%s pt, %d lines, max %s"):format(tostring(fs._fontSize), BM.Lines(fs), tostring(fs._maxl)))
+    local l, b, r, tp = BM.RectUI(banner.stamp)
+    local h = BM.Lines(fs) * fs._fontSize * BM.LINE
+    K.check("B10 hrHR the three lines stay inside the stamp", h <= (tp - b) - 20, ("%.0f px of text in a %.0f px stamp"):format(h, tp - b))
+  end
+end
+do
+  -- capitals at 0.90 em: the picture tool measures "MEGKEGYELMEZVE" at 113 px at 9 pt
+  local ns = K.world("huHU", { before = function(_, BM) BM.CAPS = 0.90 end })
+  local BM = K.BM
+  local k = ns.Store.AddManual("Anna", "Beispiel")
+  ns.Store.SetStatus(k, "pardoned")
+  K.tick(30); K.settle()
+  ns:Fire("TOGGLE_UI"); K.tick(); K.settle()
+  ns.UI.ShowEnemy(k); K.tick(); K.settle()
+  local E = K.find(function(f) return f.bounty and f.stampRache end)
+  local fs
+  for _, st in ipairs({ E.stampNr1, E.stampOther }) do
+    if st and st.label and st.label:IsVisible() and st.label._text == ns.L.STAMP_PARDONED then fs = st.label end
+  end
+  K.check("B10 huHU stamp 'pardoned' on the poster shows", fs ~= nil)
+  if fs then
+    K.check("B10 huHU stamp 'pardoned' fits its frame (104 px)", not fs:IsTruncated() and BM.Unbounded(fs) <= 104.5,
+      ("%.0f px at %s pt"):format(BM.Unbounded(fs), tostring(fs._fontSize)))
+  end
+end
+
 io.write(("Layout fixes 1.2.2 (hunt B): %d green, %d red\n"):format(K.ok, K.bad))
 os.exit(K.bad == 0 and 0 or 1)

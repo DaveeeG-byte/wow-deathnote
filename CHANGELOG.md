@@ -22,7 +22,6 @@
 - README, translator guide (now `TRANSLATING.md`), pipeline, test scripts and code comments are in English.
 
 ### Known open
-- Hungarian: the stamp word for "pardoned" ("MEGKEGYELMEZVE") is wider than its stamp even at the smallest size; only a shorter word helps.
 - Text widths for Morpheus, Skurri, Nimrod, Cyrillic handwriting and Chinese/Korean are estimated in the tests, not measured with the game's fonts.
 - Not yet checked in the game: the new layout (scrolling, fitted texts, menus at the screen edge), the nameplate status and the new minimap button.
 

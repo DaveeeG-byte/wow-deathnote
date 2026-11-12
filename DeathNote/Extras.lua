@@ -187,7 +187,7 @@ local function BuildBanner()
   banner.stampText:SetPoint("CENTER", banner.stamp, "CENTER", 0, 0)
   banner.stampText:SetWidth(96)
   banner.stampText:SetJustifyH("CENTER")
-  banner.stampText:SetMaxLines(2)
+  banner.stampText:SetMaxLines(2)   -- (Extras.FitStamp sets the lines per text)
   banner.stampText:Hide()
 
   local g = banner:CreateAnimationGroup()
@@ -270,6 +270,12 @@ end
 -- the stamp text steps 13, 11, 9 pt on up to two lines (a long single word no longer runs out of the frame)
 Extras.FIT_NAME, Extras.FIT_LINE = { sizes = { 26, 22, 19 } }, { sizes = { 11, 10 } }
 Extras.FIT_STAMP = { sizes = { 13, 11, 9 }, lines = 2, wrapFirst = true }
+-- 1.2.2: no tooltip on the stamp (the notice may come in combat, mouse off): a third line at 9 pt before the client
+-- cuts ("JAVNI / NEPRIJATELJ / BR. 1" in hrHR; three lines of 9 pt are about 30 px in the 60 px stamp)
+Extras.FIT_STAMP_LAST = { sizes = { 9 }, lines = 3 }
+function Extras.FitStamp(fs, text)
+  return Look.FitText(fs, text, Extras.FIT_STAMP) or Look.FitText(fs, text, Extras.FIT_STAMP_LAST)
+end
 local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   local stampTex, stampText, st = StampImage(stamp)
   kicker = Spaced(kicker)
@@ -308,7 +314,7 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   end
   if stampText then
     local fs = banner.stampText
-    Look.FitText(fs, stampText, Extras.FIT_STAMP)
+    Extras.FitStamp(fs, stampText)
     fs:SetTextColor(st.rgb[1], st.rgb[2], st.rgb[3], 0.95)
     if fs.SetRotation then pcall(fs.SetRotation, fs, math.rad(-st.ang)) end
     fs:Show()
