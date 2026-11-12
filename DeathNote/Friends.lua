@@ -26,13 +26,13 @@
 -- * The bound full name (tie.full) is provisional until it is proven: the friend's hello over whisper carries
 --   his GUID, which must be the one the friend list gives (tie.sure, tie.guid), or the player chose it. A
 --   second full name with the same first name before that is a conflict (tie.rival): nothing of either is
---   taken, the data of the bound one stays without alarm, the player chooses ("Das ist mein Freund") or
---   loosens the tie ("Bindung loesen"); removing the friend from the list loosens it too.
+--   taken, the data of the bound one stays without alarm, the player chooses ("My friend: {name}") or
+--   unlinks the name ("Unlink name"); removing the friend from the list unlinks it too.
 -- * "since" of a hello to a friend: the last logout of the logged-in char (fdb.lastOnlineBy), and everything
 --   for a friend this char never heard from (tie.heard[char], set once his answer to the own hello came in full).
 
 local ADDON, ns = ...
--- Texte (1.2.0): L.KEY nur in Funktionen lesen; gespeichert und gesendet wird nie Uebersetztes
+-- Texts (1.2.0): read L.KEY inside functions only; nothing translated is ever stored or sent
 local L, Fmt = ns.L, ns.F
 local Util = ns.Util
 local Guild = ns.Guild
@@ -830,7 +830,7 @@ function Friends.SayConflict(listName, tie)
 end
 
 -- Loosens the tie of a friend (list name): the next contact binds anew. drop = true also deletes what the
--- bound name brought into the friends' book ("Bindung loesen", with a question first in the book).
+-- bound name brought into the friends' book ("Unlink name", with a question first in the book).
 function Friends.Loosen(listName, drop)
   if not fdb or IsSecret(listName) or type(listName) ~= "string" then return false end
   local tie = fdb.ties[listName]
@@ -1137,7 +1137,7 @@ function Friends.OnGuildChange()
   After(FC.SCAN_DELAY + 1, mateCheck)
 end
 
--- "Freundesbuch leeren" (1.2.0): the friends' book and the releases of others in it go; own kills,
+-- "Empty friends' book" (1.2.0): the friends' book and the releases of others in it go; own kills,
 -- own hand entries and own releases stay (only their releaser can call them off).
 function Friends.Clear()
   if not fdb then return end
