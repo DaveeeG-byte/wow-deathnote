@@ -44,6 +44,7 @@ for run = 1, RUNS do
       status = "wanted", deaths = {}, guid = "Player-93-R1" } } } or {}
   ns.Store.Init()
   ns.Ledger.ResetRuntime()
+  ns.Ledger.HONOR_FALLBACK = math.random(2) == 1   -- off by default; both ways are run
   M.units.player.level = math.random(1, 70)
   local L, S = ns.Ledger, ns.Store
   local booked = {}                     -- per GUID (or key): own kills booked

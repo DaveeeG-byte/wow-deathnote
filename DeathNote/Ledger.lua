@@ -23,7 +23,8 @@
 -- standing leaves it out. Counts read for the standing are capped at COUNT_MAX.
 --
 -- Detection (decision 7): PARTY_KILL with my GUID or my pet's as attacker is the source. The honour line
--- (COMBATLOG_HONORGAIN of the client, made into a pattern) is the fallback when no PARTY_KILL came for that victim.
+-- (COMBATLOG_HONORGAIN of the client, made into a pattern) is the fallback when no PARTY_KILL came for that victim;
+-- it books only with HONOR_FALLBACK on (off until measured in the game).
 -- Dropped: no player, my own faction, the opponent of a duel to the death, instances, the same victim within 10 s.
 -- Whatever the client does here is unmeasured: /dn debug writes every case to DeathNoteDB.probe.kills.
 
@@ -45,7 +46,10 @@ Ledger.PATH_FROM = 10        -- counted kills before a path is named
 Ledger.PATH_SWITCH = 1.15    -- another account must beat the current path by 15 % to take over
 Ledger.COUNT_MAX = 9999      -- a count read for the standing never goes beyond this (broken or pasted data)
 Ledger.HONOR_WAIT = 2        -- seconds the honour line waits for a PARTY_KILL of the same kill
-Ledger.HONOR_FALLBACK = true -- the honour line books a kill when no PARTY_KILL came (decision 7; see the probe)
+-- the honour line books a kill when no PARTY_KILL came (decision 7). Off until the probe has shown in the game that
+-- the line comes only for the killing blow (it may come for an assist too: then an assist would count as a kill).
+-- The probe counts the lines either way (honorAlone, reason "fallback-off").
+Ledger.HONOR_FALLBACK = false
 Ledger.PROBE_MAX = 10        -- cases in DeathNoteDB.probe.kills.cases
 
 -- Greys: the victim's level at or below GreyLevel(my level). warcraft.wiki.gg "Mob experience" (Classic);

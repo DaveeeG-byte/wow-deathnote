@@ -202,4 +202,27 @@ test("Counts from a broken file are capped in the standing and never become own 
   eq(ns.Ledger.Repute().n, 0)
 end)
 
+---------------------------------------------------------------------------
+-- Honour line fallback off until measured (finding 3)
+---------------------------------------------------------------------------
+test("A stranger outside the group has the killing blow: the honour line alone books nothing, the probe counts it", function()
+  fresh()
+  eq(ns.Ledger.HONOR_FALLBACK, false, "off by default")
+  ns.Store.Setting("debug", true)
+  seen("Opfer", "Fremd", 40)
+  M.FireEvent("CHAT_MSG_COMBAT_HONOR_GAIN", "Opfer Fremd" .. LINE); M.Advance(3)
+  eq(ns.Ledger.Victim("Opfer-Fremd"), nil); eq(ns.Ledger.Repute().n, 0)
+  local c = ns.Ledger.probeCounts
+  eq(c.honorAlone, 1, "the probe still counts the line"); eq(c.rejected["fallback-off"], 1)
+  eq(_G.DeathNoteDB.probe.kills.cases[1].result, "fallback-off")
+end)
+
+test("A raid member kills a never seen enemy: the honour line books nothing", function()
+  fresh()
+  M.units.raid1 = { exists = true, isPlayer = true, name = "Kollege" }
+  kill("Player-93-NieGesehen", "Player-93-Kollege")
+  M.FireEvent("CHAT_MSG_COMBAT_HONOR_GAIN", "Weit Weg" .. LINE); M.Advance(3)
+  eq(ns.Ledger.Repute().n, 0)
+end)
+
 M.done("ledger_fixes")

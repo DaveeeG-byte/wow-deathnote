@@ -194,6 +194,7 @@ end)
 
 test("Honour line as fallback: books after 2 s with flag m, pattern from the client's text", function()
   load(40)
+  L().HONOR_FALLBACK = true   -- off by default until the probe has measured it
   eq(_G.COMBATLOG_HONORGAIN, HONOR, "mock carries the Forever text")
   seen("Grimm", "Bart", 42)
   M.FireEvent("CHAT_MSG_COMBAT_HONOR_GAIN", "Grimm Bart stirbt (Ehrenhafter Sieg: Rang 3). Ihr erhaltet 12 Ehre.")
@@ -202,6 +203,7 @@ test("Honour line as fallback: books after 2 s with flag m, pattern from the cli
   local v = L().Victim("Grimm-Bart")
   ok(v, "booked"); eq(v.n, 1)
   ok(L().Log()[1].f:find("m"), "flag m"); eq(L().Log()[1].band, "gelb")
+  L().HONOR_FALLBACK = false
 end)
 
 test("Honour line and PARTY_KILL of one kill count once, in either order", function()
@@ -231,6 +233,7 @@ end)
 
 test("Honour line without a victim, from an English client, never seen victim", function()
   load(40)
+  L().HONOR_FALLBACK = true   -- off by default until the probe has measured it
   M.FireEvent("CHAT_MSG_COMBAT_HONOR_GAIN", "Ihr habt 12 Ehre erhalten.")
   M.Advance(5)
   eq(L().Repute().n, 0, "no name, nothing")
@@ -239,6 +242,7 @@ test("Honour line without a victim, from an English client, never seen victim", 
   M.Advance(5)
   local v = L().Victim("Vik-Forever")
   ok(v, "placeholder victim"); eq(v.surname, nil); eq(L().Log()[1].band, "unbekannt")
+  L().HONOR_FALLBACK = false
 end)
 
 test("Victim never seen: first name from GetPlayerInfoByGUID, level unknown; seen later with surname: moved", function()
