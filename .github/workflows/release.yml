@@ -5,7 +5,7 @@ name: Package
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    tags: ['v[0-9]*']
   workflow_dispatch:
 
 permissions:
@@ -55,7 +55,7 @@ jobs:
             # counts here, because only that starts a tag run; with any other tag nothing would check this commit.
             future_tag=""
             if [ "$GITHUB_EVENT_NAME" = "push" ] && [[ "$GITHUB_REF" == refs/heads/* ]]; then
-              future_tag=$(git tag --points-at HEAD --list 'v*' 2>/dev/null | paste -sd ' ') || future_tag=""
+              future_tag=$(git tag --points-at HEAD --list 'v[0-9]*' 2>/dev/null | paste -sd ' ') || future_tag=""
             fi
             if [ -n "$future_tag" ]; then
               echo "No zip on purpose: HEAD carries the tag(s) ${future_tag}; the run for the tag packages and checks it."
