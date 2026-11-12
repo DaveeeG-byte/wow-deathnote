@@ -101,6 +101,9 @@ local function repairSettings(st)
      or math.floor(pos + 0.5) % 360 ~= math.floor(mm.angle + 0.5) % 360 then
     mm.minimapPos = mm.angle
   end
+  -- LibDBIcon:AddButtonToCompartment (called by another addon) leaves showInCompartment in OUR table, and the
+  -- library would then add a second compartment entry on every login. The TOC already provides ours.
+  mm.showInCompartment = nil
   -- releases expire after one of these (0 = never)
   local g = st.guild
   if type(g) == "table" then

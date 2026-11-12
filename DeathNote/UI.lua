@@ -4498,9 +4498,12 @@ local function IconLib()
       OnClick = function(_, mouse) Click(mouse) end,
       OnTooltipShow = function(tt)
         if not tt or not tt.AddLine then return end
-        -- the drag line only on the minimap button (LDB displays show the same tooltip elsewhere)
+        -- the drag line only on the minimap button (LDB displays show the same tooltip elsewhere), and not
+        -- while LibDBIcon:Lock (another addon) keeps it from moving
         local okO, owner = pcall(function() return tt:GetOwner() end)
-        FillTip(tt, okO and owner ~= nil and owner == LibButton())
+        local db = Look.Setting("ui.minimap")
+        local locked = type(db) == "table" and db.lock
+        FillTip(tt, okO and owner ~= nil and owner == LibButton() and not locked)
       end,
     })
     if not (okN and type(obj) == "table") then return nil end
