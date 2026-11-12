@@ -1461,6 +1461,7 @@ function GF.BountySlot(E, key)
 end
 
 GF.FIT_STRIKE = { sizes = { 13, 11 } }
+GF.FIT_NAME22, GF.FIT_NAME26, GF.FIT_WORD = { sizes = { 22, 19, 16 } }, { sizes = { 26, 22, 19 } }, { sizes = { 11, 10 } }
 function UX.BuildPoster()
   P = CreateFrame("Frame", nil, RP)
   P:SetSize(352, 452)
@@ -1762,6 +1763,7 @@ function UX.BuildPoster()
   D.killer.text:SetWidth(304)
   D.killer.text:SetJustifyH("LEFT")
   D.killer.text:SetWordWrap(false)
+  Look.TipIfCut(D.killer, D.killer.text)   -- 1.2.2: 26, 22, 19 pt, dann Tooltip
   D.killer:SetScript("OnClick", function(self)
     if self.key and Store().Get(self.key) then UI.ShowEnemy(self.key) end
   end)
@@ -2422,20 +2424,20 @@ local function FillDeath(d, index)
   if d.kind == "pvp" and d.killerKey then
     D.killLabel:SetText(Spaced(d.sure == false and L.CASE_KILLER_SUSPECT or L.CASE_KILLER))
     local name, e = NameOfKey(d.killerKey, d.killerName)
-    D.killer.text:SetText(name)
+    Look.FitText(D.killer.text, name, GF.FIT_NAME26)
     D.killer.key = e and d.killerKey or nil
     D.note:SetText(e and L.CASE_CLICK_NAME or L.CASE_GONE)
   elseif d.kind == "pvp" then
     D.killLabel:SetText(Spaced(L.CASE_KILLER_UNCLEAR))
-    D.killer.text:SetText("?")
+    Look.FitText(D.killer.text, "?", GF.FIT_NAME26)
     D.note:SetText(#cands > 0 and L.CASE_SEVERAL or L.CASE_NOBODY)
   elseif d.kind == "pve" then
     D.killLabel:SetText(Spaced(L.CASE_HOW))
-    D.killer.text:SetText(L.ROW_NO_PLAYER)
+    Look.FitText(D.killer.text, L.ROW_NO_PLAYER, GF.FIT_NAME26)
     D.note:SetText(L.CASE_PVE)
   else
     D.killLabel:SetText(Spaced(L.CASE_HOW))
-    D.killer.text:SetText(L.CASE_UNCLEAR)
+    Look.FitText(D.killer.text, L.CASE_UNCLEAR, GF.FIT_NAME26)
     D.note:SetText(L.CASE_DARK)
   end
 
@@ -2748,6 +2750,7 @@ GF.MORE_WARN = {
   { "announceHunt", "OPT_F_ANNOUNCEHUNT" },   -- 1.2.0 fix: Meldung erlegt / neue Ziele hatte keinen Schalter
 }
 local SHEETS = { "SHEET_BOOK", "SHEET_ALERT", "SHEET_GUILD" }   -- Schluessel
+GF.SHEET_TOP = 76     -- 1.2.2: Kopf und Blatt-Reiter stehen, darunter rollt das Blatt
 GF.SYNC_MIN, GF.SYNC_MAX = 84, 150   -- Abgleichen-Knopf: waechst mit dem Text (1.2.0)
 GF.COOLDOWNS = { 30, 60, 90, 120, 180, 300, 600 }
 local ROW_Y0, OPT_H = -84, 24
@@ -2772,7 +2775,8 @@ end
 local function SheetHead(parent, text)
   local head = Look.Text(parent, "hand", 26, Look.INK)
   head:SetPoint("TOP", 0, -16)
-  head:SetText(text)
+  head:SetWidth(PAGE_W - 40)
+  Look.FitText(head, text, GF.FIT_NAME26)   -- 1.2.2: 26, 22, 19 pt (REL_HEAD ukUA war breiter als die Linie)
   Rule(parent, -50, 30, 30, 0.6)
   return head
 end
@@ -2942,19 +2946,28 @@ BuildSettings = function()
     l:SetPoint("TOPLEFT", 34, y - 6)
     return y - 22
   end
+  -- 1.2.2: der Hinweis steht im Fluss des Blatts (GF.LayoutSheet): an seinem alten Platz ueber der Fussleiste,
+  -- solange der Inhalt darueber endet, sonst darunter, und das Blatt rollt
   local function hint(page, text)
     local h = Look.Text(page, "type", 11, Look.INK)
     h:SetTextColor(C(Look.INK, TONE.hint))
-    h:SetPoint("BOTTOMLEFT", 30, 44)
-    h:SetPoint("RIGHT", page, "RIGHT", -30, 0)
+    h:SetWidth(PAGE_W - 60)
     h:SetJustifyH("LEFT")
     h:SetText(text or "")
+    page.hint = h
     return h
+  end
+  -- Blaetter liegen im Rollkind; ihre Oberkante bleibt die Oberkante der Seite (gleiche Koordinaten wie vorher)
+  S.page = Look.Page(S, { top = GF.SHEET_TOP, foot = 44, w = PAGE_W, h = PAGE_H })
+  local function sheet()
+    local f = CreateFrame("Frame", nil, S.page.body)
+    f:SetPoint("TOPLEFT", S.page.body, "TOPLEFT", 0, GF.SHEET_TOP)
+    f:SetSize(PAGE_W, PAGE_H)
+    return f
   end
 
   -- Blatt 1: Buch (Anzeige, Groesse, Weitergeben)
-  local A = CreateFrame("Frame", nil, S)
-  A:SetAllPoints()
+  local A = sheet()
   S.pageA = A
   local y = checks(A, ns.Humor and ns.Humor.BookOptions(BOOK_OPTIONS) or BOOK_OPTIONS) -- Humor: Schalter, nur de/en
   S.size = Stepper(A, y, L.SET_BOOK_SIZE, function(d)
@@ -2985,11 +2998,11 @@ BuildSettings = function()
   local imp = InkButton(A, L.IO_IMPORT, 104, 22, function() UI.OpenIO("import") end)
   imp:SetPoint("LEFT", exp, "RIGHT", 8, 0)
   S.ioButtons = { exp, imp }
+  A.bottom = -(y - 4) + 22
   hint(A, L.SET_HINT_BOOK)
 
   -- Blatt 2: Alarm mit Ton, Lautstaerke und Kanal
-  local AL = CreateFrame("Frame", nil, S)
-  AL:SetAllPoints()
+  local AL = sheet()
   AL:Hide()
   S.pageL = AL
   y = checks(AL, ALERT_OPTIONS)
@@ -3060,11 +3073,11 @@ BuildSettings = function()
   y = y - OPT_H - 6
   local test = InkButton(AL, L.SET_TEST_ALERT, 104, 22, function() ns:Fire("TEST_ALERT") end)
   test:SetPoint("TOPLEFT", 30, y - 4)
+  AL.bottom = -(y - 4) + 22
   S.soundHint = hint(AL, "")
 
   -- Blatt 3: Gilde
-  local B = CreateFrame("Frame", nil, S)
-  B:SetAllPoints()
+  local B = sheet()
   B:Hide()
   S.pageB = B
   -- 1.2.0: mit Freunden Stand in je einer Zeile (voller Satz im Tooltip und auf der linken Seite), darunter
@@ -3096,7 +3109,7 @@ BuildSettings = function()
     y = section(B1, ROW_Y0 + 6, L.SET_SEC_SHARING)
     y = checks(B1, GF.FRIEND_SHARE, "guild.", y)
     y = section(B1, y - 6, L.SET_SEC_WARN)
-    checks(B1, GF.FRIEND_WARN, "guild.", y)
+    B1.bottom = -checks(B1, GF.FRIEND_WARN, "guild.", y)
     y = section(B2, ROW_Y0 + 6, L.SET_SEC_SHARING)
     y = checks(B2, GF.MORE_SHARE, "guild.", y)
     y = expireRow(B2, y)
@@ -3104,7 +3117,7 @@ BuildSettings = function()
     y = checks(B2, GF.MORE_WARN, "guild.", y)
     y = minKillsRow(B2, y, L.SET_F_MINKILLS) - 10
     -- "Mehr": Wort unten rechts auf beiden Seiten, unterstrichen, solange die zweite Seite offen ist
-    S.gmore = WordTab(B, L.SET_MORE, 50, function()
+    S.gmore = WordTab(S.page.foot, L.SET_MORE, 50, function()
       Set("ui.guildMore", Look.Setting("ui.guildMore", false) ~= true)
       UI.FillSettings()
     end)
@@ -3139,6 +3152,7 @@ BuildSettings = function()
   end
   local clear = InkButton(B2, L.SET_GUILD_CLEAR, 132, 22, function() Confirm("DEATHNOTE_GUILD_CLEAR") end)
   clear:SetPoint("TOPLEFT", 30, clearY)
+  B2.bottom = -clearY + 22
   if friendsSheet then
     -- 1.2.0: das Gegenstueck fuer das Freundesbuch (leert auch dessen Abschussliste, eigene Freigaben bleiben)
     local fclear = InkButton(B2, L.SET_FRIENDS_CLEAR, 132, 22, function() Confirm("DEATHNOTE_FRIENDS_CLEAR") end)
@@ -3268,19 +3282,28 @@ function GF.BuildRelease()
   local R = PageLayer(RP)
   RP.release = R
   SheetHead(R, L.REL_HEAD)
-  R.name = Look.Text(R, "hand", 22, Look.INK)
+  -- 1.2.2: Inhalt im Rollkind (gleiche Koordinaten wie vorher), Meldung und Knoepfe in der Fussleiste
+  local pg = Look.Page(R, { top = 58, foot = 74, w = PAGE_W, h = PAGE_H })
+  R.page = pg
+  local Rs = CreateFrame("Frame", nil, pg.body)
+  Rs:SetPoint("TOPLEFT", pg.body, "TOPLEFT", 0, 58)
+  Rs:SetSize(PAGE_W, PAGE_H)
+  R.name = Look.Text(Rs, "hand", 22, Look.INK)
   R.name:SetPoint("TOP", 0, -66)
   R.name:SetWidth(320)
   R.name:SetWordWrap(false)
-  R.who = Look.Text(R, "type", 11, Look.INK)
+  R.nameHit = CreateFrame("Frame", nil, Rs)
+  R.nameHit:SetAllPoints(R.name)
+  Look.TipIfCut(R.nameHit, R.name)
+  R.who = Look.Text(Rs, "type", 11, Look.INK)
   R.who:SetPoint("TOP", R.name, "BOTTOM", 0, -4)
   R.who:SetTextColor(C(Look.INK, TONE.sub))
-  local forL = Label(R, L.REL_FOR)
+  local forL = Label(Rs, L.REL_FOR)
   forL:SetPoint("TOPLEFT", 34, -134)
   R.tabs = {}
   local prev
   for i, v in ipairs(GF.TARGETS) do
-    local b = WordTab(R, L[v[2]], 90, function(self)
+    local b = WordTab(Rs, L[v[2]], 90, function(self)
       if self.off then return end
       state.release.to = self.to
       GF.FillRelease()
@@ -3292,11 +3315,24 @@ function GF.BuildRelease()
     R.tabs[i] = b
     prev = b
   end
-  local whyL = Label(R, L.REL_REASON)
+  -- 1.2.2: die drei Woerter enden vor dem Rand (x = 346); sonst werden alle gleich gestaucht, Schrift 11 oder 10 pt
+  local x0 = math.max(92, 34 + TextWidth(forL, 40) + 12)
+  local total = 0
+  for _, b in ipairs(R.tabs) do total = total + b:GetWidth() end
+  local room = 346 - x0 - 12 * (#R.tabs - 1)
+  if total > room then
+    for _, b in ipairs(R.tabs) do
+      local w = math.floor(b:GetWidth() * room / total)
+      b:SetWidth(w)
+      b.text:SetWidth(w - 4)
+      Look.FitText(b.text, b.text:GetText(), GF.FIT_WORD)
+    end
+  end
+  local whyL = Label(Rs, L.REL_REASON)
   whyL:SetPoint("TOPLEFT", 34, -176)
-  local eb = CreateFrame("EditBox", nil, R)
+  local eb = CreateFrame("EditBox", nil, Rs)
   eb:SetPoint("TOPLEFT", whyL, "TOPRIGHT", 8, 4)      -- 1.2.0: beide Anker an der Oberkante
-  eb:SetPoint("TOPRIGHT", R, "TOPRIGHT", -34, -172)
+  eb:SetPoint("TOPRIGHT", Rs, "TOPRIGHT", -34, -172)
   eb:SetHeight(18)
   eb:SetAutoFocus(false)
   eb:SetMaxLetters(60)
@@ -3309,24 +3345,32 @@ function GF.BuildRelease()
   eb:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
   eb:SetScript("OnEnterPressed", function(self) self:ClearFocus(); GF.DoRelease() end)
   R.edit = eb
-  R.hint = Look.Text(R, "type", 11, Look.INK)
+  R.hint = Look.Text(Rs, "type", 11, Look.INK)
   R.hint:SetTextColor(C(Look.INK, TONE.hint))
   R.hint:SetPoint("TOPLEFT", 34, -204)
   R.hint:SetWidth(312)
   R.hint:SetJustifyH("LEFT")
-  R.hint2 = Look.Text(R, "type", 11, Look.INK)
+  R.hint2 = Look.Text(Rs, "type", 11, Look.INK)
   R.hint2:SetTextColor(C(Look.INK, TONE.hint))
   R.hint2:SetPoint("TOPLEFT", R.hint, "BOTTOMLEFT", 0, -6)
   R.hint2:SetWidth(312)
   R.hint2:SetJustifyH("LEFT")
   R.hint2:SetText(L.REL_HINT2)
-  R.msg = Look.Text(R, "body", 11, Look.RED_INK)
+  R.msg = Look.Text(pg.foot, "body", 11, Look.RED_INK)
   R.msg:SetPoint("BOTTOM", 0, 44)
+  R.msg:SetMaxLines(2)
   R.msg:SetWidth(330)
-  R.go = InkButton(R, L.REL_GO, 104, 22, function() GF.DoRelease() end)
+  R.go = InkButton(pg.foot, L.REL_GO, 104, 22, function() GF.DoRelease() end)
   R.go:SetPoint("BOTTOM", -57, 12)
-  local back = InkButton(R, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
+  local back = InkButton(pg.foot, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
   back:SetPoint("BOTTOM", 57, 12)
+  R.sheet = Rs
+end
+
+-- Hoehe des Rollbereichs aus dem untersten Hinweis
+function GF.LayoutRelease(R)
+  local bottom = 204 + Look.TextH(R.hint, 3) + 6 + Look.TextH(R.hint2, 3)
+  R.page:Layout(math.ceil(bottom + 8 - 58))
 end
 
 function GF.FillRelease()
@@ -3334,7 +3378,7 @@ function GF.FillRelease()
   if not R or not st then return end
   local key = st.key
   local x = Store().Get(key) or GCall("Get", key, "all") or GCall("Hunt", key, "all")
-  R.name:SetText(x and Look.Name(x) or (NameOfKey(key)))
+  Look.FitText(R.name, x and Look.Name(x) or (NameOfKey(key)), GF.FIT_NAME22)
   R.who:SetText(x and Look.Join(x.level and Fmt(L.POSTER_LEVEL, { level = x.level }), ClassName(x)) or "")
   local g, f = GCall("HuntTargets")
   local avail = { all = g and f, guild = g, friends = f }
@@ -3351,6 +3395,7 @@ function GF.FillRelease()
     R.msg:SetText(L.REL_NONE)
   end
   R.go:SetShown(st.to ~= nil)
+  GF.LayoutRelease(R)
 end
 
 function GF.DoRelease()
@@ -3381,6 +3426,7 @@ function UI.OpenRelease(key)
   if RP.help then RP.help:Hide() end
   RP.release.edit:SetText("")
   RP.release:Show()
+  RP.release.page:Top()
   GF.FillRelease()
   if state.filter == "guild" and LP then GF.Survey(); UX.UpdateTabs() end   -- 1.2.0: Abschussliste-Ansicht zeigen
 end
@@ -3441,6 +3487,7 @@ function UI.FillSettings()
   if S.gmore then
     -- 1.2.0: zweite Seite des Blatts Gilde ("Mehr"), Zustand gemerkt, zu als Standard
     local more = Look.Setting("ui.guildMore", false) == true
+    S.gmore:SetShown(state.spage == 3)
     S.gmore:SetOn(more)
     S.pageB1:SetShown(not more)
     S.pageB2:SetShown(more)
@@ -3498,6 +3545,26 @@ function UI.FillSettings()
     S.soundHint:SetText(L.SET_HINT_LEVELS)
   end
   GF.FillLanguage(S)
+  GF.LayoutSheet(S)
+end
+
+-- 1.2.2: Hinweis des offenen Blatts in den Fluss setzen und die Hoehe des Rollbereichs; ein anderes Blatt
+-- (oder "Mehr") beginnt oben
+function GF.LayoutSheet(S)
+  local X = (state.spage == 1 and S.pageA) or (state.spage == 2 and S.pageL) or S.pageB
+  local inner = X
+  if X == S.pageB and S.pageB2 then inner = S.pageB2:IsShown() and S.pageB2 or S.pageB1 end
+  local h = X.hint
+  local low = inner.bottom or 0
+  local hh = h and h:GetText() ~= "" and Look.TextH(h, 3) or 0
+  local top = math.max(low + 10, PAGE_H - 44 - hh)
+  if h then
+    h:ClearAllPoints()
+    h:SetPoint("TOPLEFT", X, "TOPLEFT", 30, -top)
+  end
+  local key = tostring(state.spage) .. (inner == S.pageB2 and "m" or "")
+  if S.sheetKey ~= key then S.sheetKey = key; S.page:Top() end
+  S.page:Layout(math.floor(top + hh - GF.SHEET_TOP + 0.5))
 end
 
 function UI.OpenPanel(which)
@@ -3512,7 +3579,10 @@ function UI.OpenPanel(which)
   RP.io:SetShown(which == "export" or which == "import")
   if RP.help then RP.help:SetShown(which == "help") end
   if which == "help" then GF.LayoutHelp(); RP.help.page:Top() end
-  if which == "settings" then UI.FillSettings() end
+  if which == "settings" then
+    if RP.settings.page then RP.settings.sheetKey = nil end   -- 1.2.2: Hausordnung oeffnet oben
+    UI.FillSettings()
+  end
 end
 
 function UI.ClosePanel(silent)
@@ -3565,13 +3635,13 @@ function UI.OpenIO(mode)
   IO.msg:SetText("")
   IO.size:Hide()
   if mode == "export" then
-    IO.head:SetText(L.IO_EXPORT)
+    Look.FitText(IO.head, L.IO_EXPORT, GF.FIT_NAME26)
     IO.help:SetText(L.IO_HELP_EXPORT)
     IO.go:Hide()
     -- grosse Buecher zuerst klein zeigen (eine EditBox mit Tausenden Zeilen bremst)
     UI.ShowExport(nil)
   else
-    IO.head:SetText(L.IO_IMPORT)
+    Look.FitText(IO.head, L.IO_IMPORT, GF.FIT_NAME26)
     IO.help:SetText(L.IO_HELP_IMPORT)
     IO.edit:SetText("")
     IO.go:SetShown(Store().Import ~= nil)
