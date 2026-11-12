@@ -120,6 +120,8 @@ local TEXTS = {
       "Befördert. Eine Feier gibt es nicht, nur einen neuen Eintrag.",
       "Neuer Rang. Die Akte wird dicker.",
     },
+    -- several awards from one kill: one notice (head, title, the names in its line) and a chat line naming them all
+    AWARDS = { head = "AUSZEICHNUNGEN", title = "{count} Auszeichnungen", chat = "Neue Auszeichnungen: {names}." },
     MEDAL = { "Ein Orden. Das Buch hat ihn selbst geprägt.", "Abgeheftet unter: Verdienste." },
     APRIL_SUB = "Gesucht wegen wiederholten Sterbens.",
     APRIL_HINT = "Kopfgeld: die nächste Reparaturrechnung.",
@@ -214,6 +216,7 @@ local TEXTS = {
       "Promoted. There is no party, only a new entry.",
       "New rank. The file gets thicker.",
     },
+    AWARDS = { head = "AWARDS", title = "{count} awards", chat = "New awards: {names}." },
     MEDAL = { "An award. The book minted it itself.", "Filed under: merits." },
     APRIL_SUB = "Wanted for repeated dying.",
     APRIL_HINT = "Bounty: your next repair bill.",
@@ -779,6 +782,14 @@ function Humor.Award(id)
   local a = t and t.AWARD and t.AWARD[id]
   if not a then return nil end
   return a[1], a[2]
+end
+-- several awards at once (Extras.lua): head, title and line of the one notice, and the chat line naming them all
+function Humor.Awards(count, names)
+  local t = T()
+  local a = t and t.AWARDS
+  if not a or type(names) ~= "table" then return nil end
+  local list = table.concat(names, ", ")
+  return a.head, Fmt(a.title, { count = count }), table.concat(names, " · "), Fmt(a.chat, { names = list })
 end
 local function Remark(kind, pool)
   if not On() or not Roll(kind) then return end

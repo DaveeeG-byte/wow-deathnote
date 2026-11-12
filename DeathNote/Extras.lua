@@ -151,7 +151,11 @@ local NAME_Y, LINE_W = -20, 300
 Extras.BANNER_SIZE = { w = BANNER_W, h = BANNER_H, quip = QUIP_GAP + QUIP_H }
 local guildQueue = {}     -- waiting guild notices; the own notice always goes first
 local GUILD_QUEUE_MAX = 3
+-- waiting rap sheet notices (rank, awards): no cap, they are few (one per rank, one per award) and never repeat;
+-- one kill gives at most two of them (see the end of the file)
+local sheetQueue = {}
 local NextGuild -- forward declaration
+local function Waiting() return #guildQueue > 0 or #sheetQueue > 0 end
 
 -- The class colour as ink on the slip: 30 % class colour in 70 % ink keeps a hint of the hue and stays readable
 -- on paper even at 13 pt (the white of a priest becomes a dark grey; contrast guard in tests/ui/gesamtschau.lua)
@@ -220,7 +224,7 @@ local function BuildBanner()
     self.open, self.key, self.guild = nil, nil, false
     self:EnableMouse(false)
     if GameTooltip and GameTooltip.IsOwned and GameTooltip:IsOwned(self) then GameTooltip:Hide() end
-    if #guildQueue > 0 then C_Timer.After(0.4, NextGuild) end
+    if Waiting() then C_Timer.After(0.4, NextGuild) end
   end
   banner:SetScript("OnMouseUp", function(self, mouse)
     if not self.open then return end
@@ -298,7 +302,7 @@ local function BuildBanner()
     banner:EnableMouse(false)
     banner.guild = false
     banner.key = nil
-    if #guildQueue > 0 then C_Timer.After(0.4, NextGuild) end
+    if Waiting() then C_Timer.After(0.4, NextGuild) end
   end)
   banner.inAnim, banner.anim = gi, g
 
@@ -493,7 +497,7 @@ local function OnRevengeUndone(key)
   banner.inAnim:Stop(); banner.anim:Stop(); banner:Hide(); banner:SetAlpha(0)
   banner.open, banner.key, banner.kind, banner.guild = nil, nil, nil, false
   banner:EnableMouse(false)
-  if #guildQueue > 0 then C_Timer.After(0.4, NextGuild) end
+  if Waiting() then C_Timer.After(0.4, NextGuild) end
 end
 
 -- 1.2.1: a guildmate or friend took down a killer who is in the own book: a chat line and the short
@@ -527,11 +531,21 @@ local function ShowBagged(key, char, t)
   Banner(L.BANNER_HUNT, name, rgb, line, "hunt", true, key)
 end
 
--- waiting notices: { function, arguments ... }
+-- rap sheet notices wait in combat and while the first-start dialog of a new installation is unanswered
+local function Holding() return ns.Start and ns.Start.Holding and ns.Start.Holding() end
+local function SheetHeld() return (InCombatLockdown and InCombatLockdown()) or Holding() end
+local function NextSheet()
+  if #sheetQueue == 0 or (banner and banner:IsShown()) or SheetHeld() then return end
+  local n = table.remove(sheetQueue, 1)
+  Banner(n[1], n[2], nil, n[3] or "", nil, false, nil, nil)
+end
+
+-- waiting notices: { function, arguments ... }; guild notices first, then the rap sheet's
 NextGuild = function()
   if banner and banner:IsShown() then return end
   local q = table.remove(guildQueue, 1)
-  if q then q[1](q[2], q[3], q[4], q[5], q[6]) end
+  if q then q[1](q[2], q[3], q[4], q[5], q[6]); return end
+  NextSheet()
 end
 
 local function Later(fn, a, b, c, d, e)
@@ -605,32 +619,55 @@ local function OnNewHunt(count, key, by, src, one, list)
 end
 
 ------------------------------------------------------------------------
--- 1.3.0 rap sheet: a chat line after an own kill (switch ledger.chat), notices for a new rank and an award. The notices
--- are data for the notice above (kicker, name, line); its look stays its own. They never come in combat (they wait
--- for its end, like the greeting) and queue behind a notice on screen.
+-- 1.3.0 rap sheet: a chat line after an own kill (switch ledger.chat), notices for a new rank and for awards. The
+-- notices are data for the notice above (kicker, name, line); its look stays its own. They never come in combat (they
+-- wait for its end, like the greeting) nor before the first-start dialog of a new installation is answered, and they
+-- queue behind a notice on screen, in a queue of their own without a cap (nothing gets lost).
+-- One kill gives at most two notices: the new rank, and the awards (one award: its name and condition; several: one
+-- notice "n awards" naming them in its line, and a chat line naming them all).
 ------------------------------------------------------------------------
-local noticeWait = {}
-local function Holding() return ns.Start and ns.Start.Holding and ns.Start.Holding() end
 function Extras.Notice(kicker, name, line)
   if type(name) ~= "string" or name == "" then return end
-  -- in combat, or while the first-start dialog of a new installation has not been answered: later
-  if (InCombatLockdown and InCombatLockdown()) or Holding() then
-    if #noticeWait < GUILD_QUEUE_MAX then noticeWait[#noticeWait + 1] = { kicker, name, line } end
-    return
-  end
-  Later(function(k, n, l) Banner(k, n, nil, l or "", nil, false, nil, nil) end, kicker, name, line)
+  sheetQueue[#sheetQueue + 1] = { kicker, name, line }
+  NextSheet()
 end
 local function FlushNotices()
-  if #noticeWait == 0 or Holding() then return end
-  local w = noticeWait
-  noticeWait = {}
-  for i = 1, #w do Extras.Notice(w[i][1], w[i][2], w[i][3]) end
+  if #sheetQueue == 0 or SheetHeld() then return end
+  NextGuild()
 end
 ns:RegisterEvent("PLAYER_REGEN_ENABLED", FlushNotices)
 -- the first-start dialog has asked: Start.lua builds the notice then (Extras.BuildBanner); waiting notices follow
 do
   local build = Extras.BuildBanner
   if build then Extras.BuildBanner = function(...) local b = build(...); FlushNotices(); return b end end
+end
+
+-- The events of one kill fire one after the other in the same frame (Ledger.lua: AWARD for each award, then
+-- OWN_KILL, then REPUTE_RANK): collected here and handed over one frame later as at most two notices
+local batch
+local function SendBatch()
+  local b = batch
+  batch = nil
+  if not b then return end
+  if b.rank then Extras.Notice(b.rank[1], b.rank[2], b.rank[3]) end
+  local n = #b.awards
+  if n == 1 then
+    Extras.Notice(L.BANNER_AWARD, b.awards[1][1], b.awards[1][2])
+  elseif n > 1 then
+    local names = {}
+    for i = 1, n do names[i] = b.awards[i][1] end
+    local head, title, line, chat
+    if ns.Humor and ns.Humor.Awards then head, title, line, chat = ns.Humor.Awards(n, names) end
+    if chat and ns.Util and ns.Util.Print then ns.Util.Print(chat) end
+    Extras.Notice(head or L.BANNER_AWARD, title or names[1], line)
+  end
+end
+local function Batch()
+  if not batch then
+    batch = { awards = {} }
+    if C_Timer and C_Timer.After then C_Timer.After(0, SendBatch) end
+  end
+  return batch
 end
 
 -- "Rap sheet: Grimm Bart, Level 34 (yellow). +3 Honour."
@@ -648,7 +685,7 @@ local function OnRank(tier, path)
   rankAt = GetTime()
   local Rk = ns.Ranks
   local named = Rk.Name(tier, path) ~= nil
-  Extras.Notice(L.BANNER_RANK, Rk.Title(tier, path), named and Fmt(L.REPUTE_LINE, { tier = tier, path = Rk.PathWord(path) }) or nil)
+  Batch().rank = { L.BANNER_RANK, Rk.Title(tier, path), named and Fmt(L.REPUTE_LINE, { tier = tier, path = Rk.PathWord(path) }) or nil }
 end
 
 -- a new path without a new rank: a chat line (the rank's name changes with it from rank 3 on)
@@ -664,7 +701,7 @@ end
 local function OnAward(id)
   if not ready or not (ns.Humor and ns.Humor.Award) then return end
   local name, cond = ns.Humor.Award(id)
-  if name then Extras.Notice(L.BANNER_AWARD, name, cond) end
+  if name then local a = Batch().awards; a[#a + 1] = { name, cond } end
 end
 
 ns:On("OWN_KILL", OnOwnKill)
