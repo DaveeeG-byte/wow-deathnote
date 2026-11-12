@@ -283,10 +283,25 @@ local function cleanStr(v, max)
   return v:sub(1, max or 64)
 end
 
+-- The key of a second player with the same first name, known without surname: "Name-Realm#<GUID without
+-- "Player-">" (server and player part, so it is unique across realm numbers). It lives in the rap sheet and in the
+-- tracker's buffer only: never in the book, the export or the sync, never handed to Store to create an entry.
+local function namesakeKey(plain, guid)
+  return plain .. "#" .. (guid:match("^Player%-(.+)$") or guid)
+end
+Ledger.NamesakeKey = namesakeKey
+
+-- name and realm (or surname) of a victim key, without the "#..." part of a namesake key
+local function splitVictimKey(key)
+  local n, s = Util.SplitKey(key)
+  if s then s = s:gsub("#.*$", "") end
+  return n, s
+end
+
 -- repairs one victim in place; false = beyond repair
 local function sanitizeVictim(key, v)
   if type(key) ~= "string" or type(v) ~= "table" then return false end
-  local n, s = Util.SplitKey(key)
+  local n, s = splitVictimKey(key)
   v.key = key
   v.name = Util.CleanName(v.name) or Util.CleanName(n)
   if not v.name then return false end
@@ -510,14 +525,6 @@ local function capVictims(keep)
   end
   table.sort(list, capOrder)
   for i = 1, math.min(over, #list) do dropVictim(list[i][1]) end
-end
-
--- name and realm (or surname) of a victim key; "Name-Realm#GUID" is the placeholder of a second player with the
--- same first name (keyOf)
-local function splitVictimKey(key)
-  local n, s = Util.SplitKey(key)
-  if s then s = s:gsub("#.*$", "") end
-  return n, s
 end
 
 local function addVictim(key, info)
@@ -799,6 +806,28 @@ function Ledger.AsEntry(key)
   return e
 end
 
+-- The parts to show for a key of the rap sheet or the book: name, surname (nil when unknown), realm (nil when
+-- unknown). Right for namesake keys ("Name-Realm#...") too, which carry no name of their own: the book and the alarm
+-- show a victim or an entry only through this (or the fields of Ledger.Victim / Store.Get), never by splitting a key.
+function Ledger.NameParts(key)
+  if type(key) ~= "string" or IsSecret(key) then return nil end
+  local v = db and victims[key]
+  if v then return v.name, v.surname, v.realm end
+  local S = ns.Store
+  local e = S and S.Get(key)
+  if e then return e.name, e.surname, e.realm end
+  -- a key nobody holds: the second part may be a surname or a realm, it is shown as neither
+  local n = splitVictimKey(key)
+  return n, nil, nil
+end
+
+-- "Name Surname" or "Name" for a key (Ledger.NameParts), nil for nothing
+function Ledger.DisplayName(key)
+  local n, sn = Ledger.NameParts(key)
+  if not n then return nil end
+  return sn and (n .. " " .. sn) or n
+end
+
 -- strikes a victim from the rap sheet: name and count go, the points earned stay
 function Ledger.RemoveVictim(key)
   if not db or type(key) ~= "string" or not victims[key] then return false end
@@ -919,7 +948,7 @@ local function keyOf(info)
   if g then
     local pv, pe = victims[plain], S and S.Get(plain)
     if (pv and pv.guid and pv.guid ~= g) or (pe and type(pe.guid) == "string" and pe.guid ~= g) then
-      return plain .. "#" .. (g:match("([^%-]+)$") or g)
+      return namesakeKey(plain, g)
     end
   end
   return plain
