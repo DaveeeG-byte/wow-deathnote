@@ -1539,7 +1539,12 @@ function Ledger.OnPartyKill(attackerGUID, targetGUID)
   do
     local gt0 = gtime()
     local x = claimOf(tg, gt0)
-    if x then x.booked = true else claim({ gt = gt0, guid = tg, booked = true }) end
+    if x then
+      if x.mate and not x.booked and x.case then x.case.result = "group-own" end
+      x.booked = true
+    else
+      claim({ gt = gt0, guid = tg, booked = true })
+    end
   end
   local ok, why = gate(c, tg)
   if not ok then return false, why end
