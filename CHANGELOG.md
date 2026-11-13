@@ -3,11 +3,22 @@
 ## 1.3.1 (2026-11-13)
 
 ### Fixed
-- Kills made with your group were not booked when a group member landed the killing blow. Now they count when you took part (the game counts the kill for you or gives you honour within a few seconds), with half honour and hunt; infamy and protection count in full. Chat line, latest kills and the victim sheet show them as group kills ("With your group."). The same player killed by you and a group member within 10 seconds is one kill. The biggest level gap and the fastest payback stay for your own killing blows.
+- Kills made with your group were not booked when a group member landed the killing blow. Now they count when you took part (the game counts the kill for you or gives you honour within a few seconds), with half honour and hunt; infamy and protection count in full (a grey victim probably brings no such proof, so a group kill on a grey is probably not booked). Chat line, latest kills and the victim sheet show them as group kills (the tooltip of the kill line: "With your group."). The same player killed by you and a group member within 10 seconds is one kill. The biggest level gap, the fastest payback and the award for payback on the same day stay for your own killing blows.
+- With five tabs, the Wanted tab no longer cuts a three-digit number in some languages and covers.
+- Chinese: no blank between the two sentences of a group kill's chat line.
 
 ### Changed
 - The Rap Sheet tab is there from the start, with an empty file.
 - An empty rap sheet says on the left page what will stand there.
+- How it works: the RAP SHEET paragraph names the group kills you took part in.
+- The Workshop: the rap sheet tab is called "Work Done" ("Leistungen" in German), so it is found again.
+
+### Known open
+- Kills by totems, guardians, traps or damage over time without a `PARTY_KILL` are not booked, neither your own nor your group's.
+- Grey victims in a group: whether the game gives a proof for a player who is grey for you is not measured; probably not, then such group kills are not booked.
+- Two group kills within 3 seconds with one proof: the proof goes to your target or a player seen in the last 10 seconds, else to the older kill. When you took part in a kill of a player you never saw, the wrong one can be booked.
+- Any honour line counts as a proof, also bonus honour from a quest or an objective: it can book a group member's kill out of your reach within a few seconds of it.
+- Measured in the game so far: one evening in a group of two.
 
 ## 1.3.0 (2026-11-12)
 

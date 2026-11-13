@@ -43,11 +43,19 @@
 -- or an honour line of any form, from PROOF_BEFORE seconds before the PARTY_KILL to PROOF_AFTER seconds after it.
 -- Measured on Forever (probe 13.11.2026, a group of two, the mate's killing blows): PARTY_KILL, then
 -- PLAYER_PVP_KILLS_CHANGED +0.4 s, then the honour line without a name +1.0 s. Each proof counts for one PARTY_KILL
--- only, per channel (one PLAYER_PVP_KILLS_CHANGED and one honour line come for the same kill): the oldest open
--- PARTY_KILL takes it. My own PARTY_KILLs on players take their proofs too (they are booked at once), so a proof of
--- my own kill never books a mate's kill out of my reach. No proof, no kill.
+-- only, per channel (one PLAYER_PVP_KILLS_CHANGED and one honour line come for the same kill). Who takes it (pick):
+-- my own open PARTY_KILLs on players first (booked at once, they only take the proofs of my kill away from the
+-- mates'), then the mates'; within each, the claim that already has the other channel's proof (it waits PROOF_PAIR s
+-- for it, also past PROOF_AFTER), then a near one (my target, or seen by the tracker within NEAR s), then the oldest.
+-- So a proof that comes after my own PARTY_KILL never books a mate's kill out of my reach. Not covered: a proof that
+-- comes before my own PARTY_KILL can still go to an older mate's claim (nothing booked is taken back; measured is the
+-- order PARTY_KILL first). A victim without a name is looked up again at the proof; still nameless, he takes none.
+-- After PLAYER_ENTERING_WORLD what waited ends, and for QUIET s a proof no claim takes is dropped. No proof, no kill.
+-- Any honour line is a proof: one from another source (bonus honour) within the window books a mate's kill out of my
+-- reach. Only the counter would be the clean channel, but the probe showed it for one of four group kills only (the
+-- other three fell out of its buffer), so both stay proofs until the probe counts proofKC against proofHonor.
 -- Dropped: no player, my own faction, the opponent of a duel to the death, instances, the same victim within 10 s
--- (by GUID: a mate's killing blow and mine on the same victim are one kill).
+-- (by GUID: a mate's killing blow and mine on the same victim are one kill). My own dropped kills make no claim.
 -- Own kills without a PARTY_KILL (totem, guardian, trap, damage over time) are not booked: a proof without any
 -- PARTY_KILL names no victim, and whether UNIT_DIED names dead enemy players on Forever is unmeasured (the probe of
 -- 13.11.2026 could not show it: it watched UNIT_DIED only for own kills on players, and there were none). The probe

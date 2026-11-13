@@ -177,8 +177,15 @@ Your own killing blows on players and, since 1.3.1, kills of your group you took
 took part comes from 1 s before to 3 s after it (`Ledger.PROOF_BEFORE`, `Ledger.PROOF_AFTER`):
 `PLAYER_PVP_KILLS_CHANGED` or an honour line of any form. Measured on Forever (probe of 13.11.2026, the group
 member's killing blow): `PLAYER_PVP_KILLS_CHANGED` 0.4 s and the honour line (without the victim's name) 1.0 s after
-the `PARTY_KILL`. Each proof counts for one `PARTY_KILL` only (per kind, the oldest first); your own kills on players
-take their proofs too, so they never book a group member's kill out of your reach. Without a proof nothing is booked.
+the `PARTY_KILL`. Each proof counts for one `PARTY_KILL` only (per kind). Your own kills on players take their proofs
+first, so a proof that comes after your own kill never books a group member's kill out of your reach; among the group
+members' kills a proof goes to the kill that already has the other kind of proof, then to a victim that is your target
+or was in sight in the last 10 s, then to the oldest. A proof that comes before your own `PARTY_KILL` can still book
+an older kill of a group member (what is booked is never taken back; the measured order is `PARTY_KILL` first). Any
+honour line counts as a proof, also honour from another source within the window. Right after a loading screen a
+proof books nothing for 5 s unless a kill is waiting for it. Without a proof nothing is booked; a victim who is grey
+for you probably brings none (the game counts honourable kills only; unmeasured), so a group kill on a grey is
+probably not booked.
 Not booked: non-players, your own faction, the opponent of a duel to the death, anything inside an instance (dungeon,
 raid, battleground, arena), the same victim again within 10 s (by GUID: a group member's killing blow and yours on
 the same victim are one kill). The honour line with the victim's name (`COMBATLOG_HONORGAIN`, made into a pattern)
@@ -226,12 +233,14 @@ values. Hunt pushes it to neither side, but it counts in the sum and so draws th
 
 **Awards and bests.** Six awards (two hidden until earned; names and conditions in `Humor.lua`, German and English)
 and three bests: the biggest level gap of a kill, the longest streak of kills without dying, the fastest payback
-(gap and payback only from your own killing blows; a group kill counts for the streak).
+(gap and payback only from your own killing blows, like the award for payback on the same day; a group kill counts
+for the streak).
 
 **In the book.** Fifth tab "Rap Sheet" while the rap sheet is kept (1.3.1: from the start; with no victim yet the left
 page says what will stand there): your file, the latest 60 kills, a sheet per victim with the scene (zone and time),
 up to 200 victims (the oldest one not in the book goes first). A chat line after each own kill (a group kill adds
-"With your group."; its kill lines carry the tag "group" and say so in their tooltip), a notice for a new rank or an
+"With your group."; its kill line carries one tag, "group" unless "kicked" or "revenge" applies, and its tooltip
+always says "With your group."), a notice for a new rank or an
 award (after combat), the score in list, poster, tooltip, alarm line and revenge notice, the game tooltip "RAP SHEET:"
 over a victim. Clearing the rap sheet removes victims and kill list; rank, points and awards stay. Switched off ("Keep
 a rap sheet"), nothing is booked, tab and score disappear and the book ranks as in 1.2.x; the data stays.
