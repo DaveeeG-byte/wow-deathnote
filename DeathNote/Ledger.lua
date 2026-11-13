@@ -1,7 +1,7 @@
 -- DeathNote - Ledger.lua (1.3.1)
--- The rap sheet: own killing blows on players (1.3.1: and group kills I took part in), the standing "me : him" per enemy, and the repute (four accounts,
--- rank, path, needle). Data and rules only; the book (UI.lua, Extras.lua) and the alarm (Alert.lua) read it through
--- the functions and the bus events below. Nothing of this goes over the wire.
+-- The rap sheet: own killing blows on players (1.3.1: and group kills I took part in), the standing "me : him" per
+-- enemy, and the repute (four accounts, rank, path, needle). Data and rules only; the book (UI.lua, Extras.lua) and
+-- the alarm (Alert.lua) read it through the functions and the bus events below. Nothing of this goes over the wire.
 --
 -- Events (ns:Fire), in this order for one kill: AWARD(id) for every new award, OWN_KILL(key, row),
 -- STANDING_CHANGED(key), REPUTE_RANK(tier, path, oldTier, oldPath) only when the tier changed (a banner shows it
