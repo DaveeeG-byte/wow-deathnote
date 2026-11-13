@@ -156,7 +156,7 @@ test("One proof (kills changed and its honour line) for two PARTY_KILLs = one ki
   eq(L().Victim("Bernd-Bolz"), nil)
 end)
 
-test("My own kill takes its own proof: a mate's kill out of my reach right before it is not booked", function()
+test("My own kill takes its own proof: a mate's kill out of my reach right after it is not booked", function()
   load(40); party()
   local a, b = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40)
   pk(ME, a)
