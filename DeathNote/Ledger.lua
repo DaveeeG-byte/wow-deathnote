@@ -1565,17 +1565,6 @@ function Ledger.OnPartyKill(attackerGUID, targetGUID)
   if kind ~= "Player" then return reject(c, "notplayer") end
   if tg == me then return reject(c, "self") end
   if c then caseGuid[c] = tg end
-  -- 1.3.1: my own kill on a player takes its proofs (booked or not); a mate's open claim on him is this kill
-  do
-    local gt0 = gtime()
-    local x = claimOf(tg, gt0)
-    if x then
-      if x.mate and not x.booked and x.case then x.case.result = "group-own" end
-      x.booked, x.mate = true, false     -- my own kill now: its proofs come first (pick)
-    else
-      claim({ gt = gt0, guid = tg, booked = true })
-    end
-  end
   local ok, why = gate(c, tg)
   if not ok then return false, why end
   local info, how, age = lookup(tg)
@@ -1583,6 +1572,16 @@ function Ledger.OnPartyKill(attackerGUID, targetGUID)
   targetLevel(c, info, tg)
   if ownFaction(info) then return reject(c, "faction") end
   local gt = gtime()
+  -- 1.3.1: my own kill on a player takes its proofs; a mate's open claim on him is this kill. Only a kill that passed
+  -- the gate and the faction: a duel to the death, my own faction or an instance bring no proof, such a claim would
+  -- only take the proofs of a group kill next to it (hunt N1)
+  local x = claimOf(tg, gt)
+  if x then
+    if x.mate and not x.booked and x.case then x.case.result = "group-own" end
+    x.booked, x.mate = true, false     -- my own kill now: its proofs come first (pick)
+  else
+    claim({ gt = gt, guid = tg, booked = true })
+  end
   if isDup(gt, tg, info.key, firstOf(info.name)) then
     probeCounts.dup = probeCounts.dup + 1
     if c then c.dup = true end
