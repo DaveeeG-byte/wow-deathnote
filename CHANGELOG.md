@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.1 (2026-11-13)
+
+### Fixed
+- Kills made with your group were not booked when a group member landed the killing blow. Now they count when you took part (the game counts the kill for you or gives you honour within a few seconds), with half honour and hunt; infamy and protection count in full. Chat line, latest kills and the victim sheet show them as group kills ("With your group."). The same player killed by you and a group member within 10 seconds is one kill. The biggest level gap and the fastest payback stay for your own killing blows.
+
+### Changed
+- The Rap Sheet tab is there from the start, with an empty file.
+- An empty rap sheet says on the left page what will stand there.
+
 ## 1.3.0 (2026-11-12)
 
 ### Added

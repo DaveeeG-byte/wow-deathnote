@@ -1,9 +1,9 @@
-# DeathNote 1.3.0
+# DeathNote 1.3.1
 
 An addon for WoW Forever (Interface 16001). In open-world PvP it writes down who killed you, shows your killers as a
 book and warns you when one of them is in sight again. Confirmed kills are shared silently with your guildmates (the
 guild book) and with friends from your friend list (the friends' book); together you can put killers on a hit list and
-post your own bounties. Since 1.3.0 it also keeps your own killing blows on players (the rap sheet: the score
+post your own bounties. Since 1.3.0 it also keeps your own kills on players (the rap sheet: the score
 "you : them" per killer and a repute with ranks), and the book comes in three covers. Changes per version:
 `CHANGELOG.md`.
 
@@ -169,20 +169,28 @@ name, the same first name of another killer does not count (this also applies to
 stays reserved for your own revenge. Switch: "Report hit list news: new, taken down".
 
 ## Rap sheet and repute (1.3.0)
-Your own killing blows on players, kept account-wide in `DeathNoteDB.ledger` (`Ledger.lua`, rank data in
-`Ranks.lua`). Nothing of it is shared (see below).
+Your own killing blows on players and, since 1.3.1, kills of your group you took part in, kept account-wide in
+`DeathNoteDB.ledger` (`Ledger.lua`, rank data in `Ranks.lua`). Nothing of it is shared (see below).
 
-**Detection.** `PARTY_KILL` with your GUID or your pet's as the attacker. Not booked: non-players, your own faction,
-the opponent of a duel to the death, anything inside an instance (dungeon, raid, battleground, arena), the same
-victim again within 10 s. The honour line of the client (`COMBATLOG_HONORGAIN`, made into a pattern) is a fallback
-for kills without `PARTY_KILL`; it books nothing while `Ledger.HONOR_FALLBACK` is false (the default, until the probe
-has measured it in the game). `/dn debug` writes each case without names to `DeathNoteDB.probe.kills`.
+**Detection.** `PARTY_KILL` with your GUID or your pet's as the attacker. Since 1.3.1 also a group kill: a
+`PARTY_KILL` by a member of your party or raid (or their pet) on an enemy player counts for you when a proof that you
+took part comes from 1 s before to 3 s after it (`Ledger.PROOF_BEFORE`, `Ledger.PROOF_AFTER`):
+`PLAYER_PVP_KILLS_CHANGED` or an honour line of any form. Measured on Forever (probe of 13.11.2026, the group
+member's killing blow): `PLAYER_PVP_KILLS_CHANGED` 0.4 s and the honour line (without the victim's name) 1.0 s after
+the `PARTY_KILL`. Each proof counts for one `PARTY_KILL` only (per kind, the oldest first); your own kills on players
+take their proofs too, so they never book a group member's kill out of your reach. Without a proof nothing is booked.
+Not booked: non-players, your own faction, the opponent of a duel to the death, anything inside an instance (dungeon,
+raid, battleground, arena), the same victim again within 10 s (by GUID: a group member's killing blow and yours on
+the same victim are one kill). The honour line with the victim's name (`COMBATLOG_HONORGAIN`, made into a pattern)
+is a fallback for kills without `PARTY_KILL`; it books nothing while `Ledger.HONOR_FALLBACK` is false (the default;
+that form of the line was never seen on Forever). Kills by totems, guardians, traps or damage over time without a
+`PARTY_KILL` are not booked. `/dn debug` writes each case without names to `DeathNoteDB.probe.kills`.
 
-**Score.** "you : them" per player: you = your killing blows on them, at least the revenge the book recognised
-(plus kills before they were in the book), plus revenge noted by hand; them = their kills in your book. States: open
-(they lead, or 0 : 0 in the book), settled (equal), overpaid (you lead), victim (only in the rap sheet), pardoned,
-suspect. Revenge read in by "Import book" (`revengeForeign` on the entry) is foreign data and does not count for you.
-The book's own bounty reads "you" as its revenge count, so it is never higher than in 1.2.x.
+**Score.** "you : them" per player: you = your kills on them (killing blows and group kills), at least the revenge the
+book recognised (plus kills before they were in the book), plus revenge noted by hand; them = their kills in your
+book. States: open (they lead, or 0 : 0 in the book), settled (equal), overpaid (you lead), victim (only in the rap
+sheet), pardoned, suspect. Revenge read in by "Import book" (`revengeForeign` on the entry) is foreign data and does
+not count for you. The book's own bounty reads "you" as its revenge count, so it is never higher than in 1.2.x.
 
 **Points per kill** (four accounts: r Infamy, e Honour, j Hunt, s Protection). The level colour is the game's, seen
 from your level at the kill (grey after the classic formula):
@@ -199,9 +207,10 @@ from your level at the kill (grey after the classic formula):
 
 Then, in this order: payback (they led before the kill): Infamy 0, Honour +2; protection (they killed someone else in
 the guild or friends' book): Infamy 0, Protection +4; on the hit list by someone else: Hunt +3; a bounty posted by
-someone else: Hunt +5 (no Hunt for greys); in a group: Honour and Hunt halved; the same player again within 10
-minutes: Honour, Hunt and Protection 0, Infamy at least 2. Wear per victim over 24 hours: the 1st to 5th kill count
-100, 80, 60, 40, 20 %, from the 6th on nothing. Each value is rounded and stays at least 1 where it was above 0.
+someone else: Hunt +5 (no Hunt for greys); in a group (also a group kill with another one's killing blow): Honour and
+Hunt halved, Infamy and Protection in full; the same player again within 10 minutes: Honour, Hunt and Protection 0,
+Infamy at least 2. Wear per victim over 24 hours: the 1st to 5th kill count 100, 80, 60, 40, 20 %, from the 6th on
+nothing. Each value is rounded and stays at least 1 where it was above 0.
 
 **Ranks.** The sum of the four accounts gives the rank (`Ranks.THRESHOLDS`):
 
@@ -216,14 +225,16 @@ The needle runs from −100 (ruthless) to +100 (honourable): 100 × (Honour + Pr
 values. Hunt pushes it to neither side, but it counts in the sum and so draws the needle towards the middle.
 
 **Awards and bests.** Six awards (two hidden until earned; names and conditions in `Humor.lua`, German and English)
-and three bests: the biggest level gap of a kill, the longest streak of kills without dying, the fastest payback.
+and three bests: the biggest level gap of a kill, the longest streak of kills without dying, the fastest payback
+(gap and payback only from your own killing blows; a group kill counts for the streak).
 
-**In the book.** Fifth tab "Rap Sheet" from the first own kill on: your file, the latest 60 kills, a sheet per victim
-with the scene (zone and time), up to 200 victims (the oldest one not in the book goes first). A chat line after each
-own kill, a notice for a new rank or an award (after combat), the score in list, poster, tooltip, alarm line and
-revenge notice, the game tooltip "RAP SHEET:" over a victim. Clearing the rap sheet removes victims and kill list;
-rank, points and awards stay. Switched off ("Keep a rap sheet"), nothing is booked, tab and score disappear and the
-book ranks as in 1.2.x; the data stays.
+**In the book.** Fifth tab "Rap Sheet" while the rap sheet is kept (1.3.1: from the start; with no victim yet the left
+page says what will stand there): your file, the latest 60 kills, a sheet per victim with the scene (zone and time),
+up to 200 victims (the oldest one not in the book goes first). A chat line after each own kill (a group kill adds
+"With your group."; its kill lines carry the tag "group" and say so in their tooltip), a notice for a new rank or an
+award (after combat), the score in list, poster, tooltip, alarm line and revenge notice, the game tooltip "RAP SHEET:"
+over a victim. Clearing the rap sheet removes victims and kill list; rank, points and awards stay. Switched off ("Keep
+a rap sheet"), nothing is booked, tab and score disappear and the book ranks as in 1.2.x; the data stays.
 
 **Victim alarm** (`alert.victims`, off by default): a player you killed more often than they killed you, your last
 kill on them at most 14 days ago, not pardoned, shows up: a quiet popup with the score and a soft sound, once per 10
