@@ -732,6 +732,7 @@ L.VICTIM_KILLS_LABEL = "내 처치"  -- [max 14]
 L.KILL_TAG_REVENGE = "복수"  -- [max 14]
 L.KILL_TAG_KICK = "확인 사살"  -- [max 14]
 L.KILL_TAG_GROUP = "파티"  -- [max 14]
+L.KILL_WITH_GROUP = "파티와 함께."
 L.BAND_GRAU = "회색"  -- [max 12]
 L.BAND_GRUEN = "녹색"  -- [max 12]
 L.BAND_GELB = "노란색"  -- [max 12]
@@ -764,5 +765,7 @@ L.MANUAL_RECORD_HEAD = "전과 기록"  -- [max 14]
 L.MANUAL_RECORD = "네가 플레이어에게 직접 날린 결정타. 수배서와 목록은 전적 '너 : 그쪽'을 보여 준다: 미청산, 청산, 초과 상환. 1위는 언제나 미청산이다. 처치는 계급 점수가 된다."
 L.POSTER_LAST_SEEN_IN = "마지막 목격: {zone}, {time}"
 L.SHEET_RECORD = "전과 기록"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "아직 아무도 없다."
+L.EMPTY_RECORD_SUB = "네가 죽인 상대 진영 플레이어는 여기에 적힌다."
 -- <<< RECORD
 end)

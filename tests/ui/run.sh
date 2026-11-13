@@ -13,7 +13,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          tests/ui/final_f10_oberflaeche_messen.lua tests/ui/final_f11_dialog_alarm_sprachwechsel.lua \
          tests/ui/final_f15_sprachdatei_fehlt_kaputt.lua tests/ui/final_f17_kampf_neue_stellen.lua tests/ui/fix2.lua tests/ui/fix3.lua \
          tests/ui/layout_guard.lua tests/ui/layout_belege.lua tests/ui/layout_kit.lua tests/ui/layout_fixes.lua \
-         tests/ui/layout_red_probes.lua tests/ui/theme_probe.lua tests/ui/theme_guard.lua tests/ui/notice_first.lua tests/ui/notice_queue.lua tests/ui/namesake_keys.lua tests/ui/humor_cover.lua tests/ui/theme_fallback.lua tests/ui/theme_noslip.lua tests/ui/rapsheet_pardoned.lua tests/ui/alarm_test_rank.lua tests/ui/first_start_hidden_ui.lua tests/ui/theme_sound.lua tests/ui/victim_alarm.lua tests/ui/first_start.lua "$adir"/Start.lua tests/ui/rapsheet.lua tests/ui/rapsheet_off.lua \
+         tests/ui/layout_red_probes.lua tests/ui/theme_probe.lua tests/ui/theme_guard.lua tests/ui/notice_first.lua tests/ui/notice_queue.lua tests/ui/namesake_keys.lua tests/ui/humor_cover.lua tests/ui/theme_fallback.lua tests/ui/theme_noslip.lua tests/ui/rapsheet_pardoned.lua tests/ui/alarm_test_rank.lua tests/ui/first_start_hidden_ui.lua tests/ui/theme_sound.lua tests/ui/victim_alarm.lua tests/ui/first_start.lua "$adir"/Start.lua tests/ui/rapsheet.lua tests/ui/rapsheet_off.lua tests/ui/rapsheet_group.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
 done
@@ -78,6 +78,8 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     # 1.3.0: the rap sheet in the book (standing, order by open debt, fifth tab, notices, switches)
     luajit tests/ui/rapsheet.lua . || status=1
     luajit tests/ui/rapsheet_off.lua . || status=1
+    # 1.3.1: a group kill in the chat line, the latest kills and on the victim sheet; the empty rap sheet's left page
+    luajit tests/ui/rapsheet_group.lua . || status=1
   fi
 fi
 

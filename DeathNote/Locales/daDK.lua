@@ -724,6 +724,7 @@ L.VICTIM_KILLS_LABEL = "DINE DRAB"  -- [max 14]
 L.KILL_TAG_REVENGE = "hævn"  -- [max 14]
 L.KILL_TAG_KICK = "allerede nede"  -- [max 14]
 L.KILL_TAG_GROUP = "gruppe"  -- [max 14]
+L.KILL_WITH_GROUP = "Med gruppen."
 L.BAND_GRAU = "grå"  -- [max 12]
 L.BAND_GRUEN = "grøn"  -- [max 12]
 L.BAND_GELB = "gul"  -- [max 12]
@@ -756,5 +757,7 @@ L.MANUAL_RECORD_HEAD = "STRAFFEATTEST"  -- [max 14]
 L.MANUAL_RECORD = "Dine egne dræbende slag mod spillere. Plakaten og listen viser stillingen »du : han«: åben, kvit eller overbetalt. Rang 1 er altid åben. Drab giver point til din rang."
 L.POSTER_LAST_SEEN_IN = "Sidst set: {zone}, {time}"
 L.SHEET_RECORD = "Register"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Ingen endnu."
+L.EMPTY_RECORD_SUB = "Den spiller fra den anden side, du dræber, ender her."
 -- <<< RECORD
 end)

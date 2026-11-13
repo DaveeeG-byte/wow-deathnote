@@ -253,9 +253,11 @@ function Probe.Run(verbose, opts)
     -- technical line (no translation): own kills seen since login
     if out.kills and type(out.kills.counts) == "table" then
       local c = out.kills.counts
-      Util.Print(("PARTY_KILL %d (own %d, pet %d, dup %d, booked %d) · honour %d (named %d, alone %d) · cases %d · max level %s")
-        :format(c.partyKill or 0, c.own or 0, c.pet or 0, c.dup or 0, c.booked or 0, c.honor or 0, c.honorNamed or 0,
-        c.honorAlone or 0, #(out.kills.cases or {}), tostring(out.kills.maxLevel)))
+      Util.Print(("PARTY_KILL %d (own %d, pet %d, dup %d, booked %d, group %d) · honour %d (named %d, alone %d) · proofs %d/%d"
+        .. " (loose %d) · cases %d · max level %s")
+        :format(c.partyKill or 0, c.own or 0, c.pet or 0, c.dup or 0, c.booked or 0, c.groupBooked or 0, c.honor or 0,
+        c.honorNamed or 0, c.honorAlone or 0, c.proofKC or 0, c.proofHonor or 0, c.proofLoose or 0,
+        #(out.kills.cases or {}), tostring(out.kills.maxLevel)))
     end
     if out.target then
       Util.Print(Fmt(L.PROBE_TARGET, { name = tostring(out.target.name), guid = tostring(out.target.guid),

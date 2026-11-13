@@ -724,6 +724,7 @@ L.VICTIM_KILLS_LABEL = "DINE DRAP"  -- [max 14]
 L.KILL_TAG_REVENGE = "hevn"  -- [max 14]
 L.KILL_TAG_KICK = "allerede nede"  -- [max 14]
 L.KILL_TAG_GROUP = "gruppe"  -- [max 14]
+L.KILL_WITH_GROUP = "Med gruppen."
 L.BAND_GRAU = "grå"  -- [max 12]
 L.BAND_GRUEN = "grønn"  -- [max 12]
 L.BAND_GELB = "gul"  -- [max 12]
@@ -756,5 +757,7 @@ L.MANUAL_RECORD_HEAD = "RULLEBLAD"  -- [max 14]
 L.MANUAL_RECORD = "Dine egne drapsslag mot spillere. Plakaten og listen viser stillingen «du : han»: åpen, skuls eller overbetalt. Rang 1 er alltid åpen. Drap gir poeng til rangen din."
 L.POSTER_LAST_SEEN_IN = "Sist sett: {zone}, {time}"
 L.SHEET_RECORD = "Rulleblad"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Ingen ennå."
+L.EMPTY_RECORD_SUB = "Spilleren fra den andre siden som du dreper, havner her."
 -- <<< RECORD
 end)

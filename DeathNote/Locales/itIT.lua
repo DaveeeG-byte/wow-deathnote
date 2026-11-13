@@ -718,6 +718,7 @@ L.VICTIM_KILLS_LABEL = "TUE UCCISIONI"  -- [max 14]
 L.KILL_TAG_REVENGE = "vendetta"  -- [max 14]
 L.KILL_TAG_KICK = "accanimento"  -- [max 14]
 L.KILL_TAG_GROUP = "gruppo"  -- [max 14]
+L.KILL_WITH_GROUP = "Con il gruppo."
 L.BAND_GRAU = "grigio"  -- [max 12]
 L.BAND_GRUEN = "verde"  -- [max 12]
 L.BAND_GELB = "giallo"  -- [max 12]
@@ -750,5 +751,7 @@ L.MANUAL_RECORD_HEAD = "FEDINA PENALE"  -- [max 14]
 L.MANUAL_RECORD = "I tuoi colpi di grazia sui giocatori. Il manifesto e la lista mostrano il punteggio «tu : lui»: aperto, pari o con interessi. La posizione 1 è sempre aperta. Le uccisioni danno punti per il tuo rango."
 L.POSTER_LAST_SEEN_IN = "Ultimo avvistamento: {zone}, {time}"
 L.SHEET_RECORD = "Fedina"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Ancora nessuno."
+L.EMPTY_RECORD_SUB = "Il giocatore della fazione avversaria che uccidi finisce qui."
 -- <<< RECORD
 end)

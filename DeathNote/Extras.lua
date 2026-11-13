@@ -681,13 +681,16 @@ local function Batch()
   return batch
 end
 
--- "Rap sheet: Grimm Bart, Level 34 (yellow). +3 Honour."
+-- "Rap sheet: Grimm Bart, Level 34 (yellow). +3 Honour." (a group kill: "... With your group.")
 local function OnOwnKill(key, row)
   if not ready or type(row) ~= "table" or Look.Setting("ledger.chat", true) == false then return end
   if not (Look.KillPoints and Look.BandWord and ns.Util and ns.Util.Print) then return end
   local level = type(row.vl) == "number" and Fmt(L.POSTER_LEVEL, { level = row.vl }) or L.ALERT_LEVEL_UNKNOWN
-  ns.Util.Print(Fmt(L.CHAT_OWN_KILL, { name = tostring(row.name or "?"), level = level, band = Look.BandWord(row.band),
-    points = Look.KillPoints(row) }))
+  local line = Fmt(L.CHAT_OWN_KILL, { name = tostring(row.name or "?"), level = level, band = Look.BandWord(row.band),
+    points = Look.KillPoints(row) })
+  -- 1.3.1: a group member's killing blow, you took part (flag o)
+  if type(row.f) == "string" and row.f:find("o", 1, true) then line = line .. " " .. L.KILL_WITH_GROUP end
+  ns.Util.Print(line)
 end
 
 local rankAt

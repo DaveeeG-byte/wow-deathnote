@@ -718,6 +718,7 @@ L.VICTIM_KILLS_LABEL = "TES KILLS"  -- [max 14]
 L.KILL_TAG_REVENGE = "vengeance"  -- [max 14]
 L.KILL_TAG_KICK = "acharnement"  -- [max 14]
 L.KILL_TAG_GROUP = "groupe"  -- [max 14]
+L.KILL_WITH_GROUP = "Avec le groupe."
 L.BAND_GRAU = "gris"  -- [max 12]
 L.BAND_GRUEN = "vert"  -- [max 12]
 L.BAND_GELB = "jaune"  -- [max 12]
@@ -750,5 +751,7 @@ L.MANUAL_RECORD_HEAD = "CASIER"  -- [max 14]
 L.MANUAL_RECORD = "Tes propres coups fatals sur des joueurs. L'affiche et la liste montrent le score « toi : lui » : ouvert, quittes ou avec intérêts. Le rang 1 est toujours ouvert. Les kills rapportent des points pour ton rang."
 L.POSTER_LAST_SEEN_IN = "Dernier repérage : {zone}, {time}"
 L.SHEET_RECORD = "Casier"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Personne pour l'instant."
+L.EMPTY_RECORD_SUB = "Le joueur du camp adverse que tu tues atterrit ici."
 -- <<< RECORD
 end)

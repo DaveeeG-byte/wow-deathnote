@@ -724,6 +724,7 @@ L.VICTIM_KILLS_LABEL = "DINA KILLS"  -- [max 14]
 L.KILL_TAG_REVENGE = "hämnd"  -- [max 14]
 L.KILL_TAG_KICK = "redan nere"  -- [max 14]
 L.KILL_TAG_GROUP = "grupp"  -- [max 14]
+L.KILL_WITH_GROUP = "Med gruppen."
 L.BAND_GRAU = "grå"  -- [max 12]
 L.BAND_GRUEN = "grön"  -- [max 12]
 L.BAND_GELB = "gul"  -- [max 12]
@@ -756,5 +757,7 @@ L.MANUAL_RECORD_HEAD = "STRAFFREGISTER"  -- [max 14]
 L.MANUAL_RECORD = "Dina egna dödande slag mot spelare. Affischen och listan visar ställningen ”du : hen”: öppen, kvitt eller överbetalt. Rang 1 är alltid öppen. Kills ger poäng till din rang."
 L.POSTER_LAST_SEEN_IN = "Senast sedd: {zone}, {time}"
 L.SHEET_RECORD = "Register"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Ingen än."
+L.EMPTY_RECORD_SUB = "Spelaren från andra sidan som du dödar hamnar här."
 -- <<< RECORD
 end)

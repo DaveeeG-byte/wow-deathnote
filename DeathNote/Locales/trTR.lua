@@ -734,6 +734,7 @@ L.VICTIM_KILLS_LABEL = "ÖLDÜRMELERİN"  -- [max 14]
 L.KILL_TAG_REVENGE = "intikam"  -- [max 14]
 L.KILL_TAG_KICK = "düşene tekme"  -- [max 14]
 L.KILL_TAG_GROUP = "grup"  -- [max 14]
+L.KILL_WITH_GROUP = "Grupla birlikte."
 L.BAND_GRAU = "gri"  -- [max 12]
 L.BAND_GRUEN = "yeşil"  -- [max 12]
 L.BAND_GELB = "sarı"  -- [max 12]
@@ -766,5 +767,7 @@ L.MANUAL_RECORD_HEAD = "SABIKA"  -- [max 14]
 L.MANUAL_RECORD = "Oyunculara indirdiğin öldürücü darbeler. Afiş ve liste skoru gösterir (sen : o): açık, ödeşik ya da fazla ödendi. 1. sıra hep açıktır. Öldürmeler rütben için puan getirir."
 L.POSTER_LAST_SEEN_IN = "Son görülme: {zone}, {time}"
 L.SHEET_RECORD = "Sabıka"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Henüz kimse yok."
+L.EMPTY_RECORD_SUB = "Öldürdüğün karşı taraf oyuncusu buraya yazılır."
 -- <<< RECORD
 end)

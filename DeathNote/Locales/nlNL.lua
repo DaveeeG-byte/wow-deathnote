@@ -724,6 +724,7 @@ L.VICTIM_KILLS_LABEL = "JOUW KILLS"  -- [max 14]
 L.KILL_TAG_REVENGE = "wraak"  -- [max 14]
 L.KILL_TAG_KICK = "nagetrapt"  -- [max 14]
 L.KILL_TAG_GROUP = "groep"  -- [max 14]
+L.KILL_WITH_GROUP = "Met de groep."
 L.BAND_GRAU = "grijs"  -- [max 12]
 L.BAND_GRUEN = "groen"  -- [max 12]
 L.BAND_GELB = "geel"  -- [max 12]
@@ -756,5 +757,7 @@ L.MANUAL_RECORD_HEAD = "STRAFBLAD"  -- [max 14]
 L.MANUAL_RECORD = "Je eigen genadeslagen op spelers. Affiche en lijst tonen de stand ‘jij : hij’: open, quitte of met rente. Rang 1 is altijd open. Kills leveren punten op voor je rang."
 L.POSTER_LAST_SEEN_IN = "Laatst gezien: {zone}, {time}"
 L.SHEET_RECORD = "Strafblad"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Nog niemand."
+L.EMPTY_RECORD_SUB = "Een speler van de andere kant die jij doodt, komt hier terecht."
 -- <<< RECORD
 end)

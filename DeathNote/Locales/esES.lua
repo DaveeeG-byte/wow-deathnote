@@ -719,6 +719,7 @@ L.VICTIM_KILLS_LABEL = "TUS BAJAS"  -- [max 14]
 L.KILL_TAG_REVENGE = "venganza"  -- [max 14]
 L.KILL_TAG_KICK = "ensañamiento"  -- [max 14]
 L.KILL_TAG_GROUP = "grupo"  -- [max 14]
+L.KILL_WITH_GROUP = "Con el grupo."
 L.BAND_GRAU = "gris"  -- [max 12]
 L.BAND_GRUEN = "verde"  -- [max 12]
 L.BAND_GELB = "amarillo"  -- [max 12]
@@ -751,5 +752,7 @@ L.MANUAL_RECORD_HEAD = "ANTECEDENTES"  -- [max 14]
 L.MANUAL_RECORD = "Tus propios golpes de gracia a jugadores. El cartel y la lista muestran el marcador «tú : él»: abierto, en paz o con intereses. El puesto 1 siempre está abierto. Las bajas dan puntos para tu rango."
 L.POSTER_LAST_SEEN_IN = "Último avistamiento: {zone}, {time}"
 L.SHEET_RECORD = "Antecedentes"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Nadie todavía."
+L.EMPTY_RECORD_SUB = "El jugador del otro bando que mates acaba aquí."
 -- <<< RECORD
 end)

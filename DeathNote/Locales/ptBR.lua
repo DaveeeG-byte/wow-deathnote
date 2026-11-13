@@ -719,6 +719,7 @@ L.VICTIM_KILLS_LABEL = "SEUS ABATES"  -- [max 14]
 L.KILL_TAG_REVENGE = "vingança"  -- [max 14]
 L.KILL_TAG_KICK = "chute no caído"  -- [max 14]
 L.KILL_TAG_GROUP = "grupo"  -- [max 14]
+L.KILL_WITH_GROUP = "Com o grupo."
 L.BAND_GRAU = "cinza"  -- [max 12]
 L.BAND_GRUEN = "verde"  -- [max 12]
 L.BAND_GELB = "amarelo"  -- [max 12]
@@ -751,5 +752,7 @@ L.MANUAL_RECORD_HEAD = "FICHA CRIMINAL"  -- [max 14]
 L.MANUAL_RECORD = "Seus próprios golpes finais em jogadores. O cartaz e a lista mostram o placar “você : ele”: aberto, quites ou com juros. A posição 1 está sempre em aberto. Abates rendem pontos para a sua patente."
 L.POSTER_LAST_SEEN_IN = "Último avistamento: {zone}, {time}"
 L.SHEET_RECORD = "Ficha"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Ninguém ainda."
+L.EMPTY_RECORD_SUB = "O jogador do outro lado que você matar vem parar aqui."
 -- <<< RECORD
 end)

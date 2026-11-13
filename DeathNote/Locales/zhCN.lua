@@ -732,6 +732,7 @@ L.VICTIM_KILLS_LABEL = "我的击杀"  -- [max 14]
 L.KILL_TAG_REVENGE = "复仇"  -- [max 14]
 L.KILL_TAG_KICK = "鞭尸"  -- [max 14]
 L.KILL_TAG_GROUP = "组队"  -- [max 14]
+L.KILL_WITH_GROUP = "和队友一起。"
 L.BAND_GRAU = "灰色"  -- [max 12]
 L.BAND_GRUEN = "绿色"  -- [max 12]
 L.BAND_GELB = "黄色"  -- [max 12]
@@ -764,5 +765,7 @@ L.MANUAL_RECORD_HEAD = "案底"  -- [max 14]
 L.MANUAL_RECORD = "你亲手对玩家打出的致命一击。通缉令和列表显示比分“你 : 他”：未清、两清或超额。第一名永远是未清的。击杀会为你的等阶赢得点数。"
 L.POSTER_LAST_SEEN_IN = "最后目击：{zone}，{time}"
 L.SHEET_RECORD = "案底"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "还没有人。"
+L.EMPTY_RECORD_SUB = "你杀死的敌对阵营玩家会出现在这里。"
 -- <<< RECORD
 end)

@@ -731,6 +731,7 @@ L.VICTIM_KILLS_LABEL = "UBOJSTVA"  -- [max 14]
 L.KILL_TAG_REVENGE = "osveta"  -- [max 14]
 L.KILL_TAG_KICK = "dotučen"  -- [max 14]
 L.KILL_TAG_GROUP = "grupa"  -- [max 14]
+L.KILL_WITH_GROUP = "S grupom."
 L.BAND_GRAU = "siva"  -- [max 12]
 L.BAND_GRUEN = "zelena"  -- [max 12]
 L.BAND_GELB = "žuta"  -- [max 12]
@@ -763,5 +764,7 @@ L.MANUAL_RECORD_HEAD = "KARTOTEKA"  -- [max 14]
 L.MANUAL_RECORD = "Tvoji vlastiti smrtni udarci na igrače. Tjeralica i popis pokazuju rezultat „ti : on“: otvoreno, kvit ili preplaćeno. Prvo mjesto je uvijek otvoreno. Ubojstva donose bodove za tvoj rang."
 L.POSTER_LAST_SEEN_IN = "Zadnje viđenje: {zone}, {time}"
 L.SHEET_RECORD = "Kartoteka"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Još nitko."
+L.EMPTY_RECORD_SUB = "Igrač druge strane kojeg ubiješ završava ovdje."
 -- <<< RECORD
 end)

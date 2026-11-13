@@ -1300,6 +1300,13 @@ BindRows = function()
   LP.scroll:SetMinMaxValues(0, maxOff)
   LP.scroll:SetValue(state.offset)
   LP.scroll:SetShown(maxOff > 0)
+  -- 1.3.1: the rap sheet without any victim says on the left page what will stand there
+  local RE = LP.rsEmpty
+  if RE then
+    local on = state.filter == "record" and n == 0 and ns.Ledger.VictimCount() == 0
+    if on then RE.big:SetText(L.EMPTY_RECORD_HEAD); RE.small:SetText(L.EMPTY_RECORD_SUB) end
+    RE:SetShown(on)
+  end
 end
 
 ------------------------------------------------------------------------
@@ -2887,6 +2894,8 @@ function RS.LogTip(row)
   t[#t + 1] = Look.KillPoints(row)
   local tag = RS.Tag(row.f)
   if tag then t[#t + 1] = tag end
+  -- 1.3.1: the killing blow came from a group member (flag o)
+  if type(row.f) == "string" and row.f:find("o", 1, true) then t[#t + 1] = L.KILL_WITH_GROUP end
   if type(row.zone) == "string" and row.zone ~= "" then t[#t + 1] = Fmt(L.VICTIM_SCENE, { zone = row.zone, time = Look.Ago(row.t) or "?" }) end
   if row.me and row.me ~= Look.Me() then t[#t + 1] = "(" .. Look.First(row.me) .. ")" end
   return t
@@ -5139,6 +5148,18 @@ function UX.BuildLeftPage()
     if o ~= state.offset then state.offset = o; HideMenu(); BindRows() end
   end)
   for i = 1, ROWS do rows[i] = UX.MakeRow(LR, i) end
+  -- 1.3.1: empty rap sheet (no victim yet): big line and small line, the pattern of the empty right pages
+  local RE = CreateFrame("Frame", nil, LR)
+  RE:SetAllPoints()
+  RE:Hide()
+  RE.big = Look.Text(RE, "head", 22, Look.INK)
+  RE.big:SetPoint("TOP", 0, ROW_TOP - 40)
+  RE.big:SetWidth(PAGE_W - 60)
+  RE.small = Look.Text(RE, "hand", 16, Look.INK)
+  RE.small:SetTextColor(C(Look.INK, TONE.sub))
+  RE.small:SetPoint("TOP", RE.big, "BOTTOM", 0, -12)
+  RE.small:SetWidth(PAGE_W - 60)
+  LP.rsEmpty = RE
 
   -- scroll bar: 14 px grip area, 5 px visible
   local sc = CreateFrame("Slider", nil, LP)

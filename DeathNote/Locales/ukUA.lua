@@ -731,6 +731,7 @@ L.VICTIM_KILLS_LABEL = "ТВОЇ ВБИВСТВА"  -- [max 14]
 L.KILL_TAG_REVENGE = "помста"  -- [max 14]
 L.KILL_TAG_KICK = "по лежачому"  -- [max 14]
 L.KILL_TAG_GROUP = "група"  -- [max 14]
+L.KILL_WITH_GROUP = "З групою."
 L.BAND_GRAU = "сірий"  -- [max 12]
 L.BAND_GRUEN = "зелений"  -- [max 12]
 L.BAND_GELB = "жовтий"  -- [max 12]
@@ -763,5 +764,7 @@ L.MANUAL_RECORD_HEAD = "КАРТОТЕКА"  -- [max 14]
 L.MANUAL_RECORD = "Твої власні смертельні удари по гравцях. Плакат і список показують рахунок «ти : він»: відкритий, квити або переплачено. Перше місце завжди за відкритим рахунком. Вбивства приносять очки для твого рангу."
 L.POSTER_LAST_SEEN_IN = "Востаннє помічено: {zone}, {time}"
 L.SHEET_RECORD = "Картотека"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Поки нікого."
+L.EMPTY_RECORD_SUB = "Гравець іншої сторони, якого ти вб'єш, опиниться тут."
 -- <<< RECORD
 end)

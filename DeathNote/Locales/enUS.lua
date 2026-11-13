@@ -739,6 +739,7 @@ L.VICTIM_KILLS_LABEL = "YOUR KILLS"  -- [max 14] small label over the kill lines
 L.KILL_TAG_REVENGE = "payback"  -- [max 14] tag at the right of a kill line: they had killed you more often
 L.KILL_TAG_KICK = "while down"  -- [max 14] tag at the right of a kill line: the same player again within 10 minutes (no points)
 L.KILL_TAG_GROUP = "group"  -- [max 14] tag at the right of a kill line: killed in a group (half honour and hunt)
+L.KILL_WITH_GROUP = "With your group."  -- 1.3.1: added to the chat line after a kill your group member's killing blow made (you took part), and a line in the kill's tooltip
 L.BAND_GRAU = "grey"  -- [max 12] level colour of a victim as the game shows it: far below you
 L.BAND_GRUEN = "green"  -- [max 12] level colour: below you
 L.BAND_GELB = "yellow"  -- [max 12] level colour: about your level
@@ -771,5 +772,7 @@ L.MANUAL_RECORD_HEAD = "RAP SHEET"  -- [max 14] keyword of the help paragraph
 L.MANUAL_RECORD = "Your own killing blows on players. Poster and list show the score 'you : them': open, settled or overpaid. Rank 1 is always open. Kills earn points for your rank."  -- help paragraph, 232 px wide, wraps
 L.POSTER_LAST_SEEN_IN = "Last seen: {zone}, {time}"  -- fact line; {zone} = zone from the game, {time} = '2 hrs ago' (shorter POSTER_LAST_SEEN when it does not fit)
 L.SHEET_RECORD = "Rap Sheet"  -- [max 14] fourth sheet of the House Rules: the rap sheet's switches
+L.EMPTY_RECORD_HEAD = "Nobody yet."  -- 1.3.1: rap sheet tab, no victim yet: big line on the left page
+L.EMPTY_RECORD_SUB = "Your kill on a player of the other faction ends up here."  -- 1.3.1: under it; what puts a name here
 -- <<< RECORD
 end)

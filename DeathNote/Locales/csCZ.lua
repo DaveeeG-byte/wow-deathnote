@@ -731,6 +731,7 @@ L.VICTIM_KILLS_LABEL = "ZABITÍ"  -- [max 14]
 L.KILL_TAG_REVENGE = "pomsta"  -- [max 14]
 L.KILL_TAG_KICK = "do ležícího"  -- [max 14]
 L.KILL_TAG_GROUP = "skupina"  -- [max 14]
+L.KILL_WITH_GROUP = "Se skupinou."
 L.BAND_GRAU = "šedá"  -- [max 12]
 L.BAND_GRUEN = "zelená"  -- [max 12]
 L.BAND_GELB = "žlutá"  -- [max 12]
@@ -763,5 +764,7 @@ L.MANUAL_RECORD_HEAD = "REJSTŘÍK"  -- [max 14]
 L.MANUAL_RECORD = "Tvoje vlastní smrtící údery na hráče. Plakát a seznam ukazují skóre „ty : on“: otevřeno, vyrovnáno nebo přeplaceno. První místo je vždy otevřené. Zabití dávají body pro tvou hodnost."
 L.POSTER_LAST_SEEN_IN = "Poslední spatření: {zone}, {time}"
 L.SHEET_RECORD = "Rejstřík"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Zatím nikdo."
+L.EMPTY_RECORD_SUB = "Hráč druhé strany, kterého zabiješ, skončí tady."
 -- <<< RECORD
 end)

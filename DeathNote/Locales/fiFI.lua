@@ -725,6 +725,7 @@ L.VICTIM_KILLS_LABEL = "OMAT TAPOT"  -- [max 14]
 L.KILL_TAG_REVENGE = "kosto"  -- [max 14]
 L.KILL_TAG_KICK = "uusintatappo"  -- [max 14]
 L.KILL_TAG_GROUP = "ryhmä"  -- [max 14]
+L.KILL_WITH_GROUP = "Ryhmän kanssa."
 L.BAND_GRAU = "harmaa"  -- [max 12]
 L.BAND_GRUEN = "vihreä"  -- [max 12]
 L.BAND_GELB = "keltainen"  -- [max 12]
@@ -757,5 +758,7 @@ L.MANUAL_RECORD_HEAD = "REKISTERI"  -- [max 14]
 L.MANUAL_RECORD = "Omat tappoiskusi pelaajiin. Juliste ja lista näyttävät tilanteen ”sinä : hän”: auki, sujut tai ylimaksettu. Sija 1 on aina auki. Tapot tuovat pisteitä arvoasi varten."
 L.POSTER_LAST_SEEN_IN = "Viimeksi nähty: {zone}, {time}"
 L.SHEET_RECORD = "Rekisteri"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Ei vielä ketään."
+L.EMPTY_RECORD_SUB = "Toisen puolen pelaaja, jonka tapat, päätyy tänne."
 -- <<< RECORD
 end)

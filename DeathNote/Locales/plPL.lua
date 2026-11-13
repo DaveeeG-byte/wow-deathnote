@@ -731,6 +731,7 @@ L.VICTIM_KILLS_LABEL = "ZABÓJSTWA"  -- [max 14]
 L.KILL_TAG_REVENGE = "zemsta"  -- [max 14]
 L.KILL_TAG_KICK = "dobity"  -- [max 14]
 L.KILL_TAG_GROUP = "grupa"  -- [max 14]
+L.KILL_WITH_GROUP = "Z grupą."
 L.BAND_GRAU = "szary"  -- [max 12]
 L.BAND_GRUEN = "zielony"  -- [max 12]
 L.BAND_GELB = "żółty"  -- [max 12]
@@ -763,5 +764,7 @@ L.MANUAL_RECORD_HEAD = "KARTOTEKA"  -- [max 14]
 L.MANUAL_RECORD = "Twoje własne ciosy kończące na graczach. List gończy i lista pokazują wynik „ty : on”: otwarte, kwita albo nadpłacone. Pierwsze miejsce jest zawsze otwarte. Zabójstwa dają punkty do twojej rangi."
 L.POSTER_LAST_SEEN_IN = "Ostatnio widziano: {zone}, {time}"
 L.SHEET_RECORD = "Kartoteka"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Na razie nikt."
+L.EMPTY_RECORD_SUB = "Gracz drugiej strony, którego zabijesz, trafi tutaj."
 -- <<< RECORD
 end)

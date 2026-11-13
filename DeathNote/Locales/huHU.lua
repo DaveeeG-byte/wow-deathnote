@@ -733,6 +733,7 @@ L.VICTIM_KILLS_LABEL = "SAJÁT ÖLÉSEK"  -- [max 14]
 L.KILL_TAG_REVENGE = "bosszú"  -- [max 14]
 L.KILL_TAG_KICK = "fekvőbe rúgva"  -- [max 14]
 L.KILL_TAG_GROUP = "csoport"  -- [max 14]
+L.KILL_WITH_GROUP = "A csoporttal."
 L.BAND_GRAU = "szürke"  -- [max 12]
 L.BAND_GRUEN = "zöld"  -- [max 12]
 L.BAND_GELB = "sárga"  -- [max 12]
@@ -765,5 +766,7 @@ L.MANUAL_RECORD_HEAD = "PRIUSZ"  -- [max 14]
 L.MANUAL_RECORD = "Saját halálos csapásaid játékosokon. A plakát és a lista az állást mutatja (te : ő): nyitott, kvitt vagy túlfizetve. Az 1. hely mindig nyitott. Az ölések pontot hoznak a rangodhoz."
 L.POSTER_LAST_SEEN_IN = "Utoljára észlelve: {zone}, {time}"
 L.SHEET_RECORD = "Priusz"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Még senki."
+L.EMPTY_RECORD_SUB = "A másik oldal játékosa, akit megölsz, ide kerül."
 -- <<< RECORD
 end)

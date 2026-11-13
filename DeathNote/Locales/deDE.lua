@@ -719,6 +719,7 @@ L.VICTIM_KILLS_LABEL = "EIGENE KILLS"  -- [max 14]
 L.KILL_TAG_REVENGE = "Rache"  -- [max 14]
 L.KILL_TAG_KICK = "nachgetreten"  -- [max 14]
 L.KILL_TAG_GROUP = "Gruppe"  -- [max 14]
+L.KILL_WITH_GROUP = "Mit der Gruppe."
 L.BAND_GRAU = "grau"  -- [max 12]
 L.BAND_GRUEN = "grün"  -- [max 12]
 L.BAND_GELB = "gelb"  -- [max 12]
@@ -751,5 +752,7 @@ L.MANUAL_RECORD_HEAD = "STRAFREGISTER"  -- [max 14]
 L.MANUAL_RECORD = "Deine eigenen Todesstöße an Spielern. Plakat und Liste zeigen den Stand „du : er“: offen, quitt oder überzahlt. Rang 1 ist immer offen. Kills bringen Punkte für deinen Rang."
 L.POSTER_LAST_SEEN_IN = "Zuletzt gesehen: {zone}, {time}"
 L.SHEET_RECORD = "Register"  -- [max 14]
+L.EMPTY_RECORD_HEAD = "Noch niemand."
+L.EMPTY_RECORD_SUB = "Dein Kill an einem Spieler der Gegenseite steht danach hier."
 -- <<< RECORD
 end)
