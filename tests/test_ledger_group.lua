@@ -421,6 +421,26 @@ test("Victim never seen: first name from GetPlayerInfoByGUID, level unknown", fu
   eq(L().Victim(own[1].key).name, "Geist")
 end)
 
+-- 1.3.1 hunt N2: no name at the PARTY_KILL, the name is there at the proof
+test("Victim without a name at the PARTY_KILL: looked up again at the proof and booked", function()
+  load(40); party()
+  pk(MATE, "Player-93-Spaet")
+  M.units.late = { exists = false, isPlayer = true, name = "Spaet", guid = "Player-93-Spaet" }
+  M.Advance(0.4); kc(); M.Advance(15)
+  eq(#own, 1); eq(L().Victim(own[1].key).name, "Spaet")
+end)
+
+test("Victim still without a name at the proof: the proof is not used up, it books the next kill", function()
+  load(40); party(); debugOn()
+  local g = seen("Grimm", "Bart", 40)
+  M.Advance(30)                       -- not near any more: only the name decides
+  pk(MATE, "Player-93-Niemand")
+  local nobody = caseOf("partykill")
+  M.Advance(0.2); pk(MATE, g); M.Advance(0.4); kc(); M.Advance(15)
+  eq(#own, 1); eq(own[1].key, "Grimm-Bart")
+  eq(nobody.result, "name", "the probe: no name")
+end)
+
 ---------------------------------------------------------------------------
 -- Revenge on a listed enemy by a group kill
 ---------------------------------------------------------------------------

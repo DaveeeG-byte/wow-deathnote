@@ -1413,7 +1413,7 @@ local function prune(gt)
     local x = claims[i]
     if gt - x.gt > Ledger.PROOF_AFTER and not (x.at and gt - x.at <= Ledger.PROOF_PAIR) then
       table.remove(claims, i)
-      if x.mate and not x.booked then reject(x.case, "group-noproof") end
+      if x.mate and not x.booked then reject(x.case, x.noname and "name" or "group-noproof") end
     else
       i = i + 1
     end
@@ -1427,6 +1427,19 @@ local function prune(gt)
   end
 end
 
+-- a mate's open claim whose victim had no name at the PARTY_KILL looks him up again; still nameless, it takes no
+-- proof (the proof stays for another claim or waits loose) and ends as "name". Known now as my own faction: dropped.
+local function named(x)
+  if x.dropped then return false end
+  if not x.mate or x.booked or Str(x.info.name) then return true end
+  local info, how, age = lookup(x.guid)
+  if not (info and Str(info.name)) then x.noname = true; return false end
+  if info.level == nil then info.level, info.skull = x.info.level, x.info.skull end
+  x.info, x.how, x.age, x.noname = info, how, age, nil
+  if ownFaction(info) then x.booked, x.dropped = true, true; reject(x.case, "faction"); return false end
+  return true
+end
+
 -- the claim a proof of this kind goes to: my own claims first (a proof of my own kill never books a mate's kill,
 -- whichever came first), then the mates' claims. Within each, among the claims without a proof of this kind: one that
 -- already has the proof of the other channel (the same kill), else the oldest near one (mates' claims: my target or
@@ -1435,7 +1448,7 @@ local function pick(kind)
   for pass = 1, 2 do
     local near, best
     for _, x in ipairs(claims) do
-      if not x[kind] and (pass == 1) == (not x.mate) then
+      if not x[kind] and (pass == 1) == (not x.mate) and named(x) then
         if x.at then return x end
         if x.near then near = near or x end
         best = best or x
@@ -1473,9 +1486,10 @@ local function claim(x)
   local gt = x.gt
   prune(gt)
   local got, dt
+  local can = named(x)
   for _, k in ipairs(PROOF_KINDS) do
     local l = loose[k]
-    if l[1] then
+    if can and l[1] then
       dt = dt or (l[1] - gt)
       table.remove(l, 1)
       x[k] = true
