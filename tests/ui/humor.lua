@@ -30,9 +30,10 @@ local function world(code, opts)
   G = BM.G
   AM.locale = code
   if opts.guild then rawset(G, "GetGuildInfo", function(u) if u == "player" then return opts.guild end end) end
-  if opts.date then
-    rawset(G, "date", function(f, t) if f == "*t" then return opts.date end return os.date(f, t) end)
-  end
+  -- the clock of the test never is the clock of the machine: without opts.date it is an ordinary afternoon
+  -- (the real hour let the night quip in when the suite ran after midnight, and 1 April would do the same)
+  local clock = opts.date or { year = 2026, month = 11, day = 12, hour = 14, min = 0, sec = 0, wday = 5, yday = 316, isdst = false }
+  rawset(G, "date", function(f, t) if f == "*t" then return clock end return os.date(f, t) end)
   local ns = AM.Load({ noLogin = true, db = opts.db, before = function() AM.units.player.guild = "Die Wurstbrueder" end })
   for _, f in ipairs({ "Alert.lua", "UI.lua", "Extras.lua", "Humor.lua" }) do BM.Load(DIR .. "/" .. f, ns) end
   AM.FireEvent("PLAYER_LOGIN")
