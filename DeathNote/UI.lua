@@ -4542,11 +4542,7 @@ function UX.UpdateTabs()
   if F.tabSig ~= sig then F.tabSig = sig; GF.LayoutTabs() end
   for _, t in ipairs(F.tabs) do
     local on = t.id == state.filter
-    local n = UX.TabCount(t.id) or 0
-    local text
-    if n <= 0 then text = t.label
-    elseif t.id == "open" then text = t.label .. "  " .. Look.HEX.accentOnCover .. n .. "|r"
-    else text = t.label .. "  " .. n end
+    local text = GF.TabText(t)
     if shown >= 5 then
       -- five tabs: a label that does not fit gets 10 pt, then the whole of it in the tab's tooltip
       Look.FitText(t.text, text, GF.FIT_TAB)
@@ -5217,33 +5213,55 @@ end
 
 -- 1.2.0: tab width from the text (plus room for "  123"), at least as 1.1.0 (104, with friends 132),
 -- at most 150 px; the row starts at x = 184 and ends before the "?" (x = 704). If the room is not enough,
--- all get evenly narrower (the text is then truncated, never overlapping).
+-- all get narrower (the text is then truncated, never overlapping).
+-- 1.3.1 (hunt N7, five tabs for everybody): the rap sheet's tab carries no number and keeps only GF.TAB_PAD around
+-- its word; when the row is too wide, every tab first keeps what its shown text (word and number, in the smallest
+-- size of GF.FIT_TAB) needs and only the room above that is shared out. A three-digit number fits in every language
+-- and cover; only when even that is not enough do all get evenly narrower (a four-digit number in a long word).
 GF.TAB_X0, GF.TAB_X1, GF.TAB_GAP, GF.TAB_MAX, GF.TAB_ROOM = 184, 704, 4, 150, 34
+GF.TAB_PAD = 10          -- the least room around a tab text: 4 px of the text field, 1.5 of the fit margin, air
 GF.FIT_PH = { sizes = { 16, 13, 11 } }
--- withCount (1.2.2): width also from the shown text with its number (four digits), the text stays
+-- withCount (1.2.2): kept for the callers; the width always comes from the shown text with its number now
 GF.TAB_BASE5 = 92        -- 1.3.0: with five tabs every tab may be this narrow (repute concept 8.1)
 GF.FIT_TAB = { sizes = { 11, 10 } }
 GF.tabList = {}
+-- the text of a tab: its word, and its number when there is something ("Unsolved" in red)
+function GF.TabText(t)
+  local n = UX.TabCount(t.id) or 0
+  if n <= 0 then return t.label end
+  if t.id == "open" then return t.label .. "  " .. Look.HEX.accentOnCover .. n .. "|r" end
+  return t.label .. "  " .. n
+end
 function GF.LayoutTabs(withCount)
-  local ws, total = {}, 0
+  local ws, need, total, needs = {}, {}, 0, 0
   -- 1.3.0: only the shown tabs, one after the other (the fifth comes and goes with the rap sheet)
   local list = GF.tabList
   for i = #list, 1, -1 do list[i] = nil end
   for _, t in ipairs(F.tabs) do if t:IsShown() then list[#list + 1] = t end end
   local five = #list >= 5
+  local small = GF.FIT_TAB.sizes[#GF.FIT_TAB.sizes]
   for i, t in ipairs(list) do
-    local cur = withCount and t.text:GetText()
-    local cw = cur and math.floor((Look.TextW(t.text) or 0) + 8 + 0.5) or 0
+    local cur = t.text:GetText()
+    -- what the shown text needs: five tabs are fitted down to the smallest size, fewer are written in 11 pt
+    local tw = GF.MeasureAt(t.text, GF.TabText(t), five and small or GF.FIT_TAB.sizes[1]) or 0
+    t.text.fitText, t.text.cut = nil, nil
     t.text:SetText(t.label)
     local base = five and math.min(t.base, GF.TAB_BASE5) or t.base
-    ws[i] = math.min(GF.TAB_MAX, math.max(base, cw, math.floor(TextWidth(t.text, 60) + GF.TAB_ROOM + 0.5)))
-    total = total + ws[i] + (i > 1 and GF.TAB_GAP or 0)
+    local room = t.id == "record" and GF.TAB_PAD or GF.TAB_ROOM     -- UX.TabCount: the rap sheet has no number
+    need[i] = math.min(GF.TAB_MAX, math.ceil(tw + GF.TAB_PAD))
+    ws[i] = math.min(GF.TAB_MAX, math.max(base, need[i], math.floor(TextWidth(t.text, 60) + room + 0.5)))
+    total, needs = total + ws[i], needs + need[i]
     if cur then t.text:SetText(cur) end
   end
-  local room = GF.TAB_X1 - GF.TAB_X0
-  if total > room then
-    local k = (room - GF.TAB_GAP * (#ws - 1)) / (total - GF.TAB_GAP * (#ws - 1))
-    for i = 1, #ws do ws[i] = math.floor(ws[i] * k) end
+  local avail = GF.TAB_X1 - GF.TAB_X0 - GF.TAB_GAP * math.max(0, #ws - 1)
+  if total > avail then
+    if needs <= avail and total > needs then
+      local k = (avail - needs) / (total - needs)
+      for i = 1, #ws do ws[i] = math.floor(need[i] + (ws[i] - need[i]) * k) end
+    else
+      local k = avail / total
+      for i = 1, #ws do ws[i] = math.floor(ws[i] * k) end
+    end
   end
   local x = GF.TAB_X0
   for i, t in ipairs(list) do

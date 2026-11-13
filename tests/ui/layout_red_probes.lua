@@ -96,8 +96,10 @@ do
   for _, tb in ipairs(tabs) do
     if tb:IsVisible() then
       local over = (BM.Unbounded(tb.text) or 0) - (tb.text._wset and tb.text._w or tb._w or 0)
-      -- 1.3.1: five tabs are always shown; a label that is cut there carries its whole text in the tab's tooltip
-      if over > 0.5 and tb.text.tipOwner then over = 0 end
+      -- 1.3.1: five tabs are always shown. Hunt N8: only a four-digit number may be cut there (the whole text in the
+      -- tab's tooltip); a word or a three-digit number never
+      local text = tb.text._text or ""
+      if over > 0.5 and tb.text.tipOwner and text:find("%d%d%d%d") then over = 0 end
       if over > worst then worst, what = over, tb.text._text end
       if (tb.text._text or ""):find("%d%d%d%d") then four = true end
     end
