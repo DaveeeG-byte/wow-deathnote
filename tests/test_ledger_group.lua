@@ -154,7 +154,7 @@ test("Two PARTY_KILLs, both proofs before the second: still two (one per channel
   eq(#own, 2); eq(own[1].key, "Anna-Ast"); eq(own[2].key, "Bernd-Bolz")
 end)
 
-test("One proof (kills changed and its honour line) for two PARTY_KILLs = one kill, the first", function()
+test("One proof (kills changed and its honour line) for two PARTY_KILLs, both victims seen = one kill, the older", function()
   load(40); party()
   local a, b = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40)
   pk(MATE, a); M.Advance(0.5); pk(MATE, b)
@@ -162,6 +162,25 @@ test("One proof (kills changed and its honour line) for two PARTY_KILLs = one ki
   M.Advance(10)
   eq(#own, 1); eq(own[1].key, "Anna-Ast")
   eq(L().Victim("Bernd-Bolz"), nil)
+end)
+
+-- 1.3.1 hunt H3: two mates' kills within 3 s, I took part only in the second; the proof goes to the near victim
+test("One proof for two mates' kills: my target wins over a victim I never saw, though that one is older", function()
+  load(40); party3()
+  M.units.far = { exists = false, isPlayer = true, name = "Anna", guid = "Player-93-AnnaFern" }
+  local b = seen("Bernd", "Bolz", 40)
+  M.units.target = M.units["nameplate" .. plate]; M.FireEvent("PLAYER_TARGET_CHANGED")
+  pk(MATE, "Player-93-AnnaFern"); M.Advance(1); pk(MATE2, b); M.Advance(0.4); kc(); M.Advance(0.6); honor(); M.Advance(15)
+  eq(#own, 1); eq(own[1].key, "Bernd-Bolz")
+end)
+
+test("One proof for two mates' kills: a victim fresh in the tracker wins over one seen too long ago", function()
+  load(40); party3()
+  local a = seen("Anna", "Ast", 40)
+  M.Advance(30)
+  local b = seen("Bernd", "Bolz", 40)
+  pk(MATE, a); M.Advance(1); pk(MATE2, b); M.Advance(0.4); kc(); M.Advance(0.6); honor(); M.Advance(15)
+  eq(#own, 1); eq(own[1].key, "Bernd-Bolz")
 end)
 
 test("My own kill takes its own proof: a mate's kill out of my reach right after it is not booked", function()

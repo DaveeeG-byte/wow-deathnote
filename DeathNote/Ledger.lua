@@ -85,6 +85,9 @@ Ledger.PROOF_AFTER = 3
 -- a claim that took its first proof waits this long after it for the proof of the other channel (one kill brings
 -- both: measured 0.6 s apart), even past PROOF_AFTER: one kill, one pair of proofs, never two bookings
 Ledger.PROOF_PAIR = 2
+-- seconds: a mate's victim seen this recently by the tracker (or my target) is "near"; with two open mates' claims the
+-- proof goes to a near one first (I took part there more likely than at a victim I never saw)
+Ledger.NEAR = 10
 Ledger.ROSTER_AGE = 1        -- seconds: an unknown attacker GUID rebuilds the group roster at most this often
 Ledger.PROBE_MAX = 10        -- cases in DeathNoteDB.probe.kills.cases
 
@@ -1380,9 +1383,10 @@ local function groupMember(guid)
 end
 Ledger.GroupMember = groupMember
 
--- claims: PARTY_KILLs on players that a proof can belong to, oldest first: { gt, guid, mate, booked, kc, honor,
--- info, how, age, case }. mate = a group member's killing blow waiting for its proof; booked = done (an own kill is
--- booked at once and only takes its proofs away from the others). loose: proofs no claim took yet, per channel.
+-- claims: PARTY_KILLs on players that a proof can belong to, oldest first: { gt, guid, mate, near, booked, kc, honor,
+-- at, info, how, age, case }. mate = a group member's killing blow waiting for its proof; booked = done (an own kill
+-- is booked at once and only takes its proofs away from the others); at = GetTime of its first proof.
+-- loose: proofs no claim took yet, per channel.
 local claims = {}
 local loose = { kc = {}, honor = {} }
 local PROOF_KINDS = { "kc", "honor" }
@@ -1424,18 +1428,20 @@ local function prune(gt)
 end
 
 -- the claim a proof of this kind goes to: my own claims first (a proof of my own kill never books a mate's kill,
--- whichever came first), then the mates' claims; within each, a claim that already has the proof of the other
--- channel (the same kill) before the oldest of the window without a proof of this kind
+-- whichever came first), then the mates' claims. Within each, among the claims without a proof of this kind: one that
+-- already has the proof of the other channel (the same kill), else the oldest near one (mates' claims: my target or
+-- fresh in the tracker), else the oldest.
 local function pick(kind)
   for pass = 1, 2 do
-    local best
+    local near, best
     for _, x in ipairs(claims) do
       if not x[kind] and (pass == 1) == (not x.mate) then
         if x.at then return x end
+        if x.near then near = near or x end
         best = best or x
       end
     end
-    if best then return best end
+    if near or best then return near or best end
   end
   return nil
 end
@@ -1551,7 +1557,8 @@ function Ledger.OnPartyKill(attackerGUID, targetGUID)
       if c then c.dup = true end
       return reject(c, "dup")
     end
-    return claim({ gt = gt, guid = tg, mate = true, info = info, how = how, age = age, case = c })
+    local near = Str(Call(_G.UnitGUID, "target")) == tg or (how == "buffer" and age ~= nil and age <= Ledger.NEAR)
+    return claim({ gt = gt, guid = tg, mate = true, near = near, info = info, how = how, age = age, case = c })
   end
   if c then c.att = who end
   probeCounts[who == "me" and "own" or "pet"] = probeCounts[who == "me" and "own" or "pet"] + 1
