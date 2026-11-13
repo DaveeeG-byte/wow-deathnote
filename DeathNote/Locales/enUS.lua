@@ -758,6 +758,7 @@ L.SORT_STATE = "Score"  -- [max 14] sort of the rap sheet: open scores first
 L.SORT_COUNT = "Kills"  -- [max 14] sort of the rap sheet: most killed first
 L.SORT_POINTS = "Points"  -- [max 14] sort of the rap sheet: most points first
 L.CHAT_OWN_KILL = "Rap sheet: {name}, {level} ({band}). {points}."  -- chat after your own killing blow; {level} = 'Level 34', {band} = BAND_*, {points} = '+3 Honour' or RECORD_NO_POINTS
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"  -- 1.3.1: the chat line of a group kill; {line} = CHAT_OWN_KILL, {group} = KILL_WITH_GROUP. Write the gap your script puts after a full stop (none after a full-width one)
 L.CHAT_PATH = "New path: {path}. Rank: {rank}."  -- chat when your path changes; {rank} = name or line of the rank
 L.BANNER_RANK = "NEW RANK"  -- [max 24] head of the notice when your rank rises
 L.BANNER_AWARD = "AWARD"  -- [max 24] head of the notice for an award

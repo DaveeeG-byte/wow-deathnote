@@ -753,6 +753,7 @@ L.SORT_STATE = "Skor"  -- [max 14]
 L.SORT_COUNT = "Öldürme"  -- [max 14]
 L.SORT_POINTS = "Puan"  -- [max 14]
 L.CHAT_OWN_KILL = "Sabıka kaydı: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Yeni yol: {path}. Rütbe: {rank}."
 L.BANNER_RANK = "YENİ RÜTBE"  -- [max 24]
 L.BANNER_AWARD = "NİŞAN"  -- [max 24]

@@ -737,6 +737,7 @@ L.SORT_STATE = "Punteggio"  -- [max 14]
 L.SORT_COUNT = "Uccisioni"  -- [max 14]
 L.SORT_POINTS = "Punti"  -- [max 14]
 L.CHAT_OWN_KILL = "Fedina: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Nuova via: {path}. Rango: {rank}."
 L.BANNER_RANK = "NUOVO RANGO"  -- [max 24]
 L.BANNER_AWARD = "ONORIFICENZA"  -- [max 24]

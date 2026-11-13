@@ -55,10 +55,11 @@ them, in the chat section, stand `HELP_THEME`, `CHAT_THEME_*` and the names of t
 
 ## New keys in 1.3.1
 
-Three keys in the block `RECORD`: `KILL_WITH_GROUP` (a short sentence added to the chat line after a kill your group
-member's killing blow made, and a line in that kill's tooltip; "With your group.") right after `KILL_TAG_GROUP`, and
-`EMPTY_RECORD_HEAD` / `EMPTY_RECORD_SUB` (the left page of an empty rap sheet: big line, small line) at the end of the
-block.
+Four keys in the block `RECORD`: `KILL_WITH_GROUP` (a short sentence added to the chat line after a kill your group
+member's killing blow made, and a line in that kill's tooltip; "With your group.") right after `KILL_TAG_GROUP`,
+`CHAT_KILL_WITH_GROUP` right after `CHAT_OWN_KILL` (how the two sentences are joined: `{line} {group}`, without the
+blank where your script puts none after a full stop, as in Chinese: `{line}{group}`), and `EMPTY_RECORD_HEAD` /
+`EMPTY_RECORD_SUB` (the left page of an empty rap sheet: big line, small line) at the end of the block.
 
 ## Words of a cover (theme)
 

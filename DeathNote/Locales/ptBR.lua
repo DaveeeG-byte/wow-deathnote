@@ -738,6 +738,7 @@ L.SORT_STATE = "Placar"  -- [max 14]
 L.SORT_COUNT = "Abates"  -- [max 14]
 L.SORT_POINTS = "Pontos"  -- [max 14]
 L.CHAT_OWN_KILL = "Ficha: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Novo caminho: {path}. Patente: {rank}."
 L.BANNER_RANK = "NOVA PATENTE"  -- [max 24]
 L.BANNER_AWARD = "CONDECORAÇÃO"  -- [max 24]

@@ -751,6 +751,7 @@ L.SORT_STATE = "전적"  -- [max 14]
 L.SORT_COUNT = "처치 수"  -- [max 14]
 L.SORT_POINTS = "점수"  -- [max 14]
 L.CHAT_OWN_KILL = "전과 기록: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "새 성향: {path}. 계급: {rank}."
 L.BANNER_RANK = "계급 상승"  -- [max 24]
 L.BANNER_AWARD = "훈장 수여"  -- [max 24]

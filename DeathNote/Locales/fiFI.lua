@@ -744,6 +744,7 @@ L.SORT_STATE = "Tilanne"  -- [max 14]
 L.SORT_COUNT = "Tapot"  -- [max 14]
 L.SORT_POINTS = "Pisteet"  -- [max 14]
 L.CHAT_OWN_KILL = "Rikosrekisteri: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Uusi polku: {path}. Arvo: {rank}."
 L.BANNER_RANK = "UUSI ARVO"  -- [max 24]
 L.BANNER_AWARD = "KUNNIAMERKKI"  -- [max 24]

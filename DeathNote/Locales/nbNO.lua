@@ -743,6 +743,7 @@ L.SORT_STATE = "Stilling"  -- [max 14]
 L.SORT_COUNT = "Drap"  -- [max 14]
 L.SORT_POINTS = "Poeng"  -- [max 14]
 L.CHAT_OWN_KILL = "Rulleblad: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Ny vei: {path}. Rang: {rank}."
 L.BANNER_RANK = "NY RANG"  -- [max 24]
 L.BANNER_AWARD = "UTMERKELSE"  -- [max 24]

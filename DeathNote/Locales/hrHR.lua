@@ -750,6 +750,7 @@ L.SORT_STATE = "Rezultat"  -- [max 14]
 L.SORT_COUNT = "Ubojstva"  -- [max 14]
 L.SORT_POINTS = "Bodovi"  -- [max 14]
 L.CHAT_OWN_KILL = "Kartoteka: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Novi put: {path}. Rang: {rank}."
 L.BANNER_RANK = "NOVI RANG"  -- [max 24]
 L.BANNER_AWARD = "ODLIKOVANJE"  -- [max 24]

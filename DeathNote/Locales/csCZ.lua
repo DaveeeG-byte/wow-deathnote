@@ -750,6 +750,7 @@ L.SORT_STATE = "Skóre"  -- [max 14]
 L.SORT_COUNT = "Zabití"  -- [max 14]
 L.SORT_POINTS = "Body"  -- [max 14]
 L.CHAT_OWN_KILL = "Rejstřík: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Nová cesta: {path}. Hodnost: {rank}."
 L.BANNER_RANK = "NOVÁ HODNOST"  -- [max 24]
 L.BANNER_AWARD = "VYZNAMENÁNÍ"  -- [max 24]

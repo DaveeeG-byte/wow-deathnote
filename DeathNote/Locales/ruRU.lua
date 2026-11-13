@@ -749,6 +749,7 @@ L.SORT_STATE = "Счёт"  -- [max 14]
 L.SORT_COUNT = "Убийства"  -- [max 14]
 L.SORT_POINTS = "Очки"  -- [max 14]
 L.CHAT_OWN_KILL = "Картотека: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Новый путь: {path}. Ранг: {rank}."
 L.BANNER_RANK = "НОВЫЙ РАНГ"  -- [max 24]
 L.BANNER_AWARD = "ОРДЕН"  -- [max 24]

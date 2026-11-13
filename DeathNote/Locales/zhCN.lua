@@ -751,6 +751,7 @@ L.SORT_STATE = "比分"  -- [max 14]
 L.SORT_COUNT = "击杀数"  -- [max 14]
 L.SORT_POINTS = "点数"  -- [max 14]
 L.CHAT_OWN_KILL = "案底：{name}，{level}（{band}）。{points}。"
+L.CHAT_KILL_WITH_GROUP = "{line}{group}"
 L.CHAT_PATH = "新路线：{path}。等阶：{rank}。"
 L.BANNER_RANK = "等阶提升"  -- [max 24]
 L.BANNER_AWARD = "获得勋章"  -- [max 24]

@@ -40,7 +40,7 @@ end
 ------------------------------------------------------------------------
 -- Chat line, latest kills, victim sheet
 ------------------------------------------------------------------------
-for _, code in ipairs({ "deDE", "enUS" }) do
+for _, code in ipairs({ "deDE", "enUS", "zhCN", "zhTW", "koKR" }) do   -- 1.3.1 hunt N9: the gap in Chinese and Korean
   world(code)
   local L = ns.L
   local chat = {}
@@ -54,6 +54,14 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   for _, c in ipairs(chat) do if c:find("Grimm", 1, true) then line = c end end
   check(code .. ": chat line after the group kill", line and line:find(L.BAND_GELB, 1, true), table.concat(chat, " / "))
   check(code .. ": ...with the group", line and line:sub(-#L.KILL_WITH_GROUP) == L.KILL_WITH_GROUP, line)
+  -- hunt N9: no half-width blank after a full-width full stop (Chinese), one blank after "." (all others, Korean too)
+  local before = line and line:sub(1, -#L.KILL_WITH_GROUP - 1) or ""
+  if before:sub(-3) == "\227\128\130" then
+    check(code .. ": no blank after the full-width full stop", true)
+  else
+    check(code .. ": one blank between the sentences", before:sub(-2) == ". " or before:sub(-1) == " ", line)
+  end
+  check(code .. ": no blank after a full-width full stop", not (line or ""):find("\227\128\130 ", 1, true), line)
   -- an own kill: no addition
   local h = seen("Hanna", "Hain", 40)
   AM.FireEvent("PARTY_KILL", "Player-93-0000AAAA", h); K.tick(1)

@@ -738,6 +738,7 @@ L.SORT_STATE = "Stand"  -- [max 14]
 L.SORT_COUNT = "Kills"  -- [max 14]
 L.SORT_POINTS = "Punkte"  -- [max 14]
 L.CHAT_OWN_KILL = "Strafregister: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Neuer Weg: {path}. Rang: {rank}."
 L.BANNER_RANK = "NEUER RANG"  -- [max 24]
 L.BANNER_AWARD = "AUSZEICHNUNG"  -- [max 24]

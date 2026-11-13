@@ -689,7 +689,10 @@ local function OnOwnKill(key, row)
   local line = Fmt(L.CHAT_OWN_KILL, { name = tostring(row.name or "?"), level = level, band = Look.BandWord(row.band),
     points = Look.KillPoints(row) })
   -- 1.3.1: a group member's killing blow, you took part (flag o)
-  if type(row.f) == "string" and row.f:find("o", 1, true) then line = line .. " " .. L.KILL_WITH_GROUP end
+  -- the gap between the two sentences comes from the language file (none after a full-width full stop)
+  if type(row.f) == "string" and row.f:find("o", 1, true) then
+    line = Fmt(L.CHAT_KILL_WITH_GROUP, { line = line, group = L.KILL_WITH_GROUP })
+  end
   ns.Util.Print(line)
 end
 

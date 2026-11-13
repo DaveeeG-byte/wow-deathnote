@@ -743,6 +743,7 @@ L.SORT_STATE = "Stand"  -- [max 14]
 L.SORT_COUNT = "Kills"  -- [max 14]
 L.SORT_POINTS = "Punten"  -- [max 14]
 L.CHAT_OWN_KILL = "Strafblad: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Nieuwe weg: {path}. Rang: {rank}."
 L.BANNER_RANK = "NIEUWE RANG"  -- [max 24]
 L.BANNER_AWARD = "ONDERSCHEIDING"  -- [max 24]

@@ -738,6 +738,7 @@ L.SORT_STATE = "Marcador"  -- [max 14]
 L.SORT_COUNT = "Bajas"  -- [max 14]
 L.SORT_POINTS = "Puntos"  -- [max 14]
 L.CHAT_OWN_KILL = "Antecedentes: {name}, {level} ({band}). {points}."
+L.CHAT_KILL_WITH_GROUP = "{line} {group}"
 L.CHAT_PATH = "Nuevo camino: {path}. Rango: {rank}."
 L.BANNER_RANK = "NUEVO RANGO"  -- [max 24]
 L.BANNER_AWARD = "DISTINCIÓN"  -- [max 24]
