@@ -15,6 +15,9 @@
 -- Events: sightings (namesakes, with and without surname), own, pet's and others' PARTY_KILL, honour lines, revenge
 -- without a killing blow, deaths, revenge by hand and back, status, removal, duels (normal), instances, group, export
 -- and import, relogs, time jumps. Usage: luajit tests/test_ledger_diff.lua [seeds] [steps] [first seed]
+-- 1.3.1: the group member carries his GUID in party1, so this version books group kills (his PARTY_KILL, then
+-- PLAYER_PVP_KILLS_CHANGED within 3 s); they reach neither the book nor the journal and only lower bounties. The
+-- count of group kills booked is printed (it must not be 0, or the run proves nothing about them).
 -- A third, counted widening of that exception: revenge by PLAYER_PVP_KILLS_CHANGED counts only when exactly one listed
 -- enemy is engaged (Attribution.OnPvPKillsChanged, same code in both versions). When a left-out namesake is among
 -- the recent tracker records, his book entry or tracker record may differ, so the revenge of that step may go to,
@@ -199,6 +202,8 @@ local function run(seed, dir, files, checks)
       local v = ns.Ledger.Victim(key)
       local g = v and v.guid
       if g then K[g] = (K[g] or 0) + 1; stepKill[g] = true end
+      local row = ns.Ledger.Log()[1]
+      if row and row.f:find("o", 1, true) then checks.group = checks.group + 1 end
     end)
     ns:On("REVENGE", function(key)
       local en = ns.Store.Get(key)
@@ -239,7 +244,11 @@ local function run(seed, dir, files, checks)
       elseif x <= 72 then ns.Store.Remove(name .. "-" .. sur)
       elseif x <= 75 then M.FireEvent(({ "DUEL_REQUESTED", "DUEL_INBOUNDS", "DUEL_FINISHED" })[e.misc])
       elseif x <= 77 then M.instance = (e.misc == 1) and { true, "pvp" } or { false, "none" }
-      elseif x <= 79 then M.units.party1 = (e.misc == 1) and { exists = true, isPlayer = true, name = "Kollege" } or nil
+      elseif x <= 79 then
+        -- 1.3.1: with his GUID, so his PARTY_KILL and a following PLAYER_PVP_KILLS_CHANGED book a group kill here
+        M.units.party1 = (e.misc == 1) and { exists = true, isPlayer = true, name = "Kollege", guid = "Player-93-Kollege" }
+          or nil
+        M.FireEvent("GROUP_ROSTER_UPDATE")
       elseif x <= 81 then ns.Store.Import(ns.Store.Export(e.misc == 1))
       elseif x <= 84 then
         local db = _G.DeathNoteDB
@@ -301,7 +310,7 @@ end
 
 local checks, books, entries, lower, higher, bookDiff, errors = 0, 0, 0, 0, 0, 0, 0
 local firstHigher, firstBook
-local G = { join = 0, mixed = 0, obs = 0, over = 0, split = 0 }
+local G = { join = 0, mixed = 0, obs = 0, over = 0, split = 0, group = 0 }
 local exSeeds, exEntries, allEntries, exRows, allRows, exDiffer = 0, 0, 0, 0, 0, 0
 for seed = FIRST, FIRST + SEEDS - 1 do
   local a = run(seed, OLD, OLDFILES)
@@ -348,11 +357,11 @@ end
 GitBase.Clean()
 
 local guidRed = G.mixed > 0 or G.over > 0 or G.split > 0
-local red = higher > 0 or bookDiff > 0 or errors > 0 or guidRed
+local red = higher > 0 or bookDiff > 0 or errors > 0 or guidRed or G.group == 0
 io.write(("%-18s %d seeds x %d steps, %d checkpoints (book same: %d), %d bounties: higher %d, lower %d, %s\n"):format(
   "ledger_diff", SEEDS, STEPS, checks, books, entries, higher, lower, red and "ROT" or "0 rot"))
 io.write(("  per GUID: %d book entries checked, %d standings: me above booked + revenge + hand %d, two GUIDs under one key %d, "
-  .. "one GUID under two keys %d\n"):format(G.join, G.obs, G.over, G.mixed, G.split))
+  .. "one GUID under two keys %d; group kills booked %d\n"):format(G.join, G.obs, G.over, G.mixed, G.split, G.group))
 io.write(("  exception namesakes without surname: %d of %d seeds, %d of %d entry comparisons left out (%d of them differ), "
   .. "%d of %d journal rows; %d first names added by the pvpkills rule\n"):format(exSeeds, SEEDS, exEntries, allEntries, exDiffer,
   exRows, allRows, cascadeMarks))

@@ -11,6 +11,9 @@
 --   the standing: me = max(n, recognised - imported + pre) + by hand, him = his kills;
 --   a reload changes no standing, no account, no own kill;
 --   no REPUTE_RANK with path = nil above tier 2; no error, no secret in the data.
+-- 1.3.1: the group member is in the group (party1 with his GUID) half of the time, so his PARTY_KILL with
+-- PLAYER_PVP_KILLS_CHANGED or an honour line (also the plain one) books a group kill; the checks above stay as they
+-- are (a group kill is an OWN_KILL like any other).
 -- Usage: luajit tests/test_ledger_random.lua [runs] [steps] [seed]
 package.path = (arg[0]:match("^(.*)/") or ".") .. "/?.lua;" .. package.path
 local M = require("mock_wow")
@@ -24,7 +27,7 @@ local NAMES = { "Grimm", "Anna", "Bernd", "Carla", "Dora", "Edda", "Fritz", "Ger
 local SURS = { "Zufall", "Zweit" }   -- every first name stands for two players (namesakes)
 
 local fails, firstFail = 0, nil
-local steps, kills = 0, 0
+local steps, kills, groupKills = 0, 0, 0
 local function fail(run, step, what)
   fails = fails + 1
   if not firstFail then firstFail = ("run %d (seed %d), step %d: %s"):format(run, SEED + run, step, what) end
@@ -76,6 +79,7 @@ for run = 1, RUNS do
     booked[id] = (booked[id] or 0) + 1
     bookedPts = bookedPts + row.r + row.e + row.j + row.s
     kills = kills + 1
+    if row.f:find("o", 1, true) then groupKills = groupKills + 1 end
   end
   onRank = function(tier, path)
     if tier >= 3 and path == nil then stepFail = "REPUTE_RANK(" .. tier .. ") without a path" end
@@ -118,6 +122,12 @@ for run = 1, RUNS do
         local att = ({ ME, ME, ME, "Pet-0-1", "Player-93-Kollege", "Creature-0-1" })[math.random(6)]
         M.units.pet = { exists = true, guid = "Pet-0-1" }
         M.FireEvent("PARTY_KILL", att, guid)
+        -- 1.3.1: the proof of a kill I took part in (now and then none, or late)
+        if math.random(3) > 1 then
+          M.Advance(({ 0.4, 1, 2.5, 4 })[math.random(4)])
+          if math.random(2) == 1 then M.FireEvent("PLAYER_PVP_KILLS_CHANGED")
+          else M.FireEvent("CHAT_MSG_COMBAT_HONOR_GAIN", "Ihr habt 198 Ehrenpunkte erhalten.") end
+        end
         M.units["x" .. i .. j] = nil
       elseif x <= 31 then
         enemy(i, j, math.random(1, 70))
@@ -154,7 +164,9 @@ for run = 1, RUNS do
       elseif x <= 64 then
         M.FireEvent(({ "DUEL_FINISHED", "DUEL_INBOUNDS", "ZONE_CHANGED_NEW_AREA" })[math.random(3)])
       elseif x <= 66 then
-        M.units.party1 = (math.random(2) == 1) and { exists = true, isPlayer = true, name = "Kollege" } or nil
+        M.units.party1 = (math.random(2) == 1) and { exists = true, isPlayer = true, name = "Kollege",
+          guid = (math.random(4) > 1) and "Player-93-Kollege" or nil } or nil
+        M.FireEvent("GROUP_ROSTER_UPDATE")
       elseif x <= 67 then
         M.instance = (math.random(3) == 1) and { true, "pvp" } or { false, "none" }
       elseif x <= 80 then
@@ -243,7 +255,8 @@ for run = 1, RUNS do
   M.instance = { false, "none" }; M.units.party1 = nil; M.units.target = nil
 end
 
-io.write(("%-18s %d runs, %d steps, %d kills booked, %s\n"):format("ledger_random", RUNS, steps, kills,
+io.write(("%-18s %d runs, %d steps, %d kills booked (%d group kills), %s\n"):format("ledger_random", RUNS, steps, kills,
+  groupKills,
   fails == 0 and "0 rot" or (fails .. " rot")))
 if firstFail then io.write("  ROT: " .. firstFail .. "\n") end
 os.exit(fails == 0 and 0 or 1)

@@ -1,5 +1,5 @@
--- DeathNote - Ledger.lua (1.3.0)
--- The rap sheet: own killing blows on players, the standing "me : him" per enemy, and the repute (four accounts,
+-- DeathNote - Ledger.lua (1.3.1)
+-- The rap sheet: own killing blows on players (1.3.1: and group kills I took part in), the standing "me : him" per enemy, and the repute (four accounts,
 -- rank, path, needle). Data and rules only; the book (UI.lua, Extras.lua) and the alarm (Alert.lua) read it through
 -- the functions and the bus events below. Nothing of this goes over the wire.
 --
@@ -12,7 +12,7 @@
 --
 -- Data, account-wide and language-neutral (DeathNoteDB.ledger, DB version 4, see Store.Init):
 --   victims[key] = { key, name, surname, guid, class, level, guild, faction, n, pre, first, last, dn, dt, pts,
---                    zone, mapID }        n = my killing blows on him, pre = those of them booked while he had no
+--                    zone, mapID }        n = my kills on him, pre = those of them booked while he had no
 --                                         book entry (no revenge the book could have recognised)
 --   log          = newest kills first, at most LOG_MAX: { t, key, name, vl, ml, band, r, e, j, s, f, zone, mapID,
 --                    x, y, me, state }    f = flag letters (see FLAGS), name = the victim's name at the kill
@@ -36,8 +36,20 @@
 --
 -- Detection (decision 7): PARTY_KILL with my GUID or my pet's as attacker is the source. The honour line
 -- (COMBATLOG_HONORGAIN of the client, made into a pattern) is the fallback when no PARTY_KILL came for that victim;
--- it books only with HONOR_FALLBACK on (off until measured in the game).
--- Dropped: no player, my own faction, the opponent of a duel to the death, instances, the same victim within 10 s.
+-- it books only with HONOR_FALLBACK on. The named form of that line was never seen on Forever (probe 13.11.2026:
+-- only the form without a name), so the fallback stays off.
+-- 1.3.1, group kills: a PARTY_KILL by a member of my party or raid (or that member's pet) on an enemy player books a
+-- kill for me (flags g and o) when a proof that I took part comes within the window around it: PLAYER_PVP_KILLS_CHANGED
+-- or an honour line of any form, from PROOF_BEFORE seconds before the PARTY_KILL to PROOF_AFTER seconds after it.
+-- Measured on Forever (probe 13.11.2026, a group of two, the mate's killing blows): PARTY_KILL, then
+-- PLAYER_PVP_KILLS_CHANGED +0.4 s, then the honour line without a name +1.0 s. Each proof counts for one PARTY_KILL
+-- only, per channel (one PLAYER_PVP_KILLS_CHANGED and one honour line come for the same kill): the oldest open
+-- PARTY_KILL takes it. My own PARTY_KILLs on players take their proofs too (they are booked at once), so a proof of
+-- my own kill never books a mate's kill out of my reach. No proof, no kill.
+-- Dropped: no player, my own faction, the opponent of a duel to the death, instances, the same victim within 10 s
+-- (by GUID: a mate's killing blow and mine on the same victim are one kill).
+-- Own kills without a PARTY_KILL (totem, guardian, trap, damage over time) are not booked: a proof without any
+-- PARTY_KILL names no victim, and UNIT_DIED never showed in the probe (no case carries "died").
 -- Whatever the client does here is unmeasured: /dn debug writes every case to DeathNoteDB.probe.kills.
 
 local ADDON, ns = ...
@@ -59,10 +71,16 @@ Ledger.PATH_TIER = 3         -- ... or this tier, whichever comes first (tiers 1
 Ledger.PATH_SWITCH = 1.15    -- another account must beat the current path by 15 % to take over
 Ledger.COUNT_MAX = 9999      -- a count read for the standing never goes beyond this (broken or pasted data)
 Ledger.HONOR_WAIT = 2        -- seconds the honour line waits for a PARTY_KILL of the same kill
--- the honour line books a kill when no PARTY_KILL came (decision 7). Off until the probe has shown in the game that
--- the line comes only for the killing blow (it may come for an assist too: then an assist would count as a kill).
--- The probe counts the lines either way (honorAlone, reason "fallback-off").
+-- the honour line books a kill when no PARTY_KILL came (decision 7). Off: the line with a name was never seen on
+-- Forever (probe 13.11.2026: only the form without a name). The probe counts the lines either way (honorAlone,
+-- reason "fallback-off").
 Ledger.HONOR_FALLBACK = false
+-- group kills (1.3.1): the window of a proof around a mate's PARTY_KILL, in seconds. Measured: proof +0.4 s
+-- (PLAYER_PVP_KILLS_CHANGED) and +1.0 s (honour line). 1 s before covers events that swap places; 3 s after is three
+-- times the slowest measured proof and still far below the 10 s of the dedupe.
+Ledger.PROOF_BEFORE = 1
+Ledger.PROOF_AFTER = 3
+Ledger.ROSTER_AGE = 1        -- seconds: an unknown attacker GUID rebuilds the group roster at most this often
 Ledger.PROBE_MAX = 10        -- cases in DeathNoteDB.probe.kills.cases
 
 -- Greys: the victim's level at or below GreyLevel(my level). warcraft.wiki.gg "Mob experience" (Classic);
@@ -80,8 +98,8 @@ for _, b in ipairs(Ledger.BANDS) do VALID_BAND[b] = true end
 local PATHS = { "r", "e", "j", "s" }
 local VALID_PATH = { r = true, e = true, j = true, s = true }
 -- f letters: v revenge, s protection, h hit list, b foreign bounty, g in a group, n kicking, p pet,
--- u level unknown, m booked from the honour line
-Ledger.FLAGS = "vshbgnpum"
+-- u level unknown, m booked from the honour line, o killing blow by a group member (1.3.1, always with g)
+Ledger.FLAGS = "vshbgnpumo"
 
 -- The six awards of stage 1 (ids are stored; names and lines come from the book). hidden: name shows as "???"
 Ledger.AWARDS = {
@@ -1081,7 +1099,9 @@ end
 -- Probe (/dn debug): kill cases without names
 ---------------------------------------------------------------------------
 local probeCounts = { partyKill = 0, own = 0, pet = 0, group = 0, foreign = 0, npc = 0, secret = 0, dup = 0, booked = 0,
-  honor = 0, honorNamed = 0, honorPlain = 0, honorMatched = 0, honorAlone = 0, honorBooked = 0, rejected = {} }
+  honor = 0, honorNamed = 0, honorPlain = 0, honorMatched = 0, honorAlone = 0, honorBooked = 0, rejected = {},
+  -- 1.3.1: group kills booked, proofs seen (PLAYER_PVP_KILLS_CHANGED, honour line) and proofs no PARTY_KILL took
+  groupBooked = 0, proofKC = 0, proofHonor = 0, proofLoose = 0 }
 Ledger.probeCounts = probeCounts
 local caseGuid = setmetatable({}, { __mode = "k" })   -- case -> victim GUID, in memory only
 local lastKC                                         -- GetTime of the last PLAYER_PVP_KILLS_CHANGED
@@ -1190,6 +1210,7 @@ local function flagsOf(ctx)
   if ctx.pet then f[#f + 1] = "p" end
   if ctx.unknown then f[#f + 1] = "u" end
   if ctx.honor then f[#f + 1] = "m" end
+  if ctx.mate then f[#f + 1] = "o" end
   return table.concat(f)
 end
 
@@ -1207,7 +1228,9 @@ local function checkArch(key)
   if mine and mine >= 5 and mine == his then award("arch_enemy") end
 end
 
--- books one own kill. info: what we know of the victim; opts: { pet, honor, case, how, age }
+-- books one own kill. info: what we know of the victim; opts: { pet, honor, mate, case, how, age }
+-- mate = a group member's killing blow with a proof (1.3.1): a group kill (half honour and hunt, infamy and
+-- protection in full), flag o; the best marks "largest level gap" and "quickest revenge" stay for own blows
 local function book(info, opts)
   local c = opts.case
   -- a placeholder of this GUID (first name only) takes the full name now, before the kill is booked (unless the book
@@ -1237,8 +1260,8 @@ local function book(info, opts)
   local ctx = {
     -- revenge: a real debt (he leads); an open 0 : 0 (entered by hand, assists only) is none
     revenge = state0 == "open" and his0 > mine0, protect = protects(key), hunt = onHitList(key), bounty = foreignBounty(key),
-    group = size > 1, kick = v.last ~= nil and tv - v.last < Ledger.KICK, nthToday = v.dn,
-    pet = opts.pet, unknown = band == "unbekannt", honor = opts.honor,
+    group = size > 1 or opts.mate == true, kick = v.last ~= nil and tv - v.last < Ledger.KICK, nthToday = v.dn,
+    pet = opts.pet, unknown = band == "unbekannt", honor = opts.honor, mate = opts.mate,
   }
   local r, ee, j, s = Ledger.Points(band, ctx)
   local zone, _, mapID, x, y = Util.Zone()
@@ -1261,11 +1284,12 @@ local function book(info, opts)
   db.n = db.n + 1
   db.bands[band] = (db.bands[band] or 0) + 1
   -- best marks
-  if vl and myLevel and vl - myLevel > (db.best.gap or 0) then db.best.gap = vl - myLevel end
+  if not ctx.mate and vl and myLevel and vl - myLevel > (db.best.gap or 0) then db.best.gap = vl - myLevel end
   db.cur.streak = db.cur.streak + 1
   if db.cur.streak > (db.best.streak or 0) then db.best.streak = db.cur.streak end
   local hisLast = e and finite(e.lastKill) and e.lastKill or nil
-  if ctx.revenge and hisLast and t >= hisLast and (not db.best.quick or t - hisLast < db.best.quick) then
+  if not ctx.mate and ctx.revenge and hisLast and t >= hisLast
+    and (not db.best.quick or t - hisLast < db.best.quick) then
     db.best.quick = t - hisLast
   end
   remember(gt, Str(info.guid), key, firstOf(info.name))
@@ -1275,7 +1299,7 @@ local function book(info, opts)
   local mine1, his1, state1 = Ledger.Standing(key)
   row.state = state1
   if c then
-    c.result = "booked"
+    c.result = ctx.mate and "group-booked" or "booked"
     c.band, c.myLevel, c.vicLevel, c.skull = band, myLevel, vl, skull or nil
     c.color = clientColor(vl)
     c.info = { form = Str(info.surname) and "full" or (Str(info.name) and "first" or "none"), class = info.class ~= nil,
@@ -1284,6 +1308,7 @@ local function book(info, opts)
   end
   probeCounts.booked = probeCounts.booked + 1
   if opts.honor then probeCounts.honorBooked = probeCounts.honorBooked + 1 end
+  if opts.mate then probeCounts.groupBooked = probeCounts.groupBooked + 1 end
   -- awards
   if db.n == 1 then award("first_entry") end
   if state0 == "open" and state1 == "even" then award("receipt") end
@@ -1322,6 +1347,150 @@ local function ownFaction(info)
   return mine ~= nil and theirs ~= nil and theirs == mine
 end
 
+---------------------------------------------------------------------------
+-- Group kills (1.3.1): claims and proofs
+---------------------------------------------------------------------------
+-- the GUIDs of my party or raid and their pets; rebuilt after GROUP_ROSTER_UPDATE or UNIT_PET, and for an unknown
+-- GUID at most every ROSTER_AGE seconds (a pet summoned without an event). Only PARTY_KILLs on players look here.
+local roster, rosterAt, rosterDirty = {}, nil, true
+local function readRoster()
+  local r = {}
+  local raid = Util.True(Call(_G.UnitExists, "raid1"))
+  local n = Num(Call(_G.GetNumGroupMembers))
+  local unit, pet, max = raid and "raid" or "party", raid and "raidpet" or "partypet", raid and 40 or 4
+  if n then max = math.min(max, math.max(0, floor(n))) end
+  for i = 1, max do
+    local g = Str(Call(_G.UnitGUID, unit .. i))
+    if g then r[g] = true elseif not n then break end
+    local pg = Str(Call(_G.UnitGUID, pet .. i))
+    if pg then r[pg] = true end
+  end
+  roster, rosterAt, rosterDirty = r, gtime(), false
+end
+local function groupMember(guid)
+  if groupSize() <= 1 then return false end
+  if not rosterDirty and roster[guid] then return true end
+  if rosterDirty or not rosterAt or gtime() - rosterAt >= Ledger.ROSTER_AGE then readRoster() end
+  return roster[guid] == true
+end
+Ledger.GroupMember = groupMember
+
+-- claims: PARTY_KILLs on players that a proof can belong to, oldest first: { gt, guid, mate, booked, kc, honor,
+-- info, how, age, case }. mate = a group member's killing blow waiting for its proof; booked = done (an own kill is
+-- booked at once and only takes its proofs away from the others). loose: proofs no claim took yet, per channel.
+local claims = {}
+local loose = { kc = {}, honor = {} }
+local PROOF_KINDS = { "kc", "honor" }
+
+local function bookClaim(x, kind, dt)
+  x.booked = true
+  local c = x.case
+  if c then c.proof = { kind = kind, dt = round(dt * 10) / 10 } end
+  if not enabled() then return reject(c, "off") end
+  -- my own killing blow on him came first meanwhile (or another source booked him): one kill
+  if isDup(gtime(), x.guid, x.info.key, firstOf(x.info.name)) then
+    probeCounts.dup = probeCounts.dup + 1
+    if c then c.dup = true end
+    return reject(c, "dup")
+  end
+  return book(x.info, { mate = true, case = c, how = x.how, age = x.age })
+end
+
+-- drops what is too old: claims beyond PROOF_AFTER (a mate's kill without a proof: "group-noproof"), proofs beyond
+-- PROOF_BEFORE
+local function prune(gt)
+  local i = 1
+  while claims[i] do
+    local x = claims[i]
+    if gt - x.gt > Ledger.PROOF_AFTER then
+      table.remove(claims, i)
+      if x.mate and not x.booked then reject(x.case, "group-noproof") end
+    else
+      i = i + 1
+    end
+  end
+  for _, k in ipairs(PROOF_KINDS) do
+    local l = loose[k]
+    while l[1] and gt - l[1] > Ledger.PROOF_BEFORE do
+      table.remove(l, 1)
+      probeCounts.proofLoose = probeCounts.proofLoose + 1
+    end
+  end
+end
+
+-- a proof of kind "kc" or "honor": the oldest claim of the window that has none of this kind takes it
+local function proof(kind)
+  local gt = gtime()
+  probeCounts[kind == "kc" and "proofKC" or "proofHonor"] = probeCounts[kind == "kc" and "proofKC" or "proofHonor"] + 1
+  prune(gt)
+  for _, x in ipairs(claims) do
+    if not x[kind] then
+      x[kind] = true
+      if x.mate and not x.booked then
+        local ok, err = pcall(bookClaim, x, kind, gt - x.gt)
+        if not ok and ns.ReportError then ns.ReportError(err) end
+      end
+      return true
+    end
+  end
+  local l = loose[kind]
+  l[#l + 1] = gt
+  while #l > 8 do table.remove(l, 1); probeCounts.proofLoose = probeCounts.proofLoose + 1 end
+  return false
+end
+Ledger.Proof = proof
+
+-- a new claim takes the oldest loose proofs of the last PROOF_BEFORE seconds; a mate's claim is booked when it got one
+local function claim(x)
+  local gt = x.gt
+  prune(gt)
+  local got, dt
+  for _, k in ipairs(PROOF_KINDS) do
+    local l = loose[k]
+    if l[1] then
+      dt = dt or (l[1] - gt)
+      table.remove(l, 1)
+      x[k] = true
+      got = got or k
+    end
+  end
+  claims[#claims + 1] = x
+  while #claims > 16 do
+    local old = table.remove(claims, 1)
+    if old.mate and not old.booked then reject(old.case, "group-noproof") end
+  end
+  if x.mate and got then return bookClaim(x, got, dt) end
+  if x.mate then
+    -- the probe learns the end of the window; the booking itself needs no timer
+    if x.case and _G.C_Timer and _G.C_Timer.After then
+      _G.C_Timer.After(Ledger.PROOF_AFTER + 0.1, function() pcall(prune, gtime()) end)
+    end
+    if x.case then x.case.result = "group-wait" end
+    return false, "group-wait"
+  end
+  return true
+end
+
+-- a claim of the same victim within DEDUPE seconds (a mate's and my own PARTY_KILL on him are one kill)
+local function claimOf(guid, gt)
+  for i = #claims, 1, -1 do
+    local x = claims[i]
+    if x.guid == guid and gt - x.gt < Ledger.DEDUPE then return x end
+  end
+  return nil
+end
+
+-- the opponent is my target right now: his level as the client shows it at this moment
+local function targetLevel(c, info, tg)
+  if Str(Call(_G.UnitGUID, "target")) ~= tg then return end
+  if c then
+    local tl = Call(_G.UnitLevel, "target")
+    if IsSecret(tl) then c.targetLevel = "<secret>" else c.targetLevel = Num(tl) end
+  end
+  local tl = Num(Call(_G.UnitLevel, "target"))
+  if tl and tl > 0 then info.level = tl; info.skull = nil elseif tl and tl < 0 then info.skull = true end
+end
+
 -- PARTY_KILL(attackerGUID, targetGUID). Returns true, key when booked; false, reason otherwise.
 function Ledger.OnPartyKill(attackerGUID, targetGUID)
   probeCounts.partyKill = probeCounts.partyKill + 1
@@ -1341,30 +1510,42 @@ function Ledger.OnPartyKill(attackerGUID, targetGUID)
       c.att, c.attKind, c.group = who, ak, groupSize()
       probeCounts[who] = (probeCounts[who] or 0) + 1
     end
-    if kind == "Player" then
-      foreignKills[#foreignKills + 1] = { gt = gtime(), guid = tg }
-      while #foreignKills > 8 do table.remove(foreignKills, 1) end
+    if kind ~= "Player" then return reject(c, "attacker") end
+    local gt = gtime()
+    foreignKills[#foreignKills + 1] = { gt = gt, guid = tg }
+    while #foreignKills > 8 do table.remove(foreignKills, 1) end
+    -- 1.3.1: a group member's kill (or his pet's) books for me with a proof
+    if tg == me or not groupMember(a) then return reject(c, "attacker") end
+    if c then caseGuid[c] = tg end
+    local ok, why = gate(c, tg)
+    if not ok then return false, why end
+    local info, how, age = lookup(tg)
+    info = info or { guid = tg }
+    targetLevel(c, info, tg)
+    if ownFaction(info) then return reject(c, "faction") end
+    if claimOf(tg, gt) or isDup(gt, tg, info.key, firstOf(info.name)) then
+      probeCounts.dup = probeCounts.dup + 1
+      if c then c.dup = true end
+      return reject(c, "dup")
     end
-    return reject(c, "attacker")
+    return claim({ gt = gt, guid = tg, mate = true, info = info, how = how, age = age, case = c })
   end
   if c then c.att = who end
   probeCounts[who == "me" and "own" or "pet"] = probeCounts[who == "me" and "own" or "pet"] + 1
   if kind ~= "Player" then return reject(c, "notplayer") end
   if tg == me then return reject(c, "self") end
   if c then caseGuid[c] = tg end
+  -- 1.3.1: my own kill on a player takes its proofs (booked or not); a mate's open claim on him is this kill
+  do
+    local gt0 = gtime()
+    local x = claimOf(tg, gt0)
+    if x then x.booked = true else claim({ gt = gt0, guid = tg, booked = true }) end
+  end
   local ok, why = gate(c, tg)
   if not ok then return false, why end
   local info, how, age = lookup(tg)
   info = info or { guid = tg }
-  if c and Str(Call(_G.UnitGUID, "target")) == tg then
-    local tl = Call(_G.UnitLevel, "target")
-    if IsSecret(tl) then c.targetLevel = "<secret>" else c.targetLevel = Num(tl) end
-  end
-  -- the opponent is my target right now: his level as the client shows it at this moment
-  if Str(Call(_G.UnitGUID, "target")) == tg then
-    local tl = Num(Call(_G.UnitLevel, "target"))
-    if tl and tl > 0 then info.level = tl; info.skull = nil elseif tl and tl < 0 then info.skull = true end
-  end
+  targetLevel(c, info, tg)
   if ownFaction(info) then return reject(c, "faction") end
   local gt = gtime()
   if isDup(gt, tg, info.key, firstOf(info.name)) then
@@ -1448,6 +1629,8 @@ end
 -- CHAT_MSG_COMBAT_HONOR_GAIN(text). The line with a victim waits HONOR_WAIT seconds for its PARTY_KILL.
 function Ledger.OnHonorGain(text)
   probeCounts.honor = probeCounts.honor + 1
+  -- 1.3.1: any honour line is a proof that I took part in a kill (group kills)
+  proof("honor")
   text = Str(text)
   if not text then return false, "secret" end
   local p, order = pattern()
@@ -1530,6 +1713,7 @@ function Ledger.ProbeSnapshot()
 end
 
 local function onKillsChanged()
+  proof("kc")
   if not debugOn() then return end
   lastKC = gtime()
   local k = probeDB()
@@ -1565,6 +1749,10 @@ end
 ns:RegisterEvent("PARTY_KILL", function(_, a, t) Ledger.OnPartyKill(a, t) end)
 ns:RegisterEvent("CHAT_MSG_COMBAT_HONOR_GAIN", function(_, text) Ledger.OnHonorGain(text) end)
 ns:RegisterEvent("PLAYER_PVP_KILLS_CHANGED", onKillsChanged)
+-- the group roster of the group kills: read again at the next PARTY_KILL on a player
+for _, ev in ipairs({ "GROUP_ROSTER_UPDATE", "UNIT_PET", "PLAYER_ENTERING_WORLD" }) do
+  ns:RegisterEvent(ev, function() rosterDirty = true end)
+end
 
 ns:On("READY", function() watchDied(); updateHook() end)
 ns:On("SETTINGS_CHANGED", function(path)
@@ -1608,4 +1796,5 @@ end)
 -- only for tests: the in-memory state between two loads
 function Ledger.ResetRuntime()
   recent, foreignKills, spottedAt, lastKC = {}, {}, {}, nil
+  claims, loose, roster, rosterAt, rosterDirty = {}, { kc = {}, honor = {} }, {}, nil, true
 end
