@@ -9,6 +9,7 @@ local test, eq, ok, no = M.test, M.eq, M.ok, M.no
 
 local ME = "Player-93-0000AAAA"
 local MATE = "Player-93-0000BBBB"
+local MATE2 = "Player-93-0000CCCC"
 local PLAIN = "Ihr habt 198 Ehrenpunkte erhalten."   -- an honour line without a victim's name (30-odd characters)
 
 local ns, own
@@ -25,6 +26,13 @@ local function party(pet)
   M.units.party1 = { exists = true, isPlayer = true, name = "Kumpel", surname = "Treu", guid = MATE, faction = "Horde",
     level = 40 }
   if pet then M.units.partypet1 = { exists = true, guid = "Pet-0-4242" } end
+  M.FireEvent("GROUP_ROSTER_UPDATE")
+end
+-- a group of three: the second mate in party2
+local function party3()
+  party()
+  M.units.party2 = { exists = true, isPlayer = true, name = "Zweiter", surname = "Mann", guid = MATE2, faction = "Horde",
+    level = 40 }
   M.FireEvent("GROUP_ROSTER_UPDATE")
 end
 local plate = 0
@@ -175,6 +183,18 @@ for _, d in ipairs({ 0.5, 1, 2, 2.3, 2.6 }) do
     pk(MATE, a); M.Advance(d); pk(ME, b); M.Advance(0.4); kc(); M.Advance(0.6); honor(); M.Advance(15)
     eq(#own, 1); eq(own[1].key, "Bernd-Bolz")
     eq(L().Victim("Anna-Ast"), nil, "the mate's victim was never mine")
+  end)
+end
+
+-- 1.3.1 hunt H2: two mates' kills 2.1 to 2.6 s apart, I took part only in the second (one pair of proofs). The
+-- counter came while the first claim was still open; the honour line of the same kill must not book the second.
+for _, d in ipairs({ 2.1, 2.3, 2.6 }) do
+  test("Two mates' kills " .. d .. " s apart, one pair of proofs: one kill, never two", function()
+    load(40); party3()
+    local a, b = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40)
+    pk(MATE, a); M.Advance(d); pk(MATE2, b); M.Advance(0.4); kc(); M.Advance(0.6); honor(); M.Advance(15)
+    eq(#own, 1)
+    eq(L().Repute().n, 1)
   end)
 end
 

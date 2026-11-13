@@ -82,6 +82,9 @@ Ledger.HONOR_FALLBACK = false
 -- times the slowest measured proof and still far below the 10 s of the dedupe.
 Ledger.PROOF_BEFORE = 1
 Ledger.PROOF_AFTER = 3
+-- a claim that took its first proof waits this long after it for the proof of the other channel (one kill brings
+-- both: measured 0.6 s apart), even past PROOF_AFTER: one kill, one pair of proofs, never two bookings
+Ledger.PROOF_PAIR = 2
 Ledger.ROSTER_AGE = 1        -- seconds: an unknown attacker GUID rebuilds the group roster at most this often
 Ledger.PROBE_MAX = 10        -- cases in DeathNoteDB.probe.kills.cases
 
@@ -1398,13 +1401,13 @@ local function bookClaim(x, kind, dt)
   return book(x.info, { mate = true, case = c, how = x.how, age = x.age })
 end
 
--- drops what is too old: claims beyond PROOF_AFTER (a mate's kill without a proof: "group-noproof"), proofs beyond
--- PROOF_BEFORE
+-- drops what is too old: claims beyond PROOF_AFTER (a mate's kill without a proof: "group-noproof") unless their
+-- first proof came within PROOF_PAIR (x.at), proofs beyond PROOF_BEFORE
 local function prune(gt)
   local i = 1
   while claims[i] do
     local x = claims[i]
-    if gt - x.gt > Ledger.PROOF_AFTER then
+    if gt - x.gt > Ledger.PROOF_AFTER and not (x.at and gt - x.at <= Ledger.PROOF_PAIR) then
       table.remove(claims, i)
       if x.mate and not x.booked then reject(x.case, "group-noproof") end
     else
@@ -1421,12 +1424,18 @@ local function prune(gt)
 end
 
 -- the claim a proof of this kind goes to: my own claims first (a proof of my own kill never books a mate's kill,
--- whichever came first), then the mates' claims; within each, the oldest of the window without a proof of this kind
+-- whichever came first), then the mates' claims; within each, a claim that already has the proof of the other
+-- channel (the same kill) before the oldest of the window without a proof of this kind
 local function pick(kind)
   for pass = 1, 2 do
+    local best
     for _, x in ipairs(claims) do
-      if not x[kind] and (pass == 1) == (not x.mate) then return x end
+      if not x[kind] and (pass == 1) == (not x.mate) then
+        if x.at then return x end
+        best = best or x
+      end
     end
+    if best then return best end
   end
   return nil
 end
@@ -1439,6 +1448,7 @@ local function proof(kind)
   local x = pick(kind)
   if x then
     x[kind] = true
+    x.at = x.at or gt
     if x.mate and not x.booked then
       local ok, err = pcall(bookClaim, x, kind, gt - x.gt)
       if not ok and ns.ReportError then ns.ReportError(err) end
@@ -1463,6 +1473,7 @@ local function claim(x)
       dt = dt or (l[1] - gt)
       table.remove(l, 1)
       x[k] = true
+      x.at = x.at or gt
       got = got or k
     end
   end
