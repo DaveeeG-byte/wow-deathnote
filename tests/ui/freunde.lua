@@ -66,7 +66,10 @@ local P = ns.Guild.Proto
 ------------------------------------------------------------------------
 local gt = frameWith(function(f) return f.id == "guild" and f.text end)
 check("Reiter heisst Gilde & Freunde", gt.text._text == "Gilde & Freunde", gt.text._text)
-check("Reiter breiter (132), Text 128", gt._w == 132 and gt.text._w == 128, tostring(gt._w))
+-- 1.3.1: five tabs are always shown (the rap sheet tab is there before the first own kill), so the guild tab is
+-- narrower than with four (132 then); its label still fits its text field
+check("Reiter Gilde & Freunde: Text passt in sein Feld (fuenf Reiter)", gt._w >= 100 and gt.text._w == gt._w - 4
+  and not gt.text:IsTruncated(), tostring(gt._w) .. "/" .. tostring(gt.text._w))
 local help = frameWith(function(f) return f.text and f.text._text == "?" end)
 check("Reiter endet vor dem ?", gt:GetRight() and help:GetLeft() and gt:GetRight() <= help:GetLeft(),
       tostring(gt:GetRight()) .. " / " .. tostring(help:GetLeft()))

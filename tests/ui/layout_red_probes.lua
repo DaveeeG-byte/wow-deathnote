@@ -96,12 +96,14 @@ do
   for _, tb in ipairs(tabs) do
     if tb:IsVisible() then
       local over = (BM.Unbounded(tb.text) or 0) - (tb.text._wset and tb.text._w or tb._w or 0)
+      -- 1.3.1: five tabs are always shown; a label that is cut there carries its whole text in the tab's tooltip
+      if over > 0.5 and tb.text.tipOwner then over = 0 end
       if over > worst then worst, what = over, tb.text._text end
       if (tb.text._text or ""):find("%d%d%d%d") then four = true end
     end
   end
   K.check("17 precondition: a tab shows a four-digit count", four, what)
-  K.check("17 every tab text fits its text field", worst <= 0.5, ("%.1f px over: %s"):format(worst, tostring(what)))
+  K.check("17 every tab text fits its text field or shows it whole in a tooltip", worst <= 0.5, ("%.1f px over: %s"):format(worst, tostring(what)))
   local fl = BM.RectUI(F)
   local last
   for _, tb in ipairs(tabs) do if tb:IsVisible() then last = tb end end

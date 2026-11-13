@@ -172,7 +172,7 @@ do
 end
 
 ------------------------------------------------------------------------
--- The fifth tab: comes with the first own kill and stays; off with the rap sheet; round trips without new objects
+-- The fifth tab: there whenever the rap sheet is kept (1.3.1; before: from the first own kill on); off with the rap sheet; round trips without new objects
 ------------------------------------------------------------------------
 local function tab(id) for _, f in ipairs(BM.frames) do if f.id == id and f.mark and f._scripts and f._scripts.OnClick then return f end end end
 local function click(f, b) f._scripts.OnClick(f, b or "LeftButton"); K.tick() end
@@ -182,7 +182,7 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   local L = ns.L
   killsMe("Olaf", "Offen", 2)
   open()
-  check(code .. ": no own kill: no fifth tab", not tab("record"):IsShown())
+  check(code .. ": no own kill: the fifth tab is there all the same (1.3.1)", tab("record"):IsShown())
   local shownBefore = 0
   for _, t in ipairs(rawget(G, "DeathNoteFrame").tabs) do if t:IsShown() then shownBefore = shownBefore + 1 end end
   iKill("Olaf", "Offen", 1)

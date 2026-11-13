@@ -2722,11 +2722,12 @@ RS.FIT_BTN = { sizes = { 10, 9 } }
 RS.PATHS = { "r", "e", "j", "s" }
 RS.TAG = { { "n", "KILL_TAG_KICK" }, { "v", "KILL_TAG_REVENGE" }, { "g", "KILL_TAG_GROUP" } }   -- flag, locale key
 
--- the tab exists from the first own kill on (it stays after "Clear rap sheet": the repute keeps the count)
+-- the tab is there whenever the rap sheet is kept (1.3.1: also before the first own kill; hidden until then,
+-- nobody found it after the update)
 function RS.On()
   local Lg = ns.Ledger
   if not (Lg and Lg.Enabled and Lg.Victims and Lg.Repute) or not Lg.Enabled() then return false end
-  return (tonumber(Lg.VictimCount and Lg.VictimCount()) or 0) > 0 or (tonumber(Lg.Repute().n) or 0) > 0
+  return true
 end
 
 -- the one place that forms the name of a victim (never from its key: "Name-Realm#1A2B" of a second namesake)
