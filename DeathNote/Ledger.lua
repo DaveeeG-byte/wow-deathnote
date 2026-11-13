@@ -88,6 +88,10 @@ Ledger.PROOF_PAIR = 2
 -- seconds: a mate's victim seen this recently by the tracker (or my target) is "near"; with two open mates' claims the
 -- proof goes to a near one first (I took part there more likely than at a victim I never saw)
 Ledger.NEAR = 10
+-- seconds after PLAYER_ENTERING_WORLD (login, reload, loading screen) in which a proof that no claim takes is dropped,
+-- never kept loose: a counter or honour line that comes with the login is no kill (hunt N5; whether Forever sends
+-- PLAYER_PVP_KILLS_CHANGED there is unmeasured, the probe counts it as proofLoose)
+Ledger.QUIET = 5
 Ledger.ROSTER_AGE = 1        -- seconds: an unknown attacker GUID rebuilds the group roster at most this often
 Ledger.PROBE_MAX = 10        -- cases in DeathNoteDB.probe.kills.cases
 
@@ -1410,6 +1414,7 @@ Ledger.GroupMember = groupMember
 local claims = {}
 local loose = { kc = {}, honor = {} }
 local PROOF_KINDS = { "kc", "honor" }
+local quietUntil        -- GetTime until which a proof no claim takes is dropped (Ledger.QUIET)
 
 local function bookClaim(x, kind, dt)
   x.booked = true
@@ -1493,6 +1498,10 @@ local function proof(kind)
       if not ok and ns.ReportError then ns.ReportError(err) end
     end
     return true
+  end
+  if quietUntil and gt < quietUntil then
+    probeCounts.proofLoose = probeCounts.proofLoose + 1
+    return false
   end
   local l = loose[kind]
   l[#l + 1] = gt
@@ -1818,9 +1827,23 @@ ns:RegisterEvent("PARTY_KILL", function(_, a, t) Ledger.OnPartyKill(a, t) end)
 ns:RegisterEvent("CHAT_MSG_COMBAT_HONOR_GAIN", function(_, text) Ledger.OnHonorGain(text) end)
 ns:RegisterEvent("PLAYER_PVP_KILLS_CHANGED", onKillsChanged)
 -- the group roster of the group kills: read again at the next PARTY_KILL on a player
-for _, ev in ipairs({ "GROUP_ROSTER_UPDATE", "UNIT_PET", "PLAYER_ENTERING_WORLD" }) do
+for _, ev in ipairs({ "GROUP_ROSTER_UPDATE", "UNIT_PET" }) do
   ns:RegisterEvent(ev, function() rosterDirty = true end)
 end
+-- login, reload, loading screen: the roster is read again; what waited before ends here (a mate's claim without a
+-- proof, loose proofs), and for Ledger.QUIET seconds a proof no claim takes is dropped
+ns:RegisterEvent("PLAYER_ENTERING_WORLD", function()
+  rosterDirty = true
+  for _, x in ipairs(claims) do
+    if x.mate and not x.booked then reject(x.case, "group-noproof") end
+  end
+  claims = {}
+  for _, k in ipairs(PROOF_KINDS) do
+    probeCounts.proofLoose = probeCounts.proofLoose + #loose[k]
+    loose[k] = {}
+  end
+  quietUntil = gtime() + Ledger.QUIET
+end)
 
 ns:On("READY", function() watchDied(); updateHook() end)
 ns:On("SETTINGS_CHANGED", function(path)
@@ -1864,5 +1887,5 @@ end)
 -- only for tests: the in-memory state between two loads
 function Ledger.ResetRuntime()
   recent, foreignKills, spottedAt, lastKC = {}, {}, {}, nil
-  claims, loose, roster, rosterAt, rosterDirty = {}, { kc = {}, honor = {} }, {}, nil, true
+  claims, loose, roster, rosterAt, rosterDirty, quietUntil = {}, { kc = {}, honor = {} }, {}, nil, true, nil
 end

@@ -124,7 +124,7 @@ test("A proof without any PARTY_KILL books nothing", function()
 end)
 
 test("A proof up to 1 s before the PARTY_KILL counts; 1.5 s before does not", function()
-  load(40); party()
+  load(40); party(); M.Advance(L().QUIET)     -- away from the login
   local g = seen("Grimm", "Bart", 40)
   kc(); M.Advance(0.6); pk(MATE, g)
   eq(#own, 1, "proof 0.6 s before")
@@ -132,6 +132,24 @@ test("A proof up to 1 s before the PARTY_KILL counts; 1.5 s before does not", fu
   local h = seen("Hanna", "Hain", 40)
   kc(); M.Advance(1.5); pk(MATE, h); M.Advance(5)
   eq(#own, 1, "proof 1.5 s before: too early")
+end)
+
+-- 1.3.1 hunt N5: a counter or honour line right after login or a loading screen is no kill
+test("A proof right after PLAYER_ENTERING_WORLD is dropped, not kept for the next PARTY_KILL", function()
+  load(40); party(); M.Advance(30)
+  local a, b = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40)
+  M.FireEvent("PLAYER_ENTERING_WORLD"); kc(); M.Advance(0.8); pk(MATE, a); M.Advance(15)
+  eq(#own, 0, "the counter of the login")
+  M.FireEvent("PLAYER_ENTERING_WORLD"); M.Advance(L().QUIET + 0.1)
+  kc(); M.Advance(0.6); pk(MATE, b); M.Advance(15)
+  eq(#own, 1, "after the quiet seconds a proof before the PARTY_KILL counts again")
+end)
+
+test("A mate's kill waiting for its proof ends at a loading screen", function()
+  load(40); party(); M.Advance(30)
+  local a = seen("Anna", "Ast", 40)
+  pk(MATE, a); M.Advance(0.2); M.FireEvent("PLAYER_ENTERING_WORLD"); M.Advance(0.3); kc(); M.Advance(15)
+  eq(#own, 0)
 end)
 
 test("Two kills within 2 s with two proofs each = two kills; in order", function()
@@ -325,7 +343,7 @@ test("A second PARTY_KILL of the mate on the same victim takes no proof from the
 end)
 
 test("A creature kill of the mate takes no proof away from a player kill right after it", function()
-  load(40); party()
+  load(40); party(); M.Advance(L().QUIET)     -- away from the login
   local g = seen("Grimm", "Bart", 40)
   local okk, why = L().OnPartyKill(MATE, "Creature-0-5-Raptor")
   no(okk); eq(why, "attacker")
