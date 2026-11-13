@@ -53,6 +53,13 @@ them, in the chat section, stand `HELP_THEME`, `CHAT_THEME_*` and the names of t
   English only. Every other language shows `REPUTE_LINE` ("Rank 6 · Path: Honour") and no awards. Do not add them to
   your file.
 
+## New keys in 1.3.1
+
+Three keys in the block `RECORD`: `KILL_WITH_GROUP` (a short sentence added to the chat line after a kill your group
+member's killing blow made, and a line in that kill's tooltip; "With your group.") right after `KILL_TAG_GROUP`, and
+`EMPTY_RECORD_HEAD` / `EMPTY_RECORD_SUB` (the left page of an empty rap sheet: big line, small line) at the end of the
+block.
+
 ## Words of a cover (theme)
 
 A cover may change the show words of the book: book title, poster head, tabs, page heads, stamps, alarm titles, the
