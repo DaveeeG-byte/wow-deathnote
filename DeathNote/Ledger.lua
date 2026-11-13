@@ -1358,28 +1358,48 @@ end
 ---------------------------------------------------------------------------
 -- Group kills (1.3.1): claims and proofs
 ---------------------------------------------------------------------------
--- the GUIDs of my party or raid and their pets; rebuilt after GROUP_ROSTER_UPDATE or UNIT_PET, and for an unknown
--- GUID at most every ROSTER_AGE seconds (a pet summoned without an event). Only PARTY_KILLs on players look here.
+-- the GUIDs of my party or raid and their pets, each with the unit token it was read from; rebuilt after
+-- GROUP_ROSTER_UPDATE or UNIT_PET, and for an unknown GUID at most every ROSTER_AGE seconds (a pet summoned without an
+-- event). A known member counts only while his token still shows him (one UnitGUID): a member who left without an
+-- event (hunt N3) makes the list read again. A read that meets a secret GUID keeps the members known before until a
+-- whole read succeeds (hunt N4: whether Forever hides party GUIDs in combat is unmeasured). Only PARTY_KILLs on
+-- players look here.
 local roster, rosterAt, rosterDirty = {}, nil, true
 local function readRoster()
-  local r = {}
+  local r, whole = {}, true
   local raid = Util.True(Call(_G.UnitExists, "raid1"))
   local n = Num(Call(_G.GetNumGroupMembers))
   local unit, pet, max = raid and "raid" or "party", raid and "raidpet" or "partypet", raid and 40 or 4
   if n then max = math.min(max, math.max(0, floor(n))) end
   for i = 1, max do
-    local g = Str(Call(_G.UnitGUID, unit .. i))
-    if g then r[g] = true elseif not n then break end
-    local pg = Str(Call(_G.UnitGUID, pet .. i))
-    if pg then r[pg] = true end
+    local u, pu = unit .. i, pet .. i
+    local raw = Call(_G.UnitGUID, u)
+    local g = Str(raw)
+    if IsSecret(raw) then whole = false end
+    if g then r[g] = u elseif not n and not IsSecret(raw) then break end
+    local praw = Call(_G.UnitGUID, pu)
+    if IsSecret(praw) then whole = false end
+    local pg = Str(praw)
+    if pg then r[pg] = pu end
+  end
+  if not whole then
+    for g, u in pairs(roster) do if r[g] == nil then r[g] = u end end
   end
   roster, rosterAt, rosterDirty = r, gtime(), false
 end
+-- the token a known member was read from still shows him (a secret value: no answer, he stays)
+local function stillThere(guid, u)
+  local raw = Call(_G.UnitGUID, u)
+  if IsSecret(raw) then return true end
+  return Str(raw) == guid
+end
 local function groupMember(guid)
   if groupSize() <= 1 then return false end
-  if not rosterDirty and roster[guid] then return true end
-  if rosterDirty or not rosterAt or gtime() - rosterAt >= Ledger.ROSTER_AGE then readRoster() end
-  return roster[guid] == true
+  local u = roster[guid]
+  if not rosterDirty and u and stillThere(guid, u) then return true end
+  if rosterDirty or u or not rosterAt or gtime() - rosterAt >= Ledger.ROSTER_AGE then readRoster() end
+  u = roster[guid]
+  return u ~= nil and stillThere(guid, u)
 end
 Ledger.GroupMember = groupMember
 

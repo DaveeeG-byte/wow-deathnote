@@ -345,6 +345,34 @@ test("A member who left the group is nobody, even right after the roster was rea
   eq(#own, 1, "the old member's kill is not mine")
 end)
 
+-- 1.3.1 hunt N3: no GROUP_ROSTER_UPDATE at all; his token shows somebody else at the next PARTY_KILL
+test("A former member counts no more at his next PARTY_KILL, even without a roster event", function()
+  load(40); party()
+  local a, b = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40)
+  pk(MATE, a); M.Advance(0.4); kc(); M.Advance(60)
+  eq(#own, 1)
+  M.units.party1 = { exists = true, isPlayer = true, name = "Neu", guid = MATE2, faction = "Horde" }
+  pk(MATE, b); M.Advance(0.4); kc(); M.Advance(15)
+  eq(#own, 1, "the former member's kill is not mine")
+end)
+
+-- 1.3.1 hunt N4: a read of the roster that meets a secret GUID keeps the members it knew
+test("A roster read with a secret GUID keeps the known members until a whole read succeeds", function()
+  load(40); party()
+  local a, b, c = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40), seen("Carla", "Klee", 40)
+  pk(MATE, a); M.Advance(0.4); kc(); M.Advance(30)
+  eq(#own, 1)
+  M.units.party1.guid = M.Secret("guid", "string")
+  M.FireEvent("UNIT_PET", "party1")
+  pk(MATE, b); M.Advance(0.4); kc(); M.Advance(15)
+  eq(#own, 2, "still a member while his GUID is secret")
+  -- a whole read: he is somebody else now
+  M.units.party1 = { exists = true, isPlayer = true, name = "Neu", guid = MATE2, faction = "Horde" }
+  M.FireEvent("GROUP_ROSTER_UPDATE")
+  pk(MATE, c); M.Advance(0.4); kc(); M.Advance(15)
+  eq(#own, 2, "gone after a whole read")
+end)
+
 test("The group falls apart between the PARTY_KILL and its proof: still a group kill (half honour)", function()
   load(40); party()
   local g = seen("Grimm", "Bart", 40)
