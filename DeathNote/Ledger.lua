@@ -1242,7 +1242,8 @@ end
 
 -- books one own kill. info: what we know of the victim; opts: { pet, honor, mate, case, how, age }
 -- mate = a group member's killing blow with a proof (1.3.1): a group kill (half honour and hunt, infamy and
--- protection in full), flag o; the best marks "largest level gap" and "quickest revenge" stay for own blows
+-- protection in full), flag o; the best marks "largest level gap" and "quickest revenge" and the award "same day"
+-- stay for own blows
 local function book(info, opts)
   local c = opts.case
   -- a placeholder of this GUID (first name only) takes the full name now, before the kill is booked (unless the book
@@ -1325,7 +1326,8 @@ local function book(info, opts)
   if db.n == 1 then award("first_entry") end
   if state0 == "open" and state1 == "even" then award("receipt") end
   if (band == "rot" or band == "schaedel") and not ctx.group then award("david") end
-  if ctx.revenge and hisLast and t - hisLast <= 86400 and t >= hisLast then award("same_day") end
+  -- same day, like the quickest revenge: only for my own killing blow (hunt N12)
+  if not ctx.mate and ctx.revenge and hisLast and t - hisLast <= 86400 and t >= hisLast then award("same_day") end
   if ctx.revenge and mine0 == 0 and his0 >= 10 then award("patience") end
   checkArch(key)
   -- events: the kill, the standing, the rank

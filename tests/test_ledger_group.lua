@@ -512,6 +512,17 @@ test("Revenge by a group kill: standing +1, bounty as with the recognised reveng
   eq(ns.Store.Bounty(ns.Store.Get("Grimm-Bart")), math.max(10000, math.floor(base / 1.5 / 100 + 0.5) * 100))
   ok(ns.Store.Bounty(ns.Store.Get("Grimm-Bart")) < bounty0)
   eq(L().Repute().best.quick, nil, "quickest revenge only for own blows")
+  eq(L().Repute().awards.same_day, nil, "same day only for own blows, like the quickest revenge")
+end)
+
+test("Revenge by my own blow on the same day: award same_day and the quickest revenge (the control)", function()
+  load(40); party()
+  local g = seen("Grimm", "Bart", 40)
+  ns.Store.ApplyKill({ name = "Grimm", surname = "Bart", guid = g, level = 40 }, { t = time() - 100 }, true)
+  pk(ME, g); M.Advance(0.4); kc(); M.Advance(10)
+  eq(#own, 1)
+  ok(L().Repute().awards.same_day, "same day")
+  ok(L().Repute().best.quick, "quickest revenge")
 end)
 
 test("Revenge by a group kill when Attribution does not see it (not engaged): standing +1 all the same", function()
