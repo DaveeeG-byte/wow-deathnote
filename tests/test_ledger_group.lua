@@ -167,6 +167,17 @@ test("My own kill takes its own proof: a mate's kill out of my reach right after
   eq(#own, 1, "the mate's kill got no proof of its own")
 end)
 
+-- 1.3.1 hunt H1: the mate's kill is the older one, mine comes 0.5 to 2.6 s later; the proofs are those of my kill
+for _, d in ipairs({ 0.5, 1, 2, 2.3, 2.6 }) do
+  test("My own kill " .. d .. " s after a mate's kill out of my reach: its proofs book only mine", function()
+    load(40); party()
+    local a, b = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40)
+    pk(MATE, a); M.Advance(d); pk(ME, b); M.Advance(0.4); kc(); M.Advance(0.6); honor(); M.Advance(15)
+    eq(#own, 1); eq(own[1].key, "Bernd-Bolz")
+    eq(L().Victim("Anna-Ast"), nil, "the mate's victim was never mine")
+  end)
+end
+
 ---------------------------------------------------------------------------
 -- What never counts
 ---------------------------------------------------------------------------

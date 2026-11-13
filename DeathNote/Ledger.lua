@@ -1420,20 +1420,30 @@ local function prune(gt)
   end
 end
 
--- a proof of kind "kc" or "honor": the oldest claim of the window that has none of this kind takes it
+-- the claim a proof of this kind goes to: my own claims first (a proof of my own kill never books a mate's kill,
+-- whichever came first), then the mates' claims; within each, the oldest of the window without a proof of this kind
+local function pick(kind)
+  for pass = 1, 2 do
+    for _, x in ipairs(claims) do
+      if not x[kind] and (pass == 1) == (not x.mate) then return x end
+    end
+  end
+  return nil
+end
+
+-- a proof of kind "kc" or "honor": the claim pick() names takes it
 local function proof(kind)
   local gt = gtime()
   probeCounts[kind == "kc" and "proofKC" or "proofHonor"] = probeCounts[kind == "kc" and "proofKC" or "proofHonor"] + 1
   prune(gt)
-  for _, x in ipairs(claims) do
-    if not x[kind] then
-      x[kind] = true
-      if x.mate and not x.booked then
-        local ok, err = pcall(bookClaim, x, kind, gt - x.gt)
-        if not ok and ns.ReportError then ns.ReportError(err) end
-      end
-      return true
+  local x = pick(kind)
+  if x then
+    x[kind] = true
+    if x.mate and not x.booked then
+      local ok, err = pcall(bookClaim, x, kind, gt - x.gt)
+      if not ok and ns.ReportError then ns.ReportError(err) end
     end
+    return true
   end
   local l = loose[kind]
   l[#l + 1] = gt
@@ -1543,7 +1553,7 @@ function Ledger.OnPartyKill(attackerGUID, targetGUID)
     local x = claimOf(tg, gt0)
     if x then
       if x.mate and not x.booked and x.case then x.case.result = "group-own" end
-      x.booked = true
+      x.booked, x.mate = true, false     -- my own kill now: its proofs come first (pick)
     else
       claim({ gt = gt0, guid = tg, booked = true })
     end
