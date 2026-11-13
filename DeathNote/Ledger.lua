@@ -49,7 +49,9 @@
 -- Dropped: no player, my own faction, the opponent of a duel to the death, instances, the same victim within 10 s
 -- (by GUID: a mate's killing blow and mine on the same victim are one kill).
 -- Own kills without a PARTY_KILL (totem, guardian, trap, damage over time) are not booked: a proof without any
--- PARTY_KILL names no victim, and UNIT_DIED never showed in the probe (no case carries "died").
+-- PARTY_KILL names no victim, and whether UNIT_DIED names dead enemy players on Forever is unmeasured (the probe of
+-- 13.11.2026 could not show it: it watched UNIT_DIED only for own kills on players, and there were none). The probe
+-- counts such proofs (proofLoose) and now watches UNIT_DIED for group kills too (case field "died").
 -- Whatever the client does here is unmeasured: /dn debug writes every case to DeathNoteDB.probe.kills.
 
 local ADDON, ns = ...
