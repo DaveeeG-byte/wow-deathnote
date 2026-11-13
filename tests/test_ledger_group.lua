@@ -145,11 +145,13 @@ test("A proof right after PLAYER_ENTERING_WORLD is dropped, not kept for the nex
   eq(#own, 1, "after the quiet seconds a proof before the PARTY_KILL counts again")
 end)
 
-test("A mate's kill waiting for its proof ends at a loading screen", function()
+test("A mate's kill waiting for its proof and a loose proof both end at a loading screen", function()
   load(40); party(); M.Advance(30)
-  local a = seen("Anna", "Ast", 40)
+  local a, b = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40)
   pk(MATE, a); M.Advance(0.2); M.FireEvent("PLAYER_ENTERING_WORLD"); M.Advance(0.3); kc(); M.Advance(15)
-  eq(#own, 0)
+  eq(#own, 0, "the claim from before")
+  kc(); M.Advance(0.1); M.FireEvent("PLAYER_ENTERING_WORLD"); M.Advance(0.4); pk(MATE, b); M.Advance(15)
+  eq(#own, 0, "the loose proof from before")
 end)
 
 test("Two kills within 2 s with two proofs each = two kills; in order", function()
@@ -485,6 +487,71 @@ test("Victim still without a name at the proof: the proof is not used up, it boo
   M.Advance(0.2); pk(MATE, g); M.Advance(0.4); kc(); M.Advance(15)
   eq(#own, 1); eq(own[1].key, "Grimm-Bart")
   eq(nobody.result, "name", "the probe: no name")
+end)
+
+test("The second proof of a kill goes to the claim that took the first, even when an older one got its name meanwhile", function()
+  load(40); party()
+  local b = seen("Bernd", "Bolz", 40)
+  M.Advance(30)                                          -- not near any more
+  pk(MATE, "Player-93-Spaet"); M.Advance(0.5); pk(MATE, b)
+  M.Advance(0.4); kc()                                   -- the nameless claim takes no proof: Bernd gets it
+  eq(#own, 1); eq(own[1].key, "Bernd-Bolz")
+  M.units.late = { exists = false, isPlayer = true, name = "Spaet", guid = "Player-93-Spaet" }
+  M.Advance(0.6); honor(); M.Advance(15)
+  eq(#own, 1, "the honour line belongs to Bernd's kill")
+end)
+
+---------------------------------------------------------------------------
+-- 1.3.1 hunt N11: what a mutation could change unseen
+---------------------------------------------------------------------------
+test("A loose proof is used up: one proof before two PARTY_KILLs books one of them", function()
+  load(40); party(); M.Advance(L().QUIET)
+  local a, b = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40)
+  kc(); M.Advance(0.2); pk(MATE, a); M.Advance(0.2); pk(MATE, b); M.Advance(15)
+  eq(#own, 1)
+end)
+
+test("At most 16 open claims: the 17th pushes the oldest out", function()
+  load(40); party()
+  local g = {}
+  for i = 1, 17 do g[i] = seen("Opfer" .. string.char(64 + i), "Reihe", 40) end
+  for i = 1, 17 do pk(MATE, g[i]) end
+  M.Advance(0.4)
+  for _ = 1, 17 do kc() end
+  M.Advance(15)
+  eq(#own, 16)
+  eq(L().Victim("OpferA-Reihe"), nil, "the oldest was pushed out")
+  ok(L().Victim("OpferQ-Reihe"), "the newest is there")
+end)
+
+test("A pet summoned without an event: unknown at once, known after ROSTER_AGE seconds", function()
+  load(40); party()
+  local a, b, c = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40), seen("Carla", "Klee", 40)
+  pk(MATE, a); M.Advance(0.4); kc()                    -- the roster is read here
+  eq(#own, 1)
+  M.units.partypet1 = { exists = true, guid = "Pet-0-7777" }   -- no UNIT_PET
+  M.Advance(0.2); pk("Pet-0-7777", b); M.Advance(0.4); kc()
+  eq(#own, 1, "read less than ROSTER_AGE ago: not read again")
+  M.Advance(L().ROSTER_AGE + 1); pk("Pet-0-7777", c); M.Advance(0.4); kc(); M.Advance(15)
+  eq(#own, 2, "read again after ROSTER_AGE"); eq(own[2].key, "Carla-Klee")
+end)
+
+test("UNIT_PET makes the roster be read again at once", function()
+  load(40); party()
+  local a, b = seen("Anna", "Ast", 40), seen("Bernd", "Bolz", 40)
+  pk(MATE, a); M.Advance(0.4); kc()
+  M.units.partypet1 = { exists = true, guid = "Pet-0-7777" }
+  M.FireEvent("UNIT_PET", "party1")
+  M.Advance(0.2); pk("Pet-0-7777", b); M.Advance(0.4); kc(); M.Advance(15)
+  eq(#own, 2)
+end)
+
+test("A mate's victim that is my target: his level comes from the target", function()
+  load(40); party()
+  M.units.target = { exists = true, isPlayer = true, name = "Geist", guid = "Player-93-Geist", level = 45 }
+  pk(MATE, "Player-93-Geist"); M.Advance(0.4); kc(); M.Advance(15)
+  eq(#own, 1)
+  eq(L().Log()[1].vl, 45)
 end)
 
 ---------------------------------------------------------------------------
