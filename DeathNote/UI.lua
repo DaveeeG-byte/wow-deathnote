@@ -5761,7 +5761,9 @@ end
 
 -- the row line of an entry taken over and without own deeds: "taken over from Anna" instead of "entered by hand"
 function OV.Tally(e)
-  if OV.Adopted(e) and (tonumber(e.kills) or 0) == 0 and (tonumber(Look.Assists(e)) or 0) == 0 and e.status ~= "suspect" then
+  -- own deeds come first: once he killed me, took part or attacked me, the line tells that (Look.Tally)
+  if OV.Adopted(e) and (tonumber(e.kills) or 0) == 0 and (tonumber(Look.Assists(e)) or 0) == 0
+    and (tonumber(Look.Attacks and Look.Attacks(e)) or 0) == 0 and e.status ~= "suspect" then
     local who = type(e.adoptFrom) == "string" and Look.First(e.adoptFrom) or nil
     return who and Fmt(L.TALLY_ADOPTED, { name = who }) or L.TALLY_ADOPTED_ANON
   end
