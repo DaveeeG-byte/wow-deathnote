@@ -792,7 +792,7 @@ L.ROLE_ATTACK = "attacked"  -- [max 14] right of a deed line on the poster: atta
 L.TIP_ROLE_ATTACK = "Attacked you, entered by you (grudge)."  -- deed tooltip of an attack
 L.TALLY_ATTACKED = "attacked {times}"  -- core line of an entry: how often he attacked you (entered by you); {times} = '3×'
 L.STAMP_GRUDGE = "GRUDGE"  -- [max 16] stamp on the poster of an entry with attacks only (grudge); two lines possible
-L.SET_SEC_GRUDGE = "GRUDGE"  -- [max 24] section label on the House Rules, sheet Alarm: the grudge notice
+L.SET_SEC_GRUDGE = "GRUDGE"  -- [max 24] section label on the House Rules, sheet Rap Sheet (4th): the grudge notice
 L.OPT_GRUDGE = "Ask after an attack (grudge)"  -- [max 44] check box: the small notice after an attack (open world)
 L.OPT_GRUDGE_BG = "Also in battlegrounds and arenas"  -- [max 44] check box: the notice in battlegrounds and arenas too (off by default)
 L.SET_GRUDGE_SECONDS = "Notice stays for"  -- [max 34] stepper label (value: '20 s'): how long the notice stays after the fight

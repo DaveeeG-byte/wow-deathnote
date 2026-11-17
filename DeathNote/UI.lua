@@ -2528,7 +2528,7 @@ function GF.HuntSpec(h)
   if Store().Get(key) then
     second = { L.ACT_OPEN_OWN, function() UI.ShowEnemy(key) end }
   else
-    second = { L.ACT_ADOPT, function()
+    second = { L.ACT_TAKE, function()
       local k = GCall("Adopt", key)
       if type(k) ~= "string" and Store().AddManual then
         k = Store().AddManual(h.name, h.surname, { fromGuild = true })
