@@ -183,11 +183,13 @@ end
 local function addRow(key, info, proof, opts)
   if type(key) ~= "string" or type(info) ~= "table" then return nil end
   opts = opts or {}
-  local row = ep and ep.rows[key]
+  -- a real attacker while the test notice stands: the test gives way, he gets a real episode (the meter alone opens none)
+  if ep and ep.test and not ep.closed and proof ~= "c" then Grudge.Close("real") end
+  local row = ep and not ep.test and ep.rows[key]
   if not row then
     -- answered lately: not asked again (unless my death put him into the book anyway: the notice says so)
     if askedLately(key) and not opts.inBook then return nil end
-    if not ep or ep.closed then
+    if not ep or ep.closed or ep.test then
       if proof == "c" then counts.meterOnly = counts.meterOnly + 1; return nil end
       newEpisode()
     end
@@ -275,8 +277,10 @@ function Grudge.Close(why)
     local row = e.rows[key]
     if Grudge.Open(row) then
       row.state = "gone"
-      asked[key] = now()
-      counts.expired = counts.expired + 1
+      if not e.test then
+        asked[key] = now()
+        counts.expired = counts.expired + 1
+      end
     end
   end
   e.closed, e.closedBy = true, why or "time"
@@ -566,6 +570,8 @@ function Grudge.OnPlayerDead()
   if not allowed then return end
   deathToken = deathToken + 1
   local token = deathToken
+  -- my death while the test notice stands: the test gives way (the death is real)
+  if ep and ep.test and not ep.closed then Grudge.Close("real") end
   if ep and not ep.closed then
     ep.deathPending = token
     ep.running = true
