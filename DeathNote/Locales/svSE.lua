@@ -853,4 +853,6 @@ L.EMPTY_FILTERED_SUB = "Filtret döljer alla. Längst ner: visa alla."
 L.EMPTY_ALLTAKEN_HEAD = "Allt står redan i din bok."
 L.EMPTY_ALLTAKEN_SUB = "Inget mer att hämta. Längst ner: visa alla."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Ångrat: {count} strukna igen. {kept} stannar: sedan dess har egna uppgifter kommit till."
 end)

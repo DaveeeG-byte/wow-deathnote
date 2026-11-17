@@ -848,4 +848,6 @@ L.EMPTY_FILTERED_SUB = "Der Filter blendet alle aus. Unten: alle zeigen."
 L.EMPTY_ALLTAKEN_HEAD = "Alles steht schon in deinem Buch."
 L.EMPTY_ALLTAKEN_SUB = "Nichts mehr zu übernehmen. Unten: alle zeigen."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Rückgängig gemacht: {count} wieder gestrichen. {kept} bleiben: seitdem kam Eigenes dazu."
 end)

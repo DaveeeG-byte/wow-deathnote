@@ -853,4 +853,6 @@ L.EMPTY_FILTERED_SUB = "Het filter verbergt iedereen. Onderaan: alles tonen."
 L.EMPTY_ALLTAKEN_HEAD = "Alles staat al in je boek."
 L.EMPTY_ALLTAKEN_SUB = "Niets meer over te nemen. Onderaan: alles tonen."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Ongedaan: {count} weer doorgestreept. {kept} blijven: sindsdien kwam er eigen data bij."
 end)

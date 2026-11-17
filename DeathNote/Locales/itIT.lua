@@ -847,4 +847,6 @@ L.EMPTY_FILTERED_SUB = "Il filtro nasconde tutti. In basso: mostra tutto."
 L.EMPTY_ALLTAKEN_HEAD = "È già tutto nel tuo libro."
 L.EMPTY_ALLTAKEN_SUB = "Non resta niente da prendere. In basso: mostra tutto."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Annullato: {count} di nuovo cancellati. {kept} restano: da allora hanno dati tuoi."
 end)

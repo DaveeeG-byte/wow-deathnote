@@ -853,4 +853,6 @@ L.EMPTY_FILTERED_SUB = "Filteret skjuler alle. Nederst: vis alle."
 L.EMPTY_ALLTAKEN_HEAD = "Alt står allerede i boken din."
 L.EMPTY_ALLTAKEN_SUB = "Ingenting mer å hente. Nederst: vis alle."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Angret: {count} strøket igjen. {kept} blir: siden kom det egne data til."
 end)

@@ -860,4 +860,6 @@ L.EMPTY_FILTERED_SUB = "Фільтр приховав усіх. Унизу: по
 L.EMPTY_ALLTAKEN_HEAD = "Усе вже є у твоїй книзі."
 L.EMPTY_ALLTAKEN_SUB = "Більше нічого переносити. Унизу: показати всіх."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Скасовано: {count} знову викреслено. {kept} лишаються: відтоді в них є ваші дані."
 end)

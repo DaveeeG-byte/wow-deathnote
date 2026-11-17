@@ -861,4 +861,6 @@ L.EMPTY_FILTERED_SUB = "筛选把所有人都隐藏了。下方：全部显示�
 L.EMPTY_ALLTAKEN_HEAD = "全都已在你的记仇本里。"
 L.EMPTY_ALLTAKEN_SUB = "没有可以转入的了。下方：全部显示。"
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "已撤销：{count}个重新划掉。{kept}个保留：之后又有了你自己的记录。"
 end)

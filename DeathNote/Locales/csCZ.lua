@@ -860,4 +860,6 @@ L.EMPTY_FILTERED_SUB = "Filtr skryl všechny. Dole: ukázat vše."
 L.EMPTY_ALLTAKEN_HEAD = "Všechno už je v tvé knize."
 L.EMPTY_ALLTAKEN_SUB = "Nic dalšího k převzetí. Dole: ukázat vše."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Vráceno: {count} opět škrtnuto. {kept} zůstává: mezitím přibyla vlastní data."
 end)

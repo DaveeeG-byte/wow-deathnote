@@ -860,4 +860,6 @@ L.EMPTY_FILTERED_SUB = "Filtr ukrywa wszystkich. Na dole: pokaż wszystko."
 L.EMPTY_ALLTAKEN_HEAD = "Wszystko jest już w twojej księdze."
 L.EMPTY_ALLTAKEN_SUB = "Nie ma już nic do przejęcia. Na dole: pokaż wszystko."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Cofnięto: {count} znów skreślonych. {kept} zostaje: od tego czasu mają twoje dane."
 end)

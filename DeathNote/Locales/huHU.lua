@@ -862,4 +862,6 @@ L.EMPTY_FILTERED_SUB = "A szűrő mindenkit elrejt. Lent: mind mutatása."
 L.EMPTY_ALLTAKEN_HEAD = "Már minden a könyvedben van."
 L.EMPTY_ALLTAKEN_SUB = "Nincs több átvennivaló. Lent: mind mutatása."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Visszavonva: {count} újra áthúzva. {kept} marad: azóta saját adat került hozzájuk."
 end)

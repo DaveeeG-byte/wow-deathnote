@@ -860,4 +860,6 @@ L.EMPTY_FILTERED_SUB = "Filtar skriva sve. Dolje: prikaži sve."
 L.EMPTY_ALLTAKEN_HEAD = "Sve je već u tvojoj knjizi."
 L.EMPTY_ALLTAKEN_SUB = "Nema više ništa za preuzeti. Dolje: prikaži sve."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Poništeno: {count} opet prekriženo. {kept} ostaje: otada su dobili tvoje podatke."
 end)

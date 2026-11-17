@@ -861,4 +861,6 @@ L.EMPTY_FILTERED_SUB = "필터가 모두 숨겼습니다. 아래: 모두 보기.
 L.EMPTY_ALLTAKEN_HEAD = "모두 이미 수첩에 있습니다."
 L.EMPTY_ALLTAKEN_SUB = "더 가져올 것이 없습니다. 아래: 모두 보기."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "되돌림: {count}명 다시 지움. {kept}명 유지: 그 뒤 내 기록이 생김."
 end)

@@ -868,4 +868,6 @@ L.EMPTY_FILTERED_SUB = "The filter hides everyone. At the bottom: show all."  --
 L.EMPTY_ALLTAKEN_HEAD = "All of it is in your book."  -- right page: 'only what I lack' and nothing is left
 L.EMPTY_ALLTAKEN_SUB = "Nothing left to take over. At the bottom: show all."  -- under it
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Undone: {count} struck again. {kept} stay: they got your own entries since."  -- after Undo when some entries got your own data since (a kill, a death, an attack, a note, a pardon): those stay
 end)

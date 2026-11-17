@@ -1504,19 +1504,60 @@ local function snapshot(e)
   end
   return c
 end
+-- 1.4.0 fixer: what an entry looked like right after an import or a take-over (a deep copy), and whether it still
+-- looks like that. An undo takes back only entries nobody touched since: a kill, a death, an attack, a note, a pardon,
+-- a sighting after it are own data, and such an entry stays as it is.
+local function deepCopy(v, seen)
+  if type(v) ~= "table" then return v end
+  seen = seen or {}
+  if seen[v] then return seen[v] end
+  local c = {}
+  seen[v] = c
+  for k, x in pairs(v) do c[deepCopy(k, seen)] = deepCopy(x, seen) end
+  return c
+end
+local function deepEqual(a, b)
+  if type(a) ~= "table" or type(b) ~= "table" then
+    if a ~= a and b ~= b then return true end   -- NaN
+    return a == b
+  end
+  for k, v in pairs(a) do if not deepEqual(v, b[k]) then return false end end
+  for k in pairs(b) do if a[k] == nil then return false end end
+  return true
+end
+function Store.Fingerprint(key)
+  local e = enemies and enemies[key]
+  return e and deepCopy(e) or nil
+end
+function Store.Untouched(key, fp)
+  local e = enemies and enemies[key]
+  return e ~= nil and type(fp) == "table" and deepEqual(e, fp)
+end
+
 function Store.CanUndoImport() return lastImport ~= nil end
+-- returns the number taken back and the number kept (touched since the import: they keep everything)
 function Store.UndoImport()
   local u = lastImport
   lastImport = nil
-  if not u or not enemies then return 0 end
-  local n = 0
+  if not u or not enemies then return 0, 0 end
+  local n, kept = 0, 0
+  local after = u.after or {}
   for i = 1, #u.added do
-    local e = enemies[u.added[i]]
-    if e and e.imported and Store.Remove(u.added[i]) then n = n + 1 end
+    local key = u.added[i]
+    local e = enemies[key]
+    if not e then
+      -- struck by hand since: nothing to take back
+    elseif e.imported and Store.Untouched(key, after[key]) and Store.Remove(key) then
+      n = n + 1
+    else
+      kept = kept + 1
+    end
   end
   for key, before in pairs(u.before) do
     local e = enemies[key]
-    if e then
+    if e and not Store.Untouched(key, after[key]) then
+      kept = kept + 1
+    elseif e then
       if e.guid and e.guid ~= before.guid and guidIndex[e.guid] == key then guidIndex[e.guid] = nil end
       if e.surname and not before.surname then placeholders = placeholders + 1 end
       for k in pairs(e) do e[k] = nil end
@@ -1526,7 +1567,7 @@ function Store.UndoImport()
       changed(key)
     end
   end
-  return n
+  return n, kept
 end
 
 -- 1.4.0 overview: a friend's book as text. Only who is wanted there and not yet in the own book is taken, as a manual
@@ -1658,6 +1699,8 @@ function Store.Import(text)
     changed(key)
   end
   for key in pairs(undo.before) do if not touched[key] then undo.before[key] = nil end end
+  undo.after = {}
+  for key in pairs(touched) do undo.after[key] = Store.Fingerprint(key) end
   lastImport = (added > 0 or merged > 0) and undo or nil
   if added > 0 or merged > 0 then ns:Fire("BOOK_IMPORTED", added, merged) end
   return true, added, merged

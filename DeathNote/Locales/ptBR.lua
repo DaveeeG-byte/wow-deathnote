@@ -848,4 +848,6 @@ L.EMPTY_FILTERED_SUB = "O filtro esconde todos. Embaixo: mostrar tudo."
 L.EMPTY_ALLTAKEN_HEAD = "Tudo já está no seu livro."
 L.EMPTY_ALLTAKEN_SUB = "Não sobrou nada para copiar. Embaixo: mostrar tudo."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Desfeito: {count} riscados de novo. {kept} ficam: desde então ganharam dados seus."
 end)

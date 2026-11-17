@@ -847,4 +847,6 @@ L.EMPTY_FILTERED_SUB = "Le filtre cache tout le monde. En bas : tout montrer."
 L.EMPTY_ALLTAKEN_HEAD = "Tout est déjà dans ton carnet."
 L.EMPTY_ALLTAKEN_SUB = "Plus rien à reprendre. En bas : tout montrer."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Annulé : {count} barrés de nouveau. {kept} restent : ils ont reçu vos propres données depuis."
 end)

@@ -5490,7 +5490,7 @@ function OV.TakeOne(g, from)
   local k = GCall("Adopt", key, { from = from, src = OV.Src() })
   local e = type(k) == "string" and Store().Get(k)
   if not e then return end
-  local u = { keys = { k }, one = key, at = GetTime() }
+  local u = { keys = { k }, one = key, at = GetTime(), fp = OV.Prints({ k }) }
   OV.undo = u
   state.gselected = key
   if from then state.gmember = from end
@@ -5498,25 +5498,46 @@ function OV.TakeOne(g, from)
   C_Timer.After(GF.UNDO_SECONDS, function() if OV.undo == u then OV.undo = nil; Refresh() end end)
   Refresh()
 end
--- takes the last take-over back once: entries it created that got nothing of their own since (no kill, no deed)
--- are struck; an import of the own text gets the state from before (Store.UndoImport)
+-- what the entries looked like right after taking them over (Store.Fingerprint), to see later whether they got
+-- something of their own
+function OV.Prints(keys)
+  local S, fp = Store(), {}
+  if not S.Fingerprint then return nil end
+  for _, k in ipairs(keys) do fp[k] = S.Fingerprint(k) end
+  return fp
+end
+-- the result line of an undo: how many were struck, and how many stayed because they got own data since
+function OV.UndoneText(n, kept)
+  if (kept or 0) > 0 then return Fmt(L.TAKE_UNDONE_KEPT, { count = n or 0, kept = kept }) end
+  return Fmt(L.TAKE_UNDONE, { count = n or 0 })
+end
+-- takes the last take-over back once: entries it created that are just as they were then are struck; one that got
+-- anything of its own since (a kill, a death, an attack, a note, a pardon, a sighting) stays and is counted as kept.
+-- An import of the own text gets the state from before, with the same rule (Store.UndoImport)
 function OV.Undo()
   local u = OV.undo
-  if not u then return 0 end
-  if u.at and GetTime() - u.at < GF.UNDO_LOCK then return 0 end   -- the second click of a double click
+  if not u then return 0, 0 end
+  if u.at and GetTime() - u.at < GF.UNDO_LOCK then return 0, 0 end   -- the second click of a double click
   OV.undo = nil
-  local S, n = Store(), 0
+  local S, n, kept = Store(), 0, 0
   if u.import then
-    n = S.UndoImport and S.UndoImport() or 0
+    if S.UndoImport then n, kept = S.UndoImport() end
+    n, kept = n or 0, kept or 0
   else
     for _, k in ipairs(u.keys or {}) do
       local e = S.Get(k)
-      if e and e.fromGuild and e.adoptAt and (tonumber(e.kills) or 0) == 0 and #e.deaths == 0 and S.Remove(k) then n = n + 1 end
+      local fp = u.fp and u.fp[k]
+      local clean = e and e.fromGuild and e.adoptAt
+      if clean then
+        if fp and S.Untouched then clean = S.Untouched(k, fp)
+        else clean = (tonumber(e.kills) or 0) == 0 and #e.deaths == 0 end
+      end
+      if clean and S.Remove(k) then n = n + 1 elseif e then kept = kept + 1 end
     end
   end
-  OV.Flash(Fmt(L.TAKE_UNDONE, { count = n }))
+  OV.Flash(OV.UndoneText(n, kept))
   Refresh()
-  return n
+  return n, kept
 end
 
 -- what "Take over all" covers: by guildmate the chosen guildmate's section (all of it, also when closed), by killer
@@ -5601,7 +5622,7 @@ function OV.FillTake()
     T.go:SetShown(st.undo ~= nil and OV.undo == st.undo)
     T.back:SetLabel(L.BTN_DONE)
   elseif st.stage == "undone" then
-    T.msg:SetText(Fmt(L.TAKE_UNDONE, { count = st.undone or 0 }))
+    T.msg:SetText(OV.UndoneText(st.undone, st.kept))
     T.go:Hide()
     T.back:SetLabel(L.BTN_DONE)
   else
@@ -5618,9 +5639,9 @@ function OV.TakeGo()
   if not st then return end
   if st.stage == "done" then
     if OV.undo ~= st.undo then return end
-    local n = OV.Undo()
+    local n, kept = OV.Undo()
     if OV.undo then return end            -- locked: the second click of a double click
-    st.stage, st.undone = "undone", n
+    st.stage, st.undone, st.kept = "undone", n, kept
     OV.FillTake()
     return
   end
@@ -5636,7 +5657,7 @@ function OV.TakeGo()
     end
   end
   st.stage, st.done = "done", #keys
-  st.undo = #keys > 0 and { keys = keys, at = GetTime() } or nil
+  st.undo = #keys > 0 and { keys = keys, at = GetTime(), fp = OV.Prints(keys) } or nil
   OV.undo = st.undo
   if #keys > 0 then OV.Flash(Fmt(L.TAKE_DONE, { count = #keys })) end
   Refresh()                             -- the rows say IN BOOK now; the sheet stays open
@@ -5685,7 +5706,7 @@ function OV.IOGo()
       local okc, ok, keys, have = pcall(S.ImportFriend, io.text, io.info.owner)
       if not okc or not ok then return IOFail(IO, okc and keys) end
       IO.msg:SetText(Fmt(L.IO_TAKEN, { new = #keys, have = have or 0 }))
-      OV.undo = #keys > 0 and { keys = keys, at = GetTime() } or nil
+      OV.undo = #keys > 0 and { keys = keys, at = GetTime(), fp = OV.Prints(keys) } or nil
     end
     IO.msg:SetTextColor(C(Look.INK))
     io.stage, io.undo = "done", OV.undo
@@ -5694,9 +5715,9 @@ function OV.IOGo()
     IO.go:SetShown(io.undo ~= nil)
     Refresh()
   elseif io.stage == "done" and io.undo and OV.undo == io.undo then
-    local n = OV.Undo()
+    local n, kept = OV.Undo()
     if OV.undo then return end
-    IO.msg:SetText(Fmt(L.TAKE_UNDONE, { count = n }))
+    IO.msg:SetText(OV.UndoneText(n, kept))
     io.stage = "undone"
     IO.go:Hide()
   end

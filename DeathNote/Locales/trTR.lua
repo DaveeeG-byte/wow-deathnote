@@ -863,4 +863,6 @@ L.EMPTY_FILTERED_SUB = "Filtre herkesi gizliyor. Altta: hepsini göster."
 L.EMPTY_ALLTAKEN_HEAD = "Hepsi zaten defterinde."
 L.EMPTY_ALLTAKEN_SUB = "Alınacak bir şey kalmadı. Altta: hepsini göster."
 -- <<< OVERVIEW
+-- 1.4.0 fixer
+L.TAKE_UNDONE_KEPT = "Geri alındı: {count} yeniden silindi. {kept} kaldı: o zamandan beri kendi verilerin eklendi."
 end)
