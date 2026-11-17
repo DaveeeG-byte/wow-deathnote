@@ -70,10 +70,22 @@ local function run(addon, code)
   local seenPrefix2 = L.POSTER_LAST_SEEN_IN and (L.POSTER_LAST_SEEN_IN:match("^(.-){") or L.POSTER_LAST_SEEN_IN)
   local out = {}
   local function under(f, anc) local o = f; while o do if o == anc then return true end o = o._parent end return false end
+  -- 1.4.0 overview: the head of the list (search, filter, sorting) and the foot hint are laid out anew, and the
+  -- section heads of Wanted are left out (UI.OV.flat): this test compares the rap sheet's part only
+  local function newPart(f)
+    local o = f
+    while o do
+      if o.ovPart or (o.arrow and o.ul) or o == rawget(G, "DeathNoteSearch") then return true end
+      o = o._parent
+    end
+    return false
+  end
+  if ns.UI and ns.UI.OV then ns.UI.OV.flat = true end
   local function snap(view, root)
     local list = {}
     for _, f in ipairs(BM.frames) do
-      if (f._kind == "FontString" or f._kind == "Texture") and under(f, root) and f:IsVisible() and (f._alpha or 1) > 0.05 then
+      if (f._kind == "FontString" or f._kind == "Texture") and under(f, root) and f:IsVisible() and (f._alpha or 1) > 0.05
+         and not newPart(f) then
         local l, b, r, t = BM.RectUI(f)
         local rect = l and ("%d,%d,%d,%d"):format(math.floor(l + 0.5), math.floor(b + 0.5), math.floor(r + 0.5), math.floor(t + 0.5)) or "-"
         if f._kind == "FontString" and type(f._text) == "string" and f._text ~= "" then
