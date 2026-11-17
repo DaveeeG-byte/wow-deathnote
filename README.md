@@ -75,6 +75,9 @@ and 1.2.2 keeps working on a version 4 file.
 DB version 5 (1.4.0) adds attack deeds (`role = "attack"`, `source = "grudge"`) and the count `attacks` of an entry.
 An older client reads an attack deed as a suspicion of source "grudge" without counting it; 1.4.0 gives it its role
 back. Only books before version 4 get the old alarm sound on the upgrade (a 1.3.x book keeps the cover's suggestion).
+"Back up book" writes a 22nd field on the `E` line of a copied entry only (`src;kills;at;from`: where it came from);
+reading the own backup into a book that lacks the entry brings it back as copied. Older versions read 19 to 21 fields
+and leave the rest alone.
 
 ## Grudge (1.4.0)
 Attacked without dying: a small notice on the right edge (a little inward and up, clear of right action bars) lists
@@ -123,7 +126,7 @@ picks one in the "Guild & Friends" tab, view "By guildmate", by right-click ("My
 from three scans in a row); `/dn friends` lists the linked full names.
 
 Shared are the same things as in the guild: your own confirmed deaths, your own entries added by hand, your own hit
-list calls. Never: notes, suspicions, assists, pardoned players, imported entries, adopted entries. Everything is stored
+list calls. Never: notes, suspicions, assists, pardoned players, imported entries, copied entries. Everything is stored
 account-wide in `DeathNoteDB.friends` (same caps as the guild).
 
 Time limits count your own play days (days on which a character of the account was logged in), never calendar days of

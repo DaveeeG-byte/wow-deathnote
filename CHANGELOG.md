@@ -3,33 +3,38 @@
 ## 1.4.0 (unreleased)
 
 ### Added
-- Grudge: when players attack you and you survive, a small notice on the right edge lists them, each with a tick and a cross. A tick writes the attacker into the book (new deed role "attacked"): he stands under Wanted with "attacked 2×", the stamp GRUDGE when that is all he did, and the alarm warns about him like about an entry by hand; revenge on him counts as usual. A cross, or letting the notice run out, enters nothing, and nobody answered is asked again within 5 minutes. A group shows all attackers (8 rows, then "… and n more"); after your death the killing blow is marked with a skull and whoever your death puts into the book anyway stands as "in the book". The notice waits until the death's notice has gone, holds while the mouse is over it, can be moved with Shift-drag and closed with a right click; no sound.
+- Grudge: when players attack you and you survive, a small notice on the right edge lists them, each with a tick and a cross. A tick writes the attacker into the book (new deed role "attacked"): he stands under Wanted with "attacked 2×", the stamp GRUDGE when that is all he did, and the alarm warns about him like about an entry by hand; revenge on him counts as usual. A cross, or letting the notice run out, enters nothing, and nobody answered is asked again within 5 minutes. A group shows all attackers (8 rows, then "… and n more"); after your death the killing blow is marked with a skull and whoever your death puts into the book anyway stands as "in the book". The notice waits until the death's notice has gone, holds while the mouse is over it, can be moved with Shift-drag and closed with a right click; no sound. It lies above the open book and below menus and dialogs; its tooltip says how to turn it off. Every episode ends: with its notice, at once when there is nothing to ask, or when you switch it off or go into a battleground; a real attack or death ends the test notice at once.
 - Grudge rules per place: on in the open world, off in dungeons and raids, and battlegrounds and arenas have their own switch, off by default. House Rules, sheet Rap Sheet, section GRUDGE: on/off, battlegrounds and arenas, how long the notice stays (10, 20, 30 or 60 s), a test notice, reset position. `/dn grudge` (German `/dn rachsucht`) switches it, `/dn grudge test` shows a test notice with made-up names that enters nothing.
 - Attacks are never shared with guild or friends. "Back up book" carries them; older versions read such a text and such a book without error (an attack shows there as a suspicion and is an attack again after the upgrade).
-- `/dn probe` writes `probe.grudge`: which proofs worked, episodes, notices, ticks, crosses, let go, whether the damage meter was readable.
+- `/dn probe` writes `probe.grudge`: which proofs worked, episodes, notices, ticks, crosses, let go, whether the damage meter was readable, and on their own: whether hits on you arrived, whether your health, "in combat" and "has you targeted" were readable or secret.
+- After the update, players who had the book before get one chat line on what is new and where (once per account, never in combat).
 - New texts in all 21 languages.
-- Take over in the book: every guild and friends' row not yet in your book carries a small "take over" word, the poster a "Take over" button; the book stays in the tab, the row says IN BOOK, the foot line reports it and the button offers "Undo" for a few seconds.
-- "Take over all": a preview of everything shown (by killer: source, search and "only what I lack" apply) or of one guildmate's or friend's section (right click on the head row): how many are new, how many are in your book already, the new names, what it means and what friends send at all. Then the result and "Undo" once.
-- Taken-over entries keep where they came from and from whom: "taken over from Wendell" in the row, "Taken over from Wendell (killed friends 2×)." on the poster; the filter finds them. As before they are never passed on.
-- Import a book with a preview: what is in the text, how many are new or in your book already, and whose book it is (recognised from the deaths in it, you can switch). Your own book is merged like a backup; a friend's book brings only the names wanted there that you lack, marked as taken over, and his deaths stay his. Then "Undo" once.
-- Wanted: a filter next to the sorting (killed me, assisted, grudge, added by hand, taken over, a class) with "12 of 48 · show all" at the foot; new sorts kills on me, level, class and bounty. Sorting and filter are remembered. Guild & Friends: "only what I lack" in the sort menu; its sorting is remembered too.
-- Wanted in parts: head rows "Settled" and "Pardoned" with their number before the faded and the struck-through ones.
+- Copy into your book: every guild and friends' row not yet in your book carries a small "copy" word, the poster (and the hit list) a "Copy to my book" button; the book stays in the tab, the row says IN BOOK, the foot line reports it and the button offers "Undo" for a few seconds.
+- "Copy all": a preview of everything shown (by killer: source, search and "only what I lack" apply) or of one guildmate's or friend's section (right click on the head row): how many are new, how many are in your book already, the new names, what it means and what friends send at all. Then the result and "Undo" once.
+- Copied entries keep where they came from and from whom: "copied from Wendell" in the row (once you have deeds of your own with him, those come first), "Copied from Wendell (killed friends 2×)." on the poster; the filter finds them. "Back up book" carries the origin (an extra field that older versions leave alone). As before they are never passed on.
+- "Undo" never costs your own data: an entry that got a kill, a death, an attack, a note or a pardon since stays as it is, and the result line says how many stayed.
+- Import a book with a preview: what is in the text, how many are new or in your book already, and whose book it is (recognised from the deaths in it, you can switch). Your own book is merged like a backup; a friend's book brings only the names wanted there that you lack, marked as copied, and his deaths stay his. Then "Undo" once.
+- Wanted: a filter next to the sorting (killed me, assisted, grudge, added by hand, copied, a class; role and class together show both words or "2 filters") with "12 of 48 · show all" at the foot; a search that finds only entries the filter hides says so ("1 match hidden by the filter · show all") and Enter shows them, Enter adds a name only when it is nowhere in the book; new sorts kills on me, level, class and bounty. Sorting and filter are remembered. Guild & Friends: "only what I lack" in the sort menu; its sorting is remembered too.
+- Wanted in parts: head rows "Settled" and "Pardoned" in small letter-spaced print with their number before the faded and the struck-through ones.
 
 ### Changed
 - Book data version 5 (attack deeds). A book of 1.3.x keeps its alarm sound choice as it was.
 - The search finds first or last names in any case, also with accents and in Cyrillic ("ärger" finds "Ärger").
 - Long names in the list get smaller before they are cut.
 - A friends' book entry's poster says FRIENDS' BOOK instead of GUILD BOOK.
-- A right click on a section head (By guildmate) opens "Take over all from …"; a left click still opens and closes it.
+- A right click on a section head (By guildmate) opens "Copy all from …"; a left click still opens and closes it.
+- An attack deed never pushes out a kill or an assist: beyond 5 attack deeds or 30 deeds the oldest attack goes first.
 
 ### Fixed
-- Taking over a killer who stands only in a friend's book did nothing ("Into my book" looked at the guild's list only). Now it works for friends' killers too.
+- Copying a killer who stands only in a friend's book did nothing ("Into my book" looked at the guild's list only). Now it works for friends' killers too.
 - Reading in a friend's backed-up book counted the friend's deaths as deaths of yours (core number, rank, bounty, rap sheet score). The import now asks whose book it is.
 
 ### Known open
 - Unmeasured in the game: whether the client delivers hits on you (`UNIT_COMBAT`, health), who is in combat, casts at you and a readable damage meter in the open world. Without combat log the attacker is whoever has you targeted while you are hit: a hostile player who targets you while a monster hits you can show up (the notice is the filter). Damage over time from someone who no longer has you targeted, and attackers you never see, only appear through the Death Recap or the damage meter.
 - Battlegrounds: enemy names are hidden in instances on Forever, so the notice may find nobody there even with its switch on.
 - The help ("?") has no grudge paragraph: it is at its word limit.
+- The grudge notice has no size setting of its own (fonts 10 and 11 units); readability in a fight on a large screen with a small UI scale is unmeasured.
+- The section heads of Wanted still take a full row.
 
 ## 1.3.1 (2026-11-13)
 
