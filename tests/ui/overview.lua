@@ -191,7 +191,8 @@ end
 check("Abschnittskopf vor den Begnadigten", heads():find("pardoned1", 1, true) ~= nil, heads())
 local hrow
 for _, r in ipairs(rows()) do if r.item.ovHead then hrow = r end end
-check("Kopf: Wort und Zahl", hrow and hrow.name._text == L.SECTION_PARDONED and hrow.right._text == "1")
+-- 1.4.0 fixer: the word letter-spaced in small print (like the book's other section heads)
+check("Kopf: Wort und Zahl", hrow and hrow.name._text:gsub(" ", "") == L.SECTION_PARDONED:gsub(" ", "") and hrow.right._text == "1")
 if hrow then click(hrow); click(hrow, "RightButton") end
 check("Kopf ist nicht wählbar, kein Menü", #menuItems() == 0)
 

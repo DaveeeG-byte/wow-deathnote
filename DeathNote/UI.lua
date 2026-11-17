@@ -1017,11 +1017,14 @@ local function SetRowMode(r, mode)
   if r.mode == mode then return end
   r.mode = mode
   r.nameInset = nil
-  local head, child = mode == "head", mode == "child"
-  r.band:SetShown(head); r.rule:SetShown(head); r.tri:SetShown(head); r.right:SetShown(head)
-  Look.Font(r.name, "hand", head and 22 or 19)
+  -- 1.4.0 fixer: "sect" = a section head of Wanted (Even, Pardoned): small letter-spaced print like the book's other
+  -- section heads, not the handwriting of a name; band and rule as a head row, no triangle
+  local sect = mode == "sect"
+  local head, child = mode == "head" or sect, mode == "child"
+  r.band:SetShown(head); r.rule:SetShown(head); r.tri:SetShown(head and not sect); r.right:SetShown(head)
+  if sect then Look.Font(r.name, "body", 11) else Look.Font(r.name, "hand", head and 22 or 19) end
   r.name:ClearAllPoints()
-  r.name:SetPoint("TOPLEFT", child and 58 or 40, head and -2 or -1)
+  r.name:SetPoint("TOPLEFT", child and 58 or 40, sect and -7 or (head and -2 or -1))
   r.name:SetPoint("RIGHT", head and -112 or -40, 0)
   r.subX = child and 60 or 42
   r.subInset = nil
@@ -1039,6 +1042,7 @@ local ROW_TONE = {
 -- The subtext reaches up to the mark, without a mark almost to the edge.
 -- 1.4.0 overview: a long name gets smaller before it is cut (head rows: 22 pt)
 GF.FIT_ROWNAME, GF.FIT_HEADNAME = { sizes = { 19, 16 } }, { sizes = { 22, 19 } }
+GF.FIT_SECT = { sizes = { 11, 10 } }
 local function SetRow(r, name, sub, mark, tone, markInk)
   local t = ROW_TONE[tone] or ROW_TONE.normal
   r.take:Hide()
@@ -1046,8 +1050,8 @@ local function SetRow(r, name, sub, mark, tone, markInk)
   -- between two anchors may not know its width yet while its row is hidden
   local fit = r.fitName or {}
   r.fitName = fit
-  local head = r.mode == "head"
-  fit.sizes = head and GF.FIT_HEADNAME.sizes or GF.FIT_ROWNAME.sizes
+  local head = r.mode == "head" or r.mode == "sect"
+  fit.sizes = (r.mode == "sect" and GF.FIT_SECT.sizes) or (head and GF.FIT_HEADNAME.sizes) or GF.FIT_ROWNAME.sizes
   fit.width = (PAGE_W - 24) - (r.mode == "child" and 58 or 40) - (r.nameInset or (head and 112 or 40))
   Look.FitText(r.name, name or "", fit)
   r.name:SetTextColor(C(t[1], t[2]))
@@ -5361,7 +5365,7 @@ function OV.Sections(list)
 end
 
 function OV.BindHead(r, h)
-  SetRowMode(r, "head")
+  SetRowMode(r, "sect")
   r.right:SetText(tostring(h.n or 0))
   local inset = math.floor(math.max(48, TextWidth(r.right, 30) + 18))
   if r.nameInset ~= inset then
@@ -5371,7 +5375,9 @@ function OV.BindHead(r, h)
     r.name:SetPoint("RIGHT", -inset, 0)
   end
   local p = h.kind == "pardoned"
-  SetRow(r, p and L.SECTION_PARDONED or L.SECTION_SETTLED, p and L.SECTION_PARDONED_SUB or L.SECTION_SETTLED_SUB, nil, "normal")
+  SetRow(r, Spaced(p and L.SECTION_PARDONED or L.SECTION_SETTLED), p and L.SECTION_PARDONED_SUB or L.SECTION_SETTLED_SUB,
+    nil, "normal")
+  r.name:SetTextColor(C(Look.INK, TONE.label))
   r.tri:Hide(); r.under:Hide()
 end
 
