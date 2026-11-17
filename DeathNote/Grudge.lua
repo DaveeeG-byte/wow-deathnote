@@ -192,7 +192,7 @@ local function addRow(key, info, proof, opts)
       newEpisode()
     end
     if #ep.order >= Grudge.MAX_ROWS then counts.dropped = counts.dropped + 1; return nil end
-    row = { key = key, at = now(), proofs = {} }
+    row = { key = key, at = now(), n = #ep.order + 1, proofs = {} }
     ep.rows[key] = row
     ep.order[#ep.order + 1] = key
     ep.lastNew = now()
@@ -221,7 +221,7 @@ function Grudge.Rows(e)
   for i = 1, #e.order do out[#out + 1] = e.rows[e.order[i]] end
   table.sort(out, function(a, b)
     if (a.kb or false) ~= (b.kb or false) then return a.kb == true end
-    return a.at < b.at
+    return (a.n or 0) < (b.n or 0)
   end)
   return out
 end
@@ -360,7 +360,15 @@ local function scan()
   if not allowed then return end
   lastScan = now()
   for i = 1, #FIXED do consider(FIXED[i]) end
-  for unit in pairs(plates) do consider(unit) end
+  -- the plates in their order (nameplate1, nameplate2, ...): the notice lists attackers as they came, the same each time
+  local list = {}
+  for unit in pairs(plates) do list[#list + 1] = unit end
+  table.sort(list, function(a, b)
+    local na, nb = tonumber(a:match("(%d+)$")), tonumber(b:match("(%d+)$"))
+    if na and nb and na ~= nb then return na < nb end
+    return a < b
+  end)
+  for i = 1, #list do consider(list[i]) end
 end
 
 local function scanSoon()
@@ -517,6 +525,8 @@ function Grudge.OnPlayerDead()
   if ep and not ep.closed then
     ep.deathPending = token
     ep.running = true
+    -- the notice steps aside for the death's notice (GrudgeCard.lua)
+    fire()
   else
     -- no episode yet: the death may open one (deathPending marks the wait)
     ep = nil
@@ -593,13 +603,12 @@ function Grudge.Test(n)
     local info = { name = s.name, surname = i > #Grudge.SAMPLE and (s.surname .. i) or s.surname, class = s.class,
       level = s.level }
     local key = Util.KeyFor(info.name, info.surname)
-    local row = { key = key, at = now() + i * 0.001, proofs = { a = true }, kb = s.kb and i == 1 or nil,
+    local row = { key = key, at = now(), n = i, proofs = { a = true }, kb = s.kb and i == 1 or nil,
       inBook = s.inBook and i == 1 or nil }
     for k, v in pairs(info) do row[k] = v end
     ep.rows[key] = row
     ep.order[#ep.order + 1] = key
   end
-  ep.death = n > 0 and Grudge.SAMPLE[1].kb or nil
   ep.running = false
   ep.endGT = now()
   fire()

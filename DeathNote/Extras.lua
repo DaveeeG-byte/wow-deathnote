@@ -55,7 +55,8 @@ local function TooltipText(e)
     local a = Look.Assists(e)
     local s = Look.Join(e.status == "pardoned" and L.TIP_PARDONED or nil, Fmt(L.STAND_LINE, { score = score }),
       (e.status == "wanted" and st ~= "open") and L[Look.STATE_WORD[st]] or nil,
-      a > 0 and Fmt(L.TALLY_ASSISTED, { times = Look.Times(a) }) or nil, rank and Fmt(L.TIP_RANK, { rank = rank }))
+      a > 0 and Fmt(L.TALLY_ASSISTED, { times = Look.Times(a) }) or nil,
+      Look.AttackedWord and Look.AttackedWord(e) or nil, rank and Fmt(L.TIP_RANK, { rank = rank }))
     return Look.HEX.tipLabel .. L.TIP_IN_BOOK .. "|r " .. Look.HEX.tipText .. s .. "|r"
   end
   local s = Look.Join(e.status == "pardoned" and L.TIP_PARDONED or nil, Look.Tally(e),
@@ -374,6 +375,11 @@ function Extras.PlaceBanner()
     banner:ClearAllPoints()
     banner:SetPoint("TOP", UIParent, "TOP", 0, y)
   end
+end
+
+-- 1.4.0 grudge: is the notice on the screen (whoever it shows)? The grudge notice waits for it after a death
+function Extras.BannerBusy()
+  return banner ~= nil and banner:IsShown() and true or false
 end
 
 -- does the notice show this player right now?
