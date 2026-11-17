@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.4.0 (unreleased)
+
+<!-- overview (package B); the grudge part follows from its own branch -->
+### Fixed
+- Taking over a killer who stands only in a friend's book did nothing ("Into my book" looked at the guild's list only). Now it works for friends' killers too.
+- Reading in a friend's backed-up book counted the friend's deaths as deaths of yours (core number, rank, bounty, rap sheet score). The import now asks whose book it is.
+
+### Added
+- Take over in the book: every guild and friends' row not yet in your book carries a small "take over" word, the poster a "Take over" button; the book stays in the tab, the row says IN BOOK, the foot line reports it and the button offers "Undo" for a few seconds.
+- "Take over all": a preview of everything shown (by killer: source, search and "only what I lack" apply) or of one guildmate's or friend's section (right click on the head row): how many are new, how many are in your book already, the new names, what it means and what friends send at all. Then the result and "Undo" once.
+- Taken-over entries keep where they came from and from whom: "taken over from Wendell" in the row, "Taken over from Wendell (killed friends 2×)." on the poster; the filter finds them. As before they are never passed on.
+- Import a book with a preview: what is in the text, how many are new or in your book already, and whose book it is (recognised from the deaths in it, you can switch). Your own book is merged like a backup; a friend's book brings only the names wanted there that you lack, marked as taken over, and his deaths stay his. Then "Undo" once.
+- Wanted: a filter next to the sorting (killed me, assisted, grudge, added by hand, taken over, a class) with "12 of 48 · show all" at the foot; new sorts kills on me, level, class and bounty. Sorting and filter are remembered. Guild & Friends: "only what I lack" in the sort menu; its sorting is remembered too.
+- Wanted in parts: head rows "Settled" and "Pardoned" with their number before the faded and the struck-through ones.
+
+### Changed
+- The search finds first or last names in any case, also with accents and in Cyrillic ("ärger" finds "Ärger").
+- Long names in the list get smaller before they are cut.
+- A friends' book entry's poster says FRIENDS' BOOK instead of GUILD BOOK.
+- A right click on a section head (By guildmate) opens "Take over all from …"; a left click still opens and closes it.
+
 ## 1.3.1 (2026-11-13)
 
 ### Fixed
