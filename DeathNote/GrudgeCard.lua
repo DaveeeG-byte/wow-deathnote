@@ -25,6 +25,7 @@ Card.LEVEL_W = 24
 Card.STATE_W = 68         -- "in the book", "entered", "skipped" (where level and buttons stand)
 Card.MARK_W = 14          -- the skull column
 Card.DEFAULT = { "RIGHT", "RIGHT", -110, 80 }   -- right edge, a little inward (right action bars) and up
+Card.STRATA, Card.LEVEL = "DIALOG", 1
 Card.DONE_DELAY = 1.5     -- seconds the notice stays after the last answer
 Card.WAIT_STEP, Card.WAIT_MAX = 0.5, 12   -- after a death: look every 0.5 s whether the death's notice has gone
 Card.TICK = "Interface\\RaidFrame\\ReadyCheck-Ready"
@@ -150,7 +151,10 @@ end
 local function Build()
   card = CreateFrame("Frame", "DeathNoteGrudge", UIParent)
   card:SetSize(Card.W, Card.HEAD_H + Card.ROW_H + Card.FOOT)
-  card:SetFrameStrata("MEDIUM")
+  -- one layer above the book (HIGH: the notice is small and must not vanish under an open book), at the bottom of its
+  -- layer so that menus and dialogs (DIALOG, raised when shown) stay above it; set before the rows are made
+  card:SetFrameStrata(Card.STRATA)
+  card:SetFrameLevel(Card.LEVEL)
   card:SetClampedToScreen(true)
   card:SetMovable(true)
   card:EnableMouse(true)
