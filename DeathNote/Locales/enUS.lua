@@ -279,8 +279,8 @@ L.FRIENDS_QUIET    = "Asked, but no friend with DeathNote heard yet."
 L.FRIENDS_READY    = "Ready. No friend with DeathNote heard yet."
 L.FRIENDS_HOLD     = "Sending to friends waits until it works again."
 L.FRIENDS_RUNNING  = "Running: {count} {count|friend|friends} with DeathNote."
--- A killer taken over from the guild book into your own book gets this note (your note from then on)
-L.NOTE_FROM_GUILD  = "Taken over from the guild book (killed guildmates {kills}×)."
+-- A killer copied from the guild book into your own book gets this note (your note from then on)
+L.NOTE_FROM_GUILD  = "Copied from the guild book (killed guildmates {kills}×)."
 
 -- Import book (House Rules, Import book): messages under the text field ---------------------------
 -- The export itself is language neutral ("DEATHNOTE:1", codes); a German export reads in English.
@@ -389,7 +389,7 @@ L.ACT_REVENGE = "Note revenge"  -- [max 19] button: count one revenge (you kille
 L.ACT_PARDON = "Pardon"  -- [max 19] button: pardon: no more alarm
 L.ACT_STRIKE = "Strike"  -- [max 19] button: strike from the book (asks first)
 L.ACT_OPEN_OWN = "Open in book"  -- [max 19] button: guild entry that is in your own book too
-L.ACT_ADOPT = "Into my book"  -- [max 19] button: copy a guild entry into your own book
+L.ACT_ADOPT = "Copy to my book"  -- [max 19] button: copy a guild entry into your own book
 L.ACT_CALLOFF = "Call off the hunt"  -- [max 19] button: take back your own hit list call
 L.ACT_RELEASE = "Put on hit list"  -- [max 19] button: put on the hit list (opens the sheet REL_HEAD with target and reason); the same action as REL_HEAD, REL_GO and /dn hunt, use one wording for all
 -- Rows of the list (left page): sub line under the name and the mark at the right -----------------
@@ -803,7 +803,7 @@ L.CHAT_GRUDGE_OFF = "Grudge off: no notice after attacks."  -- chat line after /
 L.CHAT_GRUDGE_TEST = "Test notice with made-up names: tick and cross enter nothing."  -- chat line after /dn grudge test
 L.HELP_GRUDGE = "/dn grudge  notice after attacks on/off (/dn grudge test: test notice)"  -- line of /dn help
 
--- >>> OVERVIEW (UI.lua, Store.lua, Core.lua: taking over, sorting, filter, section heads) ---------------------------
+-- >>> OVERVIEW (UI.lua, Store.lua, Core.lua: copying, sorting, filter, section heads) ---------------------------
 -- 1.4.0 overview
 L.SORT_KILLS = "Kills on me"  -- sort menu: how often he killed you
 L.SORT_LEVEL = "Level"  -- sort menu
@@ -818,7 +818,7 @@ L.FILTER_KILL = "Killed me"  -- filter menu: killed you at least once
 L.FILTER_ASSIST = "Assisted"  -- filter menu: took part in a death of yours
 L.FILTER_ATTACK = "Grudge"  -- filter menu: noted when he attacked you (Grudge)
 L.FILTER_MANUAL = "Added by hand"  -- filter menu: added by hand
-L.FILTER_ADOPTED = "Taken over"  -- filter menu: taken over from guild, friends or a text
+L.FILTER_ADOPTED = "Copied"  -- filter menu: copied from guild, friends or a text
 L.FILTER_CLASS = "Class …"  -- filter menu: opens the list of classes
 L.FILTER_BACK = "‹ Back"  -- class menu: back to the filter menu
 L.FILTER_HINT = "{shown} of {total} · show all"  -- foot of the list while a filter or search narrows it; a click shows all
@@ -826,12 +826,12 @@ L.SECTION_SETTLED = "Settled"  -- head row in Wanted before the settled ones
 L.SECTION_SETTLED_SUB = "you are even or ahead"  -- under it
 L.SECTION_PARDONED = "Pardoned"  -- head row in Wanted before the pardoned
 L.SECTION_PARDONED_SUB = "no alarm, they do not count"  -- under it
-L.ACT_TAKE = "Take over"  -- poster button: into your own book
-L.ACT_TAKE_ALL = "Take over all"  -- poster button: opens the preview of taking over all
-L.ACT_TAKE_ALL_OF = "Take over all from {name}"  -- menu on a guildmate's or friend's head row
-L.ROW_TAKE = "take over"  -- small word at the right of a guild or friends' row not yet in your book
-L.TIP_ROW_TAKE = "Into your own book (where it came from is noted)."  -- its tooltip
-L.TAKE_HEAD = "Take over all"  -- page head of the take-over sheet
+L.ACT_TAKE = "Copy to my book"  -- poster button: into your own book
+L.ACT_TAKE_ALL = "Copy all"  -- poster button: opens the preview of copying all
+L.ACT_TAKE_ALL_OF = "Copy all from {name}"  -- menu on a guildmate's or friend's head row
+L.ROW_TAKE = "copy"  -- small word at the right of a guild or friends' row not yet in your book
+L.TIP_ROW_TAKE = "Copy to your own book (where it came from is noted)."  -- its tooltip
+L.TAKE_HEAD = "Copy all"  -- page head of the copy sheet
 L.TAKE_FROM_MATE = "From {name}"  -- under it: whose list
 L.TAKE_FROM_GUILD = "From the guild book"  -- under it
 L.TAKE_FROM_FRIENDS = "From the friends' book"  -- under it
@@ -839,13 +839,13 @@ L.TAKE_FROM_ALL = "From guild and friends"  -- under it
 L.TAKE_COUNT = "New: {new} · already in your book: {have}"  -- the numbers of the preview
 L.TAKE_NEW_LABEL = "New"  -- letter-spaced label above the new names
 L.TAKE_MORE = "and {count} more"  -- after the names shown
-L.TAKE_HINT = "They go into your book marked as taken over, with their origin. Their deaths do not count as yours, and nothing of it is passed on."  -- what taking over means
+L.TAKE_HINT = "They go into your book marked as copied, with their origin. Their deaths do not count as yours, and nothing of it is passed on."  -- what copying means
 L.TAKE_HINT_FRIENDS = "Friends send only their sure deaths (the last 30) and names added by hand, and only while you are both online. A whole book: Back up book at your friend's, Import book at yours."  -- what comes from friends at all
 L.TAKE_NONE = "Everything is in your book already."  -- nothing new
-L.TAKE_DONE = "Taken over: {count}."  -- result
+L.TAKE_DONE = "Copied: {count}."  -- result
 L.TAKE_UNDONE = "Undone: {count} struck again."  -- after Undo
-L.TAKE_ONE_DONE = "Taken over: {name}."  -- foot line after one row
-L.BTN_DONE = "Done"  -- button after the take-over
+L.TAKE_ONE_DONE = "Copied: {name}."  -- foot line after one row
+L.BTN_DONE = "Done"  -- button after copying
 L.IO_OWNER = "Whose book"  -- import: letter-spaced label before the choice
 L.IO_MINE = "mine"  -- choice: your own backup
 L.IO_THEIRS = "{name}'s"  -- choice: the friend's book (his first name)
@@ -853,20 +853,20 @@ L.IO_THEIRS_ANON = "someone else's"  -- choice without a name
 L.IO_PREVIEW = "In the text: {total} · new: {new} · already in your book: {have}"  -- preview of your own text
 L.IO_PREVIEW_FRIEND = "Wanted there and new to you: {new} · already in your book: {have}"  -- preview of a friend's text
 L.IO_HINT_MINE = "Like a backup: everything is merged, its deaths count as yours."  -- what reading your own text does
-L.IO_HINT_FRIEND = "Only new names, marked as taken over; your friend's deaths do not count as yours."  -- what reading a friend's text does
+L.IO_HINT_FRIEND = "Only new names, marked as copied; your friend's deaths do not count as yours."  -- what reading a friend's text does
 L.IO_GO_NOW = "Import now"  -- button after the preview
-L.IO_TAKEN = "Taken over: {new}. Already in your book: {have}."  -- result of a friend's text
-L.NOTE_ADOPTED_GUILD = "Taken over from the guild book, from {name} (killed guildmates {kills}×)."  -- poster note of an entry taken over from the guild
-L.NOTE_ADOPTED_FRIEND = "Taken over from {name} (killed friends {kills}×)."  -- ... from a friend
+L.IO_TAKEN = "Copied: {new}. Already in your book: {have}."  -- result of a friend's text
+L.NOTE_ADOPTED_GUILD = "Copied from the guild book, from {name} (killed guildmates {kills}×)."  -- poster note of an entry copied from the guild
+L.NOTE_ADOPTED_FRIEND = "Copied from {name} (killed friends {kills}×)."  -- ... from a friend
 L.NOTE_ADOPTED_TEXT = "Read in from {name}'s book (killed there {kills}×)."  -- ... read in from a friend's text
 L.NOTE_ADOPTED_TEXT_ANON = "Read in from someone else's book (killed there {kills}×)."  -- ... without a name
-L.TALLY_ADOPTED = "taken over from {name}"  -- row line of a taken-over entry
-L.TALLY_ADOPTED_ANON = "taken over"  -- the same without a name
+L.TALLY_ADOPTED = "copied from {name}"  -- row line of a taken-over entry
+L.TALLY_ADOPTED_ANON = "copied"  -- the same without a name
 L.POSTER_FRIENDSBOOK = "FRIENDS' BOOK"  -- line under WANTED on a friends' book poster
 L.EMPTY_FILTERED_HEAD = "No match."  -- right page: the filter hides every entry
 L.EMPTY_FILTERED_SUB = "The filter hides everyone. At the bottom: show all."  -- under it
 L.EMPTY_ALLTAKEN_HEAD = "All of it is in your book."  -- right page: 'only what I lack' and nothing is left
-L.EMPTY_ALLTAKEN_SUB = "Nothing left to take over. At the bottom: show all."  -- under it
+L.EMPTY_ALLTAKEN_SUB = "Nothing left to copy. At the bottom: show all."  -- under it
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Undone: {count} struck again. {kept} stay: they got your own entries since."  -- after Undo when some entries got your own data since (a kill, a death, an attack, a note, a pardon): those stay

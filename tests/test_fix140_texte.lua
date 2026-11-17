@@ -28,5 +28,36 @@ for _, c in ipairs(order) do
   check(c .. " Abstellen nennt den Befehl", T.GRUDGE_TIP_OFF:find(c == "deDE" and "/dn rachsucht" or "/dn grudge", 1, true))
 end
 
+-- the language table of the UI hunt
+local EN = ns.Locale.Raw("enUS")
+for k, v in pairs(EN) do
+  if type(v) == "string" then
+    local l = v:lower()
+    check("enUS " .. k .. " sagt copy, nicht take over", not (l:find("take over", 1, true) or l:find("taken over", 1, true)
+      or l:find("taking over", 1, true)), v)
+  end
+end
+local WANT = {
+  enUS = { ACT_TAKE = "Copy to my book", ACT_TAKE_ALL = "Copy all", ROW_TAKE = "copy", TALLY_ADOPTED = "copied from {name}" },
+  frFR = { IO_OWNER = "À qui", IO_MINE = "à moi", IO_THEIRS = "à {name}", IO_THEIRS_ANON = "à quelqu’un d’autre", GRUDGE_HEAD = "ATTAQUE" },
+  esES = { IO_OWNER = "De quién", IO_MINE = "mío", IO_THEIRS = "de {name}", IO_THEIRS_ANON = "de otra persona", GRUDGE_HEAD = "ATAQUE" },
+  ruRU = { FILTER_ATTACK = "Злопамятство", SORT_KILLS = "Убил меня" },
+  koKR = { FILTER_ATTACK = "앙심" },
+  trTR = { ACT_TAKE_ALL_OF = "Hepsini al: {name}", TALLY_ADOPTED = "alındı · kaynak: {name}",
+    NOTE_ADOPTED_FRIEND = "Alındı, kaynak: {name} (arkadaşları {kills}× öldürdü)." },
+}
+for c, keys in pairs(WANT) do
+  local T = ns.Locale.Raw(c)
+  for k, v in pairs(keys) do check(c .. " " .. k, T[k] == v, T[k]) end
+end
+-- one word per function: the grudge filter says what the stamp and the switch say
+for _, c in ipairs({ "ruRU", "koKR" }) do
+  local T = ns.Locale.Raw(c)
+  -- the switch writes the word in lower case, the filter starts with a capital: compare from the second letter on
+  local tail = T.FILTER_ATTACK:gsub("^[%z\1-\127\194-\244][\128-\191]*", "")
+  check(c .. " Filter und Schalter ein Wort", T.OPT_GRUDGE:find(c == "koKR" and T.FILTER_ATTACK or tail, 1, true) ~= nil,
+    T.FILTER_ATTACK .. " / " .. T.OPT_GRUDGE)
+end
+
 print(("fix140 texte        %d ok, %d rot"):format(pass, fail))
 os.exit(fail == 0 and 0 or 1)

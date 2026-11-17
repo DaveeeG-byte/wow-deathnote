@@ -796,7 +796,7 @@ L.HELP_GRUDGE = "/dn grudge  окно после нападений вкл./вы
 
 -- >>> OVERVIEW (UI.lua, Store.lua, Core.lua: taking over, sorting, filter, section heads) ---------------------------
 -- 1.4.0 overview
-L.SORT_KILLS = "Убийства меня"
+L.SORT_KILLS = "Убил меня"
 L.SORT_LEVEL = "Уровень"
 L.SORT_CLASS = "Класс"
 L.SORT_BOUNTY = "Награда"
@@ -807,7 +807,7 @@ L.FILTER_TIP = "Показать только:"
 L.FILTER_ALL = "Все"
 L.FILTER_KILL = "Убил меня"
 L.FILTER_ASSIST = "Участвовал"
-L.FILTER_ATTACK = "Обида"
+L.FILTER_ATTACK = "Злопамятство"
 L.FILTER_MANUAL = "Запись вручную"
 L.FILTER_ADOPTED = "Взятые"
 L.FILTER_CLASS = "Класс …"
