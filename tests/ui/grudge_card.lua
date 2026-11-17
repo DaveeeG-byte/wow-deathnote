@@ -255,6 +255,8 @@ do
   W.AM.FireEvent("PLAYER_TARGET_CHANGED"); W.tick()
   local popup = rawget(G, "DeathNoteAlert")
   check("alarm for an entry with attacks only", popup and popup:IsShown())
+  check("alarm line: attacked, not 'by hand'", popup and (popup.line._text or ""):find("1× angegriffen", 1, true) ~= nil
+    and not (popup.line._text or ""):find("von Hand", 1, true), popup and popup.line._text)
   -- House Rules: sheet 4, the section and its switches
   ns.UI.OpenPanel("settings"); W.tick()
   local S

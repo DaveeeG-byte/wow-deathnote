@@ -288,9 +288,15 @@ function Look.Tally(e)
     a > 0 and Fmt(L.TALLY_ASSISTED, { times = Look.Times(a) }), att)
 end
 
--- newest deed of an entry (deaths, newest first)
+-- newest deed of an entry (deaths, newest first); 1.4.0 grudge: an attack only when there is nothing else (the place
+-- and time of "killed you" stay those of a death)
 function Look.LastDeed(e)
-  return type(e) == "table" and type(e.deaths) == "table" and e.deaths[1] or nil
+  if type(e) ~= "table" or type(e.deaths) ~= "table" then return nil end
+  local d = e.deaths
+  for i = 1, #d do
+    if type(d[i]) == "table" and d[i].role ~= "attack" then return d[i] end
+  end
+  return d[1]
 end
 
 -- most exact place: subzone, else zone
@@ -1427,6 +1433,9 @@ local function LineFor(e, drop)
     s = Fmt(L.ALERT_LINE_KILLED, { times = Look.Times(k) })
   elseif a > 0 then
     s = Fmt(L.ALERT_LINE_ASSISTED, { times = Look.Times(a) })
+  elseif Look.Attacks(e) > 0 and not e.manual then
+    -- 1.4.0 grudge: "attacked 2×, last 2 hrs ago in Grom'gol"
+    s = Look.AttackedWord(e)
   else
     s = L.ALERT_LINE_MANUAL
   end
