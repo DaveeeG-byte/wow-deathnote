@@ -971,6 +971,20 @@ local function pushCapped(list, item, cap)
   while #list > cap do table.remove(list) end
 end
 
+-- 1.4.0 fixer: the deeds of an entry (newest first) within their caps. Attacks never push out a kill, an assist or a
+-- suspicion: beyond MAX_ATTACK_DEEDS attacks, and beyond MAX_ENEMY_DEATHS deeds, the oldest attack goes first, only
+-- then the oldest deed. The count e.attacks goes on.
+local function capDeeds(e)
+  local list = e.deaths
+  local function oldestAttack()
+    for i = #list, 1, -1 do if list[i].role == "attack" then return i end end
+  end
+  local n = 0
+  for i = 1, #list do if list[i].role == "attack" then n = n + 1 end end
+  while n > MAX_ATTACK_DEEDS do table.remove(list, oldestAttack()); n = n - 1 end
+  while #list > MAX_ENEMY_DEATHS do table.remove(list, oldestAttack() or #list) end
+end
+
 local function copyDeath(d)
   local c = {}
   for k, v in pairs(d) do
@@ -995,7 +1009,8 @@ function Store.ApplyKill(info, death, sure)
     for i = 1, #death.others do if death.others[i] ~= key then o[#o + 1] = death.others[i] end end
     rec.others = o
   end
-  pushCapped(e.deaths, rec, MAX_ENEMY_DEATHS)
+  table.insert(e.deaths, 1, rec)
+  capDeeds(e)
   if role == "kill" then
     e.kills = e.kills + 1
     e.firstKill = e.firstKill or rec.t
@@ -1042,16 +1057,11 @@ function Store.AddAttack(info, rec)
   end
   local d = copyDeath(rec)
   d.role, d.sure, d.source, d.others = "attack", false, "grudge", {}
-  -- the oldest attack deed gives way (never a kill, an assist or a suspicion)
-  local n, oldest = 0, nil
-  for i = 1, #e.deaths do
-    if e.deaths[i].role == "attack" then n = n + 1; oldest = i end
-  end
-  if n >= MAX_ATTACK_DEEDS and oldest then table.remove(e.deaths, oldest) end
+  -- the oldest attack deed gives way (never a kill, an assist or a suspicion: capDeeds)
   local pos = #e.deaths + 1
   for i = 1, #e.deaths do if (e.deaths[i].t or 0) <= d.t then pos = i; break end end
   table.insert(e.deaths, pos, d)
-  while #e.deaths > MAX_ENEMY_DEATHS do table.remove(e.deaths) end
+  capDeeds(e)
   e.attacks = Store.Attacks(e) + 1
   e.lastAttack = math.max(tonumber(e.lastAttack) or 0, d.t)
   if e.status == "suspect" then e.status = "wanted" end
@@ -1679,7 +1689,7 @@ function Store.Import(text)
         local pos = #e.deaths + 1
         for i = 1, #e.deaths do if (e.deaths[i].t or 0) < t then pos = i; break end end
         table.insert(e.deaths, pos, d)
-        while #e.deaths > MAX_ENEMY_DEATHS do table.remove(e.deaths) end
+        capDeeds(e)
       end
     end
   end
