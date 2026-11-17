@@ -863,4 +863,10 @@ L.EMPTY_ALLTAKEN_SUB = "没有可以转入的了。下方：全部显示。"
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "已撤销：{count}个重新划掉。{kept}个保留：之后又有了你自己的记录。"
+L.FILTER_HIDDEN = "被筛选隐藏：{count} · 全部显示"
+L.EMPTY_HIDDEN_HEAD = "被筛选隐藏。"
+L.EMPTY_HIDDEN_SUB = "按回车或点下方一行即可显示。"
+L.EMPTY_SEARCHHAS_HEAD = "已经在你的本子里。"
+L.EMPTY_SEARCHHAS_SUB = "只是不在这一页。按回车打开。"
+L.FILTER_TWO = "{count}个筛选"
 end)

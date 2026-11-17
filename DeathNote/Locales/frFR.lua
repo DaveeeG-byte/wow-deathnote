@@ -849,4 +849,10 @@ L.EMPTY_ALLTAKEN_SUB = "Plus rien à reprendre. En bas : tout montrer."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Annulé : {count} barrés de nouveau. {kept} restent : ils ont reçu vos propres données depuis."
+L.FILTER_HIDDEN = "{count} {count|résultat masqué|résultats masqués} par le filtre · tout montrer"
+L.EMPTY_HIDDEN_HEAD = "Masqué par le filtre."
+L.EMPTY_HIDDEN_SUB = "Entrée ou la ligne du bas les montre."
+L.EMPTY_SEARCHHAS_HEAD = "Déjà dans votre carnet."
+L.EMPTY_SEARCHHAS_SUB = "Simplement pas sur cette page. Entrée l’ouvre."
+L.FILTER_TWO = "{count} filtres"
 end)

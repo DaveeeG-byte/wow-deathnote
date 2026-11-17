@@ -863,4 +863,10 @@ L.EMPTY_ALLTAKEN_SUB = "더 가져올 것이 없습니다. 아래: 모두 보기
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "되돌림: {count}명 다시 지움. {kept}명 유지: 그 뒤 내 기록이 생김."
+L.FILTER_HIDDEN = "필터에 가려짐: {count} · 모두 보기"
+L.EMPTY_HIDDEN_HEAD = "필터에 가려짐."
+L.EMPTY_HIDDEN_SUB = "Enter나 아래 줄을 누르면 보입니다."
+L.EMPTY_SEARCHHAS_HEAD = "이미 장부에 있음."
+L.EMPTY_SEARCHHAS_SUB = "이 쪽에 없을 뿐입니다. Enter로 엽니다."
+L.FILTER_TWO = "필터 {count}개"
 end)

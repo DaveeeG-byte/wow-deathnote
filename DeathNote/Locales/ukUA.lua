@@ -862,4 +862,10 @@ L.EMPTY_ALLTAKEN_SUB = "Більше нічого переносити. Униз
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Скасовано: {count} знову викреслено. {kept} лишаються: відтоді в них є ваші дані."
+L.FILTER_HIDDEN = "Приховано фільтром: {count} · показати всіх"
+L.EMPTY_HIDDEN_HEAD = "Приховано фільтром."
+L.EMPTY_HIDDEN_SUB = "Enter або рядок унизу покаже їх."
+L.EMPTY_SEARCHHAS_HEAD = "Уже є в книзі."
+L.EMPTY_SEARCHHAS_SUB = "Просто не на цій сторінці. Enter відкриє."
+L.FILTER_TWO = "Фільтрів: {count}"
 end)

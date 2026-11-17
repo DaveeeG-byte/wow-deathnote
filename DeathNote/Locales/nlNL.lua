@@ -855,4 +855,10 @@ L.EMPTY_ALLTAKEN_SUB = "Niets meer over te nemen. Onderaan: alles tonen."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Ongedaan: {count} weer doorgestreept. {kept} blijven: sindsdien kwam er eigen data bij."
+L.FILTER_HIDDEN = "{count} {count|treffer|treffers} verborgen door het filter · alles tonen"
+L.EMPTY_HIDDEN_HEAD = "Verborgen door het filter."
+L.EMPTY_HIDDEN_SUB = "Enter of de regel onderaan toont ze."
+L.EMPTY_SEARCHHAS_HEAD = "Staat al in je boek."
+L.EMPTY_SEARCHHAS_SUB = "Alleen niet op deze pagina. Enter opent het."
+L.FILTER_TWO = "{count} filters"
 end)

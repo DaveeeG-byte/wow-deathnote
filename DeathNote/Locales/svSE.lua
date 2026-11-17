@@ -855,4 +855,10 @@ L.EMPTY_ALLTAKEN_SUB = "Inget mer att hämta. Längst ner: visa alla."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Ångrat: {count} strukna igen. {kept} stannar: sedan dess har egna uppgifter kommit till."
+L.FILTER_HIDDEN = "Dolda av filtret: {count} · visa alla"
+L.EMPTY_HIDDEN_HEAD = "Dolt av filtret."
+L.EMPTY_HIDDEN_SUB = "Enter eller raden längst ner visar dem."
+L.EMPTY_SEARCHHAS_HEAD = "Står redan i boken."
+L.EMPTY_SEARCHHAS_SUB = "Bara inte på den här sidan. Enter öppnar den."
+L.FILTER_TWO = "{count} filter"
 end)

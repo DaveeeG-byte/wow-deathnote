@@ -862,4 +862,10 @@ L.EMPTY_ALLTAKEN_SUB = "Nema više ništa za preuzeti. Dolje: prikaži sve."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Poništeno: {count} opet prekriženo. {kept} ostaje: otada su dobili tvoje podatke."
+L.FILTER_HIDDEN = "Skriveno filtrom: {count} · prikaži sve"
+L.EMPTY_HIDDEN_HEAD = "Skriveno filtrom."
+L.EMPTY_HIDDEN_SUB = "Enter ili redak dolje ih prikazuje."
+L.EMPTY_SEARCHHAS_HEAD = "Već je u tvojoj knjizi."
+L.EMPTY_SEARCHHAS_SUB = "Samo ne na ovoj stranici. Enter ga otvara."
+L.FILTER_TWO = "Filtri: {count}"
 end)

@@ -850,4 +850,10 @@ L.EMPTY_ALLTAKEN_SUB = "No queda nada que copiar. Abajo: mostrar todo."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Deshecho: {count} tachados otra vez. {kept} se quedan: desde entonces tienen datos tuyos."
+L.FILTER_HIDDEN = "{count} {count|resultado oculto|resultados ocultos} por el filtro · mostrar todo"
+L.EMPTY_HIDDEN_HEAD = "Oculto por el filtro."
+L.EMPTY_HIDDEN_SUB = "Intro o la línea de abajo los muestra."
+L.EMPTY_SEARCHHAS_HEAD = "Ya está en tu libro."
+L.EMPTY_SEARCHHAS_SUB = "Solo que no en esta página. Intro lo abre."
+L.FILTER_TWO = "{count} filtros"
 end)

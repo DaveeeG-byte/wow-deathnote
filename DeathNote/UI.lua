@@ -50,6 +50,8 @@ local EMPTY = {
   hunt = { "EMPTY_HUNT", 3 }, search = { "EMPTY_SEARCH", 2 }, searchro = { "EMPTY_SEARCHRO", 2 },
   -- 1.4.0 overview: the filter of Wanted hides everyone; "only what I lack" leaves nothing
   filtered = { "EMPTY_FILTERED", 2 }, alltaken = { "EMPTY_ALLTAKEN", 2 },
+  -- 1.4.0 fixer: the search finds only entries the filter hides; it finds a name that is not on this page
+  hidden = { "EMPTY_HIDDEN", 2 }, searchhas = { "EMPTY_SEARCHHAS", 2 },
 }
 local EXPORT_WARN = 100 * 1024     -- above this, "Back up the book" gets sluggish in the EditBox
 -- Guild book: only entries a guildmate (1.2.0: or friend) took part in; per source
@@ -524,17 +526,23 @@ function UX.WantedData()
   if base ~= state.sort then OV.Sort(list, state.sort) end
   for i = #wantedData, 1, -1 do wantedData[i] = nil end
   local total = #list
-  for i = 1, #list do if OV.Keep(list[i]) then wantedData[#wantedData + 1] = list[i] end end
+  -- 1.4.0 fixer: with a search, the matches the filter hides are counted ("2 matches hidden by the filter")
+  local q = state.query ~= "" and OV.Filtered() and OV.Fold(state.query) or nil
+  local hidden = 0
+  local function hides(e) return q ~= nil and OV.Fold(Look.Name(e)):find(q, 1, true) ~= nil end
+  for i = 1, #list do
+    if OV.Keep(list[i]) then wantedData[#wantedData + 1] = list[i] elseif hides(list[i]) then hidden = hidden + 1 end
+  end
   local pard = S.Ranked("pardoned", base) or {}
   if base ~= state.sort then OV.Sort(pard, state.sort) end
   local all = ShowPardoned()
   for i = 1, #pard do
     if all or pard[i].key == state.selected then
       total = total + 1
-      if OV.Keep(pard[i]) then wantedData[#wantedData + 1] = pard[i] end
+      if OV.Keep(pard[i]) then wantedData[#wantedData + 1] = pard[i] elseif hides(pard[i]) then hidden = hidden + 1 end
     end
   end
-  OV.total = total
+  OV.total, OV.hidden = total, hidden
   return wantedData
 end
 
@@ -2737,7 +2745,13 @@ end
 local function SearchOnly() return state.filter ~= "wanted" end
 
 local function EmptyKind()
-  if state.query ~= "" then return SearchOnly() and "searchro" or "search" end
+  if state.query ~= "" then
+    if SearchOnly() then return "searchro" end
+    -- 1.4.0 fixer: the filter hides matches, or the name stands elsewhere in the book: Enter adds nothing then
+    if (OV.hidden or 0) > 0 then return "hidden" end
+    if OV.Elsewhere() then return "searchhas" end
+    return "search"
+  end
   if OV.HintOn() and OV.total > 0 then return state.filter == "guild" and "alltaken" or "filtered" end
   if state.filter == "guild" then
     local src = GF.Src()
@@ -5107,6 +5121,11 @@ local function SubmitSearch(box)
     return
   end
   if SearchOnly() then return end
+  -- 1.4.0 fixer: a new entry only for a name that is nowhere in the book. Matches the filter hides: the filter goes
+  -- (the search stays) and they show; a match elsewhere (pardoned while hidden, a suspect): it opens
+  if (OV.hidden or 0) > 0 then box:ClearFocus(); OV.ShowHidden(); return end
+  local other = OV.Elsewhere()
+  if other then box:ClearFocus(); UI.ShowEnemy(other); return end
   local S = Store()
   local key = S.AddManual and S.AddManual(q)
   if type(key) == "string" then
@@ -5383,7 +5402,9 @@ function OV.UpdateFoot()
   local room = PAGE_W - 46 - (LP.sync:IsShown() and ((LP.sync:GetWidth() or 84) + 20) or 14)
   fh:SetWidth(room)
   fh.text:SetWidth(room - 4)
-  Look.FitText(fh.text, Fmt(L.FILTER_HINT, { shown = OV.shown, total = OV.total }), GF.FIT_WORD)
+  local hid = state.filter == "wanted" and state.query ~= "" and (OV.hidden or 0) or 0
+  Look.FitText(fh.text, hid > 0 and Fmt(L.FILTER_HIDDEN, { count = hid })
+    or Fmt(L.FILTER_HINT, { shown = OV.shown, total = OV.total }), GF.FIT_WORD)
   LP.status:SetText("")
   LP.statusHit:Hide()
   fh:Show()
@@ -5411,20 +5432,57 @@ function OV.ClearAll()
   Refresh()
 end
 
--- the filter word next to the sorting: its width; returns the width left for the search field
+-- 1.4.0 fixer: the filter goes, the search stays (the matches the filter hid show)
+function OV.ShowHidden()
+  state.frole, state.fclass = "all", nil
+  Set("ui.filterRole", "all")
+  Set("ui.filterClass", "")
+  state.offset = 0
+  Refresh()
+end
+-- the foot line's click: with hidden matches only the filter goes, else filter and search
+function OV.FootClick()
+  if state.filter == "wanted" and (OV.hidden or 0) > 0 and state.query ~= "" then OV.ShowHidden() else OV.ClearAll() end
+end
+-- 1.4.0 fixer: the key of an entry anywhere in the book whose name contains the search (none of Wanted's rows shows
+-- it: pardoned while hidden, a suspect), or nil
+function OV.Elsewhere()
+  if state.filter ~= "wanted" or state.query == "" then return nil end
+  local q = OV.Fold(state.query)
+  local S = Store()
+  for _, e in ipairs(S.Ranked and S.Ranked("all", "name") or {}) do
+    if type(e) == "table" and OV.Fold(Look.Name(e)):find(q, 1, true) then return e.key end
+  end
+  return nil
+end
+
+-- the filter word next to the sorting: its width; returns the width left for the search field. Role and class
+-- together: both words ("Killed me · Paladin") while they fit, else "2 filters" (the tooltip names both)
+OV.FILTER_W1, OV.FILTER_W2, OV.SEARCH_MIN = 110, 170, 90
 function OV.LayoutFilter(sortW)
   local fb = LP.filter
   local on = OV.Filtered()
-  local label = (state.fclass and ClassName({ class = state.fclass }))
-    or (state.frole ~= "all" and L[OV.ROLE_LABEL[state.frole]]) or L.FILTER_WORD
+  local roleW = state.frole ~= "all" and L[OV.ROLE_LABEL[state.frole]] or nil
+  local classW = state.fclass and ClassName({ class = state.fclass }) or nil
+  local label = classW or roleW or L.FILTER_WORD
+  local cap = OV.FILTER_W1
+  local tip = { L.FILTER_TIP, label }
+  if roleW and classW then
+    tip = { L.FILTER_TIP, roleW, classW }
+    label = roleW .. " · " .. classW
+    cap = math.min(OV.FILTER_W2, PAGE_W - 14 - sortW - 10 - 8 - 46 - OV.SEARCH_MIN)
+    fb.text:SetWidth(400)
+    fb.text:SetText(label)
+    if math.ceil(TextWidth(fb.text, 200) + 16) > cap then label = Fmt(L.FILTER_TWO, { count = 2 }) end
+  end
   fb.text:SetWidth(200)
   fb.text:SetText(label)
-  local w = math.max(50, math.min(110, math.ceil(TextWidth(fb.text, 50) + 16)))
+  local w = math.max(50, math.min(cap, math.ceil(TextWidth(fb.text, 50) + 16)))
   fb:SetWidth(w)
   fb.text:SetWidth(w - 12)
   Look.FitText(fb.text, label, GF.FIT_WORD)
   if on then fb.text:SetTextColor(C(Look.RED_INK)) else fb.text:SetTextColor(C(Look.INK, TONE.sub)) end
-  fb.tip = { L.FILTER_TIP, label }
+  fb.tip = tip
   return math.max(60, PAGE_W - 14 - sortW - 10 - w - 8 - 46)
 end
 
@@ -5971,7 +6029,7 @@ function UX.BuildLeftPage()
   fh.text:SetJustifyH("LEFT")
   fh:SetScript("OnEnter", function(self) self.text:SetTextColor(C(Look.RED)) end)
   fh:SetScript("OnLeave", function(self) self.text:SetTextColor(C(Look.RED_INK)) end)
-  fh:SetScript("OnClick", function() Look.Sound("click"); OV.ClearAll() end)
+  fh:SetScript("OnClick", function() Look.Sound("click"); OV.FootClick() end)
   fh:Hide()
   fh.ovPart = true
   LP.fhint = fh

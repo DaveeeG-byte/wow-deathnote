@@ -850,4 +850,10 @@ L.EMPTY_ALLTAKEN_SUB = "Nichts mehr zu übernehmen. Unten: alle zeigen."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Rückgängig gemacht: {count} wieder gestrichen. {kept} bleiben: seitdem kam Eigenes dazu."
+L.FILTER_HIDDEN = "{count} Treffer vom Filter verdeckt · alle zeigen"
+L.EMPTY_HIDDEN_HEAD = "Vom Filter verdeckt."
+L.EMPTY_HIDDEN_SUB = "Enter oder die Zeile unten zeigt sie."
+L.EMPTY_SEARCHHAS_HEAD = "Steht schon im Buch."
+L.EMPTY_SEARCHHAS_SUB = "Nur nicht auf dieser Seite. Enter öffnet ihn."
+L.FILTER_TWO = "{count} Filter"
 end)

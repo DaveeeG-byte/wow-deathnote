@@ -861,4 +861,10 @@ L.EMPTY_ALLTAKEN_SUB = "Больше нечего брать. Внизу: пок
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Отменено: {count} снова вычеркнуто. {kept} остаются: с тех пор в них есть ваши данные."
+L.FILTER_HIDDEN = "Скрыто фильтром: {count} · показать всех"
+L.EMPTY_HIDDEN_HEAD = "Скрыто фильтром."
+L.EMPTY_HIDDEN_SUB = "Enter или строка внизу покажет их."
+L.EMPTY_SEARCHHAS_HEAD = "Уже есть в книге."
+L.EMPTY_SEARCHHAS_SUB = "Просто не на этой странице. Enter откроет."
+L.FILTER_TWO = "Фильтров: {count}"
 end)

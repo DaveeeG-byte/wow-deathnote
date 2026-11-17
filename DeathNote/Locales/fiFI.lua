@@ -856,4 +856,10 @@ L.EMPTY_ALLTAKEN_SUB = "Ei enää otettavaa. Alhaalla: näytä kaikki."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Peruttu: {count} yliviivattu taas. {kept} jää: niihin on sittemmin tullut omaa tietoa."
+L.FILTER_HIDDEN = "Suodatin piilottaa: {count} · näytä kaikki"
+L.EMPTY_HIDDEN_HEAD = "Suodatin piilottaa."
+L.EMPTY_HIDDEN_SUB = "Enter tai alarivi näyttää ne."
+L.EMPTY_SEARCHHAS_HEAD = "On jo kirjassasi."
+L.EMPTY_SEARCHHAS_SUB = "Ei vain tällä sivulla. Enter avaa sen."
+L.FILTER_TWO = "Suodattimia: {count}"
 end)

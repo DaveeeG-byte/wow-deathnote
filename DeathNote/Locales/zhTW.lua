@@ -863,4 +863,10 @@ L.EMPTY_ALLTAKEN_SUB = "沒有可以轉入的了。下方：全部顯示。"
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "已復原：{count}個重新劃掉。{kept}個保留：之後又有了你自己的紀錄。"
+L.FILTER_HIDDEN = "被篩選隱藏：{count} · 全部顯示"
+L.EMPTY_HIDDEN_HEAD = "被篩選隱藏。"
+L.EMPTY_HIDDEN_SUB = "按Enter或點下方一行即可顯示。"
+L.EMPTY_SEARCHHAS_HEAD = "已經在你的本子裡。"
+L.EMPTY_SEARCHHAS_SUB = "只是不在這一頁。按Enter打開。"
+L.FILTER_TWO = "{count}個篩選"
 end)

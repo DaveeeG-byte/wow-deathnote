@@ -862,4 +862,10 @@ L.EMPTY_ALLTAKEN_SUB = "Nic dalšího k převzetí. Dole: ukázat vše."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Vráceno: {count} opět škrtnuto. {kept} zůstává: mezitím přibyla vlastní data."
+L.FILTER_HIDDEN = "Skryto filtrem: {count} · ukázat vše"
+L.EMPTY_HIDDEN_HEAD = "Skryto filtrem."
+L.EMPTY_HIDDEN_SUB = "Enter nebo řádek dole je ukáže."
+L.EMPTY_SEARCHHAS_HEAD = "Už je ve tvé knize."
+L.EMPTY_SEARCHHAS_SUB = "Jen ne na této stránce. Enter ho otevře."
+L.FILTER_TWO = "Filtry: {count}"
 end)

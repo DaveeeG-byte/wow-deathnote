@@ -864,4 +864,10 @@ L.EMPTY_ALLTAKEN_SUB = "Nincs több átvennivaló. Lent: mind mutatása."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Visszavonva: {count} újra áthúzva. {kept} marad: azóta saját adat került hozzájuk."
+L.FILTER_HIDDEN = "A szűrő elrejt: {count} · mind mutatása"
+L.EMPTY_HIDDEN_HEAD = "A szűrő elrejti."
+L.EMPTY_HIDDEN_SUB = "Az Enter vagy a lenti sor megmutatja őket."
+L.EMPTY_SEARCHHAS_HEAD = "Már benne van a könyvedben."
+L.EMPTY_SEARCHHAS_SUB = "Csak nem ezen az oldalon. Az Enter megnyitja."
+L.FILTER_TWO = "{count} szűrő"
 end)

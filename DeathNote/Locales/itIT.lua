@@ -849,4 +849,10 @@ L.EMPTY_ALLTAKEN_SUB = "Non resta niente da prendere. In basso: mostra tutto."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Annullato: {count} di nuovo cancellati. {kept} restano: da allora hanno dati tuoi."
+L.FILTER_HIDDEN = "{count} {count|risultato nascosto|risultati nascosti} dal filtro · mostra tutto"
+L.EMPTY_HIDDEN_HEAD = "Nascosto dal filtro."
+L.EMPTY_HIDDEN_SUB = "Invio o la riga in basso li mostra."
+L.EMPTY_SEARCHHAS_HEAD = "È già nel tuo libro."
+L.EMPTY_SEARCHHAS_SUB = "Solo non in questa pagina. Invio lo apre."
+L.FILTER_TWO = "{count} filtri"
 end)

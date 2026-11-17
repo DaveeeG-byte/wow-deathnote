@@ -855,4 +855,10 @@ L.EMPTY_ALLTAKEN_SUB = "Ingenting mer å hente. Nederst: vis alle."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Angret: {count} strøket igjen. {kept} blir: siden kom det egne data til."
+L.FILTER_HIDDEN = "Skjult av filteret: {count} · vis alle"
+L.EMPTY_HIDDEN_HEAD = "Skjult av filteret."
+L.EMPTY_HIDDEN_SUB = "Enter eller linjen nederst viser dem."
+L.EMPTY_SEARCHHAS_HEAD = "Står allerede i boka."
+L.EMPTY_SEARCHHAS_SUB = "Bare ikke på denne siden. Enter åpner den."
+L.FILTER_TWO = "{count} filtre"
 end)

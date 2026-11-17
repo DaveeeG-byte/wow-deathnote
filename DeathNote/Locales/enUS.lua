@@ -870,4 +870,10 @@ L.EMPTY_ALLTAKEN_SUB = "Nothing left to take over. At the bottom: show all."  --
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Undone: {count} struck again. {kept} stay: they got your own entries since."  -- after Undo when some entries got your own data since (a kill, a death, an attack, a note, a pardon): those stay
+L.FILTER_HIDDEN = "{count} {count|match|matches} hidden by the filter · show all"  -- foot of Wanted while the search finds entries the filter hides; a click drops the filter (the search stays)
+L.EMPTY_HIDDEN_HEAD = "Hidden by the filter."  -- right page: the search finds only entries the filter hides (Enter adds nothing then)
+L.EMPTY_HIDDEN_SUB = "Enter or the line at the bottom shows them."  -- under it
+L.EMPTY_SEARCHHAS_HEAD = "In your book already."  -- right page: the search finds a name of your book that is not on this page (pardoned while hidden, a suspect)
+L.EMPTY_SEARCHHAS_SUB = "Just not on this page. Enter opens it."  -- under it
+L.FILTER_TWO = "{count} filters"  -- filter word when role and class are both on and the two words do not fit (the tooltip names both)
 end)

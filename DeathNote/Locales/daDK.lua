@@ -855,4 +855,10 @@ L.EMPTY_ALLTAKEN_SUB = "Intet mere at hente. Nederst: vis alle."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Fortrudt: {count} streget igen. {kept} bliver: siden kom der egne data til."
+L.FILTER_HIDDEN = "Skjult af filteret: {count} · vis alle"
+L.EMPTY_HIDDEN_HEAD = "Skjult af filteret."
+L.EMPTY_HIDDEN_SUB = "Enter eller linjen nederst viser dem."
+L.EMPTY_SEARCHHAS_HEAD = "Står allerede i bogen."
+L.EMPTY_SEARCHHAS_SUB = "Bare ikke på denne side. Enter åbner den."
+L.FILTER_TWO = "{count} filtre"
 end)

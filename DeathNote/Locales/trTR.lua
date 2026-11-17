@@ -865,4 +865,10 @@ L.EMPTY_ALLTAKEN_SUB = "Alınacak bir şey kalmadı. Altta: hepsini göster."
 -- <<< OVERVIEW
 -- 1.4.0 fixer
 L.TAKE_UNDONE_KEPT = "Geri alındı: {count} yeniden silindi. {kept} kaldı: o zamandan beri kendi verilerin eklendi."
+L.FILTER_HIDDEN = "Filtrenin gizlediği: {count} · hepsini göster"
+L.EMPTY_HIDDEN_HEAD = "Filtre gizliyor."
+L.EMPTY_HIDDEN_SUB = "Enter ya da alttaki satır onları gösterir."
+L.EMPTY_SEARCHHAS_HEAD = "Zaten defterinde."
+L.EMPTY_SEARCHHAS_SUB = "Yalnızca bu sayfada değil. Enter açar."
+L.FILTER_TWO = "{count} filtre"
 end)
