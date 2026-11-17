@@ -1331,7 +1331,9 @@ GF.STAMPS = { nr1 = { "STAMP_NR1", -11, 1 }, guild = { "STAMP_GUILD_NR1", -9, 1 
               pardon = { "STAMP_PARDONED", -6, 2 }, suspect = { "STAMP_SUSPECT", 7, 3 }, hunt = { "STAMP_HUNT", 8, 1 },
               -- 1.3.0: the standing's second stamp; no picture of their own: the frame of "rache" (4th field) with the
               -- word in every language, German too
-              quitt = { "STAMP_QUITT", 9, 2, "rache" }, overpaid = { "STAMP_OVERPAID", 9, 1, "rache" } }
+              quitt = { "STAMP_QUITT", 9, 2, "rache" }, overpaid = { "STAMP_OVERPAID", 9, 1, "rache" },
+              -- 1.4.0 grudge: an entry with nothing but attacks; the frame of "suspect", the word in every language
+              grudge = { "STAMP_GRUDGE", 7, 1, "suspect" } }
 GF.STAMP_INK = Look.STAMP_INK   -- 1.3.0: the theme's stamp inks (red, dark, darker), filled in place
 GF.STAMP_TEXT_W = 104       -- inner frame of the stamp at 140x70 px
 GF.FIT_STAMP = { sizes = { 16, 13, 11, 9 }, lines = 2, wrapFirst = 2 }
@@ -1997,7 +1999,7 @@ function UX.PortraitUnitFor(key)
   end
 end
 
-UX.ROLE_TAG = { assist = "ROLE_ASSIST", suspect = "ROLE_SUSPECT" }   -- locale key
+UX.ROLE_TAG = { assist = "ROLE_ASSIST", suspect = "ROLE_SUSPECT", attack = "ROLE_ATTACK" }   -- locale key (1.4.0: attack)
 
 -- Deed line: "11.11. 01:01 · Seal of Command · The Untamed Coast" (important first, place last);
 -- own character only if it was a different one. The role stands to the right of it.
@@ -2021,7 +2023,8 @@ function UX.DeathTip(d)
   end
   local role = Look.Role(d)
   if role == "assist" then t[#t + 1] = L.TIP_ROLE_ASSIST
-  elseif role == "suspect" then t[#t + 1] = L.TIP_ROLE_SUSPECT end
+  elseif role == "suspect" then t[#t + 1] = L.TIP_ROLE_SUSPECT
+  elseif role == "attack" then t[#t + 1] = L.TIP_ROLE_ATTACK end   -- 1.4.0 grudge
   return t
 end
 
@@ -2169,7 +2172,7 @@ local function FillEnemy(e)
   if m and e.status ~= "suspect" and (m > 0 or h > 0) then
     local a = Look.Assists(e)
     Look.FitText(E.tally, Look.Join(e.status == "pardoned" and L.ROW_PARDONED or nil, Fmt(L.STAND_LINE, { score = score }),
-      a > 0 and Fmt(L.TALLY_ASSISTED, { times = Look.Times(a) }) or nil), GF.FIT_TALLY)
+      a > 0 and Fmt(L.TALLY_ASSISTED, { times = Look.Times(a) }) or nil, Look.AttackedWord(e)), GF.FIT_TALLY)
     E.tallyHit.standTip = Fmt(L.STAND_TIP, { mine = m, his = h })
   else
     m = nil
@@ -2263,6 +2266,10 @@ local function FillEnemy(e)
     GF.Stamp(E.stampOther, "suspect"); GF.ShowStamp(E.stampOther, true)
   else
     GF.HuntStamp(E, e.key, rank == 1)
+    -- 1.4.0 grudge: GRUDGE for an entry with nothing but attacks, where neither No. 1 nor the hit list stamps
+    if rank ~= 1 and not E.stampOther:IsShown() and S.OnlyAttacks and S.OnlyAttacks(e) then
+      GF.Stamp(E.stampOther, "grudge"); GF.ShowStamp(E.stampOther, true)
+    end
   end
   GF.SetHuntWord(E, e.status == "wanted" and e.key or nil)
   if second then GF.Stamp(E.stampRache, second) end
@@ -3532,6 +3539,12 @@ GF.RECORD_OPTIONS = {
   { "alert.victims",  "OPT_VICTIMS", false },
 }
 GF.SETTLED = { { "always", "SET_SETTLED_ALWAYS" }, { "quiet", "SET_SETTLED_QUIET" }, { "off", "SET_SETTLED_OFF" } }
+-- 1.4.0 grudge: the section GRUDGE at the end of sheet 4 (the notice after an attack, Grudge.lua)
+GF.GRUDGE_OPTIONS = {
+  { "grudge.enabled",       "OPT_GRUDGE", true },
+  { "grudge.battlegrounds", "OPT_GRUDGE_BG", false },
+}
+GF.GRUDGE_SECONDS = { 10, 20, 30, 60 }
 function GF.SheetOn(i)
   if i == 3 then return HasGuild() end
   if i == 4 then return type(ns.Ledger) == "table" and type(ns.Ledger.Enabled) == "function" end
@@ -3996,6 +4009,25 @@ BuildSettings = function()
     S.recordClear:SetWidth(math.max(132, math.min(200, math.ceil((GF.MeasureAt(S.recordClear.text, L.RECORD_CLEAR, 10) or 120) + 16))))
     S.recordClear:SetLabel(L.RECORD_CLEAR)
     RR.bottom = -(y - 4) + 22
+    -- 1.4.0 grudge: the section GRUDGE (sheets Book and Alarm are full, a row more would make them scroll; revenge
+    -- lives here): on/off, battlegrounds and arenas, how long the notice stays, a test notice, its place back
+    if ns.Grudge then
+      y = y - 22 - 14
+      y = section(RR, y, L.SET_SEC_GRUDGE)
+      y = checks(RR, GF.GRUDGE_OPTIONS, nil, y)
+      S.gsec = Stepper(RR, y, L.SET_GRUDGE_SECONDS, function(d)
+        Set("grudge.seconds", Step(GF.GRUDGE_SECONDS, tonumber(Look.Setting("grudge.seconds", 20)) or 20, d))
+      end)
+      y = y - OPT_H - 6
+      local gtest = InkButton(RR, L.SET_GRUDGE_TEST, 104, 22, function() ns.Grudge.Test() end)
+      gtest:SetPoint("TOPLEFT", 30, y - 4)
+      local greset = InkButton(RR, "", 132, 22, function() if ns.GrudgeCard then ns.GrudgeCard.ResetPosition() end end)
+      greset:SetPoint("LEFT", gtest, "RIGHT", 8, 0)
+      greset:SetWidth(math.max(132, math.min(180, math.ceil((GF.MeasureAt(greset.text, L.SET_GRUDGE_RESET, 10) or 120) + 16))))
+      greset:SetLabel(L.SET_GRUDGE_RESET)
+      S.grudgeButtons = { gtest, greset }
+      RR.bottom = -(y - 4) + 22
+    end
   end
 
   local back = InkButton(S, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
@@ -4368,6 +4400,7 @@ function UI.FillSettings()
   S.mk:SetValue(tostring(Look.Setting("alert.minKills", 1) or 1))
   S.size:SetValue(Percent(ClampScale(tonumber(Look.Setting("ui.scale", 1)) or 1)))
   S.asize:SetValue(Percent(Look.Setting("alert.scale", 1)))
+  if S.gsec then S.gsec:SetValue(Fmt(L.SET_SECONDS, { seconds = tonumber(Look.Setting("grudge.seconds", 20)) or 20 })) end
   S.gmk:SetValue(tostring(Look.GuildSetting("minKills") or 1))
   local days = tonumber(Look.GuildSetting("huntExpire")) or 0
   S.hexp:SetValue(days > 0 and Fmt(L.SET_EXPIRE_DAYS, { count = days }) or L.SET_EXPIRE_NEVER)

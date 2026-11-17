@@ -232,16 +232,34 @@ end
 
 -- Role of a deed: "kill" (killing blow), "assist" (proven involvement), "suspect" (only suspected).
 -- Older logic without a role: sure = killing blow, else suspicion.
+-- 1.4.0 grudge: "attack" (attacked me, entered by the player)
 function Look.Role(d)
   if type(d) ~= "table" then return "suspect" end
   local r = d.role
-  if r == "kill" or r == "assist" or r == "suspect" then return r end
+  if r == "kill" or r == "assist" or r == "suspect" or r == "attack" then return r end
   return d.sure == true and "kill" or "suspect"
 end
 
 function Look.Assists(e)
   if type(e) ~= "table" then return 0 end
   return tonumber(e.assists) or 0
+end
+
+-- 1.4.0 grudge: attacks the player entered (Store.Attacks)
+function Look.Attacks(e)
+  if type(e) ~= "table" then return 0 end
+  local S = ns.Store
+  if S and S.Attacks then
+    local ok, n = pcall(S.Attacks, e)
+    if ok and type(n) == "number" then return n end
+  end
+  return tonumber(e.attacks) or 0
+end
+-- "attacked 3×" for an entry with attacks, else nil
+function Look.AttackedWord(e)
+  local n = Look.Attacks(e)
+  if n <= 0 then return nil end
+  return Fmt(L.TALLY_ATTACKED, { times = Look.Times(n) })
 end
 
 -- Weight for thresholds (alarm from n deaths on): killing blows plus assists
@@ -260,9 +278,14 @@ function Look.Tally(e)
   if type(e) ~= "table" then return "" end
   if e.status == "suspect" then return L.TALLY_SUSPECT end
   local k, a = tonumber(e.kills) or 0, Look.Assists(e)
-  if k == 0 and a == 0 then return e.manual and L.TALLY_MANUAL or L.TALLY_NONE end
+  -- 1.4.0 grudge: "attacked 3×" (with "added by hand" when he is that too)
+  local att = Look.AttackedWord(e)
+  if k == 0 and a == 0 then
+    if att then return Look.Join(e.manual and L.TALLY_MANUAL or nil, att) end
+    return e.manual and L.TALLY_MANUAL or L.TALLY_NONE
+  end
   return Look.Join(k > 0 and Fmt(L.TALLY_KILLED, { times = Look.Times(k) }),
-    a > 0 and Fmt(L.TALLY_ASSISTED, { times = Look.Times(a) }))
+    a > 0 and Fmt(L.TALLY_ASSISTED, { times = Look.Times(a) }), att)
 end
 
 -- newest deed of an entry (deaths, newest first)
@@ -957,9 +980,11 @@ local function Eligible(e)
   if not e or e.status == "pardoned" then return false end
   if not Look.Setting("alert.enabled", true) then return false end
   if e.status == "suspect" then return Look.Setting("alert.suspects", false) and true or false end
-  -- entries added by hand alert without a kill too (else /dn add would never warn);
-  -- the threshold counts killing blows and assists
-  if not e.manual and Look.Weight(e) < (tonumber(Look.Setting("alert.minKills", 1)) or 1) then return false end
+  -- entries added by hand alert without a kill too (else /dn add would never warn), and so do entries with an
+  -- attack the player entered (1.4.0 grudge: he ticked him himself); the threshold counts killing blows and assists
+  if not e.manual and Look.Attacks(e) == 0 and Look.Weight(e) < (tonumber(Look.Setting("alert.minKills", 1)) or 1) then
+    return false
+  end
   local mode = SettledMode(e)
   if mode == "off" then return false end
   return true, mode

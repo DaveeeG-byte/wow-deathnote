@@ -445,7 +445,8 @@ end
 -- "Kollege" (a member of the own guild), "streichen" (remove).
 -- 1.2.0: the lines come from the language table (HELP_*), in the active language; ns.HELP is built
 -- at activation. The German subcommands stay valid forever, the English ones work in every language.
-local HELP_KEYS = { "HELP_TOGGLE", "HELP_ADD", "HELP_DEL", "HELP_QUIET", "HELP_TEST", "HELP_GUILD", "HELP_FRIENDS",
+-- 1.4.0: HELP_GRUDGE after HELP_TEST
+local HELP_KEYS = { "HELP_TOGGLE", "HELP_ADD", "HELP_DEL", "HELP_QUIET", "HELP_TEST", "HELP_GRUDGE", "HELP_GUILD", "HELP_FRIENDS",
   "HELP_SYNC", "HELP_HUNT", "HELP_CALLOFF", "HELP_BOUNTY", "HELP_LANG", "HELP_THEME", "HELP_START", "HELP_PROBE", "HELP_PROBE_COMBATLOG", "HELP_DEBUG",
   "HELP_HELP", "HELP_SILENT_ZONES" }
 ns.HELP_KEYS = HELP_KEYS
@@ -731,6 +732,9 @@ function ns.HandleSlash(msg)
     slashLang(rest)
   elseif cmd == "theme" or cmd == "einband" or cmd == "cover" then
     slashTheme(rest)
+  elseif cmd == "rachsucht" or cmd == "grudge" then
+    -- 1.4.0 grudge: the notice after an attack on/off; "test": a test notice with made-up names (Grudge.lua)
+    if ns.Grudge and ns.Grudge.Slash then ns.Grudge.Slash(rest) end
   elseif cmd == "start" then
     -- 1.3.0: the first-start dialog again (language and cover), any time out of combat (Start.lua)
     if ns.Start and ns.Start.Show then ns.Start.Show("slash") end
