@@ -80,7 +80,8 @@ do
   check("row: name, level, tick and cross", r1 and r1.name._text == "Grimm Bart" and r1.level._text == "38" and r1.yes:IsShown()
     and r1.no:IsShown() and not r1.state:IsShown(), r1 and r1.name._text)
   check("no skull without a killing blow", r1 and not r1.mark:IsShown())
-  check("no strata above the alarm (MEDIUM)", card:GetFrameStrata() == "MEDIUM")
+  -- 1.4.0 fixer (orchestrator, hunt UI 1): one layer above the open book (HIGH), the lowest level of DIALOG
+  check("one layer above the book, lowest in DIALOG", card:GetFrameStrata() == "DIALOG" and card:GetFrameLevel() == 1)
   -- tick on Grimm, cross on Fies
   r1.yes._scripts.OnClick(r1.yes)
   local e = ns.Store.Get("Grimm-Bart")
