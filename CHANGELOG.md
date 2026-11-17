@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.4.0 (unreleased)
+## 1.4.0 (2026-11-17)
 
 ### Added
 - Grudge: when players attack you and you survive, a small notice on the right edge lists them, each with a tick and a cross. A tick writes the attacker into the book (new deed role "attacked"): he stands under Wanted with "attacked 2×", the stamp GRUDGE when that is all he did, and the alarm warns about him like about an entry by hand; revenge on him counts as usual. A cross, or letting the notice run out, enters nothing, and nobody answered is asked again within 5 minutes. A group shows all attackers (8 rows, then "… and n more"); after your death the killing blow is marked with a skull and whoever your death puts into the book anyway stands as "in the book". The notice waits until the death's notice has gone, holds while the mouse is over it, can be moved with Shift-drag and closed with a right click; no sound. It lies above the open book and below menus and dialogs; its tooltip says how to turn it off. Every episode ends: with its notice, at once when there is nothing to ask, or when you switch it off or go into a battleground; a real attack or death ends the test notice at once.
