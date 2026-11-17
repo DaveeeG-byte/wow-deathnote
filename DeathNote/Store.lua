@@ -1343,6 +1343,16 @@ local function splitBar(line)
   return out
 end
 
+-- 1.4.0 fixer: field 22 of an E line = where a copied entry came from: "src;kills;at;from" (src guild, friends, text
+-- or empty; kills = the deaths of the guild or friends; at = when it was copied; from = whose list). Empty for the
+-- own entries. Older clients read 19 to 21 fields and leave the rest alone.
+local function originOf(e)
+  if e.fromGuild ~= true then return nil end
+  local k = tonumber(e.fromGuildKills)
+  return table.concat({ e.adoptSrc or "", k and tostring(math.floor(k)) or "", tonumber(e.adoptAt) and tostring(math.floor(e.adoptAt)) or "",
+    type(e.adoptFrom) == "string" and e.adoptFrom or "" }, ";")
+end
+
 -- short == true: entries only (names, counters, status, time stamps), no deed lines,
 -- so that a full list stays small. Import reads both forms.
 function Store.Export(short)
@@ -1355,7 +1365,7 @@ function Store.Export(short)
     lines[#lines + 1] = table.concat({ "E", esc(k), esc(e.status), esc(e.manual), esc(e.kills), esc(e.suspected),
       esc(e.revenge), esc(e.firstKill), esc(e.lastKill), esc(e.lastRevenge), esc(e.sightings), esc(e.class),
       esc(e.race), esc(e.level), esc(e.guild), esc(e.faction), esc(e.surname), esc(e.guid), esc(e.note),
-      esc(e.assists or 0), esc(Store.Attacks(e)) }, "|")
+      esc(e.assists or 0), esc(Store.Attacks(e)), esc(originOf(e)) }, "|")
     for i = (short == true) and 0 or #e.deaths, 1, -1 do
       local d = e.deaths[i]
       lines[#lines + 1] = table.concat({ "D", esc(k), esc(d.t), esc(d.sure), esc(d.source), esc(d.zone),
@@ -1635,6 +1645,16 @@ function Store.Import(text)
       e.manual = f[4] == "1"
       e.imported = true      -- foreign entry: never shared in the guild
       e.note = note or ""
+      -- 1.4.0 fixer: a copied entry of the own backup comes back as copied, with its origin (field 22)
+      local src, kills, at, from = (type(f[22]) == "string" and f[22] or ""):match("^(%l*);(%d*);(%d*);(.*)$")
+      if src then
+        e.fromGuild = true
+        if src == "guild" or src == "friends" or src == "text" then e.adoptSrc = src end
+        local k = toNum(kills, 0, 1e6 - 1)
+        if k then e.fromGuildKills = math.floor(k) end
+        e.adoptAt = toTime(at)
+        e.adoptFrom = toStr(from, 64)
+      end
       added = added + 1
       undo.added[#undo.added + 1] = key
     else
