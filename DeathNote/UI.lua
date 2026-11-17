@@ -32,10 +32,12 @@ UX.FILTERS = {
   { id = "guild",   key = "TAB_GUILD" },
   { id = "record",  key = "TAB_RECORD" },   -- 1.3.0: only from the first own kill on (RS.On)
 }
-UX.SORTS = { "rank", "recent", "name", "seen" }
+-- 1.4.0 overview: Wanted sorts by rank (default), kills on me, last seen, latest deed, name, level, class, bounty
+UX.SORTS = { "rank", "kills", "seen", "recent", "name", "level", "class", "bounty" }
 UX.GSORTS = { "rank", "recent", "name" }
 local SORT_LABEL = { rank = "SORT_RANK", recent = "SORT_RECENT", name = "SORT_NAME", seen = "SORT_SEEN",
-  state = "SORT_STATE", points = "SORT_POINTS", count = "SORT_COUNT" }   -- locale keys (the last three: rap sheet)
+  state = "SORT_STATE", points = "SORT_POINTS", count = "SORT_COUNT",   -- locale keys (these three: rap sheet)
+  kills = "SORT_KILLS", level = "SORT_LEVEL", class = "SORT_CLASS", bounty = "SORT_BOUNTY" }   -- 1.4.0 overview
 -- Empty states: large, small, very small (only the first tab explains what the book does)
 -- per state: key stem and number of lines (STEM_HEAD, _SUB, _HINT in the locale table)
 local EMPTY = {
@@ -46,6 +48,8 @@ local EMPTY = {
   friendsoff = { "EMPTY_FRIENDSOFF", 2 }, friendsnil = { "EMPTY_FRIENDSNIL", 2 }, friendsquiet = { "EMPTY_FRIENDSQUIET", 2 },
   nobody = { "EMPTY_NOBODY", 3 }, sharednil = { "EMPTY_SHAREDNIL", 2 }, sharedquiet = { "EMPTY_SHAREDQUIET", 2 },
   hunt = { "EMPTY_HUNT", 3 }, search = { "EMPTY_SEARCH", 2 }, searchro = { "EMPTY_SEARCHRO", 2 },
+  -- 1.4.0 overview: the filter of Wanted hides everyone; "only what I lack" leaves nothing
+  filtered = { "EMPTY_FILTERED", 2 }, alltaken = { "EMPTY_ALLTAKEN", 2 },
 }
 local EXPORT_WARN = 100 * 1024     -- above this, "Back up the book" gets sluggish in the EditBox
 -- Guild book: only entries a guildmate (1.2.0: or friend) took part in; per source
@@ -54,11 +58,19 @@ local FOREIGN = { all = { foreign = true, source = "all" }, guild = { foreign = 
 -- 1.2.0: helpers for Guild & Friends and the hit list in one table (UI.lua is at the limit
 -- of 200 local names per file)
 local GF = { SOURCES = { { "all", "SRC_ALL" }, { "guild", "SRC_GUILD" }, { "friends", "SRC_FRIENDS" } },
-             STAMP_W = 140, STAMP_H = 70, MENU_MAX = 6, CAND_MAX = 6, ASSIST_MAX = 4,
+             STAMP_W = 140, STAMP_H = 70, MENU_MAX = 12, CAND_MAX = 6, ASSIST_MAX = 4,
              WHY_ROW = 24,    -- reason in a hit list row: at most this many characters (then "…")
              -- 1.2.1: seconds of "Undo" after "Note revenge", bounty posters or avengers per row (then "and n more");
              -- the coin on a killer with a bounty is Look.TEX.coin (1.3.0, theme)
              UNDO_SECONDS = 8, UNDO_LOCK = 0.5 }
+-- 1.4.0 overview: filter, section heads, taking over (guild, friends, a text) and its undo; one table (locals limit).
+-- Roles of the filter: "attack" is package Grudge's role (finds nothing while no deed has it).
+local OV = { ROLES = { "all", "kill", "assist", "attack", "manual", "adopted" },
+             ROLE_LABEL = { all = "FILTER_ALL", kill = "FILTER_KILL", assist = "FILTER_ASSIST", attack = "FILTER_ATTACK",
+                            manual = "FILTER_MANUAL", adopted = "FILTER_ADOPTED" },
+             STORE_SORTS = { rank = true, recent = true, name = true, seen = true },   -- the rest sorts OV.Sort
+             NAMES_MAX = 12, FLASH_SECONDS = 6, total = 0, shown = 0 }
+UI.OV = OV                  -- for tests
 
 -- Manual ("?"): every paragraph describes what is really built (acceptance mirror)
 UX.HELP = {
@@ -95,7 +107,9 @@ local state = { filter = "wanted", sort = "rank", gsort = "rank", offset = 0, se
                 gview = "enemy", gmember = nil, gsource = "all", hselected = nil, viewPicked = false,
                 release = nil,
                 -- 1.3.0 rap sheet: selected victim (nil = the own file), view of the file ("file" | "log"), sort
-                rsel = nil, rview = "file", rsort = "recent" }
+                rsel = nil, rview = "file", rsort = "recent",
+                -- 1.4.0 overview: filter of Wanted (role, class token), guild by killer only what is not in the book
+                frole = "all", fclass = nil, gnew = false }
 local dirty = true
 local pending = false
 local ready = false
@@ -504,14 +518,23 @@ function UX.WantedData()
   local S = Store()
   -- 1.3.0 (decision 4): "Rank" sorts by the open debt while the rap sheet is on (Store.RankOrder), the same order as
   -- Store.Rank, so the numbers on the rows stay 1, 2, 3 ... and the settled ones follow without a number
-  local list = S.Ranked("wanted", state.sort == "rank" and S.RankOrder and S.RankOrder() or state.sort) or {}
+  -- 1.4.0 overview: the sorts the store does not know are sorted here (OV.Sort, on the rank order), then the filter
+  local base = OV.STORE_SORTS[state.sort] and state.sort or "rank"
+  local list = S.Ranked("wanted", base == "rank" and S.RankOrder and S.RankOrder() or base) or {}
+  if base ~= state.sort then OV.Sort(list, state.sort) end
   for i = #wantedData, 1, -1 do wantedData[i] = nil end
-  for i = 1, #list do wantedData[i] = list[i] end
-  local pard = S.Ranked("pardoned", state.sort) or {}
+  local total = #list
+  for i = 1, #list do if OV.Keep(list[i]) then wantedData[#wantedData + 1] = list[i] end end
+  local pard = S.Ranked("pardoned", base) or {}
+  if base ~= state.sort then OV.Sort(pard, state.sort) end
   local all = ShowPardoned()
   for i = 1, #pard do
-    if all or pard[i].key == state.selected then wantedData[#wantedData + 1] = pard[i] end
+    if all or pard[i].key == state.selected then
+      total = total + 1
+      if OV.Keep(pard[i]) then wantedData[#wantedData + 1] = pard[i] end
+    end
   end
+  OV.total = total
   return wantedData
 end
 
@@ -662,16 +685,21 @@ local function MenuSpec(e)
 end
 
 -- Guild: nothing destructive, only take over or open the own poster
+-- 1.4.0 overview: "Take over" stays in the tab (before, the book jumped to Wanted), right after it "Undo" for a few
+-- seconds; "Take over all" opens the preview of everything shown (by killer) or of the guildmate's section
 local function GuildSpec(g)
   local key = g.key
-  if Store().Get(key) then
-    return { { L.ACT_OPEN_OWN, function() UI.ShowEnemy(key) end } }
+  local first
+  local u = OV.undo
+  if u and u.one == key and Store().Get(key) then
+    first = { L.ACT_UNDO, function() OV.Undo() end }
+  elseif Store().Get(key) then
+    first = { L.ACT_OPEN_OWN, function() UI.ShowEnemy(key) end }
+  else
+    first = { L.ACT_TAKE, function() OV.TakeOne(g, MemberView() and state.gmember or nil) end }
   end
-  return { { L.ACT_ADOPT, function()
-    local k = GCall("Adopt", key)
-    UI.Refresh()
-    if type(k) == "string" and Store().Get(k) then UI.ShowEnemy(k) end
-  end } }
+  if OV.ScopeNew() > 0 then return { first, { L.ACT_TAKE_ALL, function() OV.OpenTake() end } } end
+  return { first }
 end
 
 -- Hit list (1.2.0): take back an own call or post one ("Put on hit list" opens
@@ -792,7 +820,7 @@ local function GuildItem(item)
 end
 
 local function SelectRow(row)
-  if not row.item then return end
+  if not row.item or row.item.ovHead then return end
   if row.item.wrap then
     if row.item.head then return end               -- a head row is not a killer
     state.gselected, state.gmember = row.item.r.key, row.item.m.name
@@ -815,7 +843,7 @@ end
 
 function UX.RowMenu(row, anchor)
   local item = row.item
-  if not item or state.filter == "journal" or state.filter == "record" or IsCase(item) then return end
+  if not item or item.ovHead or state.filter == "journal" or state.filter == "record" or IsCase(item) then return end
   if item.wrap then
     item = GuildItem(item)
     if not item then return end
@@ -828,7 +856,10 @@ function UX.RowMenu(row, anchor)
     if GF.Released(item.key) and (tonumber(GCall("OwnReleaseCount")) or 0) > 1 then
       spec[#spec + 1] = { L.ACT_CALLOFF_ALL, function() Confirm("DEATHNOTE_CALLOFF_ALL") end }
     end
-  elseif state.filter == "guild" then spec = GF.MenuWithHunt(GuildSpec(item), item.key)
+  elseif state.filter == "guild" then
+    spec = GF.MenuWithHunt(GuildSpec(item), item.key)
+    -- 1.4.0 overview: "Take over all" is in the poster's foot already; in the menu only when there is room
+    if #spec > GF.MENU_MAX then spec[GF.MENU_MAX + 1] = nil end
   elseif item.status == "wanted" then spec = GF.MenuWithHunt(MenuSpec(item), item.key)
   else spec = MenuSpec(item) end
   -- 1.2.1: post a bounty (own wanted and suspects, guild, friends, hit list; the same rule as on the poster)
@@ -839,9 +870,10 @@ function UX.RowMenu(row, anchor)
 end
 
 local function RowClick(row, mouse)
-  if not row.item then return end
+  if not row.item or row.item.ovHead then return end
   if row.item.wrap and row.item.head then
     if mouse == "RightButton" and GF.TieMenu(row) then return end
+    if mouse == "RightButton" and OV.HeadMenu(row) then return end
     ToggleMember(row.item.m)
     return
   end
@@ -856,7 +888,7 @@ local function RowClick(row, mouse)
 end
 
 local function RowEnter(row)
-  if not row.item then return end
+  if not row.item or row.item.ovHead then return end
   if row.tipFn then
     Tip(row, row.tipFn(row.item))
   elseif row.full then
@@ -953,6 +985,17 @@ function UX.MakeRow(parent, i)
   r.right:SetTextColor(C(Look.INK, TONE.sub))
   r.right:Hide()
   r.mode = "normal"
+  -- 1.4.0 overview: "take over" in the place of the mark IN BOOK (guild and friends' rows not yet in the own book)
+  local tk = CreateFrame("Button", nil, r)
+  tk:SetSize(60, 16)
+  tk:SetPoint("BOTTOMRIGHT", -2, -3)
+  tk.text = Look.Text(tk, "body", 10, Look.RED_INK)
+  tk.text:SetPoint("RIGHT", -4, 0)
+  tk:SetScript("OnEnter", function(self) self.text:SetTextColor(C(Look.RED)); Tip(self, { L.TIP_ROW_TAKE }) end)
+  tk:SetScript("OnLeave", function(self) self.text:SetTextColor(C(Look.RED_INK)); GameTooltip:Hide() end)
+  tk:SetScript("OnClick", function(self) Look.Sound("click"); OV.TakeRow(self:GetParent()) end)
+  tk:Hide()
+  r.take = tk
 
   r:SetScript("OnClick", RowClick)
   r:SetScript("OnEnter", RowEnter)
@@ -986,9 +1029,19 @@ local ROW_TONE = {
 
 -- Fill one row: name, subtext, mark at the bottom right (red or ink), tone.
 -- The subtext reaches up to the mark, without a mark almost to the edge.
+-- 1.4.0 overview: a long name gets smaller before it is cut (head rows: 22 pt)
+GF.FIT_ROWNAME, GF.FIT_HEADNAME = { sizes = { 19, 16 } }, { sizes = { 22, 19 } }
 local function SetRow(r, name, sub, mark, tone, markInk)
   local t = ROW_TONE[tone] or ROW_TONE.normal
-  r.name:SetText(name or "")
+  r.take:Hide()
+  -- the width from the anchors of the row kind (SetRowMode, head rows: nameInset), not from the field: a field
+  -- between two anchors may not know its width yet while its row is hidden
+  local fit = r.fitName or {}
+  r.fitName = fit
+  local head = r.mode == "head"
+  fit.sizes = head and GF.FIT_HEADNAME.sizes or GF.FIT_ROWNAME.sizes
+  fit.width = (PAGE_W - 24) - (r.mode == "child" and 58 or 40) - (r.nameInset or (head and 112 or 40))
+  Look.FitText(r.name, name or "", fit)
   r.name:SetTextColor(C(t[1], t[2]))
   -- 1.2.2: sub may be a list (full, then shorter): the first that fits whole; when truncated it is in the tooltip
   local full = type(sub) == "table" and sub[1] or sub
@@ -1047,7 +1100,7 @@ function UX.BindEnemyRow(r, e)
   elseif suspect then sub = Look.Join(L.ROW_SUSPECT, DeedWhere(Look.LastDeed(e)))
   else
     -- "seen … ago" goes first when the row does not fit
-    local tally = Look.Tally(e)
+    local tally = OV.Tally(e)      -- 1.4.0 overview: "taken over from Anna"
     local word = settled and L[Look.STATE_WORD[settled]] or nil
     sub = { Look.Join(word, tally, UX.Seen(e)), Look.Join(word, tally) }
   end
@@ -1139,7 +1192,8 @@ function UX.BindGuildRow(r, g, pos)
   end
   -- small sign: already in the own book
   local mine = g.mine or Store().Get(g.key)
-  SetRow(r, Look.Name(g), sub, mine and L.MARK_IN_BOOK or nil, (rank == 1 and "red") or (only and "pale") or "normal", true)
+  SetRow(r, Look.Name(g), sub, mine and L.MARK_IN_BOOK or L.ROW_TAKE, (rank == 1 and "red") or (only and "pale") or "normal", true)
+  OV.ShowTake(r, not mine)
   GF.Coin(r, g.key)
   r.under:SetShown(state.gselected == g.key)
   r.under:SetWidth(InkWidth(r.name))
@@ -1203,7 +1257,9 @@ function UX.BindMemberChild(r, w)
   else
     sub, tone = Look.Join(L.TALLY_MANUAL, row.listedAt and Look.Ago(row.listedAt)), "pale"
   end
-  SetRow(r, e and Look.Name(e) or tostring(row.key or "?"), sub, Store().Get(row.key) and L.MARK_IN_BOOK or nil, tone, true)
+  local mine = Store().Get(row.key) ~= nil
+  SetRow(r, e and Look.Name(e) or tostring(row.key or "?"), sub, mine and L.MARK_IN_BOOK or L.ROW_TAKE, tone, true)
+  OV.ShowTake(r, not mine)
   GF.Coin(r, row.key)
   r.under:SetShown(state.gselected == row.key and (state.gmember == nil or state.gmember == w.m.name))
   r.under:SetWidth(InkWidth(r.name))
@@ -1290,6 +1346,7 @@ BindRows = function()
         if item.head then UX.BindMemberHead(r, item) else UX.BindMemberChild(r, item) end
       elseif state.filter == "guild" then
         if GF.HuntView() then GF.BindHuntRow(r, item) else UX.BindGuildRow(r, item, idx) end
+      elseif item.ovHead then OV.BindHead(r, item)
       elseif IsCase(item) then UX.BindCaseRow(r, item)
       else UX.BindEnemyRow(r, item) end
       r:Show()
@@ -1969,7 +2026,7 @@ end
 -- two buttons side by side at the bottom left (the word "Strike out" stands to their right)
 -- every label they can carry (EnemySpec, GF.RevengeAct, GuildSpec, GF.HuntSpec): the foot row is measured on them
 GF.POSTER_LABELS = { "ACT_CONFIRM", "ACT_DISMISS", "ACT_HUNT_AGAIN", "ACT_REVENGE", "ACT_UNDO", "ACT_PARDON",
-                     "ACT_OPEN_OWN", "ACT_ADOPT", "ACT_CALLOFF", "ACT_RELEASE" }
+                     "ACT_OPEN_OWN", "ACT_ADOPT", "ACT_CALLOFF", "ACT_RELEASE", "ACT_TAKE", "ACT_TAKE_ALL" }
 GF.FOOT_ROOM = 352 - 40 - 16
 -- width of text in fs at one size, only to measure (the field is fitted again by its owner afterwards)
 GF.FIT_AT = {}
@@ -2336,7 +2393,8 @@ local function FillGuild(g)
   E.current = g
   local only = Look.ListedOnly(g)
   local rank = not only and GCall("Rank", g.key, GF.Src()) or nil
-  E.doa:SetText(Spaced(L.POSTER_GUILDBOOK))
+  -- 1.4.0 overview: an entry that only friends know is from the friends' book, not the guild book
+  E.doa:SetText(Spaced(GCall("Source", g.key) == "friends" and L.POSTER_FRIENDSBOOK or L.POSTER_GUILDBOOK))
   SetPhoto(E, g)
   Look.FitText(E.tally, only and L.TALLY_MANUAL or Fmt(L.ROW_GKILLED, { kills = Look.GKills(g.kills) }), GF.FIT_TALLY)
 
@@ -2446,7 +2504,9 @@ local function FillGuild(g)
   E.strike.key = nil
   E.strike:Hide()
 
-  local sig = "g\0" .. g.key .. "\0" .. (Store().Get(g.key) and "1" or "0")
+  local u = OV.undo
+  local sig = "g\0" .. g.key .. "\0" .. (Store().Get(g.key) and "1" or "0") .. (u and u.one == g.key and "u" or "")
+    .. (OV.ScopeNew() > 0 and "a" or "")
   if E.specSig ~= sig then
     E.specSig = sig
     ConfigButtons(E, GuildSpec(g))
@@ -2678,6 +2738,7 @@ local function SearchOnly() return state.filter ~= "wanted" end
 
 local function EmptyKind()
   if state.query ~= "" then return SearchOnly() and "searchro" or "search" end
+  if OV.HintOn() and OV.total > 0 then return state.filter == "guild" and "alltaken" or "filtered" end
   if state.filter == "guild" then
     local src = GF.Src()
     if src == "guild" then
@@ -3416,8 +3477,11 @@ ShowRight = function()
     P.enemy:Show()
   else
     local e
-    for i = 1, n do if data[i].key == state.selected then e = data[i]; break end end
-    if not e then e = data[1]; state.selected = e.key; picked = true end
+    for i = 1, n do if not data[i].ovHead and data[i].key == state.selected then e = data[i]; break end end
+    if not e then
+      for i = 1, n do if not data[i].ovHead then e = data[i]; break end end   -- 1.4.0 overview: never a head row
+      state.selected = e.key; picked = true
+    end
     PosterMode(false)
     FillEnemy(e)
     P.enemy:Show()
@@ -4048,7 +4112,7 @@ BuildSettings = function()
   Look.TipIfCut(IO.helpHit, IO.help)
   local box = CreateFrame("Frame", nil, IO, "BackdropTemplate")
   box:SetPoint("TOPLEFT", 20, -88)
-  box:SetPoint("BOTTOMRIGHT", -20, 70)
+  box:SetPoint("BOTTOMRIGHT", -20, 100)     -- 1.4.0 overview: room for "Whose book" above the message
   box:SetBackdrop({ bgFile = Look.TEX.white, edgeFile = Look.TEX.white, edgeSize = 1 })
   box:SetBackdropColor(C(Look.COLOR.editFill))
   box:SetBackdropBorderColor(C(Look.INK, 0.6))
@@ -4063,24 +4127,18 @@ BuildSettings = function()
   Look.Font(eb, "body", 11)
   eb:SetTextColor(C(Look.INK))
   eb:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+  -- 1.4.0 overview: a changed text needs a new preview
+  eb:SetScript("OnTextChanged", function(_, user) if user and state.panel == "import" then OV.IOReset() end end)
   sf:SetScrollChild(eb)
   sf:SetScript("OnMouseDown", function() eb:SetFocus() end)
   IO.edit = eb
   IO.msg = Look.Text(IO, "body", 11, Look.RED_INK)
-  IO.msg:SetPoint("BOTTOM", 0, 44)
+  IO.msg:SetPoint("BOTTOM", 0, 40)
   IO.msg:SetWidth(330)
-  IO.go = InkButton(IO, L.IO_GO, 104, 22, function()
-    local okc, ok, a, b = pcall(Store().Import, eb:GetText() or "")
-    if not okc then ok, a = false, nil end
-    if ok then
-      IO.msg:SetText(Fmt(L.IO_DONE, { new = tostring(a or 0), merged = tostring(b or 0) }))
-      IO.msg:SetTextColor(C(Look.INK))
-    else
-      IO.msg:SetText(type(a) == "string" and a or L.IO_FAILED)
-      IO.msg:SetTextColor(C(Look.RED_INK))
-    end
-    UI.Refresh()
-  end)
+  IO.msg:SetMaxLines(2)
+  -- 1.4.0 overview: whose book the text is (own backup or a friend's), chosen in the preview
+  OV.BuildOwnerRow(IO, Label, WordTab)
+  IO.go = InkButton(IO, L.IO_GO, 104, 22, function() OV.IOGo() end)
   IO.go:SetPoint("BOTTOM", -57, 12)
   -- back up: toggle between the small version (without deeds) and the whole book
   IO.size = InkButton(IO, "", 104, 22, function() UI.ShowExport(not IO.full) end)
@@ -4298,6 +4356,7 @@ function UI.OpenRelease(key)
   P:Hide(); RP.empty:Hide()
   RP.settings:Hide(); RP.io:Hide()
   if RP.help then RP.help:Hide() end
+  if RP.take then RP.take:Hide() end
   RP.release.edit:SetText("")
   RP.release:Show()
   RP.release.page:Top()
@@ -4473,6 +4532,7 @@ function UI.OpenPanel(which)
   state.panel = which
   P:Hide(); RP.empty:Hide()
   if RP.release then RP.release:Hide() end
+  if RP.take then RP.take:Hide() end
   RP.settings:SetShown(which == "settings")
   RP.io:SetShown(which == "export" or which == "import")
   if RP.help then RP.help:SetShown(which == "help") end
@@ -4486,6 +4546,7 @@ end
 function UI.ClosePanel(silent)
   state.panel = nil
   if RP.release then RP.release:Hide() end
+  if RP.take then RP.take:Hide() end
   if RP.settings then RP.settings:Hide(); RP.io:Hide() end
   if RP.help then RP.help:Hide() end
   if not silent then ShowRight() end
@@ -4532,6 +4593,7 @@ function UI.OpenIO(mode)
   local IO = RP.io
   IO.msg:SetText("")
   IO.size:Hide()
+  if IO.owner then IO.owner:Hide() end
   if mode == "export" then
     Look.FitText(IO.head, L.IO_EXPORT, GF.FIT_NAME26)
     Look.FitText(IO.help, L.IO_HELP_EXPORT, GF.FIT_IO_HELP)
@@ -4542,9 +4604,82 @@ function UI.OpenIO(mode)
     Look.FitText(IO.head, L.IO_IMPORT, GF.FIT_NAME26)
     Look.FitText(IO.help, L.IO_HELP_IMPORT, GF.FIT_IO_HELP)
     IO.edit:SetText("")
+    OV.IOReset()
     IO.go:SetShown(Store().Import ~= nil)
     IO.edit:SetFocus()
   end
+end
+
+-- 1.4.0 overview: sheet "Take over all": from whom, how many new and already in the book, the new names, what it
+-- means; then the result with "Undo" once
+function OV.BuildTake()
+  local T = PageLayer(RP)
+  RP.take = T
+  T.head = SheetHead(T, L.TAKE_HEAD)
+  local pg = Look.Page(T, { top = 58, foot = 74, w = PAGE_W, h = PAGE_H })
+  T.page = pg
+  local B = CreateFrame("Frame", nil, pg.body)
+  B:SetPoint("TOPLEFT", pg.body, "TOPLEFT", 0, 58)
+  B:SetSize(PAGE_W, PAGE_H)
+  T.from = Look.Text(B, "hand", 22, Look.INK)
+  T.from:SetPoint("TOP", 0, -66)
+  T.from:SetWidth(320)
+  T.from:SetWordWrap(false)
+  T.fromHit = CreateFrame("Frame", nil, B)
+  T.fromHit:SetAllPoints(T.from)
+  Look.TipIfCut(T.fromHit, T.from)
+  T.count = Look.Text(B, "type", 13, Look.INK)
+  T.count:SetPoint("TOP", T.from, "BOTTOM", 0, -6)
+  T.count:SetWidth(320)
+  T.label = Label(B, L.TAKE_NEW_LABEL)
+  T.label:SetPoint("TOPLEFT", 34, -128)
+  T.names = Look.Text(B, "hand", 16, Look.INK)
+  T.names:SetPoint("TOPLEFT", 34, -146)
+  T.names:SetWidth(312)
+  T.names:SetJustifyH("LEFT")
+  T.hint = Look.Text(B, "type", 11, Look.INK)
+  T.hint:SetTextColor(C(Look.INK, TONE.hint))
+  T.hint:SetWidth(312)
+  T.hint:SetJustifyH("LEFT")
+  T.hint2 = Look.Text(B, "type", 11, Look.INK)
+  T.hint2:SetTextColor(C(Look.INK, TONE.hint))
+  T.hint2:SetPoint("TOPLEFT", T.hint, "BOTTOMLEFT", 0, -6)
+  T.hint2:SetWidth(312)
+  T.hint2:SetJustifyH("LEFT")
+  T.msg = Look.Text(pg.foot, "body", 11, Look.INK)
+  T.msg:SetPoint("BOTTOM", 0, 44)
+  T.msg:SetMaxLines(2)
+  T.msg:SetWidth(330)
+  T.go = InkButton(pg.foot, L.ACT_TAKE, 104, 22, function() OV.TakeGo() end)
+  T.go:SetPoint("BOTTOM", -57, 12)
+  T.back = InkButton(pg.foot, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
+  T.back:SetPoint("BOTTOM", 57, 12)
+end
+
+-- the names stand from y = 146; hints below them, the scroll area as high as the last hint
+function OV.LayoutTake(T)
+  local y = 146 + (T.names:GetText() ~= "" and Look.TextH(T.names, 8) or 0) + 14
+  T.hint:ClearAllPoints()
+  T.hint:SetPoint("TOPLEFT", T.page.body, "TOPLEFT", 34, -(y - 58))
+  local bottom = y + Look.TextH(T.hint, 4) + 6 + Look.TextH(T.hint2, 4)
+  T.page:Layout(math.ceil(bottom + 8 - 58))
+end
+
+-- "Whose book:  mine | Anna's" above the message of the import sheet (hidden until the preview)
+function OV.BuildOwnerRow(IO, LabelFn, WordTabFn)
+  local row = CreateFrame("Frame", nil, IO)
+  row:SetSize(PAGE_W - 60, 20)
+  row:SetPoint("BOTTOM", 0, 72)
+  row.label = LabelFn(row, L.IO_OWNER)
+  row.label:SetPoint("LEFT", 4, 0)
+  row.tabs = {}
+  for i, mode in ipairs({ "mine", "friend" }) do
+    local b = WordTabFn(row, "", 90, function(self) if OV.io then OV.io.mode = self.mode; OV.FillIO() end end)
+    b.mode = mode
+    row.tabs[i] = b
+  end
+  row:Hide()
+  IO.owner = row
 end
 
 end -- house rules
@@ -4632,13 +4767,20 @@ function UX.UpdateTabs()
   end
   local sortKey = (state.filter == "guild" and state.gsort) or (state.filter == "record" and state.rsort) or state.sort
   LP.sort.text:SetText(SORT_LABEL[sortKey] and L[SORT_LABEL[sortKey]] or "")
-  LP.sort:SetWidth(math.max(90, math.min(120, TextWidth(LP.sort.text, 60) + 16)))
+  -- 1.4.0 overview: in Wanted the sorting is as wide as its word (the filter stands left of it, the search keeps room)
+  local wanted = state.filter == "wanted"
+  LP.sort:SetWidth(math.max(wanted and 50 or 90, math.min(120, TextWidth(LP.sort.text, 60) + 16)))
+  LP.filter:SetShown(wanted)
+  if wanted then
+    sw = OV.LayoutFilter(LP.sort:GetWidth())
+    if LP.search.w ~= sw then LP.search.w = sw; LP.search:SetWidth(sw) end
+  end
   LP.sort:SetShown(state.filter == "wanted" or state.filter == "record" or (state.filter == "guild" and not member and not GF.HuntView()))
   -- 1.2.2: the placeholder stays inside the field (smaller, then truncated)
   LP.search.ph:SetWidth(sw - 4)
   Look.FitText(LP.search.ph, (state.filter == "guild" and ((views or GF.HuntView()) and L.SEARCH_SHORT or L.SEARCH_KILLER))
                        or (state.filter == "journal" and L.SEARCH_JOURNAL)
-                       or ((state.filter == "open" or state.filter == "record") and L.SEARCH_SHORT) or L.SEARCH_ADD, GF.FIT_PH)
+                       or ((state.filter == "open" or state.filter == "record" or sw < 150) and L.SEARCH_SHORT) or L.SEARCH_ADD, GF.FIT_PH)
 end
 
 function UX.UpdateStatus()
@@ -4664,6 +4806,7 @@ function UX.UpdateStatus()
     LP.statusHit:Hide()
     LP.sync:Hide()
   end
+  OV.UpdateFoot()
 end
 
 -- 1.2.2: the line "enemy nameplates are off" follows the plates at once. Events (CVAR_UPDATE, a nameplate
@@ -4691,8 +4834,9 @@ end
 function UI.PlatePollActive() return platePoll ~= nil end
 
 -- search: substring of the shown name (journal and cases: killer, candidate or place)
+-- 1.4.0 overview: q is folded (OV.Fold: lower case also for accented Latin and Cyrillic letters)
 local function Matches(text, q)
-  return type(text) == "string" and text:lower():find(q, 1, true) ~= nil
+  return type(text) == "string" and OV.Fold(text):find(q, 1, true) ~= nil
 end
 
 local function DeathMatches(d, q)
@@ -4718,7 +4862,7 @@ function UX.ApplyQuery(list)
   dataIdx = nil
   local q = state.query
   if q == "" then return list end
-  q = q:lower()
+  q = OV.Fold(q)
   local out = {}
   if state.filter == "journal" then
     dataIdx = {}
@@ -4819,7 +4963,7 @@ end
 
 function UX.MemberData()
   local src = UX.MemberSource()
-  local q = state.query:lower()
+  local q = OV.Fold(state.query)
   if src ~= mv.src or mv.dirty or mv.cver ~= collapseVer or mv.q ~= q then
     UX.BuildMemberList(src, q)
     mv.src, mv.dirty, mv.cver, mv.q = src, false, collapseVer, q
@@ -4885,6 +5029,8 @@ Refresh = function()
     list = GF.SrcOn() and GF.Hunts() or {}
   elseif state.filter == "guild" and not MemberView() then
     list = GuildEnemies(state.gsort)
+    OV.total = #list
+    if state.gnew then list = OV.OnlyNew(list) end      -- 1.4.0 overview: only what is not in the own book
   elseif state.filter == "record" then
     list = ns.Ledger.Victims(state.rsort)    -- the rap sheet's own list, read only
   elseif state.filter ~= "guild" then
@@ -4895,7 +5041,9 @@ Refresh = function()
     data = UX.MemberData()
   else
     data = UX.ApplyQuery(list)
+    if state.filter == "wanted" then data = OV.Sections(data) end   -- 1.4.0 overview: section heads
   end
+  OV.Count()
   UX.UpdateTabs()
   UX.UpdateStatus()
   BindRows()
@@ -4941,6 +5089,7 @@ local function SubmitSearch(box)
   if q == "" then box:ClearFocus(); return end
   if #data > 0 then
     local first = data[1]
+    for i = 1, #data do if not data[i].ovHead then first = data[i]; break end end
     if state.filter == "journal" then state.death, state.deathRef = (dataIdx and dataIdx[1]) or 1, first
     elseif first.wrap then
       for i = 1, #data do
@@ -5042,9 +5191,18 @@ function UX.SortMenu(btn)
   local spec = {}
   for _, k in ipairs(list) do
     spec[#spec + 1] = { (k == cur and "• " or "") .. L[SORT_LABEL[k]], function()
-      if guild then state.gsort = k
+      if guild then state.gsort = k; Set("ui.guildSort", k)
       elseif record then state.rsort = k; Set("ui.recordSort", k)
       else state.sort = k; Set("ui.sort", k) end
+      state.offset = 0
+      Refresh()
+    end }
+  end
+  if guild then
+    -- 1.4.0 overview: only the killers not yet in the own book (what is left to take over)
+    spec[#spec + 1] = { state.gnew and L.SORT_ALL_ROWS or L.SORT_ONLY_NEW, function()
+      state.gnew = not state.gnew
+      Set("ui.guildNew", state.gnew)
       state.offset = 0
       Refresh()
     end }
@@ -5057,6 +5215,536 @@ function UX.SortMenu(btn)
     end }
   end
   OpenMenu(spec, btn)
+end
+
+------------------------------------------------------------------------
+-- 1.4.0 overview: sorting, filter, section heads, taking over (guild, friends, a text), undo
+------------------------------------------------------------------------
+-- lower case for the search: ASCII, and the two-byte capitals of Latin-1 (À..Þ), Latin Extended-A (Ā..Ž) and
+-- Cyrillic (Ѐ..Я); "ärger" finds "Ärger". Built once.
+function OV.Fold(s)
+  if type(s) ~= "string" then return "" end
+  s = s:lower()
+  if not s:find("[\195-\208]") then return s end
+  local map = OV.FOLD
+  if not map then
+    map = {}
+    local function u8(cp) return string.char(0xC0 + math.floor(cp / 64), 0x80 + cp % 64) end
+    for cp = 0xC0, 0xDE do if cp ~= 0xD7 then map[u8(cp)] = u8(cp + 32) end end
+    for cp = 0x100, 0x17E do
+      local up = (cp <= 0x137 and cp % 2 == 0) or (cp >= 0x139 and cp <= 0x148 and cp % 2 == 1)
+        or (cp >= 0x14A and cp <= 0x177 and cp % 2 == 0) or (cp >= 0x179 and cp % 2 == 1)
+      if up then map[u8(cp)] = u8(cp + 1) end
+    end
+    for cp = 0x400, 0x40F do map[u8(cp)] = u8(cp + 80) end
+    for cp = 0x410, 0x42F do map[u8(cp)] = u8(cp + 32) end
+    OV.FOLD = map
+  end
+  return (s:gsub("[\195-\208][\128-\191]", map))
+end
+
+-- sorts the store does not know, on the order the list already has (ties keep it): kills on me (then assists), level,
+-- bounty (highest first), class (by its name)
+function OV.Sort(list, sort)
+  local val, pos = OV.val or {}, OV.pos or {}
+  OV.val, OV.pos = val, pos
+  local S = Store()
+  for i = 1, #list do
+    local e = list[i]
+    pos[e] = i
+    local v = 0
+    if sort == "kills" then v = (tonumber(e.kills) or 0) * 10000 + math.min(9999, tonumber(e.assists) or 0)
+    elseif sort == "level" then v = tonumber(e.level) or -1
+    elseif sort == "bounty" then v = S.Bounty and tonumber(S.Bounty(e)) or 0
+    elseif sort == "class" then v = e.class and OV.Fold(ClassName(e) or e.class) or "\255" end
+    val[e] = v
+  end
+  local asc = sort == "class"
+  table.sort(list, function(a, b)
+    local x, y = val[a], val[b]
+    if x ~= y then if asc then return x < y end return x > y end
+    return pos[a] < pos[b]
+  end)
+  for i = 1, #list do val[list[i]] = nil; pos[list[i]] = nil end
+end
+
+-- deeds of package Grudge (role "attack"): a counter of its own or the deeds with that role
+function OV.Attacks(e)
+  local n = tonumber(e.attacks) or 0
+  if n > 0 then return n end
+  local d = e.deaths
+  if type(d) == "table" then
+    for i = 1, #d do if type(d[i]) == "table" and d[i].role == "attack" then n = n + 1 end end
+  end
+  return n
+end
+function OV.Adopted(e) return e.fromGuild == true or e.imported == true end
+function OV.Filtered() return state.frole ~= "all" or state.fclass ~= nil end
+-- does an entry pass the filter of Wanted (role and class)?
+function OV.Keep(e)
+  if state.fclass and e.class ~= state.fclass then return false end
+  local r = state.frole
+  if r == "kill" then return (tonumber(e.kills) or 0) > 0 end
+  if r == "assist" then return (tonumber(Look.Assists(e)) or 0) > 0 end
+  if r == "attack" then return OV.Attacks(e) > 0 end
+  if r == "manual" then return e.manual == true and not OV.Adopted(e) end
+  if r == "adopted" then return OV.Adopted(e) end
+  return true
+end
+
+-- the guild list without what is already in the own book
+function OV.OnlyNew(list)
+  local out = OV.newList or {}
+  OV.newList = out
+  for i = #out, 1, -1 do out[i] = nil end
+  local S = Store()
+  for i = 1, #list do if not S.Get(list[i].key) then out[#out + 1] = list[i] end end
+  return out
+end
+
+-- Wanted in parts: the wanted (with rank), the settled ones (rank order with the rap sheet: no rank, even or ahead), the
+-- pardoned; a head row with the number before each part that follows another one
+function OV.Sections(list)
+  if OV.flat then return list end    -- tests: the list as before 1.4.0 (book-as-before comparisons)
+  local S = Store()
+  local debt = state.sort == "rank" and S.RankOrder and S.RankOrder() == "debt"
+  local kinds, counts = OV.kinds or {}, { wanted = 0, settled = 0, pardoned = 0 }
+  OV.kinds = kinds
+  local change = false
+  for i = 1, #list do
+    local e = list[i]
+    local k = "wanted"
+    if not IsCase(e) then
+      if e.status == "pardoned" then k = "pardoned"
+      elseif debt and e.status == "wanted" and not S.Rank(e.key) then k = "settled" end
+    end
+    kinds[i] = k
+    counts[k] = counts[k] + 1
+    if i > 1 and k ~= kinds[i - 1] then change = true end
+  end
+  for i = #list + 1, #kinds do kinds[i] = nil end
+  if not change then return list end
+  local out, heads, done = OV.secList or {}, OV.heads or {}, {}
+  OV.secList, OV.heads = out, heads
+  for i = #out, 1, -1 do out[i] = nil end
+  for i = 1, #list do
+    local k = kinds[i]
+    if i > 1 and k ~= kinds[i - 1] and not done[k] then
+      done[k] = true
+      local h = heads[k] or { ovHead = true, kind = k }
+      heads[k] = h
+      h.n = counts[k]
+      out[#out + 1] = h
+    end
+    out[#out + 1] = list[i]
+  end
+  return out
+end
+
+function OV.BindHead(r, h)
+  SetRowMode(r, "head")
+  r.right:SetText(tostring(h.n or 0))
+  local inset = math.floor(math.max(48, TextWidth(r.right, 30) + 18))
+  if r.nameInset ~= inset then
+    r.nameInset = inset
+    r.name:ClearAllPoints()
+    r.name:SetPoint("TOPLEFT", 40, -2)
+    r.name:SetPoint("RIGHT", -inset, 0)
+  end
+  local p = h.kind == "pardoned"
+  SetRow(r, p and L.SECTION_PARDONED or L.SECTION_SETTLED, p and L.SECTION_PARDONED_SUB or L.SECTION_SETTLED_SUB, nil, "normal")
+  r.tri:Hide(); r.under:Hide()
+end
+
+-- rows of the current list (without head rows) and, for the hint, how many there are without filter and search
+function OV.Count()
+  local n = 0
+  for i = 1, #data do if not data[i].ovHead then n = n + 1 end end
+  OV.shown = n
+end
+function OV.HintOn()
+  if state.filter == "wanted" then return OV.Filtered() or state.query ~= "" end
+  if state.filter == "guild" and not MemberView() and not GF.HuntView() then return state.gnew or state.query ~= "" end
+  return false
+end
+-- the foot line: "12 of 48 · show all" while a filter or search narrows the list (it says why rows are missing, so it
+-- comes first), otherwise a short result ("Taken over: …") for a few seconds
+function OV.UpdateFoot()
+  local fh = LP.fhint
+  if not OV.HintOn() then
+    fh:Hide()
+    if OV.flash then
+      LP.status:SetText(OV.flash)
+      LP.status:SetTextColor(C(Look.INK))
+      LP.statusHit:Hide()
+    end
+    return
+  end
+  local room = PAGE_W - 46 - (LP.sync:IsShown() and ((LP.sync:GetWidth() or 84) + 20) or 14)
+  fh:SetWidth(room)
+  fh.text:SetWidth(room - 4)
+  Look.FitText(fh.text, Fmt(L.FILTER_HINT, { shown = OV.shown, total = OV.total }), GF.FIT_WORD)
+  LP.status:SetText("")
+  LP.statusHit:Hide()
+  fh:Show()
+end
+function OV.Flash(text)
+  local tok = {}
+  OV.flash, OV.flashTok = text, tok
+  C_Timer.After(OV.FLASH_SECONDS, function()
+    if OV.flashTok ~= tok then return end
+    OV.flash = nil
+    if F and F:IsShown() and LP then UX.UpdateStatus() end
+  end)
+end
+function OV.ClearAll()
+  if state.filter == "guild" then
+    state.gnew = false
+    Set("ui.guildNew", false)
+  else
+    state.frole, state.fclass = "all", nil
+    Set("ui.filterRole", "all")
+    Set("ui.filterClass", "")
+  end
+  UI.ClearSearch()
+  state.offset = 0
+  Refresh()
+end
+
+-- the filter word next to the sorting: its width; returns the width left for the search field
+function OV.LayoutFilter(sortW)
+  local fb = LP.filter
+  local on = OV.Filtered()
+  local label = (state.fclass and ClassName({ class = state.fclass }))
+    or (state.frole ~= "all" and L[OV.ROLE_LABEL[state.frole]]) or L.FILTER_WORD
+  fb.text:SetWidth(200)
+  fb.text:SetText(label)
+  local w = math.max(50, math.min(110, math.ceil(TextWidth(fb.text, 50) + 16)))
+  fb:SetWidth(w)
+  fb.text:SetWidth(w - 12)
+  Look.FitText(fb.text, label, GF.FIT_WORD)
+  if on then fb.text:SetTextColor(C(Look.RED_INK)) else fb.text:SetTextColor(C(Look.INK, TONE.sub)) end
+  fb.tip = { L.FILTER_TIP, label }
+  return math.max(60, PAGE_W - 14 - sortW - 10 - w - 8 - 46)
+end
+
+function OV.FilterMenu(btn)
+  local spec = {}
+  for _, r in ipairs(OV.ROLES) do
+    local on = state.frole == r and not (r == "all" and state.fclass)
+    spec[#spec + 1] = { (on and "• " or "") .. L[OV.ROLE_LABEL[r]], function()
+      state.frole = r
+      Set("ui.filterRole", r)
+      if r == "all" then state.fclass = nil; Set("ui.filterClass", "") end
+      state.offset = 0
+      Refresh()
+    end }
+  end
+  spec[#spec + 1] = { (state.fclass and "• " or "") .. L.FILTER_CLASS, function() OV.ClassMenu(btn) end }
+  OpenMenu(spec, btn)
+end
+-- the classes in the book (wanted and pardoned), by name; a click on the chosen one takes it back
+function OV.ClassMenu(btn)
+  local seen, list = {}, {}
+  for _, e in ipairs(Store().Ranked("all", "name") or {}) do
+    if e.status ~= "suspect" and type(e.class) == "string" and not seen[e.class] then
+      seen[e.class] = true
+      list[#list + 1] = { tok = e.class, name = tostring(ClassName(e) or e.class) }
+    end
+  end
+  table.sort(list, function(a, b) return OV.Fold(a.name) < OV.Fold(b.name) end)
+  local spec = { { L.FILTER_BACK, function() OV.FilterMenu(btn) end } }
+  for i = 1, math.min(#list, GF.MENU_MAX - 1) do
+    local c = list[i]
+    spec[#spec + 1] = { (state.fclass == c.tok and "• " or "") .. c.name, function()
+      state.fclass = (state.fclass ~= c.tok) and c.tok or nil
+      Set("ui.filterClass", state.fclass or "")
+      state.offset = 0
+      Refresh()
+    end }
+  end
+  OpenMenu(spec, btn)
+end
+
+-- the row's "take over" word in the place of the mark (SetRow measured the room with the same word)
+function OV.ShowTake(r, on)
+  if not on then r.take:Hide(); return end
+  r.mark:SetText("")
+  r.take.text:SetText(L.ROW_TAKE)
+  r.take:SetWidth(math.ceil(TextWidth(r.take.text, 50) + 8))
+  r.take:Show()
+end
+function OV.TakeRow(r)
+  local item = r and r.item
+  local g = item and GuildItem(item)
+  if g then OV.TakeOne(g, item.wrap and item.m and item.m.name or nil) end
+end
+-- source for the mark of a taken-over entry: the chosen one, or (with "All") the guild or friends' list it stands in
+function OV.Src()
+  local s = GF.Src()
+  return (s == "guild" or s == "friends") and s or nil
+end
+function OV.TakeOne(g, from)
+  local key = g and g.key
+  if type(key) ~= "string" or Store().Get(key) then return end
+  local k = GCall("Adopt", key, { from = from, src = OV.Src() })
+  local e = type(k) == "string" and Store().Get(k)
+  if not e then return end
+  local u = { keys = { k }, one = key, at = GetTime() }
+  OV.undo = u
+  state.gselected = key
+  if from then state.gmember = from end
+  OV.Flash(Fmt(L.TAKE_ONE_DONE, { name = Look.Name(e) }))
+  C_Timer.After(GF.UNDO_SECONDS, function() if OV.undo == u then OV.undo = nil; Refresh() end end)
+  Refresh()
+end
+-- takes the last take-over back once: entries it created that got nothing of their own since (no kill, no deed)
+-- are struck; an import of the own text gets the state from before (Store.UndoImport)
+function OV.Undo()
+  local u = OV.undo
+  if not u then return 0 end
+  if u.at and GetTime() - u.at < GF.UNDO_LOCK then return 0 end   -- the second click of a double click
+  OV.undo = nil
+  local S, n = Store(), 0
+  if u.import then
+    n = S.UndoImport and S.UndoImport() or 0
+  else
+    for _, k in ipairs(u.keys or {}) do
+      local e = S.Get(k)
+      if e and e.fromGuild and e.adoptAt and (tonumber(e.kills) or 0) == 0 and #e.deaths == 0 and S.Remove(k) then n = n + 1 end
+    end
+  end
+  OV.Flash(Fmt(L.TAKE_UNDONE, { count = n }))
+  Refresh()
+  return n
+end
+
+-- what "Take over all" covers: by guildmate the chosen guildmate's section (all of it, also when closed), by killer
+-- the rows shown (source, search, "only new"); returns the entries and the guildmate
+function OV.Scope()
+  local out = OV.scope or {}
+  OV.scope = out
+  for i = #out, 1, -1 do out[i] = nil end
+  if state.filter ~= "guild" or GF.HuntView() then return out end
+  if MemberView() then
+    local src = UX.MemberSource()
+    for i = 1, #src do
+      local m = src[i]
+      if type(m) == "table" and m.name == state.gmember and not m.me and type(m.rows) == "table" then
+        for k = 1, #m.rows do
+          local e = m.rows[k].entry or GCall("Get", m.rows[k].key)
+          if e then out[#out + 1] = e end
+        end
+        return out, m.name
+      end
+    end
+    return out
+  end
+  for i = 1, #data do if type(data[i]) == "table" and data[i].key then out[#out + 1] = data[i] end end
+  return out
+end
+function OV.ScopeNew()
+  local list = OV.Scope()
+  local S, n = Store(), 0
+  for i = 1, #list do if not S.Get(list[i].key) then n = n + 1 end end
+  return n
+end
+-- right click on a guildmate's head row: take over all of his section
+function OV.HeadMenu(row)
+  local m = row.item and row.item.m
+  if type(m) ~= "table" or m.me or type(m.rows) ~= "table" or #m.rows == 0 then return false end
+  OpenMenu({ { Fmt(L.ACT_TAKE_ALL_OF, { name = Look.First(m.name) }), function() OV.OpenTake(m.name) end } }, row)
+  return true
+end
+
+function OV.OpenTake(member)
+  if not F then return end
+  if not RP.settings then BuildSettings() end
+  if not RP.take then OV.BuildTake() end
+  HideMenu()
+  if member then state.gmember = member end
+  local list, m = OV.Scope()
+  local S = Store()
+  local st = { new = {}, have = 0, member = m, src = GF.Src() }
+  for i = 1, #list do
+    if S.Get(list[i].key) then st.have = st.have + 1 else st.new[#st.new + 1] = list[i] end
+  end
+  state.take = st
+  state.panel = "take"
+  P:Hide(); RP.empty:Hide()
+  RP.settings:Hide(); RP.io:Hide()
+  if RP.help then RP.help:Hide() end
+  if RP.release then RP.release:Hide() end
+  RP.take:Show()
+  RP.take.page:Top()
+  OV.FillTake()
+end
+
+function OV.FillTake()
+  local T, st = RP and RP.take, state.take
+  if not T or not st then return end
+  local who = st.member and Fmt(L.TAKE_FROM_MATE, { name = Look.First(st.member) })
+    or (st.src == "friends" and L.TAKE_FROM_FRIENDS) or (st.src == "guild" and L.TAKE_FROM_GUILD) or L.TAKE_FROM_ALL
+  Look.FitText(T.from, who, GF.FIT_NAME22)
+  T.count:SetText(Fmt(L.TAKE_COUNT, { new = #st.new, have = st.have }))
+  local names = {}
+  for i = 1, math.min(#st.new, OV.NAMES_MAX) do names[i] = Look.Name(st.new[i]) end
+  local text = table.concat(names, ", ")
+  if #st.new > OV.NAMES_MAX then text = text .. " " .. Fmt(L.TAKE_MORE, { count = #st.new - OV.NAMES_MAX }) end
+  T.label:SetShown(#st.new > 0)
+  T.names:SetText(text)
+  T.hint:SetText(L.TAKE_HINT)
+  T.hint2:SetText((st.src ~= "guild" and GF.HasFriends()) and L.TAKE_HINT_FRIENDS or "")
+  if st.stage == "done" then
+    T.msg:SetText(Fmt(L.TAKE_DONE, { count = st.done }))
+    T.go:SetLabel(L.ACT_UNDO)
+    T.go:SetShown(st.undo ~= nil and OV.undo == st.undo)
+    T.back:SetLabel(L.BTN_DONE)
+  elseif st.stage == "undone" then
+    T.msg:SetText(Fmt(L.TAKE_UNDONE, { count = st.undone or 0 }))
+    T.go:Hide()
+    T.back:SetLabel(L.BTN_DONE)
+  else
+    T.msg:SetText(#st.new == 0 and L.TAKE_NONE or "")
+    T.go:SetLabel(L.ACT_TAKE)
+    T.go:SetShown(#st.new > 0)
+    T.back:SetLabel(L.BTN_BACK)
+  end
+  OV.LayoutTake(T)
+end
+
+function OV.TakeGo()
+  local st = state.take
+  if not st then return end
+  if st.stage == "done" then
+    if OV.undo ~= st.undo then return end
+    local n = OV.Undo()
+    if OV.undo then return end            -- locked: the second click of a double click
+    st.stage, st.undone = "undone", n
+    OV.FillTake()
+    return
+  end
+  if st.stage then return end
+  local S, keys = Store(), {}
+  local src = (st.src == "guild" or st.src == "friends") and st.src or nil
+  for _, g in ipairs(st.new) do
+    -- the same name may stand in the book under another key (first name only): then it is there already
+    local had = S.Get(g.key) or (S.Find and S.Find(g.name, g.display ~= g.name and g.surname or nil))
+    if not had then
+      local k = GCall("Adopt", g.key, { from = st.member, src = src })
+      if type(k) == "string" and S.Get(k) then keys[#keys + 1] = k end
+    end
+  end
+  st.stage, st.done = "done", #keys
+  st.undo = #keys > 0 and { keys = keys, at = GetTime() } or nil
+  OV.undo = st.undo
+  if #keys > 0 then OV.Flash(Fmt(L.TAKE_DONE, { count = #keys })) end
+  Refresh()                             -- the rows say IN BOOK now; the sheet stays open
+  OV.FillTake()
+end
+
+-- Import with preview: 1st click shows what the text holds and whose book it is, 2nd click reads it, then "Undo" once
+function OV.IOReset()
+  OV.io = { stage = "edit" }
+  local IO = RP and RP.io
+  if not IO then return end
+  IO.go:SetLabel(L.IO_GO)
+  IO.go:SetShown(Store().Import ~= nil)
+  if IO.owner then IO.owner:Hide() end
+  IO.msg:SetText("")
+  Look.FitText(IO.help, L.IO_HELP_IMPORT, GF.FIT_IO_HELP)
+end
+local function IOFail(IO, msg)
+  IO.msg:SetText(type(msg) == "string" and msg or L.IO_FAILED)
+  IO.msg:SetTextColor(C(Look.RED_INK))
+end
+function OV.IOGo()
+  local IO, S = RP.io, Store()
+  local io = OV.io or { stage = "edit" }
+  OV.io = io
+  if io.stage == "edit" then
+    local text = IO.edit:GetText() or ""
+    if Look.Secret(text) then text = "" end
+    if type(S.ImportPreview) ~= "function" then
+      -- a store without the preview (contract of 1.3): read at once, as before
+      io.stage, io.text, io.mode = "preview", text, "mine"
+      return OV.IOGo()
+    end
+    local okc, ok, info = pcall(S.ImportPreview, text)
+    if not okc or not ok then return IOFail(IO, okc and info) end
+    io.stage, io.text, io.info = "preview", text, info
+    io.mode = (info.ownerMine or type(S.ImportFriend) ~= "function") and "mine" or "friend"
+    OV.FillIO()
+  elseif io.stage == "preview" then
+    if io.mode == "mine" then
+      local okc, ok, a, b = pcall(S.Import, io.text)
+      if not okc or not ok then return IOFail(IO, okc and a) end
+      IO.msg:SetText(Fmt(L.IO_DONE, { new = tostring(a or 0), merged = tostring(b or 0) }))
+      OV.undo = S.CanUndoImport and S.CanUndoImport() and { import = true, at = GetTime() } or nil
+    else
+      local okc, ok, keys, have = pcall(S.ImportFriend, io.text, io.info.owner)
+      if not okc or not ok then return IOFail(IO, okc and keys) end
+      IO.msg:SetText(Fmt(L.IO_TAKEN, { new = #keys, have = have or 0 }))
+      OV.undo = #keys > 0 and { keys = keys, at = GetTime() } or nil
+    end
+    IO.msg:SetTextColor(C(Look.INK))
+    io.stage, io.undo = "done", OV.undo
+    IO.owner:Hide()
+    IO.go:SetLabel(L.ACT_UNDO)
+    IO.go:SetShown(io.undo ~= nil)
+    Refresh()
+  elseif io.stage == "done" and io.undo and OV.undo == io.undo then
+    local n = OV.Undo()
+    if OV.undo then return end
+    IO.msg:SetText(Fmt(L.TAKE_UNDONE, { count = n }))
+    io.stage = "undone"
+    IO.go:Hide()
+  end
+end
+-- the preview: whose book (own: as a backup, merged; a friend's: only new names, taken over), the numbers, the button
+function OV.FillIO()
+  local IO, io = RP.io, OV.io
+  local info, row = io.info, IO.owner
+  local name = info.owner and Look.First(info.owner)
+  row.tabs[1].text:SetText(L.IO_MINE)
+  row.tabs[2].text:SetText(name and Fmt(L.IO_THEIRS, { name = name }) or L.IO_THEIRS_ANON)
+  local x0 = 4 + math.ceil(TextWidth(row.label, 60)) + 10
+  local room = row:GetWidth() - x0 - 12
+  local ws, total = {}, 0
+  for i, b in ipairs(row.tabs) do
+    b.text:SetWidth(240)
+    ws[i] = math.ceil(TextWidth(b.text, 60) + 6)
+    total = total + ws[i]
+  end
+  local k = total > room and room / total or 1
+  local x = x0
+  for i, b in ipairs(row.tabs) do
+    local w = math.floor(ws[i] * k)
+    b:SetWidth(w)
+    b.text:SetWidth(w - 4)
+    Look.FitText(b.text, b.text:GetText(), GF.FIT_WORD)
+    b:ClearAllPoints()
+    b:SetPoint("LEFT", x, 0)
+    x = x + w + 12
+    b:SetOn(b.mode == io.mode)
+  end
+  row:Show()
+  local mine = io.mode == "mine"
+  IO.msg:SetText(mine and Fmt(L.IO_PREVIEW, { total = info.total, new = info.new, have = info.have })
+    or Fmt(L.IO_PREVIEW_FRIEND, { new = info.wantedNew or 0, have = info.wantedHave or 0 }))
+  IO.msg:SetTextColor(C(Look.INK))
+  Look.FitText(IO.help, mine and L.IO_HINT_MINE or L.IO_HINT_FRIEND, GF.FIT_IO_HELP)
+  IO.go:SetLabel(L.IO_GO_NOW)
+  IO.go:Show()
+end
+
+-- the row line of an entry taken over and without own deeds: "taken over from Anna" instead of "entered by hand"
+function OV.Tally(e)
+  if OV.Adopted(e) and (tonumber(e.kills) or 0) == 0 and (tonumber(Look.Assists(e)) or 0) == 0 and e.status ~= "suspect" then
+    local who = type(e.adoptFrom) == "string" and Look.First(e.adoptFrom) or nil
+    return who and Fmt(L.TALLY_ADOPTED, { name = who }) or L.TALLY_ADOPTED_ANON
+  end
+  return Look.Tally(e)
 end
 
 function UX.BuildLeftPage()
@@ -5102,6 +5790,28 @@ function UX.BuildLeftPage()
   sort:SetScript("OnLeave", function(self) self.ul:Hide() end)
   sort:SetScript("OnClick", function(self) Look.Sound("click"); UX.SortMenu(self) end)
   LP.sort = sort
+  -- 1.4.0 overview: the filter, one word with a triangle left of the sorting (Wanted only); red while a filter is on
+  local fb = CreateFrame("Button", nil, LP)
+  fb:SetSize(60, 18)
+  fb:SetPoint("RIGHT", sort, "LEFT", -10, 0)
+  -- (fields tri/line, not arrow/ul: tests and scenes find the sorting by those)
+  fb.tri = Tri(fb, 9, -1.5708)
+  fb.tri:SetPoint("RIGHT", 0, 0)
+  fb.text = Look.Text(fb, "body", 11, Look.INK)
+  fb.text:SetPoint("RIGHT", fb.tri, "LEFT", -3, 0)
+  fb.text:SetJustifyH("RIGHT")
+  fb.line = fb:CreateTexture(nil, "ARTWORK")
+  fb.line:SetColorTexture(C(Look.INK, 0.6))
+  fb.line:SetHeight(1)
+  fb.line:SetPoint("TOPLEFT", fb.text, "BOTTOMLEFT", 0, -1)
+  fb.line:SetPoint("TOPRIGHT", fb.tri, "BOTTOMRIGHT", 0, 1)
+  fb.line:Hide()
+  fb:SetScript("OnEnter", function(self) self.line:Show(); if self.tip then Tip(self, self.tip, "ANCHOR_TOP") end end)
+  fb:SetScript("OnLeave", function(self) self.line:Hide(); GameTooltip:Hide() end)
+  fb:SetScript("OnClick", function(self) Look.Sound("click"); OV.FilterMenu(self) end)
+  fb:Hide()
+  fb.ovPart = true          -- tests: a part of 1.4.0 overview
+  LP.filter = fb
 
   -- all open/closed (guild by guildmate): double triangle left of the search field
   local all = CreateFrame("Button", nil, LP)
@@ -5229,6 +5939,19 @@ function UX.BuildLeftPage()
   hit:SetScript("OnLeave", GameTooltip_Hide)
   hit:Hide()
   LP.statusHit = hit
+  -- 1.4.0 overview: "12 of 48 · show all" in the foot line while a filter or a search narrows the list; a click clears it
+  local fh = CreateFrame("Button", nil, LP)
+  fh:SetPoint("BOTTOMLEFT", 44, 6)
+  fh:SetSize(200, 22)
+  fh.text = Look.Text(fh, "body", 11, Look.RED_INK)
+  fh.text:SetPoint("LEFT", 2, 0)
+  fh.text:SetJustifyH("LEFT")
+  fh:SetScript("OnEnter", function(self) self.text:SetTextColor(C(Look.RED)) end)
+  fh:SetScript("OnLeave", function(self) self.text:SetTextColor(C(Look.RED_INK)) end)
+  fh:SetScript("OnClick", function() Look.Sound("click"); OV.ClearAll() end)
+  fh:Hide()
+  fh.ovPart = true
+  LP.fhint = fh
   LP.sync = InkButton(LP, L.SYNC_BUTTON, 84, 20, SyncClick)
   LP.sync:SetPoint("BOTTOMRIGHT", -14, 8)
   LP.sync:Hide()
@@ -5465,6 +6188,14 @@ local function Build()
   for _, k in ipairs(RS.SORTS) do if k == rs then state.rsort = rs end end
   local gs = Look.Setting("ui.guildSource", "all")
   if gs == "all" or gs == "guild" or gs == "friends" then state.gsource = gs end
+  -- 1.4.0 overview: filter of Wanted, guild sorting and "only new" are remembered
+  local fr = Look.Setting("ui.filterRole", "all")
+  if OV.ROLE_LABEL[fr] then state.frole = fr end
+  local fc = Look.Setting("ui.filterClass", "")
+  if type(fc) == "string" and fc:match("^%u+$") then state.fclass = fc end
+  local gso = Look.Setting("ui.guildSort", "rank")
+  for _, k in ipairs(UX.GSORTS) do if k == gso then state.gsort = gso end end
+  state.gnew = Look.Setting("ui.guildNew", false) == true
 end
 
 function UI.ConfirmDelete(key)

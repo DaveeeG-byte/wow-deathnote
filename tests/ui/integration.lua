@@ -127,7 +127,7 @@ if ns.Guild and ns.Guild.Proto and ns.Guild.Proto.EncodeKill then
   check("Tooltip GILDENBUCH", tt._lines[1] and tt._lines[1]:find("GILDENBUCH:", 1, true) and tt._lines[1]:find("hat 1× Kollegen getötet", 1, true) ~= nil, tt._lines[1])
 
   local adopt
-  for _, f in ipairs(BM.frames) do if f.text and f.text._text == "Ins eigene Buch" and f.fn then adopt = f end end
+  for _, f in ipairs(BM.frames) do if f.text and f.text._text == "Übernehmen" and f.fn then adopt = f end end
   if adopt then adopt._scripts.OnClick(adopt, "LeftButton") end
   AM.Advance(0.1); BM.Advance(0.1)
   clean("Ins eigene Buch")

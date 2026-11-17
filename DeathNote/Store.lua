@@ -285,6 +285,11 @@ local function sanitizeEntry(key, e)
   if e.listedAt ~= nil and type(e.listedAt) ~= "number" then e.listedAt = nil end
   if e.fromGuild ~= nil and e.fromGuild ~= true then e.fromGuild = nil end
   if e.imported ~= nil and e.imported ~= true then e.imported = nil end
+  -- 1.4.0 overview: taken over from whom (a character name), from where ("guild" | "friends" | "text") and when
+  if e.adoptFrom ~= nil and (type(e.adoptFrom) ~= "string" or e.adoptFrom == "" or #e.adoptFrom > 64
+    or e.adoptFrom:find("[%c|]")) then e.adoptFrom = nil end
+  if e.adoptSrc ~= nil and e.adoptSrc ~= "guild" and e.adoptSrc ~= "friends" and e.adoptSrc ~= "text" then e.adoptSrc = nil end
+  if e.adoptAt ~= nil and type(e.adoptAt) ~= "number" then e.adoptAt = nil end
   -- 1.2.0: the note of an entry taken over from the guild book is a mark, not a sentence; the
   -- German sentence of 1.1.0 and the English one of the 1.2.0 test builds are recognised and replaced
   if e.fromGuildKills ~= nil and not (type(e.fromGuildKills) == "number" and e.fromGuildKills >= 0
@@ -892,6 +897,8 @@ end
 -- opts (additive): { fromGuild = true } marks an entry taken over from the guild list
 -- (it is never sent back to the guild). A new entry remembers the character that added it
 -- (`by`, "Name Surname") and when (`listedAt`). Fires ENEMY_UPDATED, then MANUAL_ADDED.
+-- 1.4.0 overview: { adopt = { from = "Name Surname", src = "guild" | "friends" | "text", kills = n } } takes an entry
+-- over from someone else's book: marked fromGuild (never shared, as before) with origin and time of the take-over.
 function Store.AddManual(name, realm, opts)
   if not enemies then return nil end
   local key, n, s, had = Util.KeyFor(name, realm)
@@ -914,6 +921,15 @@ function Store.AddManual(name, realm, opts)
   e.by = Util.PlayerFullName()
   e.listedAt = now()
   if type(opts) == "table" and opts.fromGuild then e.fromGuild = true end
+  local ad = type(opts) == "table" and type(opts.adopt) == "table" and opts.adopt or nil
+  if ad then
+    e.fromGuild = true
+    e.adoptAt = now()
+    if type(ad.from) == "string" and ad.from ~= "" and #ad.from <= 64 and not ad.from:find("[%c|]") then e.adoptFrom = ad.from end
+    if ad.src == "guild" or ad.src == "friends" or ad.src == "text" then e.adoptSrc = ad.src end
+    local k = tonumber(ad.kills)
+    if k and k >= 0 and k < 1e6 then e.fromGuildKills = math.floor(k) end
+  end
   if had then setSurname(e, s) end
   changed(key)
   ns:Fire("MANUAL_ADDED", key)
@@ -1376,10 +1392,9 @@ local function importKey(raw)
   return key
 end
 
--- Merges a text from Export(). Existing data is never overwritten (counters take the max,
--- missing fields are filled, deaths are added by time stamp).
--- Returns true, added, merged  |  false, message.
-function Store.Import(text)
+-- 1.4.0 overview: reads a text from Export() without changing anything.
+-- Returns true, parsedE, parsedD (fields of the E and D lines, keys made canonical)  |  false, message.
+function Store.ImportParse(text)
   if not enemies then return false, L.IMPORT_NO_DB end
   if type(text) ~= "string" then return false, L.IMPORT_NO_TEXT end
   text = text:gsub("\r\n", "\n"):gsub("\r", "\n")
@@ -1422,8 +1437,141 @@ function Store.Import(text)
       end
     end
   end
+  return true, parsedE, parsedD
+end
+
+-- 1.4.0 overview: what an import would do, nothing is changed. info = { total, new, have, owner, ownerMine }:
+-- entries in the text, of them not yet in the book, already in it; owner = the character named most often as the
+-- victim of the text's deeds (the one whose book it is, nil without deeds), ownerMine = that is one of the own
+-- characters (the logged-in one or one named as victim in the own book). Returns true, info | false, message.
+local function ownChars()
+  local out = {}
+  local me = Util.PlayerFullName and Util.PlayerFullName()
+  if type(me) == "string" then out[me:lower()] = true; out[(me:match("^(%S+)") or me):lower()] = true end
+  for _, e in pairs(enemies) do
+    for i = 1, #e.deaths do
+      local d = e.deaths[i]
+      if not d.imported and type(d.me) == "string" then out[d.me:lower()] = true end
+    end
+  end
+  return out
+end
+function Store.ImportPreview(text)
+  local ok, parsedE, parsedD = Store.ImportParse(text)
+  if not ok then return false, parsedE end
+  -- wantedNew/wantedHave: the same for the entries wanted in the text (what a friend's book gives, ImportFriend)
+  local info = { total = 0, new = 0, have = 0, wantedNew = 0, wantedHave = 0 }
+  local seen = {}
+  for _, f in ipairs(parsedE) do
+    if not seen[f[2]] then
+      seen[f[2]] = true
+      info.total = info.total + 1
+      local n, s = Util.SplitKey(f[2])
+      local has = enemies[f[2]] ~= nil
+      if has then info.have = info.have + 1 else info.new = info.new + 1 end
+      if f[3] == "wanted" or f[3] == "" then
+        if has or Store.Find(n, s) then info.wantedHave = info.wantedHave + 1 else info.wantedNew = info.wantedNew + 1 end
+      end
+    end
+  end
+  local count, best, bestN = {}, nil, 0
+  for _, f in ipairs(parsedD) do
+    local who = toStr(f[11], 64)
+    if who then
+      count[who] = (count[who] or 0) + 1
+      if count[who] > bestN or (count[who] == bestN and who < best) then best, bestN = who, count[who] end
+    end
+  end
+  info.owner = best
+  local own = ownChars()
+  info.ownerMine = best == nil or own[best:lower()] == true or own[(best:match("^(%S+)") or best):lower()] == true
+  return true, info
+end
+
+-- 1.4.0 overview: the last import can be taken back once: the entries it added are struck, the ones it merged get
+-- their state from before. Kept until the next import or /reload.
+local lastImport
+local function snapshot(e)
+  local c = {}
+  for k, v in pairs(e) do
+    if type(v) == "table" then
+      local t = {}
+      for k2, v2 in pairs(v) do t[k2] = v2 end
+      c[k] = t
+    else
+      c[k] = v
+    end
+  end
+  return c
+end
+function Store.CanUndoImport() return lastImport ~= nil end
+function Store.UndoImport()
+  local u = lastImport
+  lastImport = nil
+  if not u or not enemies then return 0 end
+  local n = 0
+  for i = 1, #u.added do
+    local e = enemies[u.added[i]]
+    if e and e.imported and Store.Remove(u.added[i]) then n = n + 1 end
+  end
+  for key, before in pairs(u.before) do
+    local e = enemies[key]
+    if e then
+      if e.guid and e.guid ~= before.guid and guidIndex[e.guid] == key then guidIndex[e.guid] = nil end
+      if e.surname and not before.surname then placeholders = placeholders + 1 end
+      for k in pairs(e) do e[k] = nil end
+      for k, v in pairs(before) do e[k] = v end
+      if e.guid then guidIndex[e.guid] = key end
+      n = n + 1
+      changed(key)
+    end
+  end
+  return n
+end
+
+-- 1.4.0 overview: a friend's book as text. Only who is wanted there and not yet in the own book is taken, as a manual
+-- entry taken over from `from` (Store.AddManual opts.adopt, src "text"): his kills stay his (a number in the note, never
+-- kills on me), his pardoned and suspects stay out, nothing of it is ever shared. Entries already in the book stay
+-- untouched. Returns true, keys of the new entries, number already in the book  |  false, message.
+function Store.ImportFriend(text, from)
+  local okp, parsedE = Store.ImportParse(text)
+  if not okp then return false, parsedE end
+  if type(from) ~= "string" or from == "" then from = nil end
+  local added, have, seen = {}, 0, {}
+  for _, f in ipairs(parsedE) do
+    local key = f[2]
+    if not seen[key] and (f[3] == "wanted" or f[3] == "") then
+      seen[key] = true
+      local n, s = Util.SplitKey(key)
+      if enemies[key] or Store.Find(n, s) then
+        have = have + 1
+      else
+        local k = Store.AddManual(n, s, { fromGuild = true, adopt = { from = from, src = "text", kills = toCount(f[5]) } })
+        local e = k and enemies[k]
+        if e then
+          local class = toStr(f[12], 16)
+          Store.Upsert({ name = n, surname = s, class = class and class:match("^%u+$") or nil, level = toNum(f[14], 0, 999) }, false)
+          added[#added + 1] = k
+        end
+      end
+    end
+  end
+  return true, added, have
+end
+
+-- Merges a text from Export(). Existing data is never overwritten (counters take the max,
+-- missing fields are filled, deaths are added by time stamp).
+-- Returns true, added, merged  |  false, message.
+function Store.Import(text)
+  local okp, parsedE, parsedD = Store.ImportParse(text)
+  if not okp then return false, parsedE end
   local added, merged = 0, 0
   local touched = {}
+  local undo = { added = {}, before = {} }
+  for _, f in ipairs(parsedE) do
+    local e = enemies[f[2]]
+    if e and not undo.before[f[2]] then undo.before[f[2]] = snapshot(e) end
+  end
   for _, f in ipairs(parsedE) do
     local key = f[2]
     local e = enemies[key]
@@ -1437,6 +1585,7 @@ function Store.Import(text)
       e.imported = true      -- foreign entry: never shared in the guild
       e.note = note or ""
       added = added + 1
+      undo.added[#undo.added + 1] = key
     else
       merged = merged + 1
       if e.note == "" and note then e.note = note end
@@ -1508,6 +1657,8 @@ function Store.Import(text)
     end
     changed(key)
   end
+  for key in pairs(undo.before) do if not touched[key] then undo.before[key] = nil end end
+  lastImport = (added > 0 or merged > 0) and undo or nil
   if added > 0 or merged > 0 then ns:Fire("BOOK_IMPORTED", added, merged) end
   return true, added, merged
 end

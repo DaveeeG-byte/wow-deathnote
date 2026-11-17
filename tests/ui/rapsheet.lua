@@ -65,7 +65,8 @@ do
   ns.UI.SetFilter("wanted"); K.tick()
   local rows = {}
   for _, f in ipairs(BM.frames) do
-    if f.item and f.under and f:IsVisible() then rows[#rows + 1] = f end
+    -- 1.4.0 overview: without the head row before the settled ones
+    if f.item and not f.item.ovHead and f.under and f:IsVisible() then rows[#rows + 1] = f end
   end
   table.sort(rows, function(a, b) return (a.index or 0) < (b.index or 0) end)
   check("list: open debt first", rows[1] and rows[1].item.key == grimm, rows[1] and rows[1].item.key)

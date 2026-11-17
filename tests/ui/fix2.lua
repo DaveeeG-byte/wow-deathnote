@@ -115,7 +115,8 @@ local e = ns.Store.Get(k)
 check("Notiz gespeichert als Merker, ohne Satz", e and e.note == "" and e.fromGuildKills == 1, e and e.note)
 ns.UI.ShowEnemy(k); settle()
 local noteBox = frameWith(function(f) return f._kind == "EditBox" and f.key == k end)
-check("Plakat zeigt den Satz in der aktiven Sprache", noteBox and noteBox._text == ns.F(L.NOTE_FROM_GUILD, { kills = 1 }),
+-- 1.4.0 overview: with the guildmate it came from
+check("Plakat zeigt den Satz in der aktiven Sprache", noteBox and noteBox._text == ns.F(L.NOTE_ADOPTED_GUILD, { name = "Kollege", kills = 1 }),
   noteBox and noteBox._text)
 if noteBox and noteBox._scripts.OnEditFocusLost then noteBox._scripts.OnEditFocusLost(noteBox) end
 check("Fokus weg ohne Aenderung: nichts gespeichert", ns.Store.Get(k).note == "")
