@@ -3164,13 +3164,33 @@ end
 function Guild.HuntHidden(key) return type(key) == "string" and hiddenOf(key) or false end
 
 -- Takes a guild enemy over into the personal list as a manual entry. Returns the key.
-function Guild.Adopt(key)
-  local e = store.enemies[key]
+-- 1.4.0 overview: also an entry of the friends' book (before, only the guild's list was looked at, and taking over a
+-- friend's killer did nothing); opts = { from = "Name Surname", src = "guild" | "friends" } is noted on the entry.
+function Guild.Adopt(key, opts)
+  if type(key) ~= "string" then return nil end
+  local e = store.enemies[key] or (friends and friends.store and friends.store.enemies[key]) or nil
   local Store = ns.Store
   if not e or not Store then return nil end
+  local o = type(opts) == "table" and opts or {}
+  local src = (o.src == "guild" or o.src == "friends") and o.src
+    or (store.enemies[key] and "guild" or "friends")
+  local from = type(o.from) == "string" and o.from or nil
+  if not from then
+    local mine = myFullName()
+    for i = 1, type(e.deeds) == "table" and #e.deeds or 0 do
+      local v = e.deeds[i].victim
+      if type(v) == "string" and v ~= mine then from = v; break end
+    end
+    if not from and type(e.listedBy) == "table" then
+      for char in pairs(e.listedBy) do
+        if type(char) == "string" and char ~= mine and (not from or char < from) then from = char end
+      end
+    end
+  end
   -- a display without surname means the second key part is only a realm fallback
   -- fromGuild: never sent back to the guild as "listed by hand" (no echo loop)
-  local k = Store.AddManual(e.name, e.display ~= e.name and e.surname or nil, { fromGuild = true })
+  local k = Store.AddManual(e.name, e.display ~= e.name and e.surname or nil,
+    { fromGuild = true, adopt = { from = from, src = src, kills = tonumber(e.kills) or 0 } })
   if not k then return nil end
   Store.Upsert({ name = e.name, surname = e.display ~= e.name and e.surname or nil, class = e.class,
     level = e.level }, false)

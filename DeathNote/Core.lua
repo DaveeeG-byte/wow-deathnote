@@ -424,6 +424,15 @@ local PREFIX = "|cffc41e3aDeathNote|r: "
 function Util.NoteOf(e)
   if type(e) ~= "table" then return "" end
   if type(e.note) == "string" and e.note ~= "" then return e.note end
+  -- 1.4.0 overview: from whom and from where (guild, friends' book, a friend's text); without both the sentence of 1.2.0
+  local L = ns.L
+  if e.fromGuild == true and type(e.adoptSrc) == "string" and L and ns.F then
+    local who = type(e.adoptFrom) == "string" and (e.adoptFrom:match("^(%S+)") or e.adoptFrom) or nil
+    local k = type(e.fromGuildKills) == "number" and e.fromGuildKills or 0
+    local key = (e.adoptSrc == "text" and (who and "NOTE_ADOPTED_TEXT" or "NOTE_ADOPTED_TEXT_ANON"))
+      or (who and (e.adoptSrc == "friends" and "NOTE_ADOPTED_FRIEND" or "NOTE_ADOPTED_GUILD"))
+    if key and L[key] then return ns.F(L[key], { name = who or "", kills = k }) end
+  end
   if e.fromGuild == true and type(e.fromGuildKills) == "number" and ns.L and ns.F then
     return ns.F(ns.L.NOTE_FROM_GUILD, { kills = e.fromGuildKills })
   end
