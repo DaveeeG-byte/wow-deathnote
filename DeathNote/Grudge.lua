@@ -45,7 +45,11 @@ local allowed = false        -- the place and the switches allow the notice righ
 local unitFrame              -- own frame for the unit events of the player and the casts
 local counts = { episodes = 0, rows = 0, a = 0, b = 0, c = 0, cast = 0, hits = 0, hitsCombat = 0, hitsHealth = 0,
   shown = 0, yes = 0, no = 0, expired = 0, meterOk = 0, meterSecret = 0, meterNone = 0, meterOnly = 0,
-  combatUnknown = 0, dropped = 0 }
+  combatUnknown = 0, dropped = 0,
+  -- open questions of the build, measured: UNIT_COMBAT on me arrived, my health readable or secret, "in combat" of an
+  -- enemy readable or secret, "has me targeted" plain yes or secret, the enemy's name secret
+  unitCombat = 0, healthOk = 0, healthSecret = 0, combatOk = 0, combatSecret = 0, targetMe = 0, targetSecret = 0,
+  nameSecret = 0 }
 local meterLast              -- why the last meter read gave nothing ("secret", "keine Daten", ...) or "ok"
 local events = {}            -- event -> registered (true/false), for the probe
 
@@ -112,7 +116,9 @@ local function unitInCombat(unit)
   local fn = _G.UnitAffectingCombat
   if type(fn) ~= "function" then return nil end
   local v = Call(fn, unit)
-  if IsSecret(v) or type(v) ~= "boolean" then return nil end
+  if IsSecret(v) then counts.combatSecret = counts.combatSecret + 1; return nil end
+  if type(v) ~= "boolean" then return nil end
+  counts.combatOk = counts.combatOk + 1
   return v
 end
 
@@ -142,10 +148,18 @@ local function enemyOf(unit, needTarget)
   local T = ns.Tracker
   local key, name, surname
   if T and T.Identity then key, name, surname = T.Identity(unit) end
-  if not key then return nil end
+  if not key then
+    if IsSecret(Call(_G.UnitName, unit)) then counts.nameSecret = counts.nameSecret + 1 end
+    return nil
+  end
   if not True(Call(_G.UnitCanAttack, "player", unit)) then return nil end
   if inMyGroup(unit) then return nil end
-  if needTarget and not True(Call(_G.UnitIsUnit, unit .. "target", "player")) then return nil end
+  if needTarget then
+    local me = Call(_G.UnitIsUnit, unit .. "target", "player")
+    if IsSecret(me) then counts.targetSecret = counts.targetSecret + 1; return nil end
+    if not True(me) then return nil end
+    counts.targetMe = counts.targetMe + 1
+  end
   local info = readInfo(unit, name, surname)
   -- the GUID beats the first name: somebody known by first name only is not the book's entry of another GUID
   if not surname and info.guid and ns.Store then
@@ -443,6 +457,7 @@ end
 local NO_HIT = { HEAL = true, ENERGIZE = true }
 local function onUnitCombat(unit, action)
   if unit ~= "player" then return end
+  counts.unitCombat = counts.unitCombat + 1
   -- a secret or unknown action counts as a hit (rather too many: the notice is the filter)
   local a = Str(action)
   if a and NO_HIT[a] then return end
@@ -451,8 +466,11 @@ end
 
 local function onUnitHealth(unit)
   if unit ~= "player" then return end
-  local hp = Num(Call(_G.UnitHealth, "player"))
+  local raw = Call(_G.UnitHealth, "player")
+  if IsSecret(raw) then counts.healthSecret = counts.healthSecret + 1; return end
+  local hp = Num(raw)
   if not hp then return end
+  counts.healthOk = counts.healthOk + 1
   local before = lastHP
   lastHP = hp
   if before and hp < before then Grudge.OnHit("health") end

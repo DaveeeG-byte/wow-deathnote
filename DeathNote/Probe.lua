@@ -279,10 +279,13 @@ function Probe.Run(verbose, opts)
     if out.grudge and type(out.grudge.counts) == "table" then
       local c = out.grudge.counts
       Util.Print(("grudge %s (%s) · episodes %d · proofs a %d (cast %d) b %d c %d · hits %d/%d · shown %d · yes %d no %d gone %d"
-        .. " · meter %s (ok %d, secret %d, meter only %d) · combat unknown %d")
+        .. " · meter %s (ok %d, secret %d, meter only %d) · combat unknown %d"
+        .. " · UNIT_COMBAT %d · health ok %d secret %d · in combat ok %d secret %d · targets me %d secret %d · name secret %d")
         :format(out.grudge.allowed and "on" or "off", tostring(out.grudge.where), c.episodes or 0, c.a or 0, c.cast or 0,
         c.b or 0, c.c or 0, c.hitsCombat or 0, c.hitsHealth or 0, c.shown or 0, c.yes or 0, c.no or 0, c.expired or 0,
-        tostring(out.grudge.meter), c.meterOk or 0, c.meterSecret or 0, c.meterOnly or 0, c.combatUnknown or 0))
+        tostring(out.grudge.meter), c.meterOk or 0, c.meterSecret or 0, c.meterOnly or 0, c.combatUnknown or 0,
+        c.unitCombat or 0, c.healthOk or 0, c.healthSecret or 0, c.combatOk or 0, c.combatSecret or 0, c.targetMe or 0,
+        c.targetSecret or 0, c.nameSecret or 0))
     end
     if out.target then
       Util.Print(Fmt(L.PROBE_TARGET, { name = tostring(out.target.name), guid = tostring(out.target.guid),
