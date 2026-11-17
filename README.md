@@ -35,7 +35,8 @@ post your own bounties. Since 1.3.0 it also keeps your own kills on players (the
 `/dn calloff <Name [Surname]>` call off your own hunt · `/dn bounty <Name [Surname]> <gold>` post your own bounty (no
 gold or 0: take it back; nothing at all: list your own) · `/dn lang <code|auto>` language of the book (after `/reload`)
 · `/dn theme <name>` cover of the book (name or id; nothing: show the current cover and the list; after `/reload`;
-also `/dn cover`, `/dn einband`) · `/dn start` the first-start window again (language and cover) · `/dn probe`
+also `/dn cover`, `/dn einband`) · `/dn start` the first-start window again (language and cover) · `/dn grudge` the
+notice after an attack on/off (`/dn grudge test`: a test notice with made-up names; German `/dn rachsucht`) · `/dn probe`
 troubleshooting (`/dn probe combatlog` also tries the combat log) · `/dn debug` detailed log of every death and of
 your own kills (`probe.kills`) · `/dn help`. Same thing: `/deathnote`, `/todesliste`, `/deathlist`. The English
 subcommands work in every language (`help quiet guild friends test sync add del hunt calloff bounty lang theme cover
@@ -59,6 +60,7 @@ Every deed of a killer has a role:
 - `kill` confirmed killing blow (Death Recap, meter, or set by hand),
 - `assist` took part: the Death Recap shows them as a damage source, but not the killing blow,
 - `suspect` only the heuristic (had you targeted shortly before) or not proven.
+- `attack` (1.4.0) attacked you without killing you, entered by you with the tick on the grudge notice (see Grudge).
 
 Anyone with at least one kill or assist is wanted; anyone with only suspicions waits under "Unsolved".
 Rank (1.3.0, rap sheet on, the default): the open debt first (their kills minus yours, biggest first), then open
@@ -70,6 +72,31 @@ removes suspicions.
 DB version 3 converted older books once on the first login (co-attackers from the recap became assists). DB version
 4 (1.3.0) adds the empty rap sheet `DeathNoteDB.ledger`; it books nothing from old data (the repute starts at zero),
 and 1.2.2 keeps working on a version 4 file.
+DB version 5 (1.4.0) adds attack deeds (`role = "attack"`, `source = "grudge"`) and the count `attacks` of an entry.
+An older client reads an attack deed as a suspicion of source "grudge" without counting it; 1.4.0 gives it its role
+back. Only books before version 4 get the old alarm sound on the upgrade (a 1.3.x book keeps the cover's suggestion).
+
+## Grudge (1.4.0)
+Attacked without dying: a small notice on the right edge (a little inward and up, clear of right action bars) lists
+the attackers, each with class colour, name, level, a tick and a cross. Tick = into the book (role `attack`, under
+Wanted, core line "attacked 2×", stamp GRUDGE when that is all he did, alarm like an entry by hand, revenge counts as
+usual; bounty and rank formulas are unchanged). Cross, or letting the notice run out = not entered; who was answered
+or let go is not asked again for 5 minutes. A thin bar counts down 20 s (10/20/30/60 in the House Rules) from the end
+of the fight or from the last new attacker; the mouse over the notice holds it, and rows do not move under the mouse.
+At most 8 rows ("… and n more"); with more attackers the open ones come up as the others are answered. Shift-drag
+moves it (kept), the House Rules put it back, a right click closes it. No sound.
+Who counts (no combat log on Forever): an enemy player (attackable, not in your group, not your duel partner, not the
+opponent of a duel to the death) who has you targeted and is in combat while you take a hit (`UNIT_COMBAT` or falling
+health, 2 s either way), or who casts a spell while he has you targeted; at your death the Death Recap (killing blow
+with a skull; whoever the death puts into the book anyway stands as "in the book" without buttons); after the fight
+the damage meter, only when it is readable and only for an episode that was already open. One episode per fight, a
+group shows all attackers. After your death the notice waits until the death's notice has gone. Places: the open world
+(on by default), battlegrounds and arenas only with their own switch (off by default: other rules there), never in
+dungeons, raids or scenarios. Attacks are never shared with guild or friends (not even when you share entries by
+hand); "Back up book" carries them (an extra field at the end of the `E` line, role `attack` in the `D` line; older
+versions read such a text without error). What the client really delivers is unmeasured: `/dn probe` writes
+`probe.grudge` (which proofs worked, episodes, notices, ticks, crosses, let go, whether the meter was readable; with
+`/dn debug` the last five episodes).
 
 ## Friends' book (1.2.0)
 The same silent messages as in the guild (protocol version 1), but as whispers to character friends on the friend

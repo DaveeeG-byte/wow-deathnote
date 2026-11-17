@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.4.0 (unreleased)
+
+### Added
+- Grudge: when players attack you and you survive, a small notice on the right edge lists them, each with a tick and a cross. A tick writes the attacker into the book (new deed role "attacked"): he stands under Wanted with "attacked 2×", the stamp GRUDGE when that is all he did, and the alarm warns about him like about an entry by hand; revenge on him counts as usual. A cross, or letting the notice run out, enters nothing, and nobody answered is asked again within 5 minutes. A group shows all attackers (8 rows, then "… and n more"); after your death the killing blow is marked with a skull and whoever your death puts into the book anyway stands as "in the book". The notice waits until the death's notice has gone, holds while the mouse is over it, can be moved with Shift-drag and closed with a right click; no sound.
+- Grudge rules per place: on in the open world, off in dungeons and raids, and battlegrounds and arenas have their own switch, off by default. House Rules, sheet Rap Sheet, section GRUDGE: on/off, battlegrounds and arenas, how long the notice stays (10, 20, 30 or 60 s), a test notice, reset position. `/dn grudge` (German `/dn rachsucht`) switches it, `/dn grudge test` shows a test notice with made-up names that enters nothing.
+- Attacks are never shared with guild or friends. "Back up book" carries them; older versions read such a text and such a book without error (an attack shows there as a suspicion and is an attack again after the upgrade).
+- `/dn probe` writes `probe.grudge`: which proofs worked, episodes, notices, ticks, crosses, let go, whether the damage meter was readable.
+- New texts in all 21 languages.
+
+### Changed
+- Book data version 5 (attack deeds). A book of 1.3.x keeps its alarm sound choice as it was.
+
+### Known open
+- Unmeasured in the game: whether the client delivers hits on you (`UNIT_COMBAT`, health), who is in combat, casts at you and a readable damage meter in the open world. Without combat log the attacker is whoever has you targeted while you are hit: a hostile player who targets you while a monster hits you can show up (the notice is the filter). Damage over time from someone who no longer has you targeted, and attackers you never see, only appear through the Death Recap or the damage meter.
+- Battlegrounds: enemy names are hidden in instances on Forever, so the notice may find nobody there even with its switch on.
+- The help ("?") has no grudge paragraph: it is at its word limit.
+
 ## 1.3.1 (2026-11-13)
 
 ### Fixed
