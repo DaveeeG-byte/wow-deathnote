@@ -828,5 +828,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Učitano iz tuđe knjige (ubijeno ondje: {kills}×).
 L.TALLY_ADOPTED = "preuzeto od {name}"
 L.TALLY_ADOPTED_ANON = "preuzeto"
 L.POSTER_FRIENDSBOOK = "KNJIGA PRIJATELJA"
+L.EMPTY_FILTERED_HEAD = "Nema pogotka."
+L.EMPTY_FILTERED_SUB = "Filtar skriva sve. Dolje: prikaži sve."
+L.EMPTY_ALLTAKEN_HEAD = "Sve je već u tvojoj knjizi."
+L.EMPTY_ALLTAKEN_SUB = "Nema više ništa za preuzeti. Dolje: prikaži sve."
 -- <<< OVERVIEW
 end)

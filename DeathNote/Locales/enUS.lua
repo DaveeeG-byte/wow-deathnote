@@ -836,5 +836,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Read in from someone else's book (killed there {kill
 L.TALLY_ADOPTED = "taken over from {name}"  -- row line of a taken-over entry
 L.TALLY_ADOPTED_ANON = "taken over"  -- the same without a name
 L.POSTER_FRIENDSBOOK = "FRIENDS' BOOK"  -- line under WANTED on a friends' book poster
+L.EMPTY_FILTERED_HEAD = "No match."  -- right page: the filter hides every entry
+L.EMPTY_FILTERED_SUB = "The filter hides everyone. At the bottom: show all."  -- under it
+L.EMPTY_ALLTAKEN_HEAD = "All of it is in your book."  -- right page: 'only what I lack' and nothing is left
+L.EMPTY_ALLTAKEN_SUB = "Nothing left to take over. At the bottom: show all."  -- under it
 -- <<< OVERVIEW
 end)

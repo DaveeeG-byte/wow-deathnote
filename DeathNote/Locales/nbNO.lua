@@ -821,5 +821,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Lest inn fra en annens bok (drept der {kills}×)."
 L.TALLY_ADOPTED = "hentet fra {name}"
 L.TALLY_ADOPTED_ANON = "hentet"
 L.POSTER_FRIENDSBOOK = "VENNEBOKEN"
+L.EMPTY_FILTERED_HEAD = "Ingen treff."
+L.EMPTY_FILTERED_SUB = "Filteret skjuler alle. Nederst: vis alle."
+L.EMPTY_ALLTAKEN_HEAD = "Alt står allerede i boken din."
+L.EMPTY_ALLTAKEN_SUB = "Ingenting mer å hente. Nederst: vis alle."
 -- <<< OVERVIEW
 end)

@@ -828,5 +828,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Wczytane z obcej księgi (ofiary tam: {kills}×)."
 L.TALLY_ADOPTED = "przejęte od {name}"
 L.TALLY_ADOPTED_ANON = "przejęte"
 L.POSTER_FRIENDSBOOK = "KSIĘGA ZNAJOMYCH"
+L.EMPTY_FILTERED_HEAD = "Brak wyników."
+L.EMPTY_FILTERED_SUB = "Filtr ukrywa wszystkich. Na dole: pokaż wszystko."
+L.EMPTY_ALLTAKEN_HEAD = "Wszystko jest już w twojej księdze."
+L.EMPTY_ALLTAKEN_SUB = "Nie ma już nic do przejęcia. Na dole: pokaż wszystko."
 -- <<< OVERVIEW
 end)

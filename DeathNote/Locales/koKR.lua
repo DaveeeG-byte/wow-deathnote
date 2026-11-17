@@ -829,5 +829,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "다른 사람의 수첩에서 읽음 (그곳에서 {
 L.TALLY_ADOPTED = "{name}에게서 가져옴"
 L.TALLY_ADOPTED_ANON = "가져옴"
 L.POSTER_FRIENDSBOOK = "친구 수첩"
+L.EMPTY_FILTERED_HEAD = "결과 없음."
+L.EMPTY_FILTERED_SUB = "필터가 모두 숨겼습니다. 아래: 모두 보기."
+L.EMPTY_ALLTAKEN_HEAD = "모두 이미 수첩에 있습니다."
+L.EMPTY_ALLTAKEN_SUB = "더 가져올 것이 없습니다. 아래: 모두 보기."
 -- <<< OVERVIEW
 end)

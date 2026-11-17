@@ -828,5 +828,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Načteno z cizí knihy (zabití tam: {kills}×)."
 L.TALLY_ADOPTED = "převzato od {name}"
 L.TALLY_ADOPTED_ANON = "převzato"
 L.POSTER_FRIENDSBOOK = "KNIHA PŘÁTEL"
+L.EMPTY_FILTERED_HEAD = "Nic nenalezeno."
+L.EMPTY_FILTERED_SUB = "Filtr skryl všechny. Dole: ukázat vše."
+L.EMPTY_ALLTAKEN_HEAD = "Všechno už je v tvé knize."
+L.EMPTY_ALLTAKEN_SUB = "Nic dalšího k převzetí. Dole: ukázat vše."
 -- <<< OVERVIEW
 end)

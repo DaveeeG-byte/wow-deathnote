@@ -830,5 +830,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Betöltve egy idegen könyvből (ott {kills}× ölt)
 L.TALLY_ADOPTED = "átvéve: {name}"
 L.TALLY_ADOPTED_ANON = "átvéve"
 L.POSTER_FRIENDSBOOK = "BARÁTI KÖNYV"
+L.EMPTY_FILTERED_HEAD = "Nincs találat."
+L.EMPTY_FILTERED_SUB = "A szűrő mindenkit elrejt. Lent: mind mutatása."
+L.EMPTY_ALLTAKEN_HEAD = "Már minden a könyvedben van."
+L.EMPTY_ALLTAKEN_SUB = "Nincs több átvennivaló. Lent: mind mutatása."
 -- <<< OVERVIEW
 end)

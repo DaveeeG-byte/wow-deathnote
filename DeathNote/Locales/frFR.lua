@@ -815,5 +815,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Lu dans un carnet étranger (y a tué {kills}×)."
 L.TALLY_ADOPTED = "repris de {name}"
 L.TALLY_ADOPTED_ANON = "repris"
 L.POSTER_FRIENDSBOOK = "CARNET DES AMIS"
+L.EMPTY_FILTERED_HEAD = "Aucun résultat."
+L.EMPTY_FILTERED_SUB = "Le filtre cache tout le monde. En bas : tout montrer."
+L.EMPTY_ALLTAKEN_HEAD = "Tout est déjà dans ton carnet."
+L.EMPTY_ALLTAKEN_SUB = "Plus rien à reprendre. En bas : tout montrer."
 -- <<< OVERVIEW
 end)

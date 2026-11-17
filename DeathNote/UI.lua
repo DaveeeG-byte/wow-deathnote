@@ -48,6 +48,8 @@ local EMPTY = {
   friendsoff = { "EMPTY_FRIENDSOFF", 2 }, friendsnil = { "EMPTY_FRIENDSNIL", 2 }, friendsquiet = { "EMPTY_FRIENDSQUIET", 2 },
   nobody = { "EMPTY_NOBODY", 3 }, sharednil = { "EMPTY_SHAREDNIL", 2 }, sharedquiet = { "EMPTY_SHAREDQUIET", 2 },
   hunt = { "EMPTY_HUNT", 3 }, search = { "EMPTY_SEARCH", 2 }, searchro = { "EMPTY_SEARCHRO", 2 },
+  -- 1.4.0 overview: the filter of Wanted hides everyone; "only what I lack" leaves nothing
+  filtered = { "EMPTY_FILTERED", 2 }, alltaken = { "EMPTY_ALLTAKEN", 2 },
 }
 local EXPORT_WARN = 100 * 1024     -- above this, "Back up the book" gets sluggish in the EditBox
 -- Guild book: only entries a guildmate (1.2.0: or friend) took part in; per source
@@ -2729,6 +2731,7 @@ local function SearchOnly() return state.filter ~= "wanted" end
 
 local function EmptyKind()
   if state.query ~= "" then return SearchOnly() and "searchro" or "search" end
+  if OV.HintOn() and OV.total > 0 then return state.filter == "guild" and "alltaken" or "filtered" end
   if state.filter == "guild" then
     local src = GF.Src()
     if src == "guild" then

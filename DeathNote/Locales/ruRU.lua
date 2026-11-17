@@ -827,5 +827,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Загружено из чужой книги (уб�
 L.TALLY_ADOPTED = "взято у {name}"
 L.TALLY_ADOPTED_ANON = "взято"
 L.POSTER_FRIENDSBOOK = "КНИГА ДРУЗЕЙ"
+L.EMPTY_FILTERED_HEAD = "Ничего не найдено."
+L.EMPTY_FILTERED_SUB = "Фильтр скрыл всех. Внизу: показать всех."
+L.EMPTY_ALLTAKEN_HEAD = "Всё уже есть в твоей книге."
+L.EMPTY_ALLTAKEN_SUB = "Больше нечего брать. Внизу: показать всех."
 -- <<< OVERVIEW
 end)

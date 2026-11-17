@@ -828,5 +828,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Завантажено з чужої книги (в�
 L.TALLY_ADOPTED = "перенесено від {name}"
 L.TALLY_ADOPTED_ANON = "перенесено"
 L.POSTER_FRIENDSBOOK = "КНИГА ДРУЗІВ"
+L.EMPTY_FILTERED_HEAD = "Нічого не знайдено."
+L.EMPTY_FILTERED_SUB = "Фільтр приховав усіх. Унизу: показати всіх."
+L.EMPTY_ALLTAKEN_HEAD = "Усе вже є у твоїй книзі."
+L.EMPTY_ALLTAKEN_SUB = "Більше нічого переносити. Унизу: показати всіх."
 -- <<< OVERVIEW
 end)

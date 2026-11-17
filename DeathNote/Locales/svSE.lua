@@ -821,5 +821,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Inläst från någon annans bok (dödat där {kills}
 L.TALLY_ADOPTED = "hämtad från {name}"
 L.TALLY_ADOPTED_ANON = "hämtad"
 L.POSTER_FRIENDSBOOK = "VÄNBOKEN"
+L.EMPTY_FILTERED_HEAD = "Ingen träff."
+L.EMPTY_FILTERED_SUB = "Filtret döljer alla. Längst ner: visa alla."
+L.EMPTY_ALLTAKEN_HEAD = "Allt står redan i din bok."
+L.EMPTY_ALLTAKEN_SUB = "Inget mer att hämta. Längst ner: visa alla."
 -- <<< OVERVIEW
 end)

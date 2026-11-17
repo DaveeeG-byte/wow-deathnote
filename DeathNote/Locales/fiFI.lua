@@ -822,5 +822,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Luettu vieraasta kirjasta (tappanut siell채 {kills}�
 L.TALLY_ADOPTED = "otettu: {name}"
 L.TALLY_ADOPTED_ANON = "otettu"
 L.POSTER_FRIENDSBOOK = "KAVERIKIRJA"
+L.EMPTY_FILTERED_HEAD = "Ei osumia."
+L.EMPTY_FILTERED_SUB = "Suodatin piilottaa kaikki. Alhaalla: n채yt채 kaikki."
+L.EMPTY_ALLTAKEN_HEAD = "Kaikki on jo kirjassasi."
+L.EMPTY_ALLTAKEN_SUB = "Ei en채채 otettavaa. Alhaalla: n채yt채 kaikki."
 -- <<< OVERVIEW
 end)

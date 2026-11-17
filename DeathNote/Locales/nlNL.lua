@@ -821,5 +821,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Ingelezen uit een vreemd boek (daar {kills}× gedood
 L.TALLY_ADOPTED = "overgenomen van {name}"
 L.TALLY_ADOPTED_ANON = "overgenomen"
 L.POSTER_FRIENDSBOOK = "VRIENDENBOEK"
+L.EMPTY_FILTERED_HEAD = "Geen treffer."
+L.EMPTY_FILTERED_SUB = "Het filter verbergt iedereen. Onderaan: alles tonen."
+L.EMPTY_ALLTAKEN_HEAD = "Alles staat al in je boek."
+L.EMPTY_ALLTAKEN_SUB = "Niets meer over te nemen. Onderaan: alles tonen."
 -- <<< OVERVIEW
 end)

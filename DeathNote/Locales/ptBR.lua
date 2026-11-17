@@ -816,5 +816,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Lido de um livro alheio (matou lá {kills}×)."
 L.TALLY_ADOPTED = "copiado de {name}"
 L.TALLY_ADOPTED_ANON = "copiado"
 L.POSTER_FRIENDSBOOK = "LIVRO DOS AMIGOS"
+L.EMPTY_FILTERED_HEAD = "Nenhum resultado."
+L.EMPTY_FILTERED_SUB = "O filtro esconde todos. Embaixo: mostrar tudo."
+L.EMPTY_ALLTAKEN_HEAD = "Tudo já está no seu livro."
+L.EMPTY_ALLTAKEN_SUB = "Não sobrou nada para copiar. Embaixo: mostrar tudo."
 -- <<< OVERVIEW
 end)

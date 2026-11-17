@@ -829,5 +829,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "從別人的記仇本讀入（在那裡殺了{kills}
 L.TALLY_ADOPTED = "轉自{name}"
 L.TALLY_ADOPTED_ANON = "轉入"
 L.POSTER_FRIENDSBOOK = "好友記仇本"
+L.EMPTY_FILTERED_HEAD = "沒有結果。"
+L.EMPTY_FILTERED_SUB = "篩選把所有人都隱藏了。下方：全部顯示。"
+L.EMPTY_ALLTAKEN_HEAD = "全都已在你的記仇本裡。"
+L.EMPTY_ALLTAKEN_SUB = "沒有可以轉入的了。下方：全部顯示。"
 -- <<< OVERVIEW
 end)

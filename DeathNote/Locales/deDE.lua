@@ -816,5 +816,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Aus einem fremden Buch eingelesen ({kills}× getöte
 L.TALLY_ADOPTED = "übernommen von {name}"
 L.TALLY_ADOPTED_ANON = "übernommen"
 L.POSTER_FRIENDSBOOK = "FREUNDESBUCH"
+L.EMPTY_FILTERED_HEAD = "Kein Treffer."
+L.EMPTY_FILTERED_SUB = "Der Filter blendet alle aus. Unten: alle zeigen."
+L.EMPTY_ALLTAKEN_HEAD = "Alles steht schon in deinem Buch."
+L.EMPTY_ALLTAKEN_SUB = "Nichts mehr zu übernehmen. Unten: alle zeigen."
 -- <<< OVERVIEW
 end)

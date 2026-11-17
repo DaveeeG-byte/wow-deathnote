@@ -831,5 +831,9 @@ L.NOTE_ADOPTED_TEXT_ANON = "Başka bir defterden okundu (orada {kills}× öldür
 L.TALLY_ADOPTED = "{name} listesinden alındı"
 L.TALLY_ADOPTED_ANON = "alındı"
 L.POSTER_FRIENDSBOOK = "ARKADAŞ DEFTERİ"
+L.EMPTY_FILTERED_HEAD = "Sonuç yok."
+L.EMPTY_FILTERED_SUB = "Filtre herkesi gizliyor. Altta: hepsini göster."
+L.EMPTY_ALLTAKEN_HEAD = "Hepsi zaten defterinde."
+L.EMPTY_ALLTAKEN_SUB = "Alınacak bir şey kalmadı. Altta: hepsini göster."
 -- <<< OVERVIEW
 end)
