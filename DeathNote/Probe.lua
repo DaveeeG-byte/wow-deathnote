@@ -64,6 +64,8 @@ Probe.APIS = {
   -- rap sheet (Ledger.lua, 1.3.0): group size, maximum level, the client's level colour, duel to the death
   "GetNumGroupMembers", "GetMaxLevelForPlayerExpansion", "GetMaxPlayerLevel", "MAX_PLAYER_LEVEL",
   "GetQuestDifficultyColor", "UnitIsDeadOrGhost", "GetDuelerInfo", "StartDuel",
+  -- 1.4.0 grudge (Grudge.lua): who is in combat, my health, group membership
+  "UnitAffectingCombat", "UnitHealth", "UnitInParty", "UnitInRaid", "IsShiftKeyDown",
 }
 
 -- COMBAT_LOG_EVENT_UNFILTERED is not in this list: the client closes it to addons and an
@@ -74,6 +76,9 @@ Probe.EVENTS = {
   "PLAYER_FOCUS_CHANGED", "UPDATE_MOUSEOVER_UNIT", "DUEL_REQUESTED", "DUEL_FINISHED",
   "CHAT_MSG_ADDON", "PLAYER_GUILD_UPDATE", "ADDON_RESTRICTION_STATE_CHANGED",
   "FRIENDLIST_UPDATE", "BN_CHAT_MSG_ADDON", "CVAR_UPDATE", "DUEL_TO_THE_DEATH_REQUESTED",
+  -- 1.4.0 grudge: hits on me and casts (Grudge.lua)
+  "UNIT_COMBAT", "UNIT_HEALTH", "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_SUCCEEDED",
+  "PLAYER_REGEN_ENABLED", "PLAYER_REGEN_DISABLED",
 }
 
 local scratch
@@ -221,11 +226,22 @@ function Probe.Run(verbose, opts)
       out.kills = k
     end
   end
+  -- 1.4.0 grudge: which proofs worked (a: targeted me while I was hit or cast at me, b: death recap, c: damage meter),
+  -- episodes, notices shown, entered / not entered / let go, whether the meter was readable; the cases of /dn debug stay
+  local keepGrudge = db and type(db.probe) == "table" and type(db.probe.grudge) == "table" and db.probe.grudge or nil
+  if ns.Grudge and ns.Grudge.ProbeSnapshot then
+    local okg, g = pcall(ns.Grudge.ProbeSnapshot)
+    if okg and type(g) == "table" then
+      g.cases = keepGrudge and type(keepGrudge.cases) == "table" and keepGrudge.cases or {}
+      out.grudge = g
+    end
+  end
   if db then
     local keep = db.probe and db.probe.deaths
     db.probe = out
     out.deaths = keep or {}
     if not out.kills and keepKills then out.kills = keepKills end
+    if not out.grudge and keepGrudge then out.grudge = keepGrudge end
   end
   if verbose then
     -- 1.2.0: framing words from the language table; the values (codes, numbers) stay technical
@@ -258,6 +274,15 @@ function Probe.Run(verbose, opts)
         :format(c.partyKill or 0, c.own or 0, c.pet or 0, c.dup or 0, c.booked or 0, c.groupBooked or 0, c.honor or 0,
         c.honorNamed or 0, c.honorAlone or 0, c.proofKC or 0, c.proofHonor or 0, c.proofLoose or 0,
         #(out.kills.cases or {}), tostring(out.kills.maxLevel)))
+    end
+    -- technical line (no translation): the grudge notice since login
+    if out.grudge and type(out.grudge.counts) == "table" then
+      local c = out.grudge.counts
+      Util.Print(("grudge %s (%s) · episodes %d · proofs a %d (cast %d) b %d c %d · hits %d/%d · shown %d · yes %d no %d gone %d"
+        .. " · meter %s (ok %d, secret %d, meter only %d) · combat unknown %d")
+        :format(out.grudge.allowed and "on" or "off", tostring(out.grudge.where), c.episodes or 0, c.a or 0, c.cast or 0,
+        c.b or 0, c.c or 0, c.hitsCombat or 0, c.hitsHealth or 0, c.shown or 0, c.yes or 0, c.no or 0, c.expired or 0,
+        tostring(out.grudge.meter), c.meterOk or 0, c.meterSecret or 0, c.meterOnly or 0, c.combatUnknown or 0))
     end
     if out.target then
       Util.Print(Fmt(L.PROBE_TARGET, { name = tostring(out.target.name), guid = tostring(out.target.guid),
