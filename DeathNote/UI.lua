@@ -5673,7 +5673,8 @@ function OV.FillTake()
   T.label:SetShown(#st.new > 0)
   T.names:SetText(text)
   T.hint:SetText(L.TAKE_HINT)
-  T.hint2:SetText((st.src ~= "guild" and GF.HasFriends()) and L.TAKE_HINT_FRIENDS or "")
+  -- 1.4.0 fixer: what friends send only matters while there is something to copy
+  T.hint2:SetText((st.src ~= "guild" and GF.HasFriends() and (#st.new > 0 or st.stage)) and L.TAKE_HINT_FRIENDS or "")
   if st.stage == "done" then
     T.msg:SetText(Fmt(L.TAKE_DONE, { count = st.done }))
     T.go:SetLabel(L.ACT_UNDO)
@@ -5689,6 +5690,9 @@ function OV.FillTake()
     T.go:SetShown(#st.new > 0)
     T.back:SetLabel(L.BTN_BACK)
   end
+  -- 1.4.0 fixer: alone, the button stands in the middle
+  T.back:ClearAllPoints()
+  T.back:SetPoint("BOTTOM", T.go:IsShown() and 57 or 0, 12)
   OV.LayoutTake(T)
 end
 
