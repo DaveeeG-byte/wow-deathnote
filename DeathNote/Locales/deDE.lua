@@ -856,4 +856,6 @@ L.EMPTY_HIDDEN_SUB = "Enter oder die Zeile unten zeigt sie."
 L.EMPTY_SEARCHHAS_HEAD = "Steht schon im Buch."
 L.EMPTY_SEARCHHAS_SUB = "Nur nicht auf dieser Seite. Enter öffnet ihn."
 L.FILTER_TWO = "{count} Filter"
+L.CHAT_NEWS_140 = "Neu in 1.4.0: nach einem Angriff fragt eine kleine Meldung, ob der Angreifer ins Buch soll (Rachsucht; an/aus: /dn rachsucht oder {rules}, Blatt {sheet}); „{takeall}“ steht unter {guild}, Filter und Suche unter {wanted}."
+L.GRUDGE_TIP_OFF = "Abstellen: /dn rachsucht oder {rules}, Blatt {sheet}."
 end)

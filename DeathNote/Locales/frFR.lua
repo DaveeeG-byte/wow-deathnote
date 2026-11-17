@@ -855,4 +855,6 @@ L.EMPTY_HIDDEN_SUB = "Entrée ou la ligne du bas les montre."
 L.EMPTY_SEARCHHAS_HEAD = "Déjà dans votre carnet."
 L.EMPTY_SEARCHHAS_SUB = "Simplement pas sur cette page. Entrée l’ouvre."
 L.FILTER_TWO = "{count} filtres"
+L.CHAT_NEWS_140 = "Nouveau en 1.4.0 : après une attaque, un petit avis demande si l’attaquant va dans ton carnet (Rancune ; activer/désactiver : /dn grudge ou {rules}, feuille {sheet}) ; « {takeall} » est sous {guild}, filtre et recherche sous {wanted}."
+L.GRUDGE_TIP_OFF = "Désactiver : /dn grudge ou {rules}, feuille {sheet}."
 end)

@@ -862,4 +862,6 @@ L.EMPTY_HIDDEN_SUB = "Enter tai alarivi näyttää ne."
 L.EMPTY_SEARCHHAS_HEAD = "On jo kirjassasi."
 L.EMPTY_SEARCHHAS_SUB = "Ei vain tällä sivulla. Enter avaa sen."
 L.FILTER_TWO = "Suodattimia: {count}"
+L.CHAT_NEWS_140 = "Uutta 1.4.0:ssa: hyökkäyksen jälkeen pieni ilmoitus kysyy, kirjataanko hyökkääjä kirjaan (Kauna; päälle/pois: /dn grudge tai {rules}, välilehti {sheet}); ”{takeall}”: välilehti {guild}; suodatin ja haku: välilehti {wanted}."
+L.GRUDGE_TIP_OFF = "Pois päältä: /dn grudge tai {rules}, välilehti {sheet}."
 end)

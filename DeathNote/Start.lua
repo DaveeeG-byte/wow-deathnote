@@ -138,6 +138,24 @@ local function Hint()
   Set(Start.SETTING, "done")
 end
 
+-- 1.4.0 fixer: one chat line about what is new in 1.4.0 for those who had the book before (settings.news140, the
+-- saved data are per account: once per account); a new installation never gets it. Never in combat.
+Start.NEWS = "news140"
+function Start.News()
+  local st = Settings()
+  if not st or st[Start.NEWS] ~= nil then return end
+  if InCombat() then
+    state.newsWait = true
+    Listen("PLAYER_REGEN_ENABLED", Start.OnCombatEnd)
+    return
+  end
+  state.newsWait = false
+  local L2, F2 = ns.L, ns.F
+  Print(F2(L2.CHAT_NEWS_140, { rules = L2.HEAD_RULES, sheet = L2.SHEET_RECORD, guild = L2.TAB_GUILD_FRIENDS,
+    wanted = L2.TAB_WANTED, takeall = L2.ACT_TAKE_ALL }))
+  Set(Start.NEWS, true)
+end
+
 local function Try()
   if not Start.Holding() or (frame and frame:IsShown()) then return end
   if InCombat() then
@@ -162,6 +180,10 @@ function Start.OnWorld()
     state.armed = nil
     After((ns.WELCOME_DELAY or 5) + 1, Hint)
   end
+  if state.news == "due" then
+    state.news = nil
+    After((ns.WELCOME_DELAY or 5) + 2, Start.News)
+  end
 end
 
 function Start.OnCombatStart()
@@ -174,6 +196,7 @@ end
 function Start.OnCombatEnd()
   if InCombat() then return end
   if state.hint then Hint() end
+  if state.newsWait then Start.News() end
   if state.combatHidden then
     state.combatHidden = false
     if frame then frame:Show() end
@@ -189,10 +212,13 @@ ns:On("READY", function()
   if Start.Fresh() then
     if st[Start.SETTING] ~= "new" then st[Start.SETTING] = "new" end
     state.armed = "dialog"
+    -- a new installation knows 1.4.0 from the start: no news line, now or later
+    if st[Start.NEWS] == nil then st[Start.NEWS] = true end
   elseif st[Start.SETTING] == nil then
     state.armed = "hint"
   end
-  if state.armed then Listen("PLAYER_ENTERING_WORLD", Start.OnWorld) end
+  if not Start.Fresh() and st[Start.NEWS] == nil then state.news = "due" end
+  if state.armed or state.news then Listen("PLAYER_ENTERING_WORLD", Start.OnWorld) end
 end)
 
 ---------------------------------------------------------------------------

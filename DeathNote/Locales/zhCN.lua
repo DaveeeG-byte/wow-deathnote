@@ -869,4 +869,6 @@ L.EMPTY_HIDDEN_SUB = "按回车或点下方一行即可显示。"
 L.EMPTY_SEARCHHAS_HEAD = "已经在你的本子里。"
 L.EMPTY_SEARCHHAS_SUB = "只是不在这一页。按回车打开。"
 L.FILTER_TWO = "{count}个筛选"
+L.CHAT_NEWS_140 = "1.4.0新内容：遭到攻击后，一个小提示会问是否把攻击者记入本子（记恨；开/关：/dn grudge 或{rules}的{sheet}页）；“{takeall}”在{guild}，筛选和搜索在{wanted}。"
+L.GRUDGE_TIP_OFF = "关闭：/dn grudge 或{rules}的{sheet}页。"
 end)

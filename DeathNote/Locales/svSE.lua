@@ -861,4 +861,6 @@ L.EMPTY_HIDDEN_SUB = "Enter eller raden längst ner visar dem."
 L.EMPTY_SEARCHHAS_HEAD = "Står redan i boken."
 L.EMPTY_SEARCHHAS_SUB = "Bara inte på den här sidan. Enter öppnar den."
 L.FILTER_TWO = "{count} filter"
+L.CHAT_NEWS_140 = "Nytt i 1.4.0: efter ett anfall frågar ett litet meddelande om anfallaren ska in i boken (Agg; på/av: /dn grudge eller {rules}, fliken {sheet}); \"{takeall}\" finns under {guild}, filter och sökning under {wanted}."
+L.GRUDGE_TIP_OFF = "Stäng av: /dn grudge eller {rules}, fliken {sheet}."
 end)

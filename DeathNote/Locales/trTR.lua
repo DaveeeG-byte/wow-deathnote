@@ -871,4 +871,6 @@ L.EMPTY_HIDDEN_SUB = "Enter ya da alttaki satır onları gösterir."
 L.EMPTY_SEARCHHAS_HEAD = "Zaten defterinde."
 L.EMPTY_SEARCHHAS_SUB = "Yalnızca bu sayfada değil. Enter açar."
 L.FILTER_TWO = "{count} filtre"
+L.CHAT_NEWS_140 = "1.4.0'da yeni: bir saldırıdan sonra küçük bir bildirim saldırganın deftere yazılıp yazılmayacağını sorar (Kin; aç/kapat: /dn grudge ya da {rules}, {sheet} sayfası); \"{takeall}\": {guild} sekmesi; filtre ve arama: {wanted} sekmesi."
+L.GRUDGE_TIP_OFF = "Kapatmak için: /dn grudge ya da {rules}, {sheet} sayfası."
 end)

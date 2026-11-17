@@ -868,4 +868,6 @@ L.EMPTY_HIDDEN_SUB = "Enter lub wiersz na dole je pokaże."
 L.EMPTY_SEARCHHAS_HEAD = "Już jest w twojej księdze."
 L.EMPTY_SEARCHHAS_SUB = "Tylko nie na tej stronie. Enter otwiera."
 L.FILTER_TWO = "Filtry: {count}"
+L.CHAT_NEWS_140 = "Nowość w 1.4.0: po ataku mały komunikat pyta, czy wpisać napastnika do księgi (Uraza; wł./wył.: /dn grudge albo {rules}, karta {sheet}); „{takeall}”: zakładka {guild}; filtr i wyszukiwanie: zakładka {wanted}."
+L.GRUDGE_TIP_OFF = "Wyłączanie: /dn grudge albo {rules}, karta {sheet}."
 end)

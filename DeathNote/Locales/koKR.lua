@@ -869,4 +869,6 @@ L.EMPTY_HIDDEN_SUB = "Enter나 아래 줄을 누르면 보입니다."
 L.EMPTY_SEARCHHAS_HEAD = "이미 장부에 있음."
 L.EMPTY_SEARCHHAS_SUB = "이 쪽에 없을 뿐입니다. Enter로 엽니다."
 L.FILTER_TWO = "필터 {count}개"
+L.CHAT_NEWS_140 = "1.4.0 새 기능: 공격받은 뒤 작은 알림이 공격자를 수첩에 적을지 묻는다 (앙심; 켜기/끄기: /dn grudge 또는 {rules}의 {sheet} 탭); \"{takeall}\"은 {guild} 탭, 필터와 검색은 {wanted} 탭에 있다."
+L.GRUDGE_TIP_OFF = "끄기: /dn grudge 또는 {rules}의 {sheet} 탭."
 end)

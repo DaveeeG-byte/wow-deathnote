@@ -855,4 +855,6 @@ L.EMPTY_HIDDEN_SUB = "Invio o la riga in basso li mostra."
 L.EMPTY_SEARCHHAS_HEAD = "È già nel tuo libro."
 L.EMPTY_SEARCHHAS_SUB = "Solo non in questa pagina. Invio lo apre."
 L.FILTER_TWO = "{count} filtri"
+L.CHAT_NEWS_140 = "Novità in 1.4.0: dopo un attacco un piccolo avviso chiede se l’aggressore va nel tuo libro (Rancore; on/off: /dn grudge o {rules}, foglio {sheet}); «{takeall}» è in {guild}, filtro e ricerca in {wanted}."
+L.GRUDGE_TIP_OFF = "Disattivare: /dn grudge o {rules}, foglio {sheet}."
 end)

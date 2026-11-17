@@ -861,4 +861,6 @@ L.EMPTY_HIDDEN_SUB = "Enter of de regel onderaan toont ze."
 L.EMPTY_SEARCHHAS_HEAD = "Staat al in je boek."
 L.EMPTY_SEARCHHAS_SUB = "Alleen niet op deze pagina. Enter opent het."
 L.FILTER_TWO = "{count} filters"
+L.CHAT_NEWS_140 = "Nieuw in 1.4.0: na een aanval vraagt een kleine melding of de aanvaller in je boek komt (Wrok; aan/uit: /dn grudge of {rules}, blad {sheet}); \"{takeall}\" staat onder {guild}, filter en zoeken onder {wanted}."
+L.GRUDGE_TIP_OFF = "Uitzetten: /dn grudge of {rules}, blad {sheet}."
 end)

@@ -870,4 +870,6 @@ L.EMPTY_HIDDEN_SUB = "Az Enter vagy a lenti sor megmutatja őket."
 L.EMPTY_SEARCHHAS_HEAD = "Már benne van a könyvedben."
 L.EMPTY_SEARCHHAS_SUB = "Csak nem ezen az oldalon. Az Enter megnyitja."
 L.FILTER_TWO = "{count} szűrő"
+L.CHAT_NEWS_140 = "Újdonság az 1.4.0-ban: támadás után egy kis üzenet megkérdezi, beírja-e a támadót a könyvbe (Harag; be/ki: /dn grudge vagy {rules}, {sheet} lap); „{takeall}”: {guild} fül; szűrő és keresés: {wanted} fül."
+L.GRUDGE_TIP_OFF = "Kikapcsolás: /dn grudge vagy {rules}, {sheet} lap."
 end)

@@ -867,4 +867,6 @@ L.EMPTY_HIDDEN_SUB = "Enter или строка внизу покажет их."
 L.EMPTY_SEARCHHAS_HEAD = "Уже есть в книге."
 L.EMPTY_SEARCHHAS_SUB = "Просто не на этой странице. Enter откроет."
 L.FILTER_TWO = "Фильтров: {count}"
+L.CHAT_NEWS_140 = "Новое в 1.4.0: после нападения маленькое окно спрашивает, записать ли нападавшего в книгу (Злопамятство; вкл./выкл.: /dn grudge или {rules}, лист «{sheet}»); «{takeall}»: вкладка «{guild}»; фильтр и поиск: вкладка «{wanted}»."
+L.GRUDGE_TIP_OFF = "Отключить: /dn grudge или {rules}, лист «{sheet}»."
 end)

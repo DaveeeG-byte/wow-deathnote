@@ -869,4 +869,6 @@ L.EMPTY_HIDDEN_SUB = "按Enter或點下方一行即可顯示。"
 L.EMPTY_SEARCHHAS_HEAD = "已經在你的本子裡。"
 L.EMPTY_SEARCHHAS_SUB = "只是不在這一頁。按Enter打開。"
 L.FILTER_TWO = "{count}個篩選"
+L.CHAT_NEWS_140 = "1.4.0新內容：遭到攻擊後，一個小提示會問是否把攻擊者記入本子（記恨；開/關：/dn grudge 或{rules}的{sheet}頁）；「{takeall}」在{guild}，篩選和搜尋在{wanted}。"
+L.GRUDGE_TIP_OFF = "關閉：/dn grudge 或{rules}的{sheet}頁。"
 end)

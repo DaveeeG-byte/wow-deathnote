@@ -868,4 +868,6 @@ L.EMPTY_HIDDEN_SUB = "Enter nebo řádek dole je ukáže."
 L.EMPTY_SEARCHHAS_HEAD = "Už je ve tvé knize."
 L.EMPTY_SEARCHHAS_SUB = "Jen ne na této stránce. Enter ho otevře."
 L.FILTER_TWO = "Filtry: {count}"
+L.CHAT_NEWS_140 = "Novinka v 1.4.0: po útoku se malá zpráva zeptá, zda útočníka zapsat do knihy (Zášť; zap./vyp.: /dn grudge nebo {rules}, list {sheet}); „{takeall}“: záložka {guild}; filtr a hledání: záložka {wanted}."
+L.GRUDGE_TIP_OFF = "Vypnutí: /dn grudge nebo {rules}, list {sheet}."
 end)

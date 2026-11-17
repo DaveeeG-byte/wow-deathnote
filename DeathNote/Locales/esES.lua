@@ -856,4 +856,6 @@ L.EMPTY_HIDDEN_SUB = "Intro o la línea de abajo los muestra."
 L.EMPTY_SEARCHHAS_HEAD = "Ya está en tu libro."
 L.EMPTY_SEARCHHAS_SUB = "Solo que no en esta página. Intro lo abre."
 L.FILTER_TWO = "{count} filtros"
+L.CHAT_NEWS_140 = "Novedad en 1.4.0: tras un ataque, un pequeño aviso pregunta si el atacante va a tu libro (Rencor; activar/desactivar: /dn grudge o {rules}, hoja {sheet}); «{takeall}» está en {guild}, filtro y búsqueda en {wanted}."
+L.GRUDGE_TIP_OFF = "Desactivar: /dn grudge o {rules}, hoja {sheet}."
 end)

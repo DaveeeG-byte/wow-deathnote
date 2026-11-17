@@ -876,4 +876,6 @@ L.EMPTY_HIDDEN_SUB = "Enter or the line at the bottom shows them."  -- under it
 L.EMPTY_SEARCHHAS_HEAD = "In your book already."  -- right page: the search finds a name of your book that is not on this page (pardoned while hidden, a suspect)
 L.EMPTY_SEARCHHAS_SUB = "Just not on this page. Enter opens it."  -- under it
 L.FILTER_TWO = "{count} filters"  -- filter word when role and class are both on and the two words do not fit (the tooltip names both)
+L.CHAT_NEWS_140 = "New in 1.4.0: after an attack a small notice asks whether the attacker goes into your book (Grudge; on/off: /dn grudge or {rules}, sheet {sheet}); \"{takeall}\" is under {guild}, a filter and a search under {wanted}."  -- chat, once per account after the update to 1.4.0 for players who had the book before; {rules} {sheet} {guild} {wanted} = the names of the House Rules, the rap sheet sheet and the tabs in the active cover, {takeall} = the button
+L.GRUDGE_TIP_OFF = "Turn it off: /dn grudge or {rules}, sheet {sheet}."  -- last line of the grudge notice's tooltip: how to turn it off; {rules} {sheet} = names of the House Rules and the sheet in the active cover
 end)

@@ -861,4 +861,6 @@ L.EMPTY_HIDDEN_SUB = "Enter eller linjen nederst viser dem."
 L.EMPTY_SEARCHHAS_HEAD = "Står allerede i bogen."
 L.EMPTY_SEARCHHAS_SUB = "Bare ikke på denne side. Enter åbner den."
 L.FILTER_TWO = "{count} filtre"
+L.CHAT_NEWS_140 = "Nyt i 1.4.0: efter et angreb spørger en lille besked, om angriberen skal i bogen (Nag; til/fra: /dn grudge eller {rules}, fanen {sheet}); \"{takeall}\" står under {guild}, filter og søgning under {wanted}."
+L.GRUDGE_TIP_OFF = "Slå fra: /dn grudge eller {rules}, fanen {sheet}."
 end)
