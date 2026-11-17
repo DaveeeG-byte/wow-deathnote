@@ -770,4 +770,30 @@ L.SHEET_RECORD = "Priusz"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Még senki."
 L.EMPTY_RECORD_SUB = "A másik oldal játékosa, akit megölsz, ide kerül."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "TÁMADÁS"
+L.GRUDGE_IN_BOOK = "a könyvben"
+L.GRUDGE_ADDED = "beírva"
+L.GRUDGE_SKIPPED = "kihagyva"
+L.GRUDGE_TIP = "Pipa: a könyvbe a Körözöttek közé (harag). X, vagy hagyd lejárni: nem kerül be. Az egér fölötte megállítja az időt; Shift+húzás mozgat, jobb klikk bezár."
+L.GRUDGE_TIP_YES = "A könyvbe: a Körözöttek közé, a riasztás figyelmeztet."
+L.GRUDGE_TIP_NO = "Ne kerüljön be."
+L.GRUDGE_TIP_KB = "Halálos csapás"
+L.GRUDGE_TIP_SEEN = "Célpontként tartott, miközben eltaláltak"
+L.GRUDGE_TIP_RECAP = "A halálod összegzésében"
+L.GRUDGE_TIP_METER = "A sebzésmérőben a harc után"
+L.ROLE_ATTACK = "támadás"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Megtámadott, te írtad be (harag)."
+L.TALLY_ATTACKED = "{times} támadott"
+L.STAMP_GRUDGE = "HARAG"  -- [max 16]
+L.SET_SEC_GRUDGE = "HARAG"  -- [max 24]
+L.OPT_GRUDGE = "Kérdezzen támadás után (harag)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Csatatereken és arénákban is"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Üzenet ideje"  -- [max 34]
+L.SET_GRUDGE_TEST = "Próbaüzenet"  -- [max 17]
+L.SET_GRUDGE_RESET = "Hely visszaállítása"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Harag be: támadás után egy kis üzenet megkérdezi, beírja-e a támadót a könyvbe."
+L.CHAT_GRUDGE_OFF = "Harag ki: támadás után nincs üzenet."
+L.CHAT_GRUDGE_TEST = "Próbaüzenet kitalált nevekkel: a pipa és az X nem ír be semmit."
+L.HELP_GRUDGE = "/dn grudge  üzenet támadás után be/ki (test: próbaüzenet)"
 end)

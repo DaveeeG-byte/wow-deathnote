@@ -771,4 +771,30 @@ L.SHEET_RECORD = "Sabıka"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Henüz kimse yok."
 L.EMPTY_RECORD_SUB = "Öldürdüğün karşı taraf oyuncusu buraya yazılır."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "SALDIRI"
+L.GRUDGE_IN_BOOK = "defterde"
+L.GRUDGE_ADDED = "yazıldı"
+L.GRUDGE_SKIPPED = "atlandı"
+L.GRUDGE_TIP = "Onay: deftere, Arananlar arasına (kin). Çarpı ya da sürenin dolması: yazılmaz. Fare üzerindeyken süre durur; Shift+sürükle taşır, sağ tık kapatır."
+L.GRUDGE_TIP_YES = "Deftere: Arananlar arasına, alarm seni uyarır."
+L.GRUDGE_TIP_NO = "Yazma."
+L.GRUDGE_TIP_KB = "Son darbe"
+L.GRUDGE_TIP_SEEN = "Sen vurulurken seni hedef almıştı"
+L.GRUDGE_TIP_RECAP = "Ölüm özetinde"
+L.GRUDGE_TIP_METER = "Savaştan sonra hasar ölçerde"
+L.ROLE_ATTACK = "saldırı"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Sana saldırdı, sen yazdın (kin)."
+L.TALLY_ATTACKED = "{times} saldırdı"
+L.STAMP_GRUDGE = "KİN"  -- [max 16]
+L.SET_SEC_GRUDGE = "KİN"  -- [max 24]
+L.OPT_GRUDGE = "Saldırıdan sonra sor (kin)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Savaş alanlarında ve arenalarda da"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Bildirim süresi"  -- [max 34]
+L.SET_GRUDGE_TEST = "Deneme bildirimi"  -- [max 17]
+L.SET_GRUDGE_RESET = "Konumu sıfırla"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Kin açık: bir saldırıdan sonra küçük bir bildirim saldırganın deftere yazılıp yazılmayacağını sorar."
+L.CHAT_GRUDGE_OFF = "Kin kapalı: saldırılardan sonra bildirim yok."
+L.CHAT_GRUDGE_TEST = "Uydurma isimlerle deneme bildirimi: onay ve çarpı hiçbir şey yazmaz."
+L.HELP_GRUDGE = "/dn grudge  saldırı sonrası bildirim aç/kapat (test: deneme bildirimi)"
 end)

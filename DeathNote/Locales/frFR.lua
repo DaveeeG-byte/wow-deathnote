@@ -755,4 +755,30 @@ L.SHEET_RECORD = "Casier"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Personne pour l'instant."
 L.EMPTY_RECORD_SUB = "Le joueur du camp adverse que tu tues atterrit ici."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "ATTAQUÉ"
+L.GRUDGE_IN_BOOK = "au carnet"
+L.GRUDGE_ADDED = "inscrit"
+L.GRUDGE_SKIPPED = "ignoré"
+L.GRUDGE_TIP = "Coche : au carnet parmi les Recherchés (rancune). Croix, ou laisser expirer : rien n'est inscrit. La souris dessus arrête le temps ; Maj+glisser déplace, clic droit ferme."
+L.GRUDGE_TIP_YES = "Au carnet : parmi les Recherchés, l'alerte te prévient."
+L.GRUDGE_TIP_NO = "Ne pas inscrire."
+L.GRUDGE_TIP_KB = "Coup fatal"
+L.GRUDGE_TIP_SEEN = "T'avait en cible pendant que tu étais touché"
+L.GRUDGE_TIP_RECAP = "Dans ton récapitulatif de mort"
+L.GRUDGE_TIP_METER = "Dans le compteur de dégâts après le combat"
+L.ROLE_ATTACK = "attaque"  -- [max 14]
+L.TIP_ROLE_ATTACK = "T'a attaqué, inscrit par toi (rancune)."
+L.TALLY_ATTACKED = "a attaqué {times}"
+L.STAMP_GRUDGE = "RANCUNE"  -- [max 16]
+L.SET_SEC_GRUDGE = "RANCUNE"  -- [max 24]
+L.OPT_GRUDGE = "Demander après une attaque (rancune)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Aussi en champs de bataille et arènes"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Durée de l'avis"  -- [max 34]
+L.SET_GRUDGE_TEST = "Avis de test"  -- [max 17]
+L.SET_GRUDGE_RESET = "Remettre en place"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Rancune activée : après une attaque, un petit avis demande si l'agresseur va au carnet."
+L.CHAT_GRUDGE_OFF = "Rancune désactivée : pas d'avis après une attaque."
+L.CHAT_GRUDGE_TEST = "Avis de test avec des noms inventés : coche et croix n'inscrivent rien."
+L.HELP_GRUDGE = "/dn grudge  avis après une attaque activé/désactivé (test : avis de test)"
 end)

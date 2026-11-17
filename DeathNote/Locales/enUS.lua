@@ -776,4 +776,30 @@ L.SHEET_RECORD = "Rap Sheet"  -- [max 14] fourth sheet of the House Rules: the r
 L.EMPTY_RECORD_HEAD = "Nobody yet."  -- 1.3.1: rap sheet tab, no victim yet: big line on the left page
 L.EMPTY_RECORD_SUB = "Your kill on a player of the other faction ends up here."  -- 1.3.1: under it; what puts a name here
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "ATTACKED"  -- head of the grudge notice on the right edge (after an attack; capitals, letter-spaced, 194 px, 10/9 pt)
+L.GRUDGE_IN_BOOK = "in the book"  -- grudge notice, right end of a row (68 px, 10/9 pt): your death put this attacker into the book already
+L.GRUDGE_ADDED = "entered"  -- grudge notice, right end of a row (68 px): ticked, now in the book
+L.GRUDGE_SKIPPED = "skipped"  -- grudge notice, right end of a row (68 px): crossed out or let go, not entered
+L.GRUDGE_TIP = "Tick: into the book under Wanted (grudge). Cross, or let it run out: not entered. The mouse over it holds the time; Shift-drag moves it, right-click closes it."  -- tooltip over the grudge notice: what tick and cross do, how to move and close it
+L.GRUDGE_TIP_YES = "Into the book: under Wanted, the alarm warns you about them."  -- tooltip of the tick button
+L.GRUDGE_TIP_NO = "Do not enter."  -- tooltip of the cross button
+L.GRUDGE_TIP_KB = "Killing blow"  -- row tooltip: this one landed the killing blow on you
+L.GRUDGE_TIP_SEEN = "Had you targeted while you were hit"  -- row tooltip: how he was found (had you as target while you took hits)
+L.GRUDGE_TIP_RECAP = "In your death recap"  -- row tooltip: how he was found (the game's death recap names him)
+L.GRUDGE_TIP_METER = "In the damage meter after the fight"  -- row tooltip: how he was found (the game's damage meter names him)
+L.ROLE_ATTACK = "attacked"  -- [max 14] right of a deed line on the poster: attacked you without killing you, entered by you
+L.TIP_ROLE_ATTACK = "Attacked you, entered by you (grudge)."  -- deed tooltip of an attack
+L.TALLY_ATTACKED = "attacked {times}"  -- core line of an entry: how often he attacked you (entered by you); {times} = '3×'
+L.STAMP_GRUDGE = "GRUDGE"  -- [max 16] stamp on the poster of an entry with attacks only (grudge); two lines possible
+L.SET_SEC_GRUDGE = "GRUDGE"  -- [max 24] section label on the House Rules, sheet Alarm: the grudge notice
+L.OPT_GRUDGE = "Ask after an attack (grudge)"  -- [max 44] check box: the small notice after an attack (open world)
+L.OPT_GRUDGE_BG = "Also in battlegrounds and arenas"  -- [max 44] check box: the notice in battlegrounds and arenas too (off by default)
+L.SET_GRUDGE_SECONDS = "Notice stays for"  -- [max 34] stepper label (value: '20 s'): how long the notice stays after the fight
+L.SET_GRUDGE_TEST = "Test notice"  -- [max 17] button: shows a test notice with made-up names
+L.SET_GRUDGE_RESET = "Reset position"  -- [max 24] button (132 to 180 px): the notice goes back to its default place
+L.CHAT_GRUDGE_ON = "Grudge on: after an attack a small notice asks whether the attacker goes into the book."  -- chat line after /dn grudge
+L.CHAT_GRUDGE_OFF = "Grudge off: no notice after attacks."  -- chat line after /dn grudge
+L.CHAT_GRUDGE_TEST = "Test notice with made-up names: tick and cross enter nothing."  -- chat line after /dn grudge test
+L.HELP_GRUDGE = "/dn grudge  notice after attacks on/off (/dn grudge test: test notice)"  -- line of /dn help
 end)

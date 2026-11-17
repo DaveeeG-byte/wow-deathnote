@@ -768,4 +768,30 @@ L.SHEET_RECORD = "Rejstřík"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Zatím nikdo."
 L.EMPTY_RECORD_SUB = "Hráč druhé strany, kterého zabiješ, skončí tady."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "ÚTOK"
+L.GRUDGE_IN_BOOK = "v knize"
+L.GRUDGE_ADDED = "zapsán"
+L.GRUDGE_SKIPPED = "vynechán"
+L.GRUDGE_TIP = "Fajfka: do knihy mezi Hledané (zášť). Křížek nebo vypršení času: nezapsat. Myš nad oknem zastaví čas; Shift+tažení přesune, pravé tlačítko zavře."
+L.GRUDGE_TIP_YES = "Do knihy: mezi Hledané, poplach na něj upozorní."
+L.GRUDGE_TIP_NO = "Nezapisovat."
+L.GRUDGE_TIP_KB = "Smrtící úder"
+L.GRUDGE_TIP_SEEN = "Měl tě v cíli, zatímco tě zasahovali"
+L.GRUDGE_TIP_RECAP = "V přehledu tvé smrti"
+L.GRUDGE_TIP_METER = "V měřiči poškození po boji"
+L.ROLE_ATTACK = "útok"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Napadl tě, zapsal jsi ho ty (zášť)."
+L.TALLY_ATTACKED = "útoky: {times}"
+L.STAMP_GRUDGE = "ZÁŠŤ"  -- [max 16]
+L.SET_SEC_GRUDGE = "ZÁŠŤ"  -- [max 24]
+L.OPT_GRUDGE = "Zeptat se po útoku (zášť)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Také na bojištích a v arénách"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Doba zobrazení"  -- [max 34]
+L.SET_GRUDGE_TEST = "Zkušební zpráva"  -- [max 17]
+L.SET_GRUDGE_RESET = "Obnovit pozici"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Zášť zapnuta: po útoku se malá zpráva zeptá, zda útočníka zapsat do knihy."
+L.CHAT_GRUDGE_OFF = "Zášť vypnuta: po útocích žádná zpráva."
+L.CHAT_GRUDGE_TEST = "Zkušební zpráva s vymyšlenými jmény: fajfka ani křížek nic nezapíšou."
+L.HELP_GRUDGE = "/dn grudge  zpráva po útocích zap./vyp. (test: zkušební zpráva)"
 end)

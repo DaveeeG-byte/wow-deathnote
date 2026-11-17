@@ -755,4 +755,30 @@ L.SHEET_RECORD = "Fedina"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Ancora nessuno."
 L.EMPTY_RECORD_SUB = "Il giocatore della fazione avversaria che uccidi finisce qui."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "ATTACCATO"
+L.GRUDGE_IN_BOOK = "nel libro"
+L.GRUDGE_ADDED = "annotato"
+L.GRUDGE_SKIPPED = "scartato"
+L.GRUDGE_TIP = "Spunta: nel libro tra i Ricercati (rancore). Croce, o lascialo scadere: non viene annotato. Il mouse sopra ferma il tempo; Maiusc+trascina lo sposta, clic destro lo chiude."
+L.GRUDGE_TIP_YES = "Nel libro: tra i Ricercati, l'allarme ti avviserà."
+L.GRUDGE_TIP_NO = "Non annotare."
+L.GRUDGE_TIP_KB = "Colpo di grazia"
+L.GRUDGE_TIP_SEEN = "Ti aveva nel bersaglio mentre venivi colpito"
+L.GRUDGE_TIP_RECAP = "Nel tuo riepilogo della morte"
+L.GRUDGE_TIP_METER = "Nel misuratore di danni dopo il combattimento"
+L.ROLE_ATTACK = "attacco"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Ti ha attaccato, annotato da te (rancore)."
+L.TALLY_ATTACKED = "ha attaccato {times}"
+L.STAMP_GRUDGE = "RANCORE"  -- [max 16]
+L.SET_SEC_GRUDGE = "RANCORE"  -- [max 24]
+L.OPT_GRUDGE = "Chiedere dopo un attacco (rancore)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Anche nei campi di battaglia e nelle arene"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Durata dell'avviso"  -- [max 34]
+L.SET_GRUDGE_TEST = "Avviso di prova"  -- [max 17]
+L.SET_GRUDGE_RESET = "Ripristina posizione"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Rancore attivo: dopo un attacco un piccolo avviso chiede se l'aggressore va nel libro."
+L.CHAT_GRUDGE_OFF = "Rancore disattivato: nessun avviso dopo gli attacchi."
+L.CHAT_GRUDGE_TEST = "Avviso di prova con nomi inventati: spunta e croce non annotano nulla."
+L.HELP_GRUDGE = "/dn grudge  avviso dopo gli attacchi on/off (test: avviso di prova)"
 end)

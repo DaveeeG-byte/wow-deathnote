@@ -769,4 +769,30 @@ L.SHEET_RECORD = "전과 기록"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "아직 아무도 없다."
 L.EMPTY_RECORD_SUB = "네가 죽인 상대 진영 플레이어는 여기에 적힌다."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "공격받음"
+L.GRUDGE_IN_BOOK = "수첩에 있음"
+L.GRUDGE_ADDED = "기록함"
+L.GRUDGE_SKIPPED = "건너뜀"
+L.GRUDGE_TIP = "체크: 수첩의 수배 목록에 기록 (앙심). X 또는 시간 만료: 기록 안 함. 마우스를 올리면 시간이 멈춤. Shift+끌기로 이동, 오른쪽 클릭으로 닫기."
+L.GRUDGE_TIP_YES = "수첩에 기록: 수배 목록에 오르고 경보가 알려 준다."
+L.GRUDGE_TIP_NO = "기록하지 않음."
+L.GRUDGE_TIP_KB = "결정타"
+L.GRUDGE_TIP_SEEN = "네가 맞는 동안 너를 대상으로 잡고 있었음"
+L.GRUDGE_TIP_RECAP = "사망 요약에 있음"
+L.GRUDGE_TIP_METER = "전투 후 피해 측정기에 있음"
+L.ROLE_ATTACK = "공격"  -- [max 14]
+L.TIP_ROLE_ATTACK = "너를 공격함, 네가 기록함 (앙심)."
+L.TALLY_ATTACKED = "{times} 공격"
+L.STAMP_GRUDGE = "앙심"  -- [max 16]
+L.SET_SEC_GRUDGE = "앙심"  -- [max 24]
+L.OPT_GRUDGE = "공격받은 뒤 묻기 (앙심)"  -- [max 44]
+L.OPT_GRUDGE_BG = "전장과 투기장에서도"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "알림 표시 시간"  -- [max 34]
+L.SET_GRUDGE_TEST = "알림 테스트"  -- [max 17]
+L.SET_GRUDGE_RESET = "위치 초기화"  -- [max 24]
+L.CHAT_GRUDGE_ON = "앙심 켜짐: 공격받은 뒤 작은 알림이 공격자를 수첩에 적을지 묻는다."
+L.CHAT_GRUDGE_OFF = "앙심 꺼짐: 공격받아도 알림 없음."
+L.CHAT_GRUDGE_TEST = "가짜 이름으로 된 테스트 알림: 체크와 X는 아무것도 기록하지 않음."
+L.HELP_GRUDGE = "/dn grudge  공격 후 알림 켜기/끄기 (test: 알림 테스트)"
 end)

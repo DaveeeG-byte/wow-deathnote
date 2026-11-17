@@ -768,4 +768,30 @@ L.SHEET_RECORD = "Kartoteka"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Još nitko."
 L.EMPTY_RECORD_SUB = "Igrač druge strane kojeg ubiješ završava ovdje."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "NAPAD"
+L.GRUDGE_IN_BOOK = "u knjizi"
+L.GRUDGE_ADDED = "upisan"
+L.GRUDGE_SKIPPED = "preskočen"
+L.GRUDGE_TIP = "Kvačica: u knjigu među Tjeralice (kivnost). Križić ili istek vremena: ne upisuje se. Miš iznad zaustavlja vrijeme; Shift+povlačenje pomiče, desni klik zatvara."
+L.GRUDGE_TIP_YES = "U knjigu: među Tjeralice, uzbuna će upozoriti."
+L.GRUDGE_TIP_NO = "Ne upisuj."
+L.GRUDGE_TIP_KB = "Smrtni udarac"
+L.GRUDGE_TIP_SEEN = "Imao te u meti dok su te pogađali"
+L.GRUDGE_TIP_RECAP = "U pregledu tvoje smrti"
+L.GRUDGE_TIP_METER = "U mjeraču štete nakon borbe"
+L.ROLE_ATTACK = "napad"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Napao te, upisao si ga ti (kivnost)."
+L.TALLY_ATTACKED = "napadi: {times}"
+L.STAMP_GRUDGE = "KIVNOST"  -- [max 16]
+L.SET_SEC_GRUDGE = "KIVNOST"  -- [max 24]
+L.OPT_GRUDGE = "Pitaj nakon napada (kivnost)"  -- [max 44]
+L.OPT_GRUDGE_BG = "I na bojištima i u arenama"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Trajanje poruke"  -- [max 34]
+L.SET_GRUDGE_TEST = "Probna poruka"  -- [max 17]
+L.SET_GRUDGE_RESET = "Vrati položaj"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Kivnost uključena: nakon napada mala poruka pita treba li napadača upisati u knjigu."
+L.CHAT_GRUDGE_OFF = "Kivnost isključena: nema poruke nakon napada."
+L.CHAT_GRUDGE_TEST = "Probna poruka s izmišljenim imenima: kvačica i križić ništa ne upisuju."
+L.HELP_GRUDGE = "/dn grudge  poruka nakon napada uklj./isklj. (test: probna poruka)"
 end)

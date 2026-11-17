@@ -762,4 +762,30 @@ L.SHEET_RECORD = "Rekisteri"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Ei vielä ketään."
 L.EMPTY_RECORD_SUB = "Toisen puolen pelaaja, jonka tapat, päätyy tänne."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "HYÖKKÄYS"
+L.GRUDGE_IN_BOOK = "kirjassa"
+L.GRUDGE_ADDED = "kirjattu"
+L.GRUDGE_SKIPPED = "ohitettu"
+L.GRUDGE_TIP = "Rasti: kirjaan Etsittyihin (kauna). Risti, tai anna ajan kulua: ei kirjata. Hiiri päällä pysäyttää ajan; Shift+veto siirtää, oikea napsautus sulkee."
+L.GRUDGE_TIP_YES = "Kirjaan: Etsittyihin, hälytys varoittaa hänestä."
+L.GRUDGE_TIP_NO = "Älä kirjaa."
+L.GRUDGE_TIP_KB = "Kuolinisku"
+L.GRUDGE_TIP_SEEN = "Piti sinua kohteena, kun sinuun osui"
+L.GRUDGE_TIP_RECAP = "Kuolemasi yhteenvedossa"
+L.GRUDGE_TIP_METER = "Vahinkomittarissa taistelun jälkeen"
+L.ROLE_ATTACK = "hyökkäsi"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Hyökkäsi kimppuusi, sinun kirjaamasi (kauna)."
+L.TALLY_ATTACKED = "hyökkäsi {times}"
+L.STAMP_GRUDGE = "KAUNA"  -- [max 16]
+L.SET_SEC_GRUDGE = "KAUNA"  -- [max 24]
+L.OPT_GRUDGE = "Kysy hyökkäyksen jälkeen (kauna)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Myös taistelukentillä ja areenoilla"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Ilmoitus näkyy"  -- [max 34]
+L.SET_GRUDGE_TEST = "Testi-ilmoitus"  -- [max 17]
+L.SET_GRUDGE_RESET = "Palauta paikka"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Kauna päällä: hyökkäyksen jälkeen pieni ilmoitus kysyy, kirjataanko hyökkääjä."
+L.CHAT_GRUDGE_OFF = "Kauna pois: ei ilmoitusta hyökkäysten jälkeen."
+L.CHAT_GRUDGE_TEST = "Testi-ilmoitus keksityillä nimillä: rasti ja risti eivät kirjaa mitään."
+L.HELP_GRUDGE = "/dn grudge  ilmoitus hyökkäysten jälkeen päälle/pois (test: testi-ilmoitus)"
 end)

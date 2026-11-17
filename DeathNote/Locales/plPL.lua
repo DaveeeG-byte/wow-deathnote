@@ -768,4 +768,30 @@ L.SHEET_RECORD = "Kartoteka"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Na razie nikt."
 L.EMPTY_RECORD_SUB = "Gracz drugiej strony, którego zabijesz, trafi tutaj."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "ATAK"
+L.GRUDGE_IN_BOOK = "w księdze"
+L.GRUDGE_ADDED = "wpisany"
+L.GRUDGE_SKIPPED = "pominięty"
+L.GRUDGE_TIP = "Ptaszek: do księgi wśród Poszukiwanych (uraza). Krzyżyk lub upływ czasu: bez wpisu. Kursor nad oknem zatrzymuje czas; Shift+przeciągnij przesuwa, prawy klik zamyka."
+L.GRUDGE_TIP_YES = "Do księgi: wśród Poszukiwanych, alarm ostrzeże."
+L.GRUDGE_TIP_NO = "Nie wpisuj."
+L.GRUDGE_TIP_KB = "Ostatni cios"
+L.GRUDGE_TIP_SEEN = "Miał cię w celu, gdy obrywałeś"
+L.GRUDGE_TIP_RECAP = "W podsumowaniu twojej śmierci"
+L.GRUDGE_TIP_METER = "W liczniku obrażeń po walce"
+L.ROLE_ATTACK = "atak"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Zaatakował cię, wpisany przez ciebie (uraza)."
+L.TALLY_ATTACKED = "ataki: {times}"
+L.STAMP_GRUDGE = "URAZA"  -- [max 16]
+L.SET_SEC_GRUDGE = "URAZA"  -- [max 24]
+L.OPT_GRUDGE = "Pytaj po ataku (uraza)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Także na polach bitew i arenach"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Czas komunikatu"  -- [max 34]
+L.SET_GRUDGE_TEST = "Próbny komunikat"  -- [max 17]
+L.SET_GRUDGE_RESET = "Przywróć pozycję"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Uraza włączona: po ataku mały komunikat zapyta, czy wpisać napastnika do księgi."
+L.CHAT_GRUDGE_OFF = "Uraza wyłączona: brak komunikatu po atakach."
+L.CHAT_GRUDGE_TEST = "Próbny komunikat z wymyślonymi imionami: ptaszek i krzyżyk niczego nie wpisują."
+L.HELP_GRUDGE = "/dn grudge  komunikat po atakach wł./wył. (test: próbny komunikat)"
 end)

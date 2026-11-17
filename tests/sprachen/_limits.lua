@@ -325,4 +325,13 @@ return {
   SET_SETTLED_OFF = { max = 10, field = "stepper value: no alarm" },
   MANUAL_RECORD_HEAD = { max = 14, field = "keyword of the help paragraph" },
   SHEET_RECORD = { max = 14, field = "word tab of the House Rules (four sheets: 50 to 96 px, Friz 11, 10 when narrower)", grow = true },
+  -- 1.4.0 grudge
+  ROLE_ATTACK = { max = 14, field = "right of a deed line on the poster (like ROLE_ASSIST)" },
+  STAMP_GRUDGE = { max = 16, field = "stamp 140x70 px, two lines" },
+  SET_SEC_GRUDGE = { max = 24, field = "section label" },
+  OPT_GRUDGE = { max = 44, field = "check box on the House Rules" },
+  OPT_GRUDGE_BG = { max = 44, field = "check box on the House Rules" },
+  SET_GRUDGE_SECONDS = { max = 34, field = "stepper label (value: \"20 s\")" },
+  SET_GRUDGE_TEST = { max = 17, field = "button 104 px" },
+  SET_GRUDGE_RESET = { max = 24, field = "button 132 to 180 px (grows with the word)" },
 }

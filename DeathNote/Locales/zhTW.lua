@@ -769,4 +769,30 @@ L.SHEET_RECORD = "案底"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "還沒有人。"
 L.EMPTY_RECORD_SUB = "你殺死的敵對陣營玩家會出現在這裡。"
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "遭到攻擊"
+L.GRUDGE_IN_BOOK = "已在本中"
+L.GRUDGE_ADDED = "已記下"
+L.GRUDGE_SKIPPED = "已略過"
+L.GRUDGE_TIP = "勾選：記入記仇本的通緝（記恨）。叉或等待逾時：不記入。滑鼠停留時計時暫停；Shift+拖曳可移動，右鍵關閉。"
+L.GRUDGE_TIP_YES = "記入本中：列入通緝，警報會提醒你。"
+L.GRUDGE_TIP_NO = "不記入。"
+L.GRUDGE_TIP_KB = "致命一擊"
+L.GRUDGE_TIP_SEEN = "你受到攻擊時他正以你為目標"
+L.GRUDGE_TIP_RECAP = "在你的死亡回顧中"
+L.GRUDGE_TIP_METER = "戰鬥後的傷害統計中"
+L.ROLE_ATTACK = "攻擊"  -- [max 14]
+L.TIP_ROLE_ATTACK = "攻擊過你，由你記入（記恨）。"
+L.TALLY_ATTACKED = "攻擊{times}"
+L.STAMP_GRUDGE = "記恨"  -- [max 16]
+L.SET_SEC_GRUDGE = "記恨"  -- [max 24]
+L.OPT_GRUDGE = "遭到攻擊後詢問（記恨）"  -- [max 44]
+L.OPT_GRUDGE_BG = "戰場和競技場中也啟用"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "提示顯示時長"  -- [max 34]
+L.SET_GRUDGE_TEST = "測試提示"  -- [max 17]
+L.SET_GRUDGE_RESET = "重設位置"  -- [max 24]
+L.CHAT_GRUDGE_ON = "記恨已開啟：遭到攻擊後，一個小提示會問你是否把攻擊者記入本中。"
+L.CHAT_GRUDGE_OFF = "記恨已關閉：遭到攻擊後不再提示。"
+L.CHAT_GRUDGE_TEST = "使用虛構名字的測試提示：勾和叉都不會記入任何內容。"
+L.HELP_GRUDGE = "/dn grudge  開啟/關閉遭到攻擊後的提示（test：測試提示）"
 end)

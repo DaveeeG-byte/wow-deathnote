@@ -761,4 +761,30 @@ L.SHEET_RECORD = "Rulleblad"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Ingen ennå."
 L.EMPTY_RECORD_SUB = "Spilleren fra den andre siden som du dreper, havner her."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "ANGREPET"
+L.GRUDGE_IN_BOOK = "i boken"
+L.GRUDGE_ADDED = "ført inn"
+L.GRUDGE_SKIPPED = "hoppet over"
+L.GRUDGE_TIP = "Hake: inn i boken blant Ettersøkte (nag). Kryss, eller la tiden gå ut: ingenting føres inn. Musen over stopper tiden; Shift+dra flytter, høyreklikk lukker."
+L.GRUDGE_TIP_YES = "Inn i boken: blant Ettersøkte, alarmen varsler deg."
+L.GRUDGE_TIP_NO = "Ikke før inn."
+L.GRUDGE_TIP_KB = "Dødsstøtet"
+L.GRUDGE_TIP_SEEN = "Hadde deg som mål mens du ble truffet"
+L.GRUDGE_TIP_RECAP = "I dødsoversikten din"
+L.GRUDGE_TIP_METER = "I skademåleren etter kampen"
+L.ROLE_ATTACK = "angrep"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Angrep deg, ført inn av deg (nag)."
+L.TALLY_ATTACKED = "angrep {times}"
+L.STAMP_GRUDGE = "NAG"  -- [max 16]
+L.SET_SEC_GRUDGE = "NAG"  -- [max 24]
+L.OPT_GRUDGE = "Spør etter et angrep (nag)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Også på slagmarker og arenaer"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Meldingen vises i"  -- [max 34]
+L.SET_GRUDGE_TEST = "Testmelding"  -- [max 17]
+L.SET_GRUDGE_RESET = "Tilbakestill posisjon"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Nag på: etter et angrep spør en liten melding om angriperen skal inn i boken."
+L.CHAT_GRUDGE_OFF = "Nag av: ingen melding etter angrep."
+L.CHAT_GRUDGE_TEST = "Testmelding med oppdiktede navn: hake og kryss fører ikke inn noe."
+L.HELP_GRUDGE = "/dn grudge  melding etter angrep på/av (test: testmelding)"
 end)

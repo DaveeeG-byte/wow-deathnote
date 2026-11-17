@@ -756,4 +756,30 @@ L.SHEET_RECORD = "Register"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Noch niemand."
 L.EMPTY_RECORD_SUB = "Dein Kill an einem Spieler der Gegenseite steht danach hier."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "ANGEGRIFFEN"
+L.GRUDGE_IN_BOOK = "im Buch"
+L.GRUDGE_ADDED = "eingetragen"
+L.GRUDGE_SKIPPED = "verworfen"
+L.GRUDGE_TIP = "Haken: ins Buch unter Gesucht (Rachsucht). Kreuz oder ablaufen lassen: nicht eingetragen. Die Maus darüber hält die Zeit an; Shift+Ziehen verschiebt, Rechtsklick schließt."
+L.GRUDGE_TIP_YES = "Ins Buch: unter Gesucht, der Alarm warnt vor ihm."
+L.GRUDGE_TIP_NO = "Nicht eintragen."
+L.GRUDGE_TIP_KB = "Todesstoß"
+L.GRUDGE_TIP_SEEN = "Hatte dich im Ziel, als du getroffen wurdest"
+L.GRUDGE_TIP_RECAP = "Im Todesrückblick"
+L.GRUDGE_TIP_METER = "In der Schadensanzeige nach dem Kampf"
+L.ROLE_ATTACK = "angegriffen"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Hat dich angegriffen, von dir eingetragen (Rachsucht)."
+L.TALLY_ATTACKED = "{times} angegriffen"
+L.STAMP_GRUDGE = "RACHSUCHT"  -- [max 16]
+L.SET_SEC_GRUDGE = "RACHSUCHT"  -- [max 24]
+L.OPT_GRUDGE = "Nach einem Angriff fragen (Rachsucht)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Auch in Schlachtfeldern und Arenen"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Meldung bleibt"  -- [max 34]
+L.SET_GRUDGE_TEST = "Probe-Meldung"  -- [max 17]
+L.SET_GRUDGE_RESET = "Position zurücksetzen"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Rachsucht an: nach einem Angriff fragt eine kleine Meldung, ob der Angreifer ins Buch soll."
+L.CHAT_GRUDGE_OFF = "Rachsucht aus: keine Meldung nach Angriffen."
+L.CHAT_GRUDGE_TEST = "Probe-Meldung mit erfundenen Namen: Haken und Kreuz tragen nichts ein."
+L.HELP_GRUDGE = "/dn rachsucht  Meldung nach Angriffen an/aus (/dn rachsucht test: Probe-Meldung)"
 end)

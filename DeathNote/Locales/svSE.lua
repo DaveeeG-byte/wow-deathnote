@@ -761,4 +761,30 @@ L.SHEET_RECORD = "Register"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Ingen än."
 L.EMPTY_RECORD_SUB = "Spelaren från andra sidan som du dödar hamnar här."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "ANFALLEN"
+L.GRUDGE_IN_BOOK = "i boken"
+L.GRUDGE_ADDED = "inskriven"
+L.GRUDGE_SKIPPED = "överhoppad"
+L.GRUDGE_TIP = "Bock: in i boken bland Efterlysta (agg). Kryss, eller låt tiden gå ut: inget skrivs in. Musen över stoppar tiden; Shift+dra flyttar, högerklick stänger."
+L.GRUDGE_TIP_YES = "In i boken: bland Efterlysta, larmet varnar för hen."
+L.GRUDGE_TIP_NO = "Skriv inte in."
+L.GRUDGE_TIP_KB = "Dödsstöten"
+L.GRUDGE_TIP_SEEN = "Hade dig som mål medan du träffades"
+L.GRUDGE_TIP_RECAP = "I din dödsöversikt"
+L.GRUDGE_TIP_METER = "I skademätaren efter striden"
+L.ROLE_ATTACK = "anföll"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Anföll dig, inskriven av dig (agg)."
+L.TALLY_ATTACKED = "anföll {times}"
+L.STAMP_GRUDGE = "AGG"  -- [max 16]
+L.SET_SEC_GRUDGE = "AGG"  -- [max 24]
+L.OPT_GRUDGE = "Fråga efter ett anfall (agg)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Även på slagfält och arenor"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Meddelandet visas i"  -- [max 34]
+L.SET_GRUDGE_TEST = "Testmeddelande"  -- [max 17]
+L.SET_GRUDGE_RESET = "Återställ position"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Agg på: efter ett anfall frågar ett litet meddelande om angriparen ska in i boken."
+L.CHAT_GRUDGE_OFF = "Agg av: inget meddelande efter anfall."
+L.CHAT_GRUDGE_TEST = "Testmeddelande med påhittade namn: bock och kryss skriver inte in något."
+L.HELP_GRUDGE = "/dn grudge  meddelande efter anfall på/av (test: testmeddelande)"
 end)

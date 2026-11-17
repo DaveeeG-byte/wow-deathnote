@@ -761,4 +761,30 @@ L.SHEET_RECORD = "Strafblad"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Nog niemand."
 L.EMPTY_RECORD_SUB = "Een speler van de andere kant die jij doodt, komt hier terecht."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "AANGEVALLEN"
+L.GRUDGE_IN_BOOK = "in het boek"
+L.GRUDGE_ADDED = "genoteerd"
+L.GRUDGE_SKIPPED = "overgeslagen"
+L.GRUDGE_TIP = "Vinkje: in het boek bij Gezocht (wrok). Kruis, of laten verlopen: niet genoteerd. De muis erop houdt de tijd stil; Shift+slepen verplaatst, rechtsklik sluit."
+L.GRUDGE_TIP_YES = "In het boek: bij Gezocht, het alarm waarschuwt je."
+L.GRUDGE_TIP_NO = "Niet noteren."
+L.GRUDGE_TIP_KB = "Genadeklap"
+L.GRUDGE_TIP_SEEN = "Had jou als doelwit terwijl je geraakt werd"
+L.GRUDGE_TIP_RECAP = "In je doodsoverzicht"
+L.GRUDGE_TIP_METER = "In de schademeter na het gevecht"
+L.ROLE_ATTACK = "aanval"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Viel je aan, door jou genoteerd (wrok)."
+L.TALLY_ATTACKED = "{times} aangevallen"
+L.STAMP_GRUDGE = "WROK"  -- [max 16]
+L.SET_SEC_GRUDGE = "WROK"  -- [max 24]
+L.OPT_GRUDGE = "Vragen na een aanval (wrok)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Ook op slagvelden en in arena's"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Melding blijft"  -- [max 34]
+L.SET_GRUDGE_TEST = "Testmelding"  -- [max 17]
+L.SET_GRUDGE_RESET = "Positie herstellen"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Wrok aan: na een aanval vraagt een kleine melding of de aanvaller in het boek moet."
+L.CHAT_GRUDGE_OFF = "Wrok uit: geen melding na aanvallen."
+L.CHAT_GRUDGE_TEST = "Testmelding met verzonnen namen: vinkje en kruis noteren niets."
+L.HELP_GRUDGE = "/dn grudge  melding na aanvallen aan/uit (test: testmelding)"
 end)

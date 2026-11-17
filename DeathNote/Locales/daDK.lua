@@ -761,4 +761,30 @@ L.SHEET_RECORD = "Register"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Ingen endnu."
 L.EMPTY_RECORD_SUB = "Den spiller fra den anden side, du dræber, ender her."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "ANGREBET"
+L.GRUDGE_IN_BOOK = "i bogen"
+L.GRUDGE_ADDED = "skrevet ind"
+L.GRUDGE_SKIPPED = "sprunget over"
+L.GRUDGE_TIP = "Flueben: ind i bogen under Efterlyste (nag). Kryds, eller lad tiden løbe ud: intet skrives ind. Musen over stopper tiden; Shift+træk flytter, højreklik lukker."
+L.GRUDGE_TIP_YES = "Ind i bogen: under Efterlyste, alarmen advarer dig."
+L.GRUDGE_TIP_NO = "Skriv ikke ind."
+L.GRUDGE_TIP_KB = "Dødsstødet"
+L.GRUDGE_TIP_SEEN = "Havde dig som mål, mens du blev ramt"
+L.GRUDGE_TIP_RECAP = "I dit dødsoverblik"
+L.GRUDGE_TIP_METER = "I skademåleren efter kampen"
+L.ROLE_ATTACK = "angreb"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Angreb dig, skrevet ind af dig (nag)."
+L.TALLY_ATTACKED = "angreb {times}"
+L.STAMP_GRUDGE = "NAG"  -- [max 16]
+L.SET_SEC_GRUDGE = "NAG"  -- [max 24]
+L.OPT_GRUDGE = "Spørg efter et angreb (nag)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Også på slagmarker og arenaer"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Beskeden vises i"  -- [max 34]
+L.SET_GRUDGE_TEST = "Testbesked"  -- [max 17]
+L.SET_GRUDGE_RESET = "Nulstil position"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Nag til: efter et angreb spørger en lille besked, om angriberen skal ind i bogen."
+L.CHAT_GRUDGE_OFF = "Nag fra: ingen besked efter angreb."
+L.CHAT_GRUDGE_TEST = "Testbesked med opdigtede navne: flueben og kryds skriver intet ind."
+L.HELP_GRUDGE = "/dn grudge  besked efter angreb til/fra (test: testbesked)"
 end)

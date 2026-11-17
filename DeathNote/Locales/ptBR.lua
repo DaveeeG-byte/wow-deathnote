@@ -756,4 +756,30 @@ L.SHEET_RECORD = "Ficha"  -- [max 14]
 L.EMPTY_RECORD_HEAD = "Ninguém ainda."
 L.EMPTY_RECORD_SUB = "O jogador do outro lado que você matar vem parar aqui."
 -- <<< RECORD
+-- 1.4.0 grudge
+L.GRUDGE_HEAD = "ATACADO"
+L.GRUDGE_IN_BOOK = "no livro"
+L.GRUDGE_ADDED = "anotado"
+L.GRUDGE_SKIPPED = "descartado"
+L.GRUDGE_TIP = "Marca: no livro em Procurados (rancor). X, ou deixar expirar: não é anotado. O mouse em cima pausa o tempo; Shift+arrastar move, clique direito fecha."
+L.GRUDGE_TIP_YES = "No livro: em Procurados, o alarme avisa você."
+L.GRUDGE_TIP_NO = "Não anotar."
+L.GRUDGE_TIP_KB = "Golpe fatal"
+L.GRUDGE_TIP_SEEN = "Tinha você como alvo enquanto você era atingido"
+L.GRUDGE_TIP_RECAP = "No seu resumo de morte"
+L.GRUDGE_TIP_METER = "No medidor de dano depois do combate"
+L.ROLE_ATTACK = "ataque"  -- [max 14]
+L.TIP_ROLE_ATTACK = "Atacou você, anotado por você (rancor)."
+L.TALLY_ATTACKED = "atacou {times}"
+L.STAMP_GRUDGE = "RANCOR"  -- [max 16]
+L.SET_SEC_GRUDGE = "RANCOR"  -- [max 24]
+L.OPT_GRUDGE = "Perguntar após um ataque (rancor)"  -- [max 44]
+L.OPT_GRUDGE_BG = "Também em campos de batalha e arenas"  -- [max 44]
+L.SET_GRUDGE_SECONDS = "Duração do aviso"  -- [max 34]
+L.SET_GRUDGE_TEST = "Aviso de teste"  -- [max 17]
+L.SET_GRUDGE_RESET = "Redefinir posição"  -- [max 24]
+L.CHAT_GRUDGE_ON = "Rancor ligado: depois de um ataque, um pequeno aviso pergunta se o atacante vai para o livro."
+L.CHAT_GRUDGE_OFF = "Rancor desligado: nenhum aviso depois de ataques."
+L.CHAT_GRUDGE_TEST = "Aviso de teste com nomes inventados: marca e X não anotam nada."
+L.HELP_GRUDGE = "/dn grudge  aviso após ataques ligado/desligado (test: aviso de teste)"
 end)
