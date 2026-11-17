@@ -89,14 +89,17 @@ Who counts (no combat log on Forever): an enemy player (attackable, not in your 
 opponent of a duel to the death) who has you targeted and is in combat while you take a hit (`UNIT_COMBAT` or falling
 health, 2 s either way), or who casts a spell while he has you targeted; at your death the Death Recap (killing blow
 with a skull; whoever the death puts into the book anyway stands as "in the book" without buttons); after the fight
-the damage meter, only when it is readable and only for an episode that was already open. One episode per fight, a
-group shows all attackers. After your death the notice waits until the death's notice has gone. Places: the open world
+the damage meter, only when it is readable and only for an episode that was already open. One episode per fight (a new
+attacker while the notice of the last fight still stands joins it), a group shows all attackers; every episode ends
+with its notice, or with the fight when there is nothing to ask, and a switch-off or a change into a battleground ends
+it at once. After your death the notice waits until the death's notice has gone. Places: the open world
 (on by default), battlegrounds and arenas only with their own switch (off by default: other rules there), never in
 dungeons, raids or scenarios. Attacks are never shared with guild or friends (not even when you share entries by
 hand); "Back up book" carries them (an extra field at the end of the `E` line, role `attack` in the `D` line; older
 versions read such a text without error). What the client really delivers is unmeasured: `/dn probe` writes
-`probe.grudge` (which proofs worked, episodes, notices, ticks, crosses, let go, whether the meter was readable; with
-`/dn debug` the last five episodes).
+`probe.grudge` (which proofs worked, episodes, notices, ticks, crosses, let go, whether the meter was readable; the
+open questions on their own: `UNIT_COMBAT` on you arrived, your health, "in combat" and "has you targeted" readable or
+secret, a secret name; with `/dn debug` the last five episodes).
 
 ## Friends' book (1.2.0)
 The same silent messages as in the guild (protocol version 1), but as whispers to character friends on the friend
