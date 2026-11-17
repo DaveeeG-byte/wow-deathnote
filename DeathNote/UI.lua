@@ -5331,17 +5331,19 @@ function OV.HintOn()
   if state.filter == "guild" and not MemberView() and not GF.HuntView() then return state.gnew or state.query ~= "" end
   return false
 end
--- the foot line: a short result ("Taken over: …") for a few seconds, otherwise "12 of 48 · show all" while narrowed
+-- the foot line: "12 of 48 · show all" while a filter or search narrows the list (it says why rows are missing, so it
+-- comes first), otherwise a short result ("Taken over: …") for a few seconds
 function OV.UpdateFoot()
   local fh = LP.fhint
-  if OV.flash then
-    LP.status:SetText(OV.flash)
-    LP.status:SetTextColor(C(Look.INK))
-    LP.statusHit:Hide()
+  if not OV.HintOn() then
     fh:Hide()
+    if OV.flash then
+      LP.status:SetText(OV.flash)
+      LP.status:SetTextColor(C(Look.INK))
+      LP.statusHit:Hide()
+    end
     return
   end
-  if not OV.HintOn() then fh:Hide(); return end
   local room = PAGE_W - 46 - (LP.sync:IsShown() and ((LP.sync:GetWidth() or 84) + 20) or 14)
   fh:SetWidth(room)
   fh.text:SetWidth(room - 4)
@@ -5587,13 +5589,14 @@ function OV.TakeGo()
     return
   end
   if st.stage then return end
-  local S, keys, t0 = Store(), {}, time()
+  local S, keys = Store(), {}
   local src = (st.src == "guild" or st.src == "friends") and st.src or nil
   for _, g in ipairs(st.new) do
-    if not S.Get(g.key) then
+    -- the same name may stand in the book under another key (first name only): then it is there already
+    local had = S.Get(g.key) or (S.Find and S.Find(g.name, g.display ~= g.name and g.surname or nil))
+    if not had then
       local k = GCall("Adopt", g.key, { from = st.member, src = src })
-      local e = type(k) == "string" and S.Get(k)
-      if e and e.adoptAt and e.adoptAt >= t0 then keys[#keys + 1] = k end
+      if type(k) == "string" and S.Get(k) then keys[#keys + 1] = k end
     end
   end
   st.stage, st.done = "done", #keys
