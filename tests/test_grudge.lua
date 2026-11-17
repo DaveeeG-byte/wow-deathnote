@@ -216,6 +216,14 @@ test("Alte Daten: Buch von 1.0.1 (Fixture) wird Version 5, nichts geht verloren,
   noErrors()
 end)
 
+test("Version 5: ein Buch von 1.3.x (Version 4) ohne gewaehlten Ton behaelt den Vorschlag des Einbands", function()
+  load({ db = { version = 4, settings = { welcomed = true, alert = { volume = 3 } }, enemies = {}, deaths = {} } })
+  eq(_G.DeathNoteDB.version, 5)
+  eq(_G.DeathNoteDB.settings.alert.soundKey, nil, "kein Ton erzwungen (nur Buecher vor Version 4 bekommen \"warnung\")")
+  load({ db = { version = 3, settings = { welcomed = true }, enemies = {}, deaths = {} } })
+  eq(_G.DeathNoteDB.settings.alert.soundKey, "warnung", "Version 3 wie bisher")
+end)
+
 test("Mit 1.3.1 hin und zurueck: der alte Client liest Angriffe ohne Fehler, danach sind sie wieder Angriffe", function()
   local dir, why = GitBase.Archive(ROOT, "v1.3.1")
   if not dir then GitBase.Skip("grudge", "up and back with 1.3.1 (" .. tostring(why) .. ")"); return end

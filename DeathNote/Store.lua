@@ -345,7 +345,8 @@ function Store.Init()
     db.version = (next(db) == nil) and DB_VERSION or 1
   end
   -- 1.3.0: data of an older version had alert.soundKey filled with "warnung"; one without it (1.0.x) gets it too
-  local fromOld = db.version < DB_VERSION
+  -- (1.4.0: "older" = before version 4; a book of 1.3.x keeps playing the cover's suggestion, DB_VERSION is 5 now)
+  local fromOld = db.version < 4
   if type(db.settings) ~= "table" then db.settings = {} end
   if db.version < 2 then
     -- the closed combat log was on by default in version 1
