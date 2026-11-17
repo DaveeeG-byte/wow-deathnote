@@ -1344,8 +1344,8 @@ local function splitBar(line)
 end
 
 -- 1.4.0 fixer: field 22 of an E line = where a copied entry came from: "src;kills;at;from" (src guild, friends, text
--- or empty; kills = the deaths of the guild or friends; at = when it was copied; from = whose list). Empty for the
--- own entries. Older clients read 19 to 21 fields and leave the rest alone.
+-- or empty; kills = the deaths of the guild or friends; at = when it was copied; from = whose list). Left out for
+-- the own entries. Older clients read 19 to 21 fields and leave the rest alone.
 local function originOf(e)
   if e.fromGuild ~= true then return nil end
   local k = tonumber(e.fromGuildKills)
@@ -1362,10 +1362,13 @@ function Store.Export(short)
   table.sort(keys)
   for _, k in ipairs(keys) do
     local e = enemies[k]
-    lines[#lines + 1] = table.concat({ "E", esc(k), esc(e.status), esc(e.manual), esc(e.kills), esc(e.suspected),
+    local fields = { "E", esc(k), esc(e.status), esc(e.manual), esc(e.kills), esc(e.suspected),
       esc(e.revenge), esc(e.firstKill), esc(e.lastKill), esc(e.lastRevenge), esc(e.sightings), esc(e.class),
       esc(e.race), esc(e.level), esc(e.guild), esc(e.faction), esc(e.surname), esc(e.guid), esc(e.note),
-      esc(e.assists or 0), esc(Store.Attacks(e)), esc(originOf(e)) }, "|")
+      esc(e.assists or 0), esc(Store.Attacks(e)) }
+    local origin = originOf(e)
+    if origin then fields[#fields + 1] = esc(origin) end   -- only for copied entries: other lines stay as before
+    lines[#lines + 1] = table.concat(fields, "|")
     for i = (short == true) and 0 or #e.deaths, 1, -1 do
       local d = e.deaths[i]
       lines[#lines + 1] = table.concat({ "D", esc(k), esc(d.t), esc(d.sure), esc(d.source), esc(d.zone),
