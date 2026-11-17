@@ -387,6 +387,13 @@ Update = function(e)
 end
 Card.Update = Update
 
+-- does the notice show the episode e right now (Grudge.lua leaves the end to the notice then)?
+function Card.Holds(e)
+  if not (card and e and shownId == e.id) then return false end
+  local ok, v = pcall(card.IsVisible, card)
+  return ok and v == true
+end
+
 ns:On("GRUDGE_UPDATE", function(e) Update(e) end)
 ns:On("GRUDGE_CLOSED", function(e)
   if card and e and e.id == shownId then card:Hide(); shownId, remaining, stamp, doneAt = nil, nil, nil, nil end

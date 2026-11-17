@@ -168,7 +168,7 @@ local function newEpisode()
   local zone, sub, mapID, x, y = Util.Zone()
   ep = { id = nextId, t = time(), gt = now(), lastNew = now(), running = true, rows = {}, order = {},
     zone = zone, subzone = sub, mapID = mapID, x = x, y = y, me = Util.PlayerFullName(),
-    myLevel = Num(Call(_G.UnitLevel, "player")), proofs = {} }
+    myLevel = Num(Call(_G.UnitLevel, "player")), proofs = {}, where = Grudge.Where() }
   counts.episodes = counts.episodes + 1
   if Grudge.Watch then Grudge.Watch() end
   return ep
@@ -327,11 +327,52 @@ function Grudge.Watch()
   if After then watching = true; After(Grudge.WATCH, watch) end
 end
 
+-- does the notice (GrudgeCard.lua) show this episode right now? Then the notice ends it (time, answers, right click)
+local function cardHolds(e)
+  local C = ns.GrudgeCard
+  if not (C and C.Holds) then return false end
+  local ok, v = pcall(C.Holds, e)
+  return ok and v == true
+end
+
+-- every episode ends for sure: after the fight the notice counts down and closes it. Without a notice (nothing to ask,
+-- the notice hidden with the interface, not loaded) this timer closes it: Grudge.Seconds() after the end of the fight
+-- or the last new attacker, plus EXPIRE_GRACE (the notice may wait for the death's notice first)
+Grudge.EXPIRE_GRACE = 15
+local expireToken = 0
+local expireCheck
+local function expireLater(delay)
+  local After = _G.C_Timer and _G.C_Timer.After
+  if not (After and ep) then return end
+  expireToken = expireToken + 1
+  local tok, id = expireToken, ep.id
+  After(math.max(0.1, delay), function()
+    if tok == expireToken then expireCheck(id) end
+  end)
+end
+function expireCheck(id)
+  local e = ep
+  if not e or e.id ~= id or e.closed then return end
+  -- still running: the end of the fight (or of the death's evaluation) schedules the next look
+  if e.running or e.deathPending then return end
+  if not Grudge.Asks(e) and not cardHolds(e) then Grudge.Close("none"); return end
+  local due = math.max(e.endGT or 0, e.lastNew or 0) + Grudge.Seconds() + Grudge.EXPIRE_GRACE
+  if now() < due then expireLater(due - now()); return end
+  -- the mouse holds the shown notice: look again later
+  if cardHolds(e) then expireLater(Grudge.EXPIRE_GRACE); return end
+  Grudge.Close("time")
+end
+Grudge.ExpireCheck = function() if ep then expireCheck(ep.id) end end
+
 function endEpisode()
   if not ep or ep.closed then return end
   ep.running = false
   ep.endGT = now()
   fire()
+  if not ep or ep.closed then return end
+  -- nothing to ask (everybody in the book by my death, everybody answered) and no notice that shows it: over now
+  if not Grudge.Asks(ep) and not cardHolds(ep) then Grudge.Close("none"); return end
+  expireLater(Grudge.Seconds() + Grudge.EXPIRE_GRACE)
 end
 
 ---------------------------------------------------------------------------
@@ -466,7 +507,7 @@ function Grudge.UpdateEvents()
     castsOn = casts
     for _, ev in ipairs(CAST_EVENTS) do
       if casts then events[ev] = pcall(f.RegisterEvent, f, ev) and true or false
-      else pcall(f.UnregisterEvent, f, ev) end
+      else pcall(f.UnregisterEvent, f, ev); events[ev] = nil end
     end
   end
 end
@@ -474,7 +515,10 @@ end
 function Grudge.UpdateAllowed()
   local was = allowed
   allowed = Grudge.Allowed()
-  if was and not allowed and ep and not ep.test then Grudge.Close("place") end
+  -- switched off or a place without the notice: the episode ends (the test notice too when switched off)
+  if not allowed and ep and not ep.closed and (not ep.test or (was and setting("grudge.enabled") == false)) then
+    Grudge.Close("place")
+  end
   Grudge.UpdateEvents()
   return allowed
 end
@@ -612,6 +656,7 @@ function Grudge.Test(n)
   ep.running = false
   ep.endGT = now()
   fire()
+  if ep and not ep.closed then expireLater(Grudge.Seconds() + Grudge.EXPIRE_GRACE) end
   return ep
 end
 
@@ -652,6 +697,7 @@ function Grudge.Reset()
   ep, asked, lastHit, lastHP, lastScan, scanQueued, plates, dueling = nil, {}, nil, nil, -1, false, {}, nil
   inCombat = false
   Grudge.pendingDeath = nil
+  expireToken = expireToken + 1
   for k in pairs(counts) do counts[k] = 0 end
 end
 
@@ -662,11 +708,24 @@ ns:On("READY", function() Grudge.UpdateAllowed() end)
 ns:On("SETTINGS_CHANGED", function(path)
   if type(path) == "string" and path:find("^grudge%.") then Grudge.UpdateAllowed() end
 end)
+-- a loading screen or a new zone: an episode of another kind of place (open world, battleground) ends; a fight does
+-- not go on through a loading screen, so a running episode ends its fight here (the notice still counts down)
+local function placeChanged(loading)
+  Grudge.UpdateAllowed()
+  if not ep or ep.closed or ep.test then return end
+  local where = Grudge.Where()
+  if ep.where and where ~= ep.where then Grudge.Close("place"); return end
+  if loading and ep.running and not ep.deathPending and not Grudge.pendingDeath then
+    inCombat = false
+    endEpisode()
+    Grudge.UpdateEvents()
+  end
+end
 ns:RegisterEvent("PLAYER_ENTERING_WORLD", function()
   plates = {}
-  Grudge.UpdateAllowed()
+  placeChanged(true)
 end)
-ns:RegisterEvent("ZONE_CHANGED_NEW_AREA", function() Grudge.UpdateAllowed() end)
+ns:RegisterEvent("ZONE_CHANGED_NEW_AREA", function() placeChanged(false) end)
 ns:RegisterEvent("NAME_PLATE_UNIT_ADDED", function(_, unit)
   if IsSecret(unit) or type(unit) ~= "string" then return end
   plates[unit] = true

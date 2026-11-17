@@ -498,10 +498,13 @@ end)
 
 test("Beleg b, offene Welt, alle durch den Tod im Buch: keine Frage (die Todes-Meldung reicht)", function()
   local ns = load()
+  local ep
+  ns:On("GRUDGE_UPDATE", function(e) ep = ep or e end)
   M.recap = { id = 4, events = { recapEv({ guid = "Player-93-Fies", name = "Fies Ling", amount = 900, overkill = 50 }) } }
   M.FireEvent("PLAYER_DEAD"); M.Advance(5)
-  local ep = G(ns).Current()
   ok(ep); eq(keys(ep), "Fies-Ling"); no(G(ns).Asks(ep))
+  -- 1.4.0 fixer: nothing to ask, so the episode is over at once (it used to stay open until /reload)
+  eq(ep.closed, true); eq(ep.closedBy, "none"); eq(G(ns).Current(), nil)
 end)
 
 test("Beleg b, Schlachtfeld mit Schalter: niemand kommt von selbst ins Buch, alle werden gefragt, Todesstoss markiert", function()
