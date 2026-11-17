@@ -8,14 +8,20 @@ local Util = ns.Util
 local Store = {}
 ns.Store = Store
 
-local DB_VERSION = 4      -- 2: combat log stage off by default (closed on Forever)
+local DB_VERSION = 5      -- 2: combat log stage off by default (closed on Forever)
                           -- 3: every deed has a role (kill/assist/suspect), entries count assists
                           -- 4: the rap sheet (DeathNoteDB.ledger, Ledger.lua), created empty
+                          -- 5: deeds with role "attack" (1.4.0 grudge, Grudge.lua), entries count attacks.
+                          --    An older client reads such a deed as a suspicion (source "grudge"); this one
+                          --    gives it its role back (sanitizeEntry), nothing is counted twice
 local MAX_ENEMY_DEATHS = 30
 local MAX_JOURNAL = 100
 local HAND_TIMES = 10     -- 1.2.1: times of hand revenges kept per entry (revengeHandAt)
 local VALID_STATUS = { wanted = true, suspect = true, pardoned = true }
-local VALID_ROLE = { kill = true, assist = true, suspect = true }
+-- 1.4.0 grudge: "attack" = attacked me without killing me, entered by the player (tick on the grudge notice). Never
+-- shared (Sync.lua and Friends.lua send kills of role "kill" and entries by hand only), never a kill or an assist.
+local VALID_ROLE = { kill = true, assist = true, suspect = true, attack = true }
+local MAX_ATTACK_DEEDS = 5   -- 1.4.0 grudge: attack deeds kept per entry (the count goes on): kills keep their room
 
 local DEFAULT_SETTINGS = {
   -- sound is the master switch; soundKey/volume (1..5)/channel are read by Alert.lua (1.1.0)
@@ -57,6 +63,10 @@ local DEFAULT_SETTINGS = {
     -- 1.2.0 fix: announceHunt = notice "taken down" / "new targets"; huntExpire = days until releases
     -- expire, 0 = never (default)
     announceHunt = true, huntExpire = 0 },
+  -- 1.4.0 grudge (Grudge.lua): the small notice after an attack. enabled: open world (dungeons and raids never);
+  -- battlegrounds: also in battlegrounds and arenas (other rules there, off by default); seconds: how long the
+  -- notice stays after the fight (10/20/30/60); point: where it was dragged to (absent = the default place)
+  grudge = { enabled = true, battlegrounds = false, seconds = 20 },
 }
 
 local db           -- DeathNoteDB
@@ -140,6 +150,8 @@ local function num(v, d) return (type(v) == "number" and v == v and v < math.hug
 -- Role of a deed (1.1.0): "kill" = sure killing blow, "assist" = damage source in the death
 -- recap but not the killing blow, "suspect" = heuristic only (had me targeted) or unproven.
 local function roleOf(sure, source)
+  -- 1.4.0 grudge: an attack is never a kill; an older client turned it into a suspicion, its source tells
+  if source == "grudge" then return "attack" end
   if sure == true then return "kill" end
   if source == "recap" then return "assist" end
   return "suspect"
@@ -147,8 +159,11 @@ end
 Store.RoleOf = roleOf
 
 -- Status after the counters changed: kills or assists make a suspect wanted; pardoned stays.
+-- 1.4.0 grudge: an attack entered by the player does the same (whoever is entered stands under Wanted)
 local function settleStatus(e)
-  if e.status == "suspect" and ((e.kills or 0) > 0 or (e.assists or 0) > 0) then e.status = "wanted" end
+  if e.status == "suspect" and ((e.kills or 0) > 0 or (e.assists or 0) > 0 or (e.attacks or 0) > 0) then
+    e.status = "wanted"
+  end
 end
 
 -- Gives every deed of an entry a role (deeds of DB version <= 2 have none). Idempotent:
@@ -201,6 +216,11 @@ local function sanitizeEntry(key, e)
   e.kills = num(e.kills, 0)
   e.suspected = num(e.suspected, 0)
   e.assists = num(e.assists, 0)
+  -- 1.4.0 grudge: attacks entered by the player (absent = none; older clients leave the field alone)
+  if e.attacks ~= nil then
+    local a = math.floor(num(e.attacks, 0))
+    e.attacks = (a >= 1 and a < 1e6) and a or nil
+  end
   e.revenge = num(e.revenge, 0)
   -- 1.2.1: revenge noted by hand (part of revenge); a broken or too big mark is repaired, never grows the count
   if e.revengeHand ~= nil then
@@ -246,12 +266,20 @@ local function sanitizeEntry(key, e)
   end
   while #e.deaths > MAX_ENEMY_DEATHS do table.remove(e.deaths) end
   -- a role that does not match: repaired from sure/source (never counted again)
+  -- 1.4.0 grudge: an attack deed that an older client read as a suspicion (or left without role) gets its role back;
+  -- one the player confirmed there as a kill (or an assist) stays what he made of it
+  local attackDeeds = 0
   for i = 1, #e.deaths do
     local d = e.deaths[i]
     if d.role ~= nil and not VALID_ROLE[d.role] then d.role = nil end
+    if d.source == "grudge" and (d.role == nil or d.role == "suspect") then d.role = "attack" end
+    if d.role == "attack" and d.source ~= "grudge" then d.source = "grudge" end
     if d.role then d.sure = d.role == "kill" end
+    if d.role == "attack" then attackDeeds = attackDeeds + 1 end
   end
+  if attackDeeds > (e.attacks or 0) then e.attacks = attackDeeds end
   if e.lastSeen ~= nil and type(e.lastSeen) ~= "table" then e.lastSeen = nil end
+  if e.lastAttack ~= nil and (type(e.lastAttack) ~= "number" or e.lastAttack ~= e.lastAttack) then e.lastAttack = nil end
   -- additive (1.1.0): who added it by hand, when, and where it came from
   if e.by ~= nil and (type(e.by) ~= "string" or e.by == "") then e.by = nil end
   if e.listedAt ~= nil and type(e.listedAt) ~= "number" then e.listedAt = nil end
@@ -363,6 +391,8 @@ function Store.Init()
     if not ok then ns.ReportError(err) end
   end
   if db.version < 4 then db.version = 4 end
+  -- 5 (1.4.0 grudge): attack deeds; sanitizeEntry already gave them their role, nothing else to do
+  if db.version < 5 then db.version = 5 end
   return db
 end
 
@@ -966,6 +996,53 @@ function Store.ApplyKill(info, death, sure)
   return key
 end
 
+-- 1.4.0 grudge: the attacks the player entered (tick on the grudge notice), 0 for none. For the book's list (filter
+-- "attack", the core line "3× attacked") and for others that read the book: Store.Attacks(e) counts every attack ever
+-- entered (the deeds keep only the newest MAX_ATTACK_DEEDS); Store.OnlyAttacks(e) = the entry has nothing but attacks
+-- (no kill, no assist, no suspicion, not by hand), shown with the stamp GRUDGE.
+function Store.Attacks(e)
+  if Util.IsSecret(e) or type(e) ~= "table" then return 0 end
+  local a = tonumber(e.attacks) or 0
+  return a >= 1 and math.floor(a) or 0
+end
+function Store.OnlyAttacks(e)
+  return Store.Attacks(e) > 0 and (tonumber(e.kills) or 0) == 0 and (tonumber(e.assists) or 0) == 0
+    and (tonumber(e.suspected) or 0) == 0 and e.manual ~= true
+end
+
+-- 1.4.0 grudge (Grudge.lua): the player ticked an attacker. info = identity { name, surname, guid, class, level, ... }
+-- (plain values only), rec = { t, zone, subzone, mapID, x, y, me, myLevel }. Writes a deed of role "attack" (source
+-- "grudge", never sure), counts it and puts the entry under Wanted (a suspect too; pardoned stays pardoned). One deed
+-- per entry and time stamp (the same fight is not entered twice). Never sets `manual`: the entry is not shared.
+-- Returns the key, or nil.
+function Store.AddAttack(info, rec)
+  if type(rec) ~= "table" or type(rec.t) ~= "number" then return nil end
+  local key, e = Store.Upsert(info, true)
+  if not key then return nil end
+  for i = 1, #e.deaths do
+    local d = e.deaths[i]
+    if d.t == rec.t and d.role == "attack" then return key end
+  end
+  local d = copyDeath(rec)
+  d.role, d.sure, d.source, d.others = "attack", false, "grudge", {}
+  -- the oldest attack deed gives way (never a kill, an assist or a suspicion)
+  local n, oldest = 0, nil
+  for i = 1, #e.deaths do
+    if e.deaths[i].role == "attack" then n = n + 1; oldest = i end
+  end
+  if n >= MAX_ATTACK_DEEDS and oldest then table.remove(e.deaths, oldest) end
+  local pos = #e.deaths + 1
+  for i = 1, #e.deaths do if (e.deaths[i].t or 0) <= d.t then pos = i; break end end
+  table.insert(e.deaths, pos, d)
+  while #e.deaths > MAX_ENEMY_DEATHS do table.remove(e.deaths) end
+  e.attacks = Store.Attacks(e) + 1
+  e.lastAttack = math.max(tonumber(e.lastAttack) or 0, d.t)
+  if e.status == "suspect" then e.status = "wanted" end
+  if type(rec.theirLevel) == "number" then e.level = rec.theirLevel end
+  changed(key)
+  return key
+end
+
 -- Internal (Attribution): adds a journal entry, returns it.
 -- Deaths by monsters and surroundings (kind "pve") only count in db.tally, they get no journal row (1.2.0).
 function Store.RecordDeath(entry)
@@ -1010,11 +1087,13 @@ function Store.ConfirmSuspect(key, deathIndex)
     d = e.deaths[deathIndex]
   else
     for i = 1, #e.deaths do
-      if e.deaths[i].role ~= "kill" then d = e.deaths[i]; break end
+      local r = e.deaths[i].role
+      if r ~= "kill" and r ~= "attack" then d = e.deaths[i]; break end
     end
   end
-  -- only a deed that is no kill yet can be confirmed (repeated clicks must not inflate kills)
-  if not d or d.role == "kill" then return false end
+  -- only a deed that is no kill yet can be confirmed (repeated clicks must not inflate kills); 1.4.0 grudge: an
+  -- attack belongs to no death, it never becomes a kill
+  if not d or d.role == "kill" or d.role == "attack" then return false end
   -- the death already has another sure killer: one death, one kill. Hand over to AssignDeath,
   -- which takes the kill from the other one first.
   if db then
@@ -1051,7 +1130,7 @@ end
 function Store.DismissSuspect(key)
   local e = Store.Get(key)
   if not e then return false end
-  if e.kills == 0 and (e.assists or 0) == 0 and not e.manual and e.revenge == 0 then
+  if e.kills == 0 and (e.assists or 0) == 0 and not e.manual and e.revenge == 0 and (e.attacks or 0) == 0 then
     return Store.Remove(key)
   end
   for i = #e.deaths, 1, -1 do
@@ -1172,7 +1251,8 @@ function Store.AssignDeath(index, key)
         if od.role == "kill" and type(od.t) == "number" and (not last or od.t > last) then last = od.t end
       end
       if old.kills == 0 then old.lastKill, old.firstKill = nil, nil elseif last then old.lastKill = last end
-      if old.kills == 0 and (old.assists or 0) == 0 and not old.manual and old.status == "wanted" then
+      if old.kills == 0 and (old.assists or 0) == 0 and not old.manual and old.status == "wanted"
+        and (old.attacks or 0) == 0 then
         if (old.suspected or 0) > 0 then
           old.status = "suspect"
         elseif #old.deaths == 0 and (old.revenge or 0) == 0 and (old.note or "") == "" then
@@ -1186,7 +1266,7 @@ function Store.AssignDeath(index, key)
   if e then
     for i = 1, #e.deaths do
       local d = e.deaths[i]
-      if d.t == j.t and d.role ~= "kill" then
+      if d.t == j.t and d.role ~= "kill" and d.role ~= "attack" then
         table.remove(e.deaths, i)
         if d.role == "assist" then
           e.assists = math.max(0, (e.assists or 0) - 1)
@@ -1211,9 +1291,11 @@ end
 ---------------------------------------------------------------------------
 -- Export / Import (versioned plain text, no loadstring)
 -- Line 1: "DEATHNOTE:1"
--- E|key|status|manual|kills|suspected|revenge|firstKill|lastKill|lastRevenge|sightings|class|race|level|guild|faction|surname|guid|note|assists
+-- E|key|status|manual|kills|suspected|revenge|firstKill|lastKill|lastRevenge|sightings|class|race|level|guild|faction|surname|guid|note|assists|attacks
 -- D|key|t|sure|source|zone|subzone|mapID|x|y|me|myLevel|spell|role
 -- (assists and role are 1.1.0 additions at the end; older texts without them still read)
+-- (1.4.0 grudge: attacks at the end of E, role "attack" with source "grudge" in D; an older client reads the E line
+-- as before and an attack deed as a suspicion of source "grudge", which this version turns back into an attack)
 -- Fields are percent-escaped (%, |, newline, CR).
 ---------------------------------------------------------------------------
 local EXPORT_HEADER = "DEATHNOTE:1"
@@ -1246,7 +1328,7 @@ function Store.Export(short)
     lines[#lines + 1] = table.concat({ "E", esc(k), esc(e.status), esc(e.manual), esc(e.kills), esc(e.suspected),
       esc(e.revenge), esc(e.firstKill), esc(e.lastKill), esc(e.lastRevenge), esc(e.sightings), esc(e.class),
       esc(e.race), esc(e.level), esc(e.guild), esc(e.faction), esc(e.surname), esc(e.guid), esc(e.note),
-      esc(e.assists or 0) }, "|")
+      esc(e.assists or 0), esc(Store.Attacks(e)) }, "|")
     for i = (short == true) and 0 or #e.deaths, 1, -1 do
       local d = e.deaths[i]
       lines[#lines + 1] = table.concat({ "D", esc(k), esc(d.t), esc(d.sure), esc(d.source), esc(d.zone),
@@ -1361,6 +1443,9 @@ function Store.Import(text)
     e.kills = math.max(e.kills, toCount(f[5]))
     e.suspected = math.max(e.suspected, toCount(f[6]))
     e.assists = math.max(e.assists or 0, toCount(f[20]))
+    -- 1.4.0 grudge: attacks (a text of an older version has no such field: 0)
+    local att = math.max(Store.Attacks(e), toCount(f[21]))
+    e.attacks = att > 0 and att or nil
     local rev0 = e.revenge
     e.revenge = math.max(e.revenge, toCount(f[7]))
     -- 1.3.0: what the text added to revenge is foreign data: the book counts it as before (bounty), the rap sheet's
@@ -1393,6 +1478,9 @@ function Store.Import(text)
       if not dup then
         local sure, source = f[4] == "1", toStr(f[5], 16) or "manual"
         local role = VALID_ROLE[f[14]] and f[14] or roleOf(sure, source)
+        -- 1.4.0 grudge: an attack read as a suspicion by an older client is an attack again; an attack keeps its source
+        if source == "grudge" and role == "suspect" then role = "attack" end
+        if role == "attack" then source = "grudge" end
         local d = { t = t, sure = role == "kill", role = role, source = source, zone = toStr(f[6]),
           subzone = toStr(f[7]), mapID = toNum(f[8], 0, 1e7), x = toNum(f[9], 0, 100), y = toNum(f[10], 0, 100),
           me = toStr(f[11], 64), myLevel = toNum(f[12], 0, 999), spell = toStr(f[13]), others = {},
@@ -1408,9 +1496,13 @@ function Store.Import(text)
     local e = enemies[key]
     if e then
       -- a 1.0.x text has no assists column: its recap co-attackers count from their deeds
-      local n = 0
-      for i = 1, #e.deaths do if e.deaths[i].role == "assist" then n = n + 1 end end
+      local n, na = 0, 0
+      for i = 1, #e.deaths do
+        if e.deaths[i].role == "assist" then n = n + 1 elseif e.deaths[i].role == "attack" then na = na + 1 end
+      end
       if n > e.assists then e.assists = n end
+      -- 1.4.0 grudge: so does a text whose E line lacks the attacks (written by hand, cut)
+      if na > Store.Attacks(e) then e.attacks = na end
       settleStatus(e)
     end
     changed(key)

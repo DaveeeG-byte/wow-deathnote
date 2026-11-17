@@ -54,7 +54,7 @@ end
 test("Migration 3 -> 4: only the empty structure; no victim, no point, me = the book's revenge", function()
   local ns = M.Load({ db = v3book() })
   local db = _G.DeathNoteDB
-  eq(db.version, 4)
+  eq(db.version, 5)  -- 1.4.0: 5 (attack deeds)
   local L = ns.Ledger
   eq(L.VictimCount(), 0, "no victim from the book's revenge")
   local rp = L.Repute()
@@ -72,7 +72,7 @@ test("The start is idempotent and books nothing (Store.Init 21 times)", function
   local first = copy(_G.DeathNoteDB.ledger)
   for _ = 1, 21 do ns.Store.Init() end
   eq(same(first, _G.DeathNoteDB.ledger), nil, "unchanged")
-  eq(_G.DeathNoteDB.version, 4)
+  eq(_G.DeathNoteDB.version, 5)  -- 1.4.0
   eq(ns.Ledger.Repute().total, 0)
 end)
 
@@ -195,7 +195,7 @@ for _, old in ipairs({ { "1.2.0", V120, FILES120 }, { "1.2.1", "tag", nil }, { "
     local total = c.ns.Ledger.Repute().total
     local db = out(W, c)
     local ledger = copy(db.ledger)
-    eq(db.version, 4)
+    eq(db.version, 5)  -- 1.4.0: 5 (attack deeds)
     -- back: the old version plays, recognises one more revenge, leaves the rap sheet alone
     c = run(W, old[1], db, { dir = dir, files = files, patch = old[4], version = old[1] })
     eq(#M.errors, 0, M.errors[1])
@@ -204,7 +204,7 @@ for _, old in ipairs({ { "1.2.0", V120, FILES120 }, { "1.2.1", "tag", nil }, { "
     partyKill(W, c, "Player-93-Grimm"); W.run(11)
     eq(c.env.DeathNoteDB.enemies["Grimm-Bart"].revenge, 5, old[1] .. " counts revenge")
     db = out(W, c)
-    eq(db.version, 4, "the old version keeps version 4")
+    eq(db.version, 5, "the old version keeps the version it found (5 since 1.4.0)")
     eq(same(ledger, db.ledger), nil, old[1] .. " leaves the rap sheet as it was")
     -- up again: the revenge of the old version counts in the standing through the book, nothing is booked
     c = run(W, "1.3.0", db)
