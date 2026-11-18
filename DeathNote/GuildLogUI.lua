@@ -775,8 +775,29 @@ end
 ------------------------------------------------------------------------
 function GLUI.Fill()
   if not (state.open and PL and PR) then return end
+  state.filledVer, state.filledAt = D().Version(), GetTime and GetTime() or 0
   GLUI.FillLeft()
   GLUI.FillRight()
+end
+
+-- fixer 2 1.6.0 (je01, je02): a change of the guild's data reaches the window bundled: the marks and the open pages
+-- at most once per FILL_GAP seconds, from a timer, never inside the handler of the message that brought it
+GLUI.FILL_GAP = 0.5
+local follow = { pending = false }
+local function Follow()
+  follow.pending = false
+  if not (B.F and B.F:IsShown()) then return end
+  follow.at = GetTime and GetTime() or 0
+  GLUI.UpdateMarks()
+  if state.open and state.filledVer ~= D().Version() then GLUI.Fill() end
+end
+function GLUI.RequestFollow()
+  if follow.pending or not (B.F and B.F:IsShown()) then return end
+  if not (C_Timer and C_Timer.After) then return Follow() end
+  follow.pending = true
+  local t, wait = GetTime and GetTime() or 0, 0
+  if follow.at and t >= follow.at and t - follow.at < GLUI.FILL_GAP then wait = GLUI.FILL_GAP - (t - follow.at) end
+  C_Timer.After(wait, function() local ok, err = pcall(Follow); if not ok and ns.ReportError then ns.ReportError(err) end end)
 end
 
 function GLUI.Open(view)
@@ -836,7 +857,14 @@ function GLUI.Update(filter, panel, sig)
   if state.open and (not guild or (state.openSig ~= nil and sig ~= state.openSig)) then GLUI.Close() end
   if filter == "guild" and D() then D().MarkSeen("seenTab") end
   GLUI.UpdateMarks()
-  if state.open then GLUI.Fill() end
+  if state.open then
+    -- fixer 2 1.6.0 (je02): new data of the guild while the chronicle lies open: built again at most once per FILL_GAP
+    if state.filledVer ~= D().Version() and state.filledAt and (GetTime and GetTime() or 0) - state.filledAt < GLUI.FILL_GAP then
+      GLUI.RequestFollow()
+    else
+      GLUI.Fill()
+    end
+  end
 end
 
 -- UI.lua once the book is built
@@ -874,5 +902,5 @@ function GLUI.Poster() return B.P end
 
 -- something changed in the guild's data while the book is open: the marks and the open pages follow
 ns:On("GUILDLOG_UPDATED", function()
-  if B.F and B.F:IsShown() then GLUI.UpdateMarks(); if state.open then GLUI.Fill() end end
+  if B.F and B.F:IsShown() then GLUI.RequestFollow() end
 end)

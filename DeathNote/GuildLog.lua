@@ -71,8 +71,15 @@ end
 GL.DB = db
 
 local ver = 0               -- bumped by every change the chronicle may show
+-- fixer 2 1.6.0 (je01, je02): the built lists (cache) and the counts of the dot and the ribbon (marks) carry the version
+-- they were made at. A change of the books bumps the version (everything is stale, built again when looked at); an
+-- event of the ring (call, sighting) is put into the current lists and counts instead (patch in GL.Add).
+local cache = {}            -- [src] = { ver, list, names, rowOf = { [ring event] = row }, seen = { [id] = row }, dup }
+local marks = {}            -- [seenTab | seenFeed] = { ver, since, n }
 local function bump() ver = ver + 1 end
 function GL.Version() return ver end
+GL.stat = { builds = 0, scans = 0, patches = 0 }   -- for tests and the probe
+local sortedRing            -- the ring table known to be sorted newest first (GL.Sanitize, GL.Add keep it so)
 
 function GL.Count(what)
   local g = db()
@@ -126,6 +133,7 @@ function GL.Sanitize(g, t)
   table.sort(ring, function(a, b) return a.t > b.t end)
   while #ring > GL.RING_MAX do table.remove(ring) end
   g.ring = ring
+  sortedRing = ring
   for _, k in ipairs({ "seenTab", "seenFeed", "recAt" }) do
     if g[k] ~= nil and not num(g[k]) then g[k] = nil end
   end
@@ -281,6 +289,26 @@ end
 -- { t, key, name, by, victim, zone, src, mapID, x, y, merge }. Kept in the ring (RING_MAX, the oldest go). true when
 -- taken. mapID, x, y (percent) make the place a link to the map. merge = seconds: an event of the same kind and key
 -- within that many seconds of the first of an earlier line makes that line newer and counts it (n) instead.
+-- fixer 2 1.6.0 (je01): the ring stays sorted newest first by insertion (no sort per event); an older ring (data of an
+-- earlier version) is sorted once.
+local function ringPos(ring, t)
+  local lo, hi = 1, #ring + 1
+  while lo < hi do
+    local mid = math.floor((lo + hi) / 2)
+    if ring[mid].t >= t then lo = mid + 1 else hi = mid end
+  end
+  return lo
+end
+local function ringInsert(ring, e)
+  if sortedRing ~= ring then
+    table.sort(ring, function(a, b) return a.t > b.t end)
+    sortedRing = ring
+  end
+  table.insert(ring, ringPos(ring, e.t), e)
+end
+
+local patchRing       -- (below the build)
+
 function GL.Add(kind, data)
   if not plain(kind, 16) or type(data) ~= "table" then return false end
   local g = db()
@@ -305,8 +333,9 @@ function GL.Add(kind, data)
         end
         x.t0 = first
         x.n = math.min(GL.SIGHT_COUNT_MAX, (num(x.n) and x.n or 1) + 1)
-        table.sort(ring, function(a, b) return a.t > b.t end)
-        bump()
+        table.remove(ring, i)
+        ringInsert(ring, x)
+        patchRing(x, x)
         ns:Fire("GUILDLOG_UPDATED", kind)
         return true
       end
@@ -318,10 +347,13 @@ function GL.Add(kind, data)
       return false
     end
   end
-  ring[#ring + 1] = e
-  table.sort(ring, function(a, b) return a.t > b.t end)
-  while #ring > GL.RING_MAX do table.remove(ring) end
-  bump()
+  ringInsert(ring, e)
+  local gone
+  while #ring > GL.RING_MAX do
+    local x = table.remove(ring)
+    if x == e then e = nil else gone = gone or {}; gone[#gone + 1] = x end
+  end
+  patchRing(e, nil, gone)
   ns:Fire("GUILDLOG_UPDATED", kind)
   return true
 end
@@ -357,48 +389,78 @@ end
 
 -- Every event of the books, newest first, plus the ring. Rows { k, t, key, name, by, victim, zone, place, g, victims,
 -- src, mine }. Built only when looked at, cached until something changes (bump).
-local cache = {}
-local function build(src)
-  local out, seen = {}, {}
+-- fixer 2 1.6.0 (je02): with `since`, a scan instead: only the events newer than since - SAME become rows (the rest is
+-- a comparison), no names, no victims, no sort; what the dot and the ribbon count is the same as in the full list.
+local function ringRow(e, names)
+  return { k = e.k, t = e.t, key = e.key, name = e.name or (e.key and (names[e.key] or displayOf(nil, e.key))),
+    by = e.by, victim = e.victim, zone = e.zone, g = e.g, src = e.src or "guild", ring = true,
+    mine = isMine(e.by or e.victim), n = e.n, quiet = GL.QUIET[e.k],
+    place = num(e.m) and { mapID = e.m, x = e.x, y = e.y } or nil }
+end
+local function rowId(e) return e.k .. "\t" .. tostring(e.key) .. "\t" .. tostring(e.by or e.victim) .. "\t" .. tostring(e.t) end
+local function before(a, b)
+  if a.t ~= b.t then return a.t > b.t end
+  if a.k ~= b.k then return a.k < b.k end
+  return tostring(a.key) < tostring(b.key)
+end
+
+local function build(src, since)
+  local scan = since ~= nil
+  local lim = scan and since - GL.SAME or nil
+  local out, seen, dup, rowOf = {}, {}, {}, {}
   local victimsOf, names, inBook = {}, {}, {}
   local function add(e)
-    local id = e.k .. "\t" .. tostring(e.key) .. "\t" .. tostring(e.by or e.victim) .. "\t" .. tostring(e.t)
-    if seen[id] then return end
-    seen[id] = true
+    local id = rowId(e)
+    if seen[id] then dup[id] = true; return false end
+    seen[id] = e
     out[#out + 1] = e
+    return true
   end
+  local function fresh(t) return num(t) and (not lim or t > lim) end
   local list = sources(src)
   for _, s in ipairs(list) do
     local st = s.ctx.store
     for key, e in pairs(type(st) == "table" and type(st.enemies) == "table" and st.enemies or {}) do
-      local name = names[key] or displayOf(e, key)
-      names[key] = name
+      local name
+      if not scan then
+        name = names[key] or displayOf(e, key)
+        names[key] = name
+      end
       inBook[key] = true
-      for _, d in ipairs(type(e.deeds) == "table" and e.deeds or {}) do
-        local v = d.victim
-        if plain(v) and num(d.t) then
-          -- own deaths only while they are shared (the guild got them; else they stay in the own book)
-          if s.share or not isMine(v) then
-            add({ k = "death", t = d.t, key = key, name = name, victim = v, zone = plain(d.zone, 80) and d.zone or nil,
-              place = (num(d.mapID) and d) or nil, src = s.tag, mine = isMine(v) })
-            local vl = victimsOf[key]
-            if not vl then vl = {}; victimsOf[key] = vl end
-            vl[#vl + 1] = { v = v, t = d.t }
+      local deeds = type(e) == "table" and e.deeds
+      if type(deeds) == "table" then
+        for _, d in ipairs(deeds) do
+          local v = type(d) == "table" and d.victim
+          if fresh(d.t) and plain(v) then
+            -- own deaths only while they are shared (the guild got them; else they stay in the own book)
+            local mine = isMine(v)
+            if s.share or not mine then
+              add({ k = "death", t = d.t, key = key, name = name, victim = v, zone = plain(d.zone, 80) and d.zone or nil,
+                place = (num(d.mapID) and d) or nil, src = s.tag, mine = mine })
+              if not scan then
+                local vl = victimsOf[key]
+                if not vl then vl = {}; victimsOf[key] = vl end
+                vl[#vl + 1] = { v = v, t = d.t }
+              end
+            end
           end
         end
       end
     end
     for key, h in pairs(type(s.ctx.hunts) == "table" and s.ctx.hunts or {}) do
       if type(h) == "table" then
-        local name = names[key] or displayOf(h, key)
-        names[key] = name
+        local name
+        if not scan then
+          name = names[key] or displayOf(h, key)
+          names[key] = name
+        end
         for char, x in pairs(type(h.by) == "table" and h.by or {}) do
-          if plain(char) and type(x) == "table" and num(x.t) then
+          if plain(char) and type(x) == "table" and fresh(x.t) then
             add({ k = "release", t = x.t, key = key, name = name, by = char, src = s.tag, mine = isMine(char) })
           end
         end
         for _, b in ipairs(type(h.bags) == "table" and h.bags or {}) do
-          if type(b) == "table" and plain(b.by) and num(b.t) then
+          if type(b) == "table" and plain(b.by) and fresh(b.t) then
             add({ k = "bag", t = b.t, key = key, name = name, by = b.by, src = s.tag, mine = isMine(b.by) })
           end
         end
@@ -407,9 +469,9 @@ local function build(src)
     for key, x in pairs(type(s.ctx.bounty) == "table" and s.ctx.bounty or {}) do
       if type(x) == "table" then
         for char, r in pairs(x) do
-          if plain(char) and type(r) == "table" and num(r.t) and num(r.g) then
-            add({ k = "bounty", t = r.t, key = key, name = names[key] or displayOf(nil, key), by = char, g = r.g,
-              src = s.tag, mine = isMine(char) })
+          if plain(char) and type(r) == "table" and fresh(r.t) and num(r.g) then
+            add({ k = "bounty", t = r.t, key = key, name = not scan and (names[key] or displayOf(nil, key)) or nil, by = char,
+              g = r.g, src = s.tag, mine = isMine(char) })
           end
         end
       end
@@ -421,7 +483,7 @@ local function build(src)
     for key, x in pairs(type(d.bounty) == "table" and d.bounty or {}) do
       if inBook[key] and type(x) == "table" then
         for char, r in pairs(x) do
-          if plain(char) and type(r) == "table" and num(r.t) and num(r.g) then
+          if plain(char) and type(r) == "table" and fresh(r.t) and num(r.g) then
             add({ k = "bounty", t = r.t, key = key, name = names[key], by = char, g = r.g, src = list[1].tag, mine = true })
           end
         end
@@ -431,7 +493,7 @@ local function build(src)
     for key, a in pairs(type(d.avenged) == "table" and d.avenged or {}) do
       if inBook[key] and type(a) == "table" then
         for _, l in ipairs(type(a.log) == "table" and a.log or {}) do
-          if type(l) == "table" and plain(l.by) and num(l.t) then
+          if type(l) == "table" and plain(l.by) and fresh(l.t) then
             add({ k = "avenged", t = l.t, key = key, name = names[key], by = l.by, src = list[1].tag, mine = isMine(l.by) })
           end
         end
@@ -441,12 +503,13 @@ local function build(src)
   -- the ring: what the books no longer keep, and other packages' events
   local g = db()
   for _, e in ipairs(g and g.ring or {}) do
+    -- the ring is sorted newest first (GL.Sanitize, GL.Add): a scan stops at the first old one
+    if lim and sortedRing == g.ring and not (num(e.t) and e.t > lim) then break end
     if src == "all" or (e.src or "guild") == src then
-      local x = { k = e.k, t = e.t, key = e.key, name = e.name or (e.key and (names[e.key] or displayOf(nil, e.key))),
-        by = e.by, victim = e.victim, zone = e.zone, g = e.g, src = e.src or "guild", ring = true,
-        mine = isMine(e.by or e.victim), n = e.n, quiet = GL.QUIET[e.k],
-        place = num(e.m) and { mapID = e.m, x = e.x, y = e.y } or nil }
-      if x.k ~= "death" or not x.mine or (list[1] and list[1].share) then add(x) end
+      local x = ringRow(e, names)
+      if x.k ~= "death" or not x.mine or (list[1] and list[1].share) then
+        if add(x) then rowOf[e] = x end
+      end
     end
   end
   -- one kill that came as V and as E: one event, the revenge (it names the avenged)
@@ -469,6 +532,7 @@ local function build(src)
     if not drop then keep[#keep + 1] = e end
   end
   out = keep
+  if scan then GL.stat.scans = GL.stat.scans + 1; return out end
   -- whom a revenge avenged: the victims of that killer before it (newest first, each once)
   for _, e in ipairs(out) do
     if e.k == "avenged" or e.k == "bag" then
@@ -483,12 +547,80 @@ local function build(src)
       e.victims = vs
     end
   end
-  table.sort(out, function(a, b)
-    if a.t ~= b.t then return a.t > b.t end
-    if a.k ~= b.k then return a.k < b.k end
-    return tostring(a.key) < tostring(b.key)
+  table.sort(out, before)
+  GL.stat.builds = GL.stat.builds + 1
+  return out, { names = names, seen = seen, dup = dup, rowOf = rowOf }
+end
+
+local function counts(row, since) return row.t > since and not row.mine and not row.quiet end
+
+-- fixer 2 1.6.0 (je01): a call or a sighting (the ring) changes the current lists and counts in place: the row goes in
+-- at its place (binary search), a row of a merged line moves, a row that left the ring goes. Anything the patch cannot
+-- be sure of (an id twice, a kind other than call and sight) makes everything stale as before.
+local PATCH = { call = true, sight = true }
+local function bsearch(list, row)
+  local lo, hi = 1, #list + 1
+  while lo < hi do
+    local mid = math.floor((lo + hi) / 2)
+    if before(list[mid], row) then lo = mid + 1 else hi = mid end
+  end
+  return lo
+end
+local function dropRow(c, row)
+  for i = bsearch(c.list, row), #c.list do
+    if c.list[i] == row then table.remove(c.list, i); return true end
+  end
+  for i = 1, #c.list do if c.list[i] == row then table.remove(c.list, i); return true end end
+  return false
+end
+patchRing = function(e, moved, gone)
+  local old = ver
+  ver = ver + 1
+  local ok = (not e or PATCH[e.k]) and true or false
+  for _, x in ipairs(gone or {}) do if not PATCH[x.k] then ok = false end end
+  if not ok then return end
+  local allBad = false
+  local okAll = pcall(function()
+    for src, c in pairs(cache) do
+      if c.ver == old and c.list then
+        local good = true
+        local function out(x)
+          local row = c.rowOf[x]
+          if not row then return end
+          local id = rowId(row)
+          if c.dup[id] or not dropRow(c, row) then good = false; return end
+          c.seen[id], c.rowOf[x] = nil, nil
+        end
+        local function into(x)
+          if not (src == "all" or (x.src or "guild") == src) then return end
+          local row = ringRow(x, c.names)
+          local id = rowId(row)
+          if c.seen[id] or c.dup[id] then good = false; return end
+          table.insert(c.list, bsearch(c.list, row), row)
+          c.seen[id], c.rowOf[x] = row, row
+        end
+        for _, x in ipairs(gone or {}) do out(x) end
+        if moved then out(moved) end
+        if good and e then into(e) end
+        if good then c.ver = ver else cache[src] = nil; if src == "all" then allBad = true end end
+      end
+    end
   end)
-  return out
+  if not okAll then cache = {}; return end
+  -- the counts of the dot and the ribbon: a quiet row (a sighting) changes nothing, a new row of another counts on, a
+  -- row that left the ring counts off
+  local sure = not allBad and not (moved and not GL.QUIET[moved.k])
+  if sure then
+    for w, m in pairs(marks) do
+      if m.ver == old then
+        local d = 0
+        for _, x in ipairs(gone or {}) do if counts(ringRow(x, {}), m.since) then d = d - 1 end end
+        if e and not moved and counts(ringRow(e, {}), m.since) then d = d + 1 end
+        m.n, m.ver = m.n + d, ver
+      end
+    end
+  end
+  GL.stat.patches = GL.stat.patches + 1
 end
 
 -- all events of the source ("all" default, "guild", "friends"), newest first (not to be changed by callers)
@@ -496,12 +628,15 @@ function GL.All(src)
   src = (src == "guild" or src == "friends") and src or "all"
   local c = cache[src]
   if c and c.ver == ver then return c.list end
-  local ok, list = pcall(build, src)
+  local ok, list, meta = pcall(build, src)
   if not ok then
     if ns.ReportError then ns.ReportError(list) end
-    list = {}
+    list, meta = {}, nil
   end
-  cache[src] = { ver = ver, list = list }
+  c = meta or { names = {}, seen = {}, dup = {}, rowOf = {} }
+  c.ver, c.list = ver, list
+  if not meta then c.dup = setmetatable({}, { __index = function() return true end }) end   -- never patched
+  cache[src] = c
   return list
 end
 
@@ -514,15 +649,38 @@ function GL.Feed(src)
   return out
 end
 
--- events of others newer than `since` (the dot on the tab, the count on the ribbon)
+-- events of others newer than `since` (the dot on the tab, the count on the ribbon), and the newest time of all events
+-- newer than since. From the built list when it is current, else from a scan (fixer 2 1.6.0, je02: the dot needs no
+-- build of the chronicle).
+local function since2(since, src)
+  src = (src == "guild" or src == "friends") and src or "all"
+  local n, top = 0, nil
+  local c = cache[src]
+  if c and c.ver == ver then
+    for _, e in ipairs(c.list) do
+      if e.t <= since then break end
+      top = top or e.t
+      if not e.mine and not e.quiet then n = n + 1 end
+    end
+    return n, top
+  end
+  local ok, rows = pcall(build, src, since)
+  if not ok then
+    if ns.ReportError then ns.ReportError(rows) end
+    return 0, nil
+  end
+  for _, e in ipairs(rows) do
+    if e.t > since then
+      if not top or e.t > top then top = e.t end
+      if not e.mine and not e.quiet then n = n + 1 end
+    end
+  end
+  return n, top
+end
+
 function GL.NewSince(since, src)
   if not num(since) then return 0 end
-  local n = 0
-  for _, e in ipairs(GL.All(src)) do
-    if e.t <= since then break end
-    if not e.mine and not e.quiet then n = n + 1 end
-  end
-  return n
+  return (since2(since, src))
 end
 
 function GL.MarkSeen(which)
@@ -530,14 +688,20 @@ function GL.MarkSeen(which)
   if not g or (which ~= "seenTab" and which ~= "seenFeed") then return end
   -- 1.6.0 fix: a time a little ahead (a clock that runs early, Sync takes up to 300 s) is seen as well
   local t = now()
-  local top = GL.All("all")[1]
-  if top and num(top.t) and top.t > t then t = math.min(top.t, t + 300) end
+  local _, top = since2(t, "all")
+  if top and num(top) and top > t then t = math.min(top, t + 300) end
   g[which] = t
 end
 function GL.Unseen(which)
   local g = db()
   if not g then return 0 end
-  return GL.NewSince(g[which], "all")
+  local since = g[which]
+  if not num(since) then return 0 end
+  local m = marks[which]
+  if m and m.ver == ver and m.since == since then return m.n end
+  local n = since2(since, "all")
+  marks[which] = { ver = ver, since = since, n = n }
+  return n
 end
 
 ---------------------------------------------------------------------------
