@@ -143,8 +143,19 @@ end
 -- 1.5.0 name: the line of 1.5.0 (the new name, what stays, what is new) under settings.news150. It replaces the line of
 -- 1.4.0: whoever has not seen that one yet gets only this one. news140 is set with it, so a 1.4.0 client after a
 -- downgrade does not bring its old line afterwards.
-Start.NEWS = "news150"
+-- 1.6.0 wiring: the line of 1.6.0 (every death in the Death Log, the guild chronicle, the call for help, sightings to
+-- guild and friends and where their switch is) under settings.news160. Whoever has not seen the line of 1.5.0 yet (it
+-- was never published: an update from 1.4.x) gets that one first, because it tells the new name; both markers before
+-- are set with it, so an older client after a downgrade stays quiet.
+Start.NEWS = "news160"
+Start.NEWS_PREV = "news150"
 Start.NEWS_OLD = "news140"
+function Start.NewsLine()
+  local L = ns.L
+  local F = ns.F
+  return F(L.CHAT_NEWS_160, { log = L.TAB_DEATHLOG, guild = L.TAB_GUILD, rules = L.HEAD_RULES, sheet = L.SHEET_GUILD,
+    switch = L.OPT_G_LAYERSIGHT })
+end
 function Start.News()
   local st = Settings()
   if not st or st[Start.NEWS] ~= nil then return end
@@ -154,8 +165,10 @@ function Start.News()
     return
   end
   state.newsWait = false
-  Print(ns.L.CHAT_NEWS_150)
+  if st[Start.NEWS_PREV] == nil then Print(ns.L.CHAT_NEWS_150) end
+  Print(Start.NewsLine())
   Set(Start.NEWS, true)
+  if st[Start.NEWS_PREV] == nil then Set(Start.NEWS_PREV, true) end
   if st[Start.NEWS_OLD] == nil then Set(Start.NEWS_OLD, true) end
 end
 
@@ -215,8 +228,9 @@ ns:On("READY", function()
   if Start.Fresh() then
     if st[Start.SETTING] ~= "new" then st[Start.SETTING] = "new" end
     state.armed = "dialog"
-    -- a new installation knows 1.5.0 from the start: no news line, now or later (the first-start window greets)
+    -- a new installation knows 1.6.0 from the start: no news line, now or later (the first-start window greets)
     if st[Start.NEWS] == nil then st[Start.NEWS] = true end
+    if st[Start.NEWS_PREV] == nil then st[Start.NEWS_PREV] = true end
     if st[Start.NEWS_OLD] == nil then st[Start.NEWS_OLD] = true end
   elseif st[Start.SETTING] == nil then
     state.armed = "hint"
