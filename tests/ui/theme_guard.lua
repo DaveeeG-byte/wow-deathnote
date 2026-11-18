@@ -195,6 +195,11 @@ for _, code in ipairs(CODES) do
     for _, list in pairs(ns.Locale.FONTS[script]) do for _, file in ipairs(list) do FIXED_TEX[file] = true end end
   end
   FIXED_TEX["Interface\\Minimap\\MiniMap-TrackingBorder"], FIXED_TEX["Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight"] = true, true
+  -- 1.5.0 scene: the crime scene pins are the map's signs, the same in every cover (a small one marks a place in the
+  -- book that the map can show)
+  for _, f in ipairs({ "scene_death", "scene_kill", "scene_mate", "scene_ring", "scene_badge" }) do
+    FIXED_TEX[ns.Look.MEDIA .. f .. ".tga"] = true
+  end
   for _, c in pairs(_G.RAID_CLASS_COLORS or {}) do CLASS[rgbKey({ c.r, c.g, c.b })] = true end
   local base = ns.L
   -- show words of the black book; a word that a control key has as well (TAB_GUILD "Guild" = SRC_GUILD) can not be

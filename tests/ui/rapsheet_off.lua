@@ -75,7 +75,8 @@ local function run(addon, code)
   local function newPart(f)
     local o = f
     while o do
-      if o.ovPart or (o.arrow and o.ul) or o == rawget(G, "DeathNoteSearch") then return true end
+      -- 1.5.0 scene: the word "Chronicle" and the small map pins of places are new parts too (scenePart)
+      if o.ovPart or o.scenePart or (o.arrow and o.ul) or o == rawget(G, "DeathNoteSearch") then return true end
       o = o._parent
     end
     return false

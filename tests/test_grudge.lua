@@ -247,7 +247,12 @@ test("Mit 1.3.1 hin und zurueck: der alte Client liest Angriffe ohne Fehler, dan
   eq(db.version, 5)
   -- the old client (files of the tag, without Grudge.lua)
   local oldFiles = {}
-  for _, f in ipairs(M.FILES) do if f ~= "Grudge.lua" then oldFiles[#oldFiles + 1] = f end end
+  -- (1.5.0: newer files than the tag are left out too: Scene.lua, Chronicle.lua)
+  for _, f in ipairs(M.FILES) do
+    local h = io.open(dir .. f, "r")
+    if h then h:close() end
+    if f ~= "Grudge.lua" and h then oldFiles[#oldFiles + 1] = f end
+  end
   local o = W.client("Anton", "Wurst", nil, { db = db, dir = dir, files = oldFiles, version = "1.3.1" })
   o.login(); W.run(2)
   eq(#M.errors, 0, tostring(M.errors[1]))
