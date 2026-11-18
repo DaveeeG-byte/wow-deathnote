@@ -1399,14 +1399,22 @@ function GF.BindHuntRow(r, h)
   r.under:SetWidth(InkWidth(r.name))
 end
 
+-- design fix 1.6.0: while a word switch stands at the bottom left (FeudUI: Players | Guilds, Cases | Claims | Filed
+-- away), the list ends one row earlier, so the switch stands free below it
+function UX.VisRows()
+  local on = LP and ((LP.fdWanted and LP.fdWanted:IsShown()) or (LP.fdOpen and LP.fdOpen:IsShown()))
+  return on and ROWS - 1 or ROWS
+end
+
 BindRows = function()
   local n = #data
-  local maxOff = math.max(0, n - ROWS)
+  local vis = UX.VisRows()
+  local maxOff = math.max(0, n - vis)
   if state.offset > maxOff then state.offset = maxOff end
   for i = 1, ROWS do
     local r = rows[i]
     local idx = state.offset + i
-    local item = data[idx]
+    local item = i <= vis and data[idx] or nil
     r.item, r.index = item, (dataIdx and dataIdx[idx]) or idx
     if item then
       if state.filter == "journal" then UX.BindDeathRow(r, item, r.index)
@@ -6431,7 +6439,7 @@ function UX.BuildLeftPage()
   LR:SetAllPoints()
   LR:EnableMouseWheel(true)
   LR:SetScript("OnMouseWheel", function(_, delta)
-    local maxOff = math.max(0, #data - ROWS)
+    local maxOff = math.max(0, #data - UX.VisRows())
     local o = math.max(0, math.min(maxOff, state.offset - delta * 2))
     if o ~= state.offset then state.offset = o; HideMenu(); BindRows() end
   end)
@@ -6784,7 +6792,7 @@ end
 local function ScrollTo(pred)
   for i = 1, #data do
     if pred(data[i]) then
-      state.offset = math.max(0, math.min(i - 1, #data - ROWS))
+      state.offset = math.max(0, math.min(i - 1, #data - UX.VisRows()))
       break
     end
   end
