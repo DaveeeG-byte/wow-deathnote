@@ -108,8 +108,14 @@ local function After(d, fn)
 end
 
 -- own play days (1.2.0): counted once per calendar day on which a char of this account is logged in
+-- 1.6.0 feud: the counter lives in DeathNoteDB.days (Feud.lua, the book's expiry reads it too); fdb.days stays its copy
 local function countDay()
   if not fdb then return end
+  local Fe = ns.Feud
+  if Fe and Fe.CountDay and ns.Store and ns.Store.DB and ns.Store.DB() and ns.Store.DB().friends == fdb then
+    Fe.CountDay(ns.Store.DB())
+    return
+  end
   local d = math.floor(now() / 86400)
   -- only a later calendar day counts (a clock set back and forth again counts nothing twice)
   if not P.Finite(fdb.dayAt) or d > fdb.dayAt then fdb.dayAt = d; fdb.days = (fdb.days or 0) + 1 end

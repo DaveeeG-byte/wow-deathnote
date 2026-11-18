@@ -165,7 +165,11 @@ local function readInfo(unit, r)
   if level and level > 0 then r.level = level; r.skull = nil elseif level and level < 0 then r.skull = true end
   local sex = Util.Num(Call(UnitSex, unit))
   if sex then r.sex = sex end
-  local guild = Str(Call(GetGuildInfo, unit))
+  local rawGuild = Call(GetGuildInfo, unit)
+  -- 1.6.0 feud: how often the guild of an enemy was readable, empty or secret (probe.feud)
+  local Fe = ns.Feud
+  if Fe and Fe.GuildRead then Fe.GuildRead(rawGuild) end
+  local guild = Str(rawGuild)
   if guild then r.guild = guild end
   local faction = Str(Call(UnitFactionGroup, unit))
   if faction then r.faction = faction end
@@ -262,6 +266,12 @@ function Tracker.OnUnit(unit, how)
   if targetsMe(unit) then r.targetedMe = t end
   if unit == "target" then r.iTargeted = t end
   if listed then spotted(key, unit, how or "other", r) end
+  -- 1.6.0 feud (Feud.lua): a member of a feud guild who is not in the book; set only while there is a feud
+  local fh = Tracker.feudHook
+  if fh and not listed and hostile then
+    local ok, err = pcall(fh, r, unit, how or "other")
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
   -- 1.3.0 (Ledger.lua): an own victim in sight; set only while the victim alarm is on and there are victims
   local vh = Tracker.victimHook
   if vh then vh(key, unit, how or "other") end

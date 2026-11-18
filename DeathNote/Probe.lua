@@ -256,6 +256,13 @@ function Probe.Run(verbose, opts)
     local oks, sc = pcall(ns.Scene.ProbeSnapshot)
     if oks and type(sc) == "table" then out.scene = sc end
   end
+  -- 1.6.0 feud: guild of an enemy readable / empty / secret, expired entries, feud alarms, time of the start (Feud.lua)
+  local keepFeud
+  if ns.Feud and ns.Feud.Flush then
+    local okf, pf = pcall(ns.Feud.Flush)
+    if okf and type(pf) == "table" then keepFeud = pf end
+  end
+  if keepFeud then out.feud = keepFeud end
   if db then
     local keep = db.probe and db.probe.deaths
     db.probe = out
