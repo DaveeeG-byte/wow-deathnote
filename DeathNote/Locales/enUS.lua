@@ -1160,4 +1160,43 @@ L.FATE_AW_ZOO_COND = "Killed by ten different creatures."  -- award condition
 L.OPT_FATES = "Also record deaths by creatures and the world"  -- check box in the foot of the file of a death by a creature or the world (Death Log): also record deaths by creatures and the world (default on; off = nothing new, what is there stays)
 L.SHARE_WEEK_OTHERS = "other deaths: {count}"  -- week line: deaths by creatures and the world this week
 L.SHARE_WEEK_BEAST = "deadliest creature: {name} {times}"  -- week line: the creature that killed you most this week; {name} = its name, {times} = '3x'
+-- 1.6.0 feud
+L.FEUD_EXPIRED_CHAT = "{count} old suspicions filed away (Unsolved, Filed)."  -- chat, once after login: entries with only suspicions or only attacks and no news for 30 play days were filed away; {count} = how many; where to find them (tab Unsolved, view Filed)
+L.VIEW_PLAYERS = "Players"  -- word switch at the bottom left of Wanted: the list of players (as before)
+L.VIEW_GUILDS = "Guilds"  -- word switch at the bottom left of Wanted: the page 'Which guilds kill you'
+L.VIEW_OPEN = "Open"  -- word switch at the bottom left of Unsolved: open cases and suspects (as before)
+L.VIEW_CLAIMS = "Claims"  -- word switch at the bottom left of Unsolved: claims on your own bounties (a number may follow)
+L.VIEW_FILED = "Filed"  -- word switch at the bottom left of Unsolved: old suspicions filed away (a number may follow)
+L.FEUD_MEMBERS = "{count} in book"  -- guild row, right, and tooltip: how many of this guild are in your book; {count} = number
+L.FEUD_KILLED_YOU = "killed you {times}"  -- guild row sub line: how often players of this guild killed you; {times} = '3×'
+L.FEUD_DECLARE = "Declare feud"  -- small word on a guild row and button: declare a feud on this guild (quiet alarm when its members show up)
+L.FEUD_END = "End feud"  -- small word on a guild row and button: end the feud with this guild
+L.FEUD_TIP_ON = "Feud: one of them in sight sounds a quiet alarm, once in 5 minutes."  -- tooltip of a guild row with a feud: what the feud does
+L.FEUD_TIP_CLICK = "Click: show or hide its members"  -- tooltip of a guild row: what a click does
+L.FEUD_ALARM = "Guild {guild}: feud. {name} in sight."  -- chat line with the quiet alarm: a member of a feud guild who is not in your book is in sight; {guild} = guild name, {name} = player name
+L.FEUD_CAP = "No more feuds: at most {count}."  -- chat: no more feuds possible; {count} = the limit (50)
+L.EMPTY_FGUILDS_HEAD = "No guild known yet."  -- right page, guild page of Wanted with no guild known
+L.EMPTY_FGUILDS_SUB = "The book notes the guild of every killer it sees."  -- under it
+L.EMPTY_FCLAIMS_HEAD = "No claims."  -- right page, Unsolved > Claims without any claim
+L.EMPTY_FCLAIMS_SUB = "When guild or friends take down a target of your bounty, the claim stands here."  -- under it: what a claim is
+L.EMPTY_FFILED_HEAD = "Nothing filed."  -- right page, Unsolved > Filed without any entry
+L.EMPTY_FFILED_SUB = "Suspicions and attacks with no news for 30 play days are filed here."  -- under it: what is filed
+L.CLAIM_LINE = "{name} got your target {target}: {gold} gold open"  -- notice, chat and claim page: a guildmate or friend killed a target of your own bounty; {name} = his first name, {target} = the target, {gold} = whole gold (number); the addon pays nothing
+L.CLAIM_BY = "by {name}"  -- claim row, sub line: who claims it; {name} = first name
+L.CLAIM_OPEN = "open"  -- mark of a claim: not settled yet
+L.CLAIM_PAID = "paid"  -- mark of a claim: you paid it (by trade, yourself)
+L.CLAIM_DECLINED = "declined"  -- mark of a claim: you declined it
+L.ACT_PAID = "Paid"  -- button on a claim: mark it as paid
+L.ACT_DECLINE = "Decline"  -- button on a claim: decline it
+L.ACT_REOPEN = "Open again"  -- button on a settled claim: open again
+L.BANNER_CLAIM = "Bounty earned"  -- kicker of the notice (letter-spaced): a bounty of yours was earned
+L.FILED_SINCE = "filed {time}"  -- row of a filed entry, sub line; {time} = '3 days ago'
+L.FILED_TINY = "Filed on {time} after 30 play days without news. Taken back, it stays."  -- page of a filed entry: why it is there and what taking it back does; {time} = date
+L.ACT_RESTORE = "Take back"  -- word and button: take a filed entry back into the book
+L.ACT_KEEP = "Keep"  -- row menu and poster menu: never file this entry away
+L.ACT_UNKEEP = "Keep no longer"  -- row menu and poster menu: may be filed away again
+L.OPT_BOOK_EXPIRE = "File away old suspicions"  -- check box, House Rules, sheet Book: suspicions and attacks without news for 30 play days go to Unsolved > Filed
+L.SET_SEC_ORDER = "ORDER"  -- section label on the House Rules, sheet Book (capitals like the other sections)
+L.OPTIONS_LINE = "Remembers who killed you and warns you when they come near. All settings are in the book's House Rules."  -- the addon's page in the game's options (Esc > Options > AddOns): one line
+L.OPTIONS_OPEN = "Open House Rules"  -- button on that page: opens the book on the House Rules
 end)

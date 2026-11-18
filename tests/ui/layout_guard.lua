@@ -47,7 +47,7 @@ local function world(code)
       ShowFriends = function() end,
     }
   end })
-  for _, f in ipairs({ "Alert.lua", "UI.lua", "Start.lua", "Extras.lua", "Humor.lua" }) do
+  for _, f in ipairs({ "Alert.lua", "UI.lua", "Start.lua", "Extras.lua", "Humor.lua", "FeudUI.lua" }) do
     if io.open(ADDON .. "/" .. f) then BM.Load(ADDON .. "/" .. f, ns) end
   end
   AM.FireEvent("PLAYER_LOGIN")
@@ -276,6 +276,26 @@ local function run(code)
   ns:Fire("TOGGLE_UI"); tick(); settle()
   local F = rawget(G, "DeathNoteFrame")
   scan("list wanted", F)
+  -- 1.6.0 feud: the guild page of Wanted (closed and open), claims and filed entries in Unsolved
+  if ns.FeudUI and ns.Feud then
+    local gname = "Die Schlaechter von Sturmwind und Umgebung"
+    ns.Store.Get(k1).guild = gname
+    ns.Store.Get(k2).guild = gname
+    ns.Feud.Touched()
+    ns.FeudUI.SetView("guilds"); tick(); settle(); scan("feud guilds", F)
+    ns.FeudUI.opened[gname] = true; ns.UI.Refresh(); tick(); settle(); scan("feud guilds open", F)
+    ns.Feud.Declare(gname); tick(); settle(); scan("feud declared", F)
+    ns.FeudUI.SetView("players"); tick(); settle()
+    ns.Feud.AddClaim("Maximilianus-Wunderkammer", long, "Kollege Langername", t, 99999, "Ich Selbst")
+    local db = ns.Store.DB()
+    db.expired = db.expired or {}
+    db.expired["Konstantinos-Abendroete"] = { name = "Konstantinos", surname = "Abendroete", display = "Konstantinos Abendroete",
+      suspected = 2, status = "suspect", deaths = {}, expiredAt = t - 86400 }
+    ns.UI.SetFilter("open"); tick(); settle(); scan("unsolved open", F)
+    ns.FeudUI.SetOpenView("claims"); tick(); settle(); scan("feud claims", F)
+    ns.FeudUI.SetOpenView("filed"); tick(); settle(); scan("feud filed", F)
+    ns.FeudUI.SetOpenView("open"); ns.UI.SetFilter("wanted"); tick(); settle()
+  end
   ns.UI.ShowEnemy(k1); tick(); settle()
   local RPf
   for _, f in ipairs(BM.frames) do if f.enemy and f.death then RPf = f end end

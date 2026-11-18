@@ -376,6 +376,7 @@ local function sanitizeRow(row)
   for _, p in ipairs(PATHS) do row[p] = count(row[p]) end
   if type(row.f) ~= "string" or row.f:find("[^" .. Ledger.FLAGS .. "]") then row.f = "" end
   row.zone, row.me, row.name = cleanStr(row.zone, 80), cleanStr(row.me, 64), cleanStr(row.name, 64)
+  row.guild = cleanStr(row.guild, 64)
   if row.state ~= nil and type(row.state) ~= "string" then row.state = nil end
   return true
 end
@@ -1288,6 +1289,8 @@ local function book(info, opts)
   local zone, _, mapID, x, y = Util.Zone()
   local row = { t = t, key = key, name = Util.Display(v), vl = vl, ml = myLevel, band = band, r = r, e = ee, j = j,
     s = s, f = flagsOf(ctx), zone = Str(zone), mapID = mapID, x = x, y = y, me = Util.PlayerFullName() }
+  -- 1.6.0 feud: the guild he wore at this kill
+  row.guild = cleanStr(Str(info.guild), 64)
   table.insert(db.log, 1, row)
   while #db.log > Ledger.LOG_MAX do table.remove(db.log) end
   -- victim

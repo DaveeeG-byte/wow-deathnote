@@ -1230,6 +1230,9 @@ local friends
 -- hello on this channel (J in the minute after are answers)
 local GCTX = { src = "guild", store = store, stats = stats, hunts = nil, fresh = {}, helloAt = nil }
 local views = {}          -- source -> merged/plain store (see view())
+local allView             -- 1.6.0 feud: the table of the merged view "all", filled again in place (see view())
+local countCache = {}     -- 1.6.0 feud: source -> { Guild.Count results } until the next change
+local mergeCache = {}     -- 1.6.0 feud: key -> the joined entry of both lists and what it was joined from (see view())
 local huntCache = {}      -- source -> sorted hunt rows
 local huntIndex = {}      -- source -> key -> row of huntCache[source]
 -- the hunt list of the guild while it counts (in that guild, list bound); nil otherwise (1.2.0 fix:
@@ -1271,6 +1274,7 @@ local function invalidate()
   rankCache = nil
   memberCache = nil
   for k in pairs(views) do views[k] = nil end
+  for k in pairs(countCache) do countCache[k] = nil end
   for k in pairs(huntCache) do huntCache[k] = nil; huntIndex[k] = nil end
 end
 
@@ -2791,6 +2795,31 @@ function P.MergeEntries(a, b)
   return e
 end
 
+-- 1.6.0 feud: an entry of both lists is joined again only when one of them changed (another table, a deed more or
+-- less, a newer deed, a listing, a sighting, the name or class); else the joined entry of the last build is kept
+local function lbSum(lb)
+  local n, t = 0, 0
+  if type(lb) == "table" then for _, x in pairs(lb) do n = n + 1; t = t + (tonumber(x) or 0) end end
+  return n, t
+end
+local function joined(k, g, f)
+  local c = mergeCache[k]
+  local gn, fn = #g.deeds, #f.deeds
+  local gt, ft = gn > 0 and g.deeds[1].t or 0, fn > 0 and f.deeds[1].t or 0
+  local gl, glt = lbSum(g.listedBy)
+  local fl, flt = lbSum(f.listedBy)
+  if c and c.g == g and c.f == f and c.gn == gn and c.fn == fn and c.gt == gt and c.ft == ft and c.gl == gl and c.fl == fl
+    and c.glt == glt and c.flt == flt and c.gs == g.lastSeen and c.fs == f.lastSeen and c.gd == g.display
+    and c.fd == f.display and c.gc == g.class and c.fc == f.class and c.gv == g.level and c.fv == f.level then
+    return c.e
+  end
+  local e = P.MergeEntries(g, f)
+  stats.viewJoined = (stats.viewJoined or 0) + 1
+  mergeCache[k] = { e = e, g = g, f = f, gn = gn, fn = fn, gt = gt, ft = ft, gl = gl, fl = fl, glt = glt, flt = flt,
+    gs = g.lastSeen, fs = f.lastSeen, gd = g.display, fd = f.display, gc = g.class, fc = f.class, gv = g.level, fv = f.level }
+  return e
+end
+
 local function view(src)
   if src == "guild" then return store end
   local fs = friends and friends.store
@@ -2799,12 +2828,27 @@ local function view(src)
   if store.count == 0 then return fs end
   local v = views.all
   if v then return v end
-  v = { enemies = {}, count = 0 }
-  for k, e in pairs(store.enemies) do v.enemies[k] = e; v.count = v.count + 1 end
-  for k, e in pairs(fs.enemies) do
-    local g = v.enemies[k]
-    if g then v.enemies[k] = P.MergeEntries(g, e) else v.enemies[k] = e; v.count = v.count + 1 end
+  -- 1.6.0 feud: after a change the same table is filled again in place: an entry of one list alone stays where it is
+  -- (no copy of both books on every rebuild), only an entry of both lists is joined anew, keys that left go
+  v = allView or { enemies = {}, count = 0 }
+  allView = v
+  stats.viewBuilds = (stats.viewBuilds or 0) + 1
+  local en, ge, fe, n = v.enemies, store.enemies, fs.enemies, 0
+  for k in pairs(en) do if ge[k] == nil and fe[k] == nil then en[k] = nil end end
+  for k in pairs(mergeCache) do if ge[k] == nil or fe[k] == nil then mergeCache[k] = nil end end
+  for k, e in pairs(ge) do
+    local f = fe[k]
+    if f then en[k] = joined(k, e, f)
+    elseif en[k] ~= e then en[k] = e; stats.viewPut = (stats.viewPut or 0) + 1 end
+    n = n + 1
   end
+  for k, e in pairs(fe) do
+    if ge[k] == nil then
+      if en[k] ~= e then en[k] = e; stats.viewPut = (stats.viewPut or 0) + 1 end
+      n = n + 1
+    end
+  end
+  v.count = n
   views.all = v
   return v
 end
@@ -2877,14 +2921,20 @@ end
 -- enemies, deeds, entries listed by hand only (no kills), foreign entries (1.1.0: another
 -- character than the logged-in one takes part, as victim or in listedBy; see P.Foreign)
 function Guild.Count(src)
+  src = srcOf(src)
+  -- 1.6.0 feud: the book asks on every rebuild (the tab's number); counted again only after a change
+  local c = countCache[src]
+  if c then return c[1], c[2], c[3], c[4] end
   local deeds, listed, foreign = 0, 0, 0
   local mine = myFullName()
-  local v = view(srcOf(src))
+  local v = view(src)
   for _, e in pairs(v.enemies) do
     deeds = deeds + #e.deeds
     if #e.deeds == 0 then listed = listed + 1 end
     if P.Foreign(e, mine) then foreign = foreign + 1 end
   end
+  stats.countRuns = (stats.countRuns or 0) + 1
+  countCache[src] = { v.count or 0, deeds, listed, foreign }
   return v.count or 0, deeds, listed, foreign
 end
 

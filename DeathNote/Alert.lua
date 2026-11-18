@@ -78,6 +78,17 @@ function Look.Script(fs, text)
   Look.Font(fs, fs.fontKind, fs.fontSize, fs.fontFlags)
 end
 
+-- 1.6.0 feud: an edit box (search, note, reason, import) checks the script of its text while the player types; Look.Font
+-- covers SetText only. Hooked after the box's own scripts are set (SetScript would drop the hook).
+function Look.TypingScript(eb)
+  if type(eb) ~= "table" or eb.dnTypingScript or type(eb.HookScript) ~= "function" then return end
+  eb.dnTypingScript = true
+  eb:HookScript("OnTextChanged", function(self)
+    local ok, t = pcall(self.GetText, self)
+    if ok then Look.Script(self, t) end
+  end)
+end
+
 -- Font list for a text in a given language (language list of the house rules); kind is a role of the theme
 function Look.FontOf(code, kind)
   kind = kind or "body"

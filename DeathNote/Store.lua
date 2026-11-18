@@ -139,9 +139,12 @@ local function repairSettings(st)
   end
 end
 
+local rankedCache = {}  -- 1.6.0 feud: filter .. "\0" .. sort -> sorted list (Store.Ranked hands out copies)
+Store.rankedSorts = 0  -- tests and measuring: how often Store.Ranked really sorted
 local function changed(key)
   rankCache = nil
   if next(debtCache) then debtCache = {} end
+  if next(rankedCache) then rankedCache = {} end
   ns:Fire("ENEMY_UPDATED", key)
 end
 
@@ -290,6 +293,8 @@ local function sanitizeEntry(key, e)
     or e.adoptFrom:find("[%c|]")) then e.adoptFrom = nil end
   if e.adoptSrc ~= nil and e.adoptSrc ~= "guild" and e.adoptSrc ~= "friends" and e.adoptSrc ~= "text" then e.adoptSrc = nil end
   if e.adoptAt ~= nil and type(e.adoptAt) ~= "number" then e.adoptAt = nil end
+  -- 1.6.0 feud: the guild of each deed, the guilds of the revenge, the play day of the last deed or sighting, "keep"
+  if ns.Feud and ns.Feud.SanitizeEntry then ns.Feud.SanitizeEntry(e) end
   -- 1.2.0: the note of an entry taken over from the guild book is a mark, not a sentence; the
   -- German sentence of 1.1.0 and the English one of the 1.2.0 test builds are recognised and replaced
   if e.fromGuildKills ~= nil and not (type(e.fromGuildKills) == "number" and e.fromGuildKills >= 0
@@ -342,7 +347,17 @@ local function rebuildIndex()
 end
 
 -- Loads/migrates the SavedVariables. Safe to call again (tests).
+local initBody
 function Store.Init()
+  -- 1.6.0 feud: the time of the start is measured (probe.feud)
+  local clock = _G.debugprofilestop
+  local t0 = type(clock) == "function" and clock() or os.clock() * 1000
+  local out = initBody()
+  local t1 = type(clock) == "function" and clock() or os.clock() * 1000
+  if ns.Feud and ns.Feud.InitTime then pcall(ns.Feud.InitTime, t1 - t0) end
+  return out
+end
+initBody = function()
   if type(_G.DeathNoteDB) ~= "table" then _G.DeathNoteDB = {} end
   db = _G.DeathNoteDB
   if type(db.version) ~= "number" then
@@ -386,8 +401,14 @@ function Store.Init()
       end
     end
   end
+  -- 1.6.0 feud: play days, old suspicions to the archive, the hard cap of the book (Feud.lua); never breaks the start
+  if ns.Feud and ns.Feud.OnInit then
+    local ok, err = pcall(ns.Feud.OnInit, db, enemies)
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
   rankCache = nil
   debtCache = {}
+  rankedCache = {}
   Store.TouchJournal()
   rebuildIndex()
   -- 4: the rap sheet (DeathNoteDB.ledger). The start only repairs it and keeps its keys in line with the book; it
@@ -612,6 +633,15 @@ function Store.Ranked(filter, sort)
     for i = 1, #cached do copy[i] = cached[i] end
     return copy
   end
+  -- 1.6.0 feud: every other sort is cached per filter too (emptied by every change, like "debt")
+  local ck = sort ~= "debt" and (filter .. "\0" .. tostring(sort)) or nil
+  local hit = ck and rankedCache[ck]
+  if hit then
+    local copy = {}
+    for i = 1, #hit do copy[i] = hit[i] end
+    return copy
+  end
+  Store.rankedSorts = Store.rankedSorts + 1
   local out = {}
   for _, e in pairs(enemies or {}) do
     if filter == "all" or e.status == filter then out[#out + 1] = e end
@@ -624,6 +654,9 @@ function Store.Ranked(filter, sort)
     return out
   end
   table.sort(out, SORTS[sort] or rankLess)
+  local keep = {}
+  for i = 1, #out do keep[i] = out[i] end
+  rankedCache[ck] = keep
   return out
 end
 
@@ -677,6 +710,7 @@ end
 -- the standing of an enemy changed (own kill, Ledger.Clear) or the rap sheet was switched: ranks anew
 ns:On("STANDING_CHANGED", function() rankCache = nil; if next(debtCache) then debtCache = {} end end)
 ns:On("SETTINGS_CHANGED", function(path) if path == "ledger.enabled" then rankCache = nil; debtCache = {} end end)
+
 
 -- Fun value in copper, deterministic.
 function Store.Bounty(e)
@@ -739,6 +773,7 @@ local function newEntry(key, name, realm)
     kills = 0, assists = 0, suspected = 0, revenge = 0, status = "wanted", manual = false, note = "",
     sightings = 0, deaths = {},
   }
+  if ns.Feud and ns.Feud.Touch then ns.Feud.Touch(e) end
   enemies[key] = e
   indexAdd(key, e)
   return e
@@ -794,6 +829,8 @@ end
 -- Copies plain identity info onto an entry (never secrets). info.surname marks a real surname.
 local function applyInfo(e, info)
   if type(info) ~= "table" then return end
+  -- 1.6.0 feud: a name or a sighting may change the sorts "name" and "seen" (the rank cache stays)
+  if next(rankedCache) then rankedCache = {} end
   local hasSurname = false
   local sn = info.surname
   if not Util.IsSecret(sn) and type(sn) == "string" and sn ~= "" then hasSurname = true end
@@ -948,6 +985,19 @@ function Store.Remove(key)
   return true
 end
 
+-- 1.6.0 feud: an entry back into the book (from the archive of old suspicions, Feud.lua). Only under a free key;
+-- repaired like at the start. Fires ENEMY_UPDATED. Returns true when it is in the book again.
+function Store.PutBack(key, e)
+  if not enemies or type(key) ~= "string" or type(e) ~= "table" or enemies[key] then return false end
+  if not sanitizeEntry(key, e) then return false end
+  if type(e.guid) == "string" and guidIndex[e.guid] and enemies[guidIndex[e.guid]] then e.guid = nil end
+  enemies[key] = e
+  indexAdd(key, e)
+  if type(e.guid) == "string" then guidIndex[e.guid] = key end
+  changed(key)
+  return true
+end
+
 function Store.SetNote(key, text)
   local e = Store.Get(key)
   if not e then return false end
@@ -1001,6 +1051,10 @@ function Store.ApplyKill(info, death, sure)
   local key, e, isNew = Store.Upsert(info, true)
   if not key then return nil end
   local rec = copyDeath(death)
+  -- 1.6.0 feud: the guild he wore at this deed (a later change of guild never moves it)
+  if rec.guild == nil then rec.guild = plainField(info.guild) end
+  if type(rec.guild) ~= "string" then rec.guild = nil end
+  if ns.Feud and ns.Feud.Touch then ns.Feud.Touch(e) end
   local role = VALID_ROLE[death.role] and death.role or roleOf(sure and true or false, death.source)
   rec.role = role
   rec.sure = role == "kill"
@@ -1057,6 +1111,10 @@ function Store.AddAttack(info, rec)
   end
   local d = copyDeath(rec)
   d.role, d.sure, d.source, d.others = "attack", false, "grudge", {}
+  -- 1.6.0 feud: the guild of the attacker at this attack
+  if d.guild == nil then d.guild = plainField(info.guild) end
+  if type(d.guild) ~= "string" then d.guild = nil end
+  if ns.Feud and ns.Feud.Touch then ns.Feud.Touch(e) end
   -- the oldest attack deed gives way (never a kill, an assist or a suspicion: capDeeds)
   local pos = #e.deaths + 1
   for i = 1, #e.deaths do if (e.deaths[i].t or 0) <= d.t then pos = i; break end end
@@ -1090,8 +1148,10 @@ function Store.Seen(key, info, where, newEncounter)
   applyInfo(e, info)
   e.lastSeen = where
   if newEncounter then e.sightings = (e.sightings or 0) + 1 end
+  if ns.Feud and ns.Feud.Touch then ns.Feud.Touch(e) end
   -- the rank does not depend on sightings or identity fields: keep the rank cache
-  ns:Fire("ENEMY_UPDATED", key)
+  -- 1.6.0 feud: "seen" lets the book bundle the rebuilds of a crowd of sightings (UI.lua)
+  ns:Fire("ENEMY_UPDATED", key, "seen")
   return true
 end
 
@@ -1189,6 +1249,8 @@ function Store.AddRevenge(key, byHand)
   end
   e.revenge = e.revenge + 1
   e.lastRevenge = t
+  -- 1.6.0 feud: the guild he wore at this revenge (Feud.lua counts the revenge per guild from it)
+  if ns.Feud and ns.Feud.RevengeGuild then ns.Feud.RevengeGuild(e, 1) end
   changed(key)
   ns:Fire("REVENGE", key)
   return true
@@ -1204,6 +1266,7 @@ function Store.UndoRevenge(key, prevLast)
   if l then table.remove(l) end
   e.revenge = e.revenge - 1
   e.revengeHand = e.revengeHand - 1
+  if ns.Feud and ns.Feud.RevengeGuild then ns.Feud.RevengeGuild(e, -1) end
   if e.revengeHand <= 0 then e.revengeHand, e.revengeHandAt, l = nil, nil, nil end
   if e.revenge <= (e.revengeHand or 0) then e.revengeAutoAt = nil end
   local last = l and l[#l] or nil

@@ -94,7 +94,12 @@ end
 local function ser(v)
   if type(v) ~= "table" then return tostring(v) end
   local keys = {}
-  for k in pairs(v) do if k ~= "revengeForeign" then keys[#keys + 1] = k end end
+  -- 1.6.0 feud: additive fields 1.2.2 does not know (play day, guilds of the revenge, keep, the guild of a deed)
+  for k in pairs(v) do
+    if k ~= "revengeForeign" and k ~= "day" and k ~= "revGuild" and k ~= "keep" and not (k == "guild" and v.role ~= nil) then
+      keys[#keys + 1] = k
+    end
+  end
   table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
   local out = {}
   for _, k in ipairs(keys) do out[#out + 1] = tostring(k) .. "=" .. ser(v[k]) end

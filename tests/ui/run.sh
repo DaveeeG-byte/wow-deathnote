@@ -21,6 +21,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          "$adir"/SceneMap.lua tests/ui/scene_map.lua tests/ui/scene.lua tests/ui/_ju.lua tests/ui/_jukarte.lua tests/ui/fix150_*.lua tests/ui/fix160_*.lua tests/ui/to160_*.lua \
          "$adir"/GuildLog.lua "$adir"/GuildLogUI.lua tests/ui/gc160_*.lua \
          "$adir"/CallUI.lua tests/ui/ca160_*.lua \
+         "$adir"/FeudUI.lua tests/ui/_fe160.lua tests/ui/fe160_*.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
 done
@@ -115,7 +116,8 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     # 1.6.0 deaths: the death log's views, deaths by creatures and the world, the cause's file, the awards for dying
     luajit tests/ui/to160_todesjournal.lua . || status=1
     # 1.5.0 fixer: proofs of the two hunts (copies of dev/berichte/150/jagd-tests/ui) and the fixes after them
-    for t in tests/ui/fix150_*.lua tests/ui/fix160_*.lua; do
+    # 1.6.0 feud: guild page of Wanted, claims and filed entries in Unsolved, options page, typing in another script
+    for t in tests/ui/fix150_*.lua tests/ui/fix160_*.lua tests/ui/fe160_*.lua; do
       out=$(luajit "$t" . 2>&1) || { status=1; printf '%s\n' "$out" | grep "^ROT"; }
       printf '%s: %s\n' "$(basename "$t" .lua)" "$(printf '%s\n' "$out" | tail -1)"
     done

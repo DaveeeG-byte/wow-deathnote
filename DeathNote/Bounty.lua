@@ -464,6 +464,22 @@ local function mayAv(ctx, who, t)
   return s.av < C.AVENGE_PER_SENDER
 end
 
+-- 1.6.0 feud: the own bounty a kill of key by `by` answers: { g, char } (the logged-in char's first, else the highest of
+-- another own char), nil when there is none or `by` is an own char
+function X.ClaimOf(key, by)
+  if IsSecret(key) or IsSecret(by) or type(key) ~= "string" or type(by) ~= "string" then return nil end
+  local x = (ownTable() or EMPTY)[key]
+  if not x or next(x) == nil then return nil end
+  if Guild.IsOwnChar and Guild.IsOwnChar(by) then return nil end
+  local mine = B.myFullName()
+  if mine and by == mine then return nil end
+  local r = mine and x[mine]
+  if r then return { g = r.g, char = mine } end
+  local best
+  for c, y in pairs(x) do if not best or y.g > best.g then best = { g = y.g, char = c } end end
+  return best
+end
+
 local function applyV(ctx, m, short, full, t)
   local st = ctx.stats
   -- live only, like E: older than 10 minutes or from the future is dropped
@@ -472,10 +488,17 @@ local function applyV(ctx, m, short, full, t)
   local S = ns.Store
   local own = S and S.Get and S.Get(m.key)
   local mineHit = type(own) == "table" and ((tonumber(own.kills) or 0) > 0 or (tonumber(own.assists) or 0) > 0)
+  -- 1.6.0 feud: an own bounty on him (any own char), taken down by somebody else: a claim (Feud.lua)
+  local claim = X.ClaimOf(m.key, m.by)
   -- a target nobody here knows as a killer: not kept (no poster would show it)
-  if not ((e and #e.deeds > 0) or mineHit) then return end
+  if not ((e and #e.deeds > 0) or mineHit or claim) then return end
   if not mayAv(ctx, full, t) then drop(st, "flood"); return end
   if not X.Record(m.key, m.by, m.t) then return end
+  if claim and ns.Feud and ns.Feud.AddClaim then
+    local name = (type(own) == "table" and Util.Display(own)) or (e and (e.display or e.name)) or nil
+    local okc, err = pcall(ns.Feud.AddClaim, m.key, name, m.by, m.t, claim.g, claim.char)
+    if not okc and ns.ReportError then ns.ReportError(err) end
+  end
   local s = ctx.fresh[full]
   s.av = s.av + 1
   st.avengedReceived = (st.avengedReceived or 0) + 1
@@ -533,7 +556,10 @@ end
 function Ext.wants()
   local g = B.gctx.store
   if g and (g.count or 0) > 0 then return true end
+  -- 1.6.0 feud: a bounty of guildmates or friends (also on a target without any deed in their books)
+  if B.gctx.bounty and next(B.gctx.bounty) ~= nil then return true end
   local fc = fctx()
+  if fc ~= nil and fc.bounty and next(fc.bounty) ~= nil then return true end
   return fc ~= nil and (fc.store.count or 0) > 0
 end
 
@@ -541,6 +567,8 @@ local function inBooks(k)
   if type(k) ~= "string" then return nil end
   local fc = fctx()
   if B.gctx.store.enemies[k] or (fc and fc.store.enemies[k]) then return k end
+  -- 1.6.0 feud: a target with a bounty of others only
+  if (B.gctx.bounty and B.gctx.bounty[k]) or (fc and fc.bounty and fc.bounty[k]) then return k end
   return nil
 end
 
@@ -565,6 +593,19 @@ local function keyFor(guid)
       end
     end
   end
+  -- 1.6.0 feud: the targets of bounties of others (keys "Name-Surname")
+  for pass = 1, 2 do
+    local tb = pass == 1 and B.gctx.bounty or (fc and fc.bounty)
+    if tb then
+      for key in pairs(tb) do
+        local n = type(key) == "string" and key:match("^([^%-]+)")
+        if n and n:lower() == first then
+          if found and found ~= key then return nil end
+          found = key
+        end
+      end
+    end
+  end
   return found
 end
 
@@ -577,13 +618,22 @@ local function othersKilled(e, mine)
   return false
 end
 
+-- 1.6.0 feud: a bounty of somebody else than my own chars in this table
+local function othersBounty(x, mine)
+  if type(x) ~= "table" then return false end
+  for c in pairs(x) do if c ~= mine and not Guild.IsOwnChar(c) then return true end end
+  return false
+end
+
 function Ext.partyKill(guid, t, mine, bagG, bagF)
   local key = keyFor(guid)
   if not key then return end
   local g = B.gctx.store.enemies[key]
   local fc = fctx()
   local fe = fc and fc.store.enemies[key]
-  local toGuild = g ~= nil and B.inGuild() and B.guildList() ~= nil and othersKilled(g, mine)
+  -- 1.6.0 feud: also when a guildmate's bounty lies on him, with or without a deed in the guild book (a claim there)
+  local gb = B.gctx.bounty and B.gctx.bounty[key]
+  local toGuild = B.inGuild() and B.guildList() ~= nil and ((g ~= nil and othersKilled(g, mine)) or othersBounty(gb, mine))
   -- friends: only those whose death the killed one answers for (never everybody: the addon does not report every kill)
   local F = ns.Friends
   local names
@@ -592,6 +642,16 @@ function Ext.partyKill(guid, t, mine, bagG, bagF)
       local v = fe.deeds[i].victim
       if type(v) == "string" and v ~= mine and not Guild.IsOwnChar(v) then
         local x = F.FriendOf(v)
+        if x then names = names or {}; names[x.name] = true end
+      end
+    end
+  end
+  -- 1.6.0 feud: friends with a bounty on him (whispered: only those)
+  local fb = fc and fc.bounty and fc.bounty[key]
+  if fb and F and F.FriendOf then
+    for c in pairs(fb) do
+      if c ~= mine and not Guild.IsOwnChar(c) then
+        local x = F.FriendOf(c)
         if x then names = names or {}; names[x.name] = true end
       end
     end

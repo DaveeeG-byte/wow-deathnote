@@ -25,6 +25,20 @@
 - Dry remarks per kind of death in German and English ("Trockene Bemerkungen"); a creature that gets you for the third time gets a line of its own.
 - My week names the other deaths of the week and the deadliest creature, when there were any.
 - "Also record deaths by creatures and the world" in the foot of the file of such a death (on by default; off records nothing new, what is there stays). `/dn probe` writes `probe.pve` (per kind, names secret or empty, NPC ids missing).
+<!-- feud -->
+### Added
+- **Which guilds kill you:** Wanted has a switch "Players | Guilds" at the bottom left. Guilds shows one row per enemy guild: how often its players killed you, the standing "you : them", how many of them are in your book and when one was last seen. A click opens its members, as the rows of the player list; the search finds guilds and members. Every death and attack now keeps the guild the killer wore at that moment (`deed.guild`), so a later change of guild moves nothing; revenge counts for the guild he wore then. The guild on the poster stays "last seen".
+- **A guild as a feud:** the small word "Declare feud" on a guild row (at most 50). A member of that guild who is not in your book and comes into sight the usual ways (target, mouseover, nameplate) gives the quiet alarm with a chat line "Guild X: feud. Name in sight.", at most once per guild every 5 minutes, never in instances. Whoever is in your book keeps his own alarm. Nothing is stored for it but when the guild was last seen; nothing goes to guild or friends.
+- **Claims on a bounty:** when a guildmate or friend with Revenge Book takes down a player you put a bounty on, you get a claim, also when nobody had a deed against him ("Anna got your target Grimm: 50 gold open", as a notice and a chat line). Unsolved has a switch "Open | Claims | Filed" while there is one; a claim is marked Paid or Declined (and can be opened again). The addon pays nothing. Kept for 30 days, at most 50.
+- **Old suspicions are filed away:** an entry with nothing but suspicions or attacks, not entered by hand, with no new deed and no sighting for 30 play days goes to Unsolved > Filed at the next login (one chat line says how many), at most 200 there; "Take back" brings it back for good. Never filed: anyone who killed you, entries by hand, the hit list, a bounty, a feud guild, revenge, and entries marked "Keep" (poster and row menu). Switch: House Rules, sheet Book, "File away old suspicions" (on by default). The book holds at most 3000 entries with the filed ones; above that the filed go first, then the oldest suspicions and attacks; deaths never.
+- A page in the game's options (Esc > Options > AddOns > Revenge Book) with a button that opens the House Rules.
+- `/dn probe` writes `probe.feud`: how often an enemy's guild was readable, empty or secret, how many entries were filed, the time of the start.
+- New texts in all 21 languages.
+
+### Changed
+- A name typed in another script (Cyrillic, Chinese, Korean) in the search, the note, the reason or the import field shows in that script's font while typing.
+- Lighter on big books: the lists are sorted once per change instead of on every refresh, a crowd of sightings rebuilds the list at most every half second, the guild and friends view is no longer joined anew after every message, the guild tab's number is counted once per change. The probe's death records are kept only while `/dn debug` is on.
+- Play days are counted in one place for the whole book (the friends' book reads the same counter).
 
 ## 1.5.0 (2026-11-18)
 
