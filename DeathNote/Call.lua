@@ -731,7 +731,7 @@ function Call.ApplySight(ctx, m, short, full, t)
   local fresh = false
   if e and not (e.lastSeen and (e.lastSeen.t or 0) >= m.t) then e.lastSeen = { t = m.t, zone = zone, by = short }; fresh = true end
   if hh and not (hh.lastSeen and (hh.lastSeen.t or 0) >= m.t) then hh.lastSeen = { t = m.t, zone = zone, by = short }; fresh = true end
-  if fresh then B.updated() end
+  if fresh then B.updated("seen") end
   Call.Count("sightReceived")
   local name = (own and Util.Display(own)) or (g and g.display) or (h and h.display) or (m.name .. " " .. m.surname)
   local mine = Call.Shard()

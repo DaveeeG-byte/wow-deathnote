@@ -800,7 +800,8 @@ ns:On("READY", function()
   if not g.seenFeed then g.seenFeed = now() end
   bump()
 end)
-ns:On("GUILD_UPDATED", bump)
+-- 1.6.0 fix: a mere sighting (lastSeen, Sync.lua's reason "seen") is nothing the chronicle shows: the cache stays
+ns:On("GUILD_UPDATED", function(reason) if reason ~= "seen" then bump() end end)
 ns:On("AVENGED", bump)
 -- a target of the hit list taken down: kept in the ring (the hit list forgets it with the call-off)
 ns:On("HUNT_BAGGED", function(key, char, t, src)

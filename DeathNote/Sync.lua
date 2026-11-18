@@ -1278,19 +1278,27 @@ local function invalidate()
   for k in pairs(huntCache) do huntCache[k] = nil; huntIndex[k] = nil end
 end
 
-local function updated()
+-- reason "seen" (1.6.0 fix): only a lastSeen changed (a sighting); GUILD_UPDATED then carries "seen" so that the guild
+-- chronicle, which never shows lastSeen, keeps its cache. Any other change in the same throttle window fires it plain.
+local updateSeenOnly = true
+local function updated(reason)
   invalidate()
+  if reason ~= "seen" then updateSeenOnly = false end
   if updatePending then return end
   updatePending = true
   local After = _G.C_Timer and _G.C_Timer.After
   if After then
     After(C.UPDATE_THROTTLE, function()
       updatePending = false
-      ns:Fire("GUILD_UPDATED")
+      local seen = updateSeenOnly
+      updateSeenOnly = true
+      ns:Fire("GUILD_UPDATED", seen and "seen" or nil)
     end)
   else
     updatePending = false
-    ns:Fire("GUILD_UPDATED")
+    local seen = updateSeenOnly
+    updateSeenOnly = true
+    ns:Fire("GUILD_UPDATED", seen and "seen" or nil)
   end
 end
 
@@ -2424,7 +2432,7 @@ local function apply(ctx, m, short, full, t, known)
       h.lastSeen = { t = m.t, zone = m.zone, by = short }; fresh = true
     end
     if not fresh then return end
-    updated()
+    updated("seen")
     ns:Fire("GUILD_SIGHTING", m.key, m.zone, short, ctx.src)
   elseif kind == "T" then
     -- 1.6.0 call: a sighting with place and layer (Call.lua); an error there never breaks receiving
@@ -2645,7 +2653,7 @@ function Guild.OnUnit(key, unit, how, listed)
     if fe then fe.lastSeen = { t = t, zone = zone, by = me } end
     if hg then hg.lastSeen = { t = t, zone = zone, by = me } end
     if fh then fh.lastSeen = { t = t, zone = zone, by = me } end
-    updated()
+    updated("seen")
     if setting("sightings") == true and (not sightSent[key] or gt - sightSent[key] >= C.SIGHT_SEND) then
       sightSent[key] = gt
       local text = P.EncodeSight(key, zone, t)
