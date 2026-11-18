@@ -125,6 +125,7 @@ function Feud.SanitizeEntry(e)
   end
   if e.day ~= nil and not (finite(e.day) and e.day >= 0) then e.day = nil end
   if e.keep ~= nil and e.keep ~= true then e.keep = nil end
+  if e.statusHand ~= nil and e.statusHand ~= true then e.statusHand = nil end
 end
 
 -- Store.AddRevenge (+1) and Store.UndoRevenge (-1): the guild he wears now carries the revenge
@@ -429,9 +430,11 @@ end
 ---------------------------------------------------------------------------
 -- Expiry of old suspicions, the archive and the hard cap of the book (Store.Init, once per login)
 ---------------------------------------------------------------------------
--- only suspicions or only attacks, not by hand, nothing more (no kill, assist or revenge)
+-- only suspicions or only attacks, not by hand, nothing more (no kill, assist or revenge). 1.6.0 fix: an own note or
+-- a standing set by hand (wanted, pardoned: e.statusHand) counts as by hand too
 function Feud.MayKeep(e)
-  if type(e) ~= "table" or e.manual == true then return false end
+  if type(e) ~= "table" or e.manual == true or e.statusHand == true then return false end
+  if type(e.note) == "string" and e.note:find("%S") then return false end
   if (tonumber(e.kills) or 0) > 0 or (tonumber(e.assists) or 0) > 0 or (tonumber(e.revenge) or 0) > 0 then return false end
   return (tonumber(e.suspected) or 0) > 0 or (tonumber(e.attacks) or 0) > 0
 end

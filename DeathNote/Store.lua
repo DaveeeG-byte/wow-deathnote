@@ -1011,6 +1011,7 @@ function Store.SetStatus(key, status)
   if not e or not VALID_STATUS[status] then return false end
   local old = e.status
   e.status = status
+  e.statusHand = true   -- 1.6.0 fix: a standing set by the player keeps the entry from expiring (Feud.MayKeep)
   changed(key)
   if old ~= status then ns:Fire("ENEMY_STATUS", key, old, status) end
   return true
