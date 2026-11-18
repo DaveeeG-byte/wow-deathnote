@@ -47,6 +47,19 @@
 ### Added
 - `/rb` and `/revengebook` do the same as `/dn` (listed in `/dn help`).
 
+<!-- fixer -->
+### Changed
+- The word that puts a line into the chat is "Post" now (it was "Show", the same word as "show on the map"): on the poster, in the row menu, the switch and section on the House Rules, the status after sending, the guest poster ("posted by"). The window's head stays "Show in the chat".
+- Lines in the chat and the Discord block use the plain words of your language (WANTED, Score, bounty, payback), never the words of your cover; data read in from a text is no own deed and goes into no line, block or week.
+- Guest poster: its head follows the kind of the line (wanted, pardoned, payback); a week line opens a plain card "Bertram's week"; "Copy to my book" only for a line about somebody wanted.
+- Crime scenes: pins are bundled by pixels of the map as shown (anew when its scale changes); a bundle shows the scene that comes first and its click lists the scenes to pick one; guildmates' pins carry a shield, friends' a heart; the switch at the corner is a small book of its own above the pins, its tooltip filters and shows a legend of the pins; a death without a sure killing blow says suspicion, never "killed you"; closing the map after a click from the book opens the book again.
+- Chronicle: no turning point the kept deeds cannot prove; a shortened story says so once and takes the standing from the counters; the word "Chronicle" on the poster is a link (red ink, underlined, tooltip).
+- Grudge notice: a row once shown never goes again and only grows surer; a creature counts for its own hit only; a player's pet is no creature and supports its owner (new signal p where the client names the owner); a spell belongs to its caster; rows still held at the end of the fight are shown.
+- Nameplate mark: every mark goes back to the pool; the grey thumbtack carries a light rim; the size stepper's tooltip explains the three marks, the score and where the keys are set.
+- Key "target into the book": a duel partner of your own faction is no enemy. After the first `/dn add` typed by hand the chat says once that a key does this (and which).
+- The line after the update says where the new things are. House Rules, sheet Guild: the foot speaks of sharing and alerts only and says a post is for everyone in the chat. Friends' answers leave room for the crime scenes (message `L`).
+- Texts: one word for one thing (poster, open debts), singular and plural of the chronicle's avenger line, corrections in several languages.
+
 ## 1.4.0 (2026-11-17)
 
 ### Added
