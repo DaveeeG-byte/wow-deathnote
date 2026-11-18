@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.0
+
+<!-- deaths -->
+### Added
+- **Every death with its cause:** the book now also keeps your deaths by creatures and the world, each with time, place (a link to the map), the creature's name and NPC id, the spell, or the kind of the world: falling, drowning, fire, lava, fatigue, slime. A death by a player gets no second row; the feud stays the heart of the book. No alarm, nothing is shared. At most 300 such deaths and 150 causes are kept (the oldest go first).
+- The Death Log has three views at the top right: **Players** (as before), **All** (the default: every death by time, a small sign for each kind: the skull for players, a beast, a paw, an arrow, a drop, a flame, an hourglass) and **Causes** ("What else kills you": creatures and the world ranked by deaths, with last place and last spell; number one carries a NEMESIS stamp from three deaths on). The search finds creatures by name.
+- Eight awards for dying on the rap sheet's file, in every language (first fall, drowned, burned, fatigue, three and ten times by the same creature, three deaths in ten minutes, ten different creatures).
+- Dry remarks per kind of death in German and English ("Trockene Bemerkungen"); a creature that gets you for the third time gets a line of its own.
+- My week names the other deaths of the week and the deadliest creature, when there were any.
+- House Rules, sheet Book: "Also record deaths by creatures and the world" (on by default; off records nothing new, what is there stays). `/dn probe` writes `probe.pve` (per kind, names secret or empty, NPC ids missing).
+
 ## 1.5.0 (2026-11-18)
 
 ### Changed

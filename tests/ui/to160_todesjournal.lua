@@ -131,6 +131,11 @@ for _, code in ipairs({ "deDE", "enUS", "frFR" }) do
   creature(W, 3100, "Stachelebermutter", "Rammen"); W.settle()
   J.check(code .. ": Stempel auf der Nummer eins ab drei Toden", visibleText(W, L.FATE_STAMP) ~= nil)
   J.check(code .. ": Akte nennt die Zahl", visibleText(W, (Fmt or ns.F)(L.FATE_KILLED, { times = ns.Look.Times(3) })) ~= nil)
+  -- a death asked for from outside (map pin) while the view shows causes: the view All, the death selected
+  ns.UI.ShowCase(pj); W.settle()
+  J.check(code .. ": Tatort aus der Karte zeigt die Ansicht Alles", ns.FatesUI.Mode() == "all" and ns.UI.JK.state.deathRef == pj)
+  J.check(code .. ": und die Akte des Spielertods", visibleText(W, "Grimm Bart") ~= nil and visibleText(W, L.FATE_HEAD) == nil)
+  ns.FatesUI.SetMode("causes"); W.settle()
   -- another tab and back: the head is the death file's again, no stamp, no sign on other rows
   ns.UI.SetFilter("wanted"); W.settle()
   local stray = false

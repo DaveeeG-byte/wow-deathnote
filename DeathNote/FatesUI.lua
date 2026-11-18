@@ -48,6 +48,14 @@ function FU.Journal(list, count)
   local Fa = ns.Fates
   if not Fa then return list end
   local m = FU.Mode()
+  -- a death asked for from outside (the map's pin, the death message: UI.ShowCase) while the view shows causes:
+  -- the view All, where it stands
+  local k = K()
+  local ref = k and k.state.filter == "journal" and k.state.deathRef
+  if m == "causes" and not count and type(ref) == "table" and not ref.foe then
+    if ns.Store and ns.Store.Setting then ns.Store.Setting("ui.journalView", "all") end
+    m = "all"
+  end
   if m == "players" then return list end
   if m == "causes" and not count then return Fa.Ranked() end
   return Fa.Merged(list)
