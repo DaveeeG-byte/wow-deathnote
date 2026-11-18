@@ -24,7 +24,7 @@ ShareUI.FIT_LINE = { sizes = { 11, 10 }, lines = 4, wrapFirst = true }
 ShareUI.FIT_ONE = { sizes = { 11, 10 } }
 ShareUI.FIT_TWO = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
 ShareUI.FIT_WORD = { sizes = { 13, 11 } }
-ShareUI.FIT_GUEST_HEAD = { sizes = { 36, 30, 26 } }
+ShareUI.FIT_GUEST_HEAD = { sizes = { 36, 30, 26, 22, 19 } }   -- 1.5.0 fixer: long heads (huHU, itIT week) step down further
 ShareUI.MODES = { { "line", "SHARE_TAB_LINE" }, { "week", "SHARE_TAB_WEEK" }, { "discord", "SHARE_TAB_DISCORD" } }
 ShareUI.CH_W, ShareUI.CH_GAP = 100, 8
 ShareUI.GUEST_LINES = 5

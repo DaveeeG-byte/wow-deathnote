@@ -552,7 +552,7 @@ end
 ---------------------------------------------------------------------------
 -- 1.5.0 fixer: the list of a bundle (a click on a pin with a count): its scenes, a click opens one
 ---------------------------------------------------------------------------
-SceneMap.PICK_W, SceneMap.PICK_ROW = 300, 18
+SceneMap.PICK_W, SceneMap.PICK_ROW = 400, 18   -- 1.5.0 fixer: room for "date · sentence", the rest in the tooltip
 local function buildPick()
   local host = map.ScrollContainer or map
   pick = CreateFrame("Frame", nil, host)
@@ -577,10 +577,10 @@ local function buildPick()
     b.text:SetWidth(SceneMap.PICK_W - 20)
     b.text:SetJustifyH("LEFT")
     b.text:SetWordWrap(false)
-    Look.TipShows(b, b.text)
     b:SetScript("OnClick", function(self)
       if self.item then Look.Sound("click"); SceneMap.Go(self.item) end
     end)
+    Look.TipIfCut(b, b.text)   -- 1.5.0 fixer: a cut row shows itself whole on hover
     pick.rows[i] = b
   end
   pick:Hide()
