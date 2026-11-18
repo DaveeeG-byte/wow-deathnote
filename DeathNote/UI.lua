@@ -3875,6 +3875,7 @@ do
 local BOOK_OPTIONS = {
   { "tooltip",         "OPT_TOOLTIP", true },
   { "ui.minimap.hide", "OPT_MINIMAP", false, invert = true },
+  { "fates.on",        "OPT_FATES", true },   -- 1.6.0 deaths: also deaths by creatures and the world (Fates.lua)
 }
 local ALERT_OPTIONS = {
   { "alert.enabled",   "OPT_ALERT", true },
@@ -3936,7 +3937,6 @@ GF.GRUDGE_OPTIONS = {
 GF.GRUDGE_SECONDS = { 10, 20, 30, 60 }
 -- 1.5.0 share: the section SHOW on sheet 3 (Guild)
 GF.SHARE_OPTIONS = { { "share.revengeButton", "OPT_SHARE_REVENGE", false } }
-GF.FATE_OPTIONS = { { "fates.on", "OPT_FATES", true } }   -- 1.6.0 deaths
 function GF.SheetOn(i)
   if i == 3 then return HasGuild() end
   if i == 4 then return type(ns.Ledger) == "table" and type(ns.Ledger.Enabled) == "function" end
@@ -4227,12 +4227,6 @@ BuildSettings = function()
     -- one switch only: the sheet is full (a stepper more made it scroll in German); the period, only open debts and
     -- the kinds are in the map's own switch (SceneMap.lua)
     y = checks(A, GF.SCENE_OPTIONS, nil, y)
-    A.bottom = -y - 2
-  end
-  -- 1.6.0 deaths: section DEATH LOG, one switch (deaths by creatures and the world, Fates.lua)
-  if ns.Fates then
-    y = section(A, y, L.TAB_DEATHLOG)
-    y = checks(A, GF.FATE_OPTIONS, nil, y)
     A.bottom = -y - 2
   end
   hint(A, L.SET_HINT_BOOK)

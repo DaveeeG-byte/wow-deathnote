@@ -1040,7 +1040,7 @@ L.FATE_AW_STREAK = "Huono putki"
 L.FATE_AW_STREAK_COND = "Kolme olentojen tai ympäristön aiheuttamaa kuolemaa kymmenessä minuutissa."
 L.FATE_AW_ZOO = "Eläinkirja"
 L.FATE_AW_ZOO_COND = "Kymmenen eri olentoa tappoi sinut."
-L.OPT_FATES = "Kirjaa myös olentojen ja ympäristön aiheuttamat kuolemat"
+L.OPT_FATES = "Kirjaa myös olento- ja ympäristökuolemat"
 L.SHARE_WEEK_OTHERS = "muut kuolemat: {count}"
 L.SHARE_WEEK_BEAST = "tappavin olento: {name} {times}"
 end)

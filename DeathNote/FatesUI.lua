@@ -19,7 +19,9 @@ FU.VIEWS = { { "players", "FATE_VIEW_PLAYERS" }, { "all", "FATE_VIEW_ALL" }, { "
 FU.CELL = { creature = 0, pet = 1, fall = 2, drown = 3, fire = 4, lava = 4, fatigue = 5, slime = 6, other = 6, unknown = 7 }
 FU.CELLS = 8
 FU.TEX = "fates.tga"
-FU.STAMP = { "FATE_STAMP", 9, 1, "rache" }   -- the stamp of number one: frame of "rache", the word in every language
+FU.STAMP = { "FATE_STAMP", 9, 1, "rache" }
+FU.HEAD_W = 220             -- head of a cause's file: 352 px page minus the margins and the date on the right
+FU.FIT_HEAD = { sizes = { 26, 22, 19, 16, 14 } }   -- the stamp of number one: frame of "rache", the word in every language
 
 local function K() return ns.UI and ns.UI.JK end
 local function C(t, a) return t[1], t[2], t[3], a or t[4] or 1 end
@@ -192,7 +194,7 @@ end
 -- after FillDeath (UI.lua): the cause's own lines; any other file gets its head back and no stamp
 function FU.FillDeath(D, d, nInfo)
   local Fa, k = ns.Fates, K()
-  if D.fateHead then Look.FitText(D.head, L.CASE_HEAD, { sizes = { 26 } }); D.fateHead = nil end
+  if D.fateHead then D.fateHead:Hide(); D.head:Show() end
   if D.fateStamp and k then k.GF.ShowStamp(D.fateStamp, false) end
   if not (Fa and k) or type(d) ~= "table" then return end
   if not (d.art or d.foe) then
@@ -207,8 +209,19 @@ function FU.FillDeath(D, d, nInfo)
   D.killer.key = nil
   local lines = nInfo or 1
   if d.foe then
-    Look.FitText(D.head, L.FATE_HEAD, { sizes = { 26, 22, 19 } })
-    D.fateHead = true
+    -- an own head in place of the death file's (that one stays as it is): it gives way to the date on the right
+    local h = D.fateHead
+    if not h then
+      h = Look.Text(D, "head", 26, Look.INK)
+      h:SetPoint("TOPLEFT", 24, -16)
+      h:SetWidth(FU.HEAD_W)
+      h:SetJustifyH("LEFT")
+      h.fatePart = true
+      D.fateHead = h
+    end
+    Look.FitText(h, L.FATE_HEAD, FU.FIT_HEAD)
+    D.head:Hide()
+    h:Show()
     local place = (D.info:GetText() or ""):match("^[^\n]*") or ""
     local info = { place, Fmt(L.FATE_KILLED, { times = Look.Times(d.n) }) }
     if d.spell then info[#info + 1] = Fmt(L.TIP_CAUSE, { spell = tostring(d.spell) }) end
