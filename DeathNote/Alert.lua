@@ -41,7 +41,21 @@ end
 -- list (1.2.0, optional): own font list instead of Look.FONT[kind], e.g. for a language's own name
 function Look.Font(fs, kind, size, flags, list)
   -- 1.2.2: kind, size and flags stay on the string (Look.FitText steps through the sizes of the same font)
-  if not list then fs.fontKind, fs.fontSize, fs.fontFlags = kind, size, flags end
+  if not list then
+    fs.fontKind, fs.fontSize, fs.fontFlags = kind, size, flags
+    -- 1.6.0: a text in another script (a Cyrillic or Chinese name) takes the fonts of that script
+    if not fs.dnScriptHook and fs.SetText then
+      fs.dnScriptHook = true
+      local set = fs.SetText
+      fs.SetText = function(self, text, ...)
+        Look.Script(self, text)
+        return set(self, text, ...)
+      end
+    end
+    if fs.fontScript and ns.Locale and ns.Locale.FontList then
+      list = ns.Locale.FontList((Look.FONT_KIND and Look.FONT_KIND[kind]) or kind, nil, fs.fontScript)
+    end
+  end
   list = list or Look.FONT[kind] or Look.FONT.body
   for i = 1, #list do
     if fs:SetFont(list[i], size or 12, flags or "") then return fs end
@@ -51,6 +65,17 @@ function Look.Font(fs, kind, size, flags, list)
   if type(std) == "string" and fs:SetFont(std, size or 12, flags or "") then return fs end
   fs:SetFontObject(GameFontNormal)
   return fs
+end
+
+-- 1.6.0: sets the fonts of the script this text needs (Locale.TextScript), back to the language's own fonts when
+-- it needs none. Only for strings whose font came from Look.Font by kind; a secret text is left alone.
+function Look.Script(fs, text)
+  if not fs.fontKind then return end
+  local need = nil
+  if not issecret(text) and ns.Locale and ns.Locale.TextScript then need = ns.Locale.TextScript(text) end
+  if need == fs.fontScript then return end
+  fs.fontScript = need
+  Look.Font(fs, fs.fontKind, fs.fontSize, fs.fontFlags)
 end
 
 -- Font list for a text in a given language (language list of the house rules); kind is a role of the theme

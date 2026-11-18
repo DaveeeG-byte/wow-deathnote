@@ -297,10 +297,35 @@ Locale.FONTS = {
 function Locale.ScriptOf(code) return Locale.SCRIPT_OF[code or Locale.code or Locale.DEFAULT] or "latin" end
 
 -- Font list for a kind ("title", "hand", "head", "body", "type") in `code` (default: active).
-function Locale.FontList(kind, code)
-  local set = Locale.FONTS[Locale.ScriptOf(code)] or Locale.FONTS.latin
+-- script (1.6.0, optional): the writing system itself instead of a language (a name in another script).
+function Locale.FontList(kind, code, script)
+  local set = Locale.FONTS[script or Locale.ScriptOf(code)] or Locale.FONTS.latin
   if kind == "head" then kind = "hand" end
   return set[kind] or set.body
+end
+
+-- 1.6.0: the writing system a text needs when the fonts of the active language do not cover it, else nil.
+-- A player name can be Cyrillic, Chinese or Korean on any client; the ornamental Latin fonts show boxes for it.
+-- Decided by the lead bytes: D0..D4 Cyrillic (U+0400..U+052F), E3..E9 kana and ideographs (U+3000..U+9FFF),
+-- EA B0.. to ED Hangul syllables (U+AC00..U+D7A3). The fonts of a script cover Latin as well, so the whole
+-- string changes font. Covered already: the same script; Cyrillic by the latinExt, Chinese and Korean sets.
+local COVERS = {
+  latin = {}, cyrillic = { cyrillic = true }, latinExt = { cyrillic = true },
+  korean = { korean = true, cyrillic = true, cjk = true },
+  hans = { cjk = true, cyrillic = true }, hant = { cjk = true, cyrillic = true },
+}
+function Locale.TextScript(s, code)
+  if type(s) ~= "string" or not s:find("[\208-\237]") then return nil end
+  local need
+  if s:find("\234[\176-\191][\128-\191]") or s:find("[\235\236][\128-\191][\128-\191]")
+     or s:find("\237[\128-\158][\128-\191]") then need = "korean"
+  elseif s:find("[\227-\233][\128-\191][\128-\191]") then need = "cjk"
+  elseif s:find("[\208-\212][\128-\191]") then need = "cyrillic"
+  else return nil end
+  local active = Locale.ScriptOf(code)
+  if (COVERS[active] or COVERS.latin)[need] then return nil end
+  if need == "cjk" then return "hans" end
+  return need
 end
 
 ---------------------------------------------------------------------------
