@@ -977,10 +977,11 @@ L.CHRON_AHEAD = "Nå leder du: {score}."
 L.CHRON_AVENGED = "{names} felte {name} for de andre."
 L.CHRON_PARDONED = "Du benådet {name}."
 L.CHRON_END = "Nå: {score} · {state}"
-L.CHRON_END_NONE = "Hittil: drept deg {times}."
+L.CHRON_END_NONE = "Hittil: {name} har drept deg {times}."
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  det samme som /dn"
 L.CHAT_NEWS_150 = "DeathNote heter nå Revenge Book. Boka di og /dn blir værende. Nytt i 1.5.0: vis en plakat i chatten, åsteder på verdenskartet, hurtigtaster, et merke på navneskiltet til drapsmennene dine."
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Her døde du; mistanke: {name}"
+L.CHRON_EARLIER = "Tidligere gjerninger står ikke lenger i boka."
 end)

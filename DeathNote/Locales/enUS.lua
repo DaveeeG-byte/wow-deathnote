@@ -988,14 +988,15 @@ L.CHRON_COPIED_ANON = "Copied from someone else's book."  -- chronicle sentence:
 L.CHRON_BOUNTY = "{by} puts {gold} on {name}."  -- chronicle sentence: a bounty; {by} = first name of the poster, {gold} = "500 g"
 L.CHRON_BOUNTY_MINE = "You put {gold} on {name}."  -- chronicle sentence: your own bounty
 L.CHRON_EVEN = "Even now: {score}."  -- chronicle line: turning point, the score is even; {score} = '2 : 2' (you : them)
-L.CHRON_AHEAD = "You lead now: {score}."  -- chronicle line: turning point, you lead; {score} = '3 : 2'
-L.CHRON_AVENGED = "{names} took {name} down for the others."  -- chronicle line: guildmates or friends killed him for the others; {names} = first names
+L.CHRON_AHEAD = "Overpaid now: {score}."  -- chronicle line: turning point, you lead; {score} = '3 : 2'
+L.CHRON_AVENGED = "{names} took {name} down for the others."  -- chronicle line: guildmates or friends killed him for the others; {names} = first names (one or several: no verb that counts them)
 L.CHRON_PARDONED = "You pardoned {name}."  -- chronicle line: you pardoned him
 L.CHRON_END = "Now: {score} · {state}"  -- chronicle, last line; {score} = '1 : 2', {state} = STATE_OPEN / STATE_EVEN / STATE_AHEAD
-L.CHRON_END_NONE = "So far: killed you {times}."  -- chronicle, last line while the rap sheet is off; {times} = '3×'
+L.CHRON_END_NONE = "So far: {name} killed you {times}."  -- chronicle, last line while the rap sheet is off; {name} = his first name, {times} = '3×'
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  the same as /dn"  -- /dn help line: the two new commands of 1.5.0
 L.CHAT_NEWS_150 = "DeathNote is now Revenge Book. Your book and /dn stay. New in 1.5.0: show a poster in the chat, crime scenes on the world map, key bindings, a mark on your killers' nameplates."  -- chat, once per account after the update to 1.5.0 for players who had the book before: the new name, what stays and what is new (show in chat, crime scenes on the map, key bindings, the nameplate mark); the old name DeathNote and Revenge Book stay in English
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Here you died; suspicion: {name}"  -- map pin tooltip, your death without a sure killing blow (the book holds a suspicion); {name} = full name in class colour; never say he killed you
+L.CHRON_EARLIER = "Earlier deeds are no longer in the book."  -- chronicle, second line of a long feud whose oldest deeds the book no longer keeps (it keeps 30 per enemy); the last line still gives the full standing
 end)

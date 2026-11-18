@@ -216,7 +216,9 @@ test("Chronik: 60 Taten werden gekuerzt, keine Formel zweimal in Folge", functio
   local more
   for _, l in ipairs(ch.lines) do if l.more then more = l.text end end
   eq(more, ns.F(ns.L.MORE_LINE, { count = ch.cut }))
-  eq(#ch.lines, 1 + C.HEAD_KEEP + 1 + C.TAIL_KEEP + 1)
+  -- 1.5.0 fixer: 60 killing blows counted, 30 kept: the second line says once that earlier deeds are gone
+  eq(#ch.lines, 1 + 1 + C.HEAD_KEEP + 1 + C.TAIL_KEEP + 1)
+  eq(ch.lines[2].text, ns.L.CHRON_EARLIER)
   for i = 2, #ch.lines do
     local a, b = ch.lines[i - 1].text:gsub("^[^:]*: ", ""), ch.lines[i].text:gsub("^[^:]*: ", "")
     ok(a ~= b, b)

@@ -985,10 +985,11 @@ L.CHRON_AHEAD = "现在你领先：{score}。"
 L.CHRON_AVENGED = "{names}替大家干掉了{name}。"
 L.CHRON_PARDONED = "你赦免了{name}。"
 L.CHRON_END = "现在：{score} · {state}"
-L.CHRON_END_NONE = "至今：杀了你{times}。"
+L.CHRON_END_NONE = "至今：{name}杀了你{times}。"
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  与 /dn 相同"
 L.CHAT_NEWS_150 = "DeathNote 现在叫 Revenge Book。你的记仇本和 /dn 都不变。1.5.0 新内容：在聊天中展示通缉令、世界地图上的案发现场、快捷键、仇人姓名板上的标记。"
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "你在这里死去；嫌疑：{name}"
+L.CHRON_EARLIER = "更早的事已不在本子里。"
 end)

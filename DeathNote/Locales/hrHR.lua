@@ -984,10 +984,11 @@ L.CHRON_AHEAD = "Sad vodiš: {score}."
 L.CHRON_AVENGED = "{names} srušili su {name} za ostale."
 L.CHRON_PARDONED = "Pomilovao si: {name}."
 L.CHRON_END = "Sad: {score} · {state}"
-L.CHRON_END_NONE = "Dosad: ubio te {times}."
+L.CHRON_END_NONE = "Dosad: {name} te ubio {times}."
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  isto kao /dn"
 L.CHAT_NEWS_150 = "DeathNote se sada zove Revenge Book. Tvoja knjiga i /dn ostaju. Novo u 1.5.0: pokaži tjeralicu u chatu, mjesta zločina na karti svijeta, prečaci tipkovnice, oznaka na pločicama tvojih ubojica."
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Ovdje si poginuo; sumnja: {name}"
+L.CHRON_EARLIER = "Ranijih djela više nema u knjizi."
 end)

@@ -977,10 +977,11 @@ L.CHRON_AHEAD = "Nu sta je voor: {score}."
 L.CHRON_AVENGED = "{names} velden {name} voor de anderen."
 L.CHRON_PARDONED = "Je hebt {name} gratie verleend."
 L.CHRON_END = "Nu: {score} · {state}"
-L.CHRON_END_NONE = "Tot nu toe: je {times} gedood."
+L.CHRON_END_NONE = "Tot nu toe: {name} heeft je {times} gedood."
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  hetzelfde als /dn"
 L.CHAT_NEWS_150 = "DeathNote heet nu Revenge Book. Je boek en /dn blijven. Nieuw in 1.5.0: een poster in de chat tonen, plaatsen delict op de wereldkaart, sneltoetsen, een merkteken op de naamplaatjes van je moordenaars."
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Hier ben je gestorven; verdenking: {name}"
+L.CHRON_EARLIER = "Eerdere daden staan niet meer in het boek."
 end)

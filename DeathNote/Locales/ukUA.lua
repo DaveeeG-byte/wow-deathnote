@@ -981,13 +981,14 @@ L.CHRON_BOUNTY = "{by} призначає за {name} нагороду: {gold}."
 L.CHRON_BOUNTY_MINE = "Ти призначаєш за {name} нагороду: {gold}."
 L.CHRON_EVEN = "Тепер нарівно: {score}."
 L.CHRON_AHEAD = "Тепер ти попереду: {score}."
-L.CHRON_AVENGED = "{names} вбили {name} за інших."
+L.CHRON_AVENGED = "{name} вбито за інших. Месники: {names}."
 L.CHRON_PARDONED = "Ти помилував {name}."
 L.CHRON_END = "Зараз: {score} · {state}"
-L.CHRON_END_NONE = "Поки що: вбивав тебе {times}."
+L.CHRON_END_NONE = "Поки що: {name} вбивав тебе {times}."
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  те саме, що /dn"
 L.CHAT_NEWS_150 = "DeathNote тепер називається Revenge Book. Твоя книга і /dn лишаються. Нове в 1.5.0: показати плакат у чаті, місця злочинів на мапі світу, гарячі клавіші, позначка над табличками імен твоїх убивць."
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Тут ти загинув; підозра: {name}"
+L.CHRON_EARLIER = "Давніших справ у книзі вже немає."
 end)

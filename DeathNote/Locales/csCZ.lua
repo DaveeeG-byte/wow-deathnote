@@ -984,10 +984,11 @@ L.CHRON_AHEAD = "Teď vedeš: {score}."
 L.CHRON_AVENGED = "{names} skolili {name} za ostatní."
 L.CHRON_PARDONED = "Omilostnil jsi: {name}."
 L.CHRON_END = "Teď: {score} · {state}"
-L.CHRON_END_NONE = "Zatím: zabil tě {times}."
+L.CHRON_END_NONE = "Zatím: {name} tě zabil {times}."
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  totéž co /dn"
 L.CHAT_NEWS_150 = "DeathNote se teď jmenuje Revenge Book. Tvoje kniha i /dn zůstávají. Novinky v 1.5.0: ukázat plakát v chatu, místa činu na mapě světa, klávesové zkratky, značka na jmenovkách tvých vrahů."
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Tady jsi zemřel; podezření: {name}"
+L.CHRON_EARLIER = "Starší činy už v knize nejsou."
 end)

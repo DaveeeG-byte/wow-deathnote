@@ -968,14 +968,15 @@ L.CHRON_COPIED_ANON = "Aus einem fremden Buch übernommen."
 L.CHRON_BOUNTY = "{by} setzt {gold} auf {name} aus."
 L.CHRON_BOUNTY_MINE = "Du setzt {gold} auf {name} aus."
 L.CHRON_EVEN = "Jetzt quitt: {score}."
-L.CHRON_AHEAD = "Jetzt vorn: {score}."
-L.CHRON_AVENGED = "{names} haben {name} für die anderen erlegt."
+L.CHRON_AHEAD = "Jetzt überzahlt: {score}."
+L.CHRON_AVENGED = "{name} fällt für die anderen durch {names}."
 L.CHRON_PARDONED = "Du hast {name} begnadigt."
 L.CHRON_END = "Stand: {score} · {state}"
-L.CHRON_END_NONE = "Bisher: hat dich {times} getötet."
+L.CHRON_END_NONE = "Bisher: {name} hat dich {times} getötet."
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  dasselbe wie /dn"
 L.CHAT_NEWS_150 = "DeathNote heißt jetzt Revenge Book. Dein Buch und /dn bleiben. Neu in 1.5.0: Plakat im Chat zeigen, Tatorte auf der Weltkarte, Tastenkürzel, Marke an der Namensplakette deiner Täter."
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Hier bist du gestorben; Verdacht: {name}"
+L.CHRON_EARLIER = "Frühere Taten stehen nicht mehr im Buch."
 end)

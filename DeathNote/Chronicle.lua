@@ -159,6 +159,27 @@ function Chronicle.Build(key)
       or Fmt(L.CHRON_FIRST_DAY, { date = Chronicle.Day(f.t) }), place = f.place }
   end
 
+  -- 1.5.0 fixer: the book keeps at most 30 deeds of an enemy and 60 rows of the log, the counters go on. The turning
+  -- points are only told when the kept deeds add up to the standing (else they would claim an "even" that never was);
+  -- a shortened story says so once and takes the standing from the counters (the last line).
+  local hc, mc = 0, 0
+  for _, ev in ipairs(list) do
+    if ev.kind == "kill" then hc = hc + 1 elseif ev.kind == "mine" or ev.kind == "hand" then mc = mc + 1 end
+  end
+  local whole = true
+  if standing then
+    whole = hc == standing[2] and mc == standing[1]
+  end
+  local shortened = hc < (tonumber(e.kills) or 0) or (standing ~= nil and mc < standing[1])
+  if shortened and lines[1] then
+    -- the first encounter from the entry's counter when it is older than the oldest deed kept, then the honest note
+    local fk = e.firstKill
+    if num(fk) and list[1] and fk < list[1].t then
+      lines[1] = { text = Fmt(L.CHRON_FIRST_DAY, { date = Chronicle.Day(fk) }) }
+    end
+    lines[#lines + 1] = { text = L.CHRON_EARLIER }
+  end
+
   local story = {}
   local lastWord = nil
   local m, h, st = 0, 0, "open"
@@ -189,7 +210,7 @@ function Chronicle.Build(key)
     if text then
       story[#story + 1] = { text = at(ev.t, ev.place) .. " " .. text, place = ev.place }
       -- turning points: only while the rap sheet counts (the book's standing)
-      if standing then
+      if standing and whole then
         if k == "kill" then h = h + 1 elseif k == "mine" or k == "hand" then m = m + 1 end
         local now = stateOf(m, h)
         if now ~= st and (k == "kill" or k == "mine" or k == "hand") then
@@ -221,7 +242,8 @@ function Chronicle.Build(key)
       for i = 1, math.min(#rows, 3) do names[i] = first(rows[i].char) end
       local s = table.concat(names, ", ")
       if #rows > 3 then s = s .. " " .. Fmt(L.MORE_LINE, { count = #rows - 3 }) end
-      lines[#lines + 1] = { text = Fmt(L.CHRON_AVENGED, { name = name, names = s }) }
+      -- 1.5.0 fixer: one avenger or several (the sentence of each language has no verb that counts them)
+      lines[#lines + 1] = { text = Fmt(L.CHRON_AVENGED, { name = name, names = s, count = #rows }) }
     end
   end
   if e.status == "pardoned" then lines[#lines + 1] = { text = Fmt(L.CHRON_PARDONED, { name = name }) } end
@@ -230,7 +252,8 @@ function Chronicle.Build(key)
     local stw = ({ open = "STATE_OPEN", even = "STATE_EVEN", ahead = "STATE_AHEAD" })[stateOf(m2, h2)]
     lines[#lines + 1] = { text = Fmt(L.CHRON_END, { score = m2 .. " : " .. h2, state = L[stw] or "" }), last = true }
   else
-    lines[#lines + 1] = { text = Fmt(L.CHRON_END_NONE, { times = Fmt(L.TIMES, { count = tonumber(e.kills) or 0 }) }), last = true }
+    lines[#lines + 1] = { text = Fmt(L.CHRON_END_NONE, { name = name, times = Fmt(L.TIMES, { count = tonumber(e.kills) or 0 }) }),
+      last = true }
   end
   if #lines == 1 then table.insert(lines, 1, { text = L.CHRON_EMPTY }) end
   return { name = full, lines = lines, cut = cut }
