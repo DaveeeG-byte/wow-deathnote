@@ -872,4 +872,25 @@ L.EMPTY_SEARCHHAS_SUB = "Csak nem ezen az oldalon. Az Enter megnyitja."
 L.FILTER_TWO = "{count} szűrő"
 L.CHAT_NEWS_140 = "Újdonság az 1.4.0-ban: támadás után egy kis üzenet megkérdezi, beírja-e a támadót a könyvbe (Harag; be/ki: /dn grudge vagy {rules}, {sheet} lap); „{takeall}”: {guild} fül; szűrő és keresés: {wanted} fül."
 L.GRUDGE_TIP_OFF = "Kikapcsolás: /dn grudge vagy {rules}, {sheet} lap."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Bizonytalan: kevés jel szól ellene. Csak akkor pipáld, ha láttad."
+L.GRUDGE_TIP_MOB = "Közben egy lény is támadott"
+L.GRUDGE_TIP_CAST = "Varázsolt, miközben eltaláltak"
+L.GRUDGE_TIP_JOIN = "A találatoddal együtt harcba lépett"
+L.GRUDGE_TIP_REPEAT = "Több találatnál is célpontként tartott"
+L.SET_GRUDGE_SIZE = "Az üzenet mérete"  -- [max 34]
+L.SIZE_SMALL = "kicsi"  -- [max 10]
+L.SIZE_MEDIUM = "közepes"  -- [max 10]
+L.SIZE_LARGE = "nagy"  -- [max 10]
+L.SET_SEC_PLATE = "NÉVTÁBLÁK"  -- [max 24]
+L.SET_PLATE = "Jel a könyv ellenségei fölött"  -- [max 34]
+L.BIND_TOGGLE = "Könyv nyitása vagy zárása"
+L.BIND_ADD = "Célpont a könyvbe"
+L.BIND_HUNT = "Célpont a vadászlistára"
+L.BIND_ALARM = "Riasztás ki / be"
+L.GRIP_NO_TARGET = "Nincs célpont: előbb jelölj ki egy ellenséges játékost."
+L.GRIP_NOT_ENEMY = "A célpontod nem ellenséges játékos."
+L.GRIP_ALREADY = "{name} már a könyvben van."
+L.GRIP_HUNT_WHY = "Harcban megjelölve"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Ok: „{why}”. Módosítás: „{action}” a könyvben."
 end)

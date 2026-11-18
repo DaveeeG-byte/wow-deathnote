@@ -873,4 +873,25 @@ L.EMPTY_SEARCHHAS_SUB = "Yalnızca bu sayfada değil. Enter açar."
 L.FILTER_TWO = "{count} filtre"
 L.CHAT_NEWS_140 = "1.4.0'da yeni: bir saldırıdan sonra küçük bir bildirim saldırganın deftere yazılıp yazılmayacağını sorar (Kin; aç/kapat: /dn grudge ya da {rules}, {sheet} sayfası); \"{takeall}\": {guild} sekmesi; filtre ve arama: {wanted} sekmesi."
 L.GRUDGE_TIP_OFF = "Kapatmak için: /dn grudge ya da {rules}, {sheet} sayfası."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Emin değil: az iz var. Yalnızca onu gördüysen işaretle."
+L.GRUDGE_TIP_MOB = "Aynı anda bir yaratık da sana saldırıyordu"
+L.GRUDGE_TIP_CAST = "Sen vurulurken büyü yaptı"
+L.GRUDGE_TIP_JOIN = "Senin vuruşunla savaşa girdi"
+L.GRUDGE_TIP_REPEAT = "Birkaç vuruşta seni hedef almıştı"
+L.SET_GRUDGE_SIZE = "Bildirim boyutu"  -- [max 34]
+L.SIZE_SMALL = "küçük"  -- [max 10]
+L.SIZE_MEDIUM = "orta"  -- [max 10]
+L.SIZE_LARGE = "büyük"  -- [max 10]
+L.SET_SEC_PLATE = "İSİM PLAKALARI"  -- [max 24]
+L.SET_PLATE = "Defterdeki düşmanlara işaret"  -- [max 34]
+L.BIND_TOGGLE = "Defteri aç veya kapat"
+L.BIND_ADD = "Hedefi deftere yaz"
+L.BIND_HUNT = "Hedefi av listesine al"
+L.BIND_ALARM = "Alarm kapalı / açık"
+L.GRIP_NO_TARGET = "Hedef yok: önce düşman bir oyuncuyu hedef al."
+L.GRIP_NOT_ENEMY = "Hedefin düşman bir oyuncu değil."
+L.GRIP_ALREADY = "{name} zaten defterde."
+L.GRIP_HUNT_WHY = "Savaşta işaretlendi"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Sebep: \"{why}\". Değiştirmek için: defterde \"{action}\"."
 end)

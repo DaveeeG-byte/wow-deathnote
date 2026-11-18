@@ -857,4 +857,25 @@ L.EMPTY_SEARCHHAS_SUB = "Solo non in questa pagina. Invio lo apre."
 L.FILTER_TWO = "{count} filtri"
 L.CHAT_NEWS_140 = "Novità in 1.4.0: dopo un attacco un piccolo avviso chiede se l’aggressore va nel tuo libro (Rancore; on/off: /dn grudge o {rules}, foglio {sheet}); «{takeall}» è in {guild}, filtro e ricerca in {wanted}."
 L.GRUDGE_TIP_OFF = "Disattivare: /dn grudge o {rules}, foglio {sheet}."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Incerto: pochi indizi su di lui. Spunta solo se l'hai visto."
+L.GRUDGE_TIP_MOB = "Una creatura ti attaccava nello stesso momento"
+L.GRUDGE_TIP_CAST = "Ha lanciato un incantesimo mentre venivi colpito"
+L.GRUDGE_TIP_JOIN = "È entrato in combattimento col tuo colpo"
+L.GRUDGE_TIP_REPEAT = "Ti aveva nel bersaglio a più colpi"
+L.SET_GRUDGE_SIZE = "Dimensione dell'avviso"  -- [max 34]
+L.SIZE_SMALL = "piccolo"  -- [max 10]
+L.SIZE_MEDIUM = "medio"  -- [max 10]
+L.SIZE_LARGE = "grande"  -- [max 10]
+L.SET_SEC_PLATE = "BARRE DEL NOME"  -- [max 24]
+L.SET_PLATE = "Segno sui nemici del libro"  -- [max 34]
+L.BIND_TOGGLE = "Apri o chiudi il libro"
+L.BIND_ADD = "Bersaglio nel libro"
+L.BIND_HUNT = "Bersaglio nella lista di caccia"
+L.BIND_ALARM = "Allarme sì / no"
+L.GRIP_NO_TARGET = "Nessun bersaglio: seleziona prima un giocatore nemico."
+L.GRIP_NOT_ENEMY = "Il tuo bersaglio non è un giocatore nemico."
+L.GRIP_ALREADY = "{name} è già nel libro."
+L.GRIP_HUNT_WHY = "Segnato in combattimento"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Motivo: «{why}». Per cambiarlo: «{action}» nel libro."
 end)

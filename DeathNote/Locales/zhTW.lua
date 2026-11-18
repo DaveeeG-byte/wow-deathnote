@@ -871,4 +871,25 @@ L.EMPTY_SEARCHHAS_SUB = "只是不在這一頁。按Enter打開。"
 L.FILTER_TWO = "{count}個篩選"
 L.CHAT_NEWS_140 = "1.4.0新內容：遭到攻擊後，一個小提示會問是否把攻擊者記入本子（記恨；開/關：/dn grudge 或{rules}的{sheet}頁）；「{takeall}」在{guild}，篩選和搜尋在{wanted}。"
 L.GRUDGE_TIP_OFF = "關閉：/dn grudge 或{rules}的{sheet}頁。"
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "不確定：線索不多。只有親眼看到他時才打勾。"
+L.GRUDGE_TIP_MOB = "同時有怪物在攻擊你"
+L.GRUDGE_TIP_CAST = "你受擊時他在施法"
+L.GRUDGE_TIP_JOIN = "隨你受擊進入戰鬥"
+L.GRUDGE_TIP_REPEAT = "多次受擊時都以你為目標"
+L.SET_GRUDGE_SIZE = "提示大小"  -- [max 34]
+L.SIZE_SMALL = "小"  -- [max 10]
+L.SIZE_MEDIUM = "中"  -- [max 10]
+L.SIZE_LARGE = "大"  -- [max 10]
+L.SET_SEC_PLATE = "名條"  -- [max 24]
+L.SET_PLATE = "在記仇本敵人頭上標記"  -- [max 34]
+L.BIND_TOGGLE = "打開或關閉記仇本"
+L.BIND_ADD = "目標記入記仇本"
+L.BIND_HUNT = "目標加入追殺名單"
+L.BIND_ALARM = "警報 關 / 開"
+L.GRIP_NO_TARGET = "沒有目標：先選取一名敵方玩家。"
+L.GRIP_NOT_ENEMY = "你的目標不是敵方玩家。"
+L.GRIP_ALREADY = "{name}已在記仇本中。"
+L.GRIP_HUNT_WHY = "戰鬥中標記"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "理由：「{why}」。修改：在記仇本中點「{action}」。"
 end)

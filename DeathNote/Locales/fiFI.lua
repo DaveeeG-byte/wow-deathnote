@@ -864,4 +864,25 @@ L.EMPTY_SEARCHHAS_SUB = "Ei vain tällä sivulla. Enter avaa sen."
 L.FILTER_TWO = "Suodattimia: {count}"
 L.CHAT_NEWS_140 = "Uutta 1.4.0:ssa: hyökkäyksen jälkeen pieni ilmoitus kysyy, kirjataanko hyökkääjä kirjaan (Kauna; päälle/pois: /dn grudge tai {rules}, välilehti {sheet}); ”{takeall}”: välilehti {guild}; suodatin ja haku: välilehti {wanted}."
 L.GRUDGE_TIP_OFF = "Pois päältä: /dn grudge tai {rules}, välilehti {sheet}."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Epävarma: vähän näyttöä. Merkitse vain, jos näit hänet."
+L.GRUDGE_TIP_MOB = "Olento hyökkäsi kimppuusi samaan aikaan"
+L.GRUDGE_TIP_CAST = "Loitsi, kun sinuun osui"
+L.GRUDGE_TIP_JOIN = "Meni taisteluun osumasi kanssa"
+L.GRUDGE_TIP_REPEAT = "Piti sinua kohteena useilla osumilla"
+L.SET_GRUDGE_SIZE = "Ilmoituksen koko"  -- [max 34]
+L.SIZE_SMALL = "pieni"  -- [max 10]
+L.SIZE_MEDIUM = "keski"  -- [max 10]
+L.SIZE_LARGE = "suuri"  -- [max 10]
+L.SET_SEC_PLATE = "NIMIKILVET"  -- [max 24]
+L.SET_PLATE = "Merkki kirjan vihollisten yllä"  -- [max 34]
+L.BIND_TOGGLE = "Avaa tai sulje kirja"
+L.BIND_ADD = "Kohde kirjaan"
+L.BIND_HUNT = "Kohde jahtilistalle"
+L.BIND_ALARM = "Hälytys pois / päälle"
+L.GRIP_NO_TARGET = "Ei kohdetta: valitse ensin vihollispelaaja."
+L.GRIP_NOT_ENEMY = "Kohteesi ei ole vihollispelaaja."
+L.GRIP_ALREADY = "{name} on jo kirjassa."
+L.GRIP_HUNT_WHY = "Merkitty taistelussa"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Syy: ”{why}”. Muuta: ”{action}” kirjassa."
 end)

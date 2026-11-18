@@ -1,0 +1,9 @@
+<!-- 1.5.0 grip: key bindings, a section of their own in the game's key bindings (no default keys). The game loads
+     this file by itself (not in the TOC); the texts are the globals BINDING_HEADER_DEATHNOTE (the addon's title from
+     the TOC) and BINDING_NAME_DEATHNOTE_* (language table), set in Grip.lua. Same form as ForeverAuras on Forever. -->
+<Bindings>
+	<Binding name="DEATHNOTE_TOGGLE" category="BINDING_HEADER_DEATHNOTE">DeathNote_Binding("TOGGLE")</Binding>
+	<Binding name="DEATHNOTE_ADD" category="BINDING_HEADER_DEATHNOTE">DeathNote_Binding("ADD")</Binding>
+	<Binding name="DEATHNOTE_HUNT" category="BINDING_HEADER_DEATHNOTE">DeathNote_Binding("HUNT")</Binding>
+	<Binding name="DEATHNOTE_ALARM" category="BINDING_HEADER_DEATHNOTE">DeathNote_Binding("ALARM")</Binding>
+</Bindings>

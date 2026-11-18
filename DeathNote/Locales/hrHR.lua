@@ -870,4 +870,25 @@ L.EMPTY_SEARCHHAS_SUB = "Samo ne na ovoj stranici. Enter ga otvara."
 L.FILTER_TWO = "Filtri: {count}"
 L.CHAT_NEWS_140 = "Novo u 1.4.0: nakon napada mala poruka pita treba li napadača upisati u knjigu (Kivnost; uklj./isklj.: /dn grudge ili {rules}, list {sheet}); „{takeall}”: kartica {guild}; filtar i pretraga: kartica {wanted}."
 L.GRUDGE_TIP_OFF = "Isključivanje: /dn grudge ili {rules}, list {sheet}."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Nesigurno: malo tragova. Označi samo ako si ga vidio."
+L.GRUDGE_TIP_MOB = "Istodobno te napadalo stvorenje"
+L.GRUDGE_TIP_CAST = "Bacao je čaroliju dok su te pogađali"
+L.GRUDGE_TIP_JOIN = "Ušao je u borbu s tvojim pogotkom"
+L.GRUDGE_TIP_REPEAT = "Imao te u meti pri više pogodaka"
+L.SET_GRUDGE_SIZE = "Veličina poruke"  -- [max 34]
+L.SIZE_SMALL = "mala"  -- [max 10]
+L.SIZE_MEDIUM = "srednja"  -- [max 10]
+L.SIZE_LARGE = "velika"  -- [max 10]
+L.SET_SEC_PLATE = "PLOČICE IMENA"  -- [max 24]
+L.SET_PLATE = "Oznaka nad neprijateljima knjige"  -- [max 34]
+L.BIND_TOGGLE = "Otvori ili zatvori knjigu"
+L.BIND_ADD = "Meta u knjigu"
+L.BIND_HUNT = "Meta na popis lova"
+L.BIND_ALARM = "Uzbuna isklj. / uklj."
+L.GRIP_NO_TARGET = "Nema mete: prvo označi neprijateljskog igrača."
+L.GRIP_NOT_ENEMY = "Tvoja meta nije neprijateljski igrač."
+L.GRIP_ALREADY = "{name}: već u knjizi."
+L.GRIP_HUNT_WHY = "Označen u borbi"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Razlog: „{why}”. Promjena: „{action}” u knjizi."
 end)

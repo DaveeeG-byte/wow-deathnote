@@ -66,6 +66,8 @@ Probe.APIS = {
   "GetQuestDifficultyColor", "UnitIsDeadOrGhost", "GetDuelerInfo", "StartDuel",
   -- 1.4.0 grudge (Grudge.lua): who is in combat, my health, group membership
   "UnitAffectingCombat", "UnitHealth", "UnitInParty", "UnitInRaid", "IsShiftKeyDown",
+  -- 1.5.0 grip: the creature cross-check (Grudge.lua), the nameplate mark (Plate.lua)
+  "UnitThreatSituation", "C_NamePlate.GetNamePlates",
 }
 
 -- COMBAT_LOG_EVENT_UNFILTERED is not in this list: the client closes it to addons and an
@@ -233,8 +235,15 @@ function Probe.Run(verbose, opts)
     local okg, g = pcall(ns.Grudge.ProbeSnapshot)
     if okg and type(g) == "table" then
       g.cases = keepGrudge and type(keepGrudge.cases) == "table" and keepGrudge.cases or {}
+      g.session = keepGrudge and type(keepGrudge.session) == "table" and keepGrudge.session or nil   -- 1.5.0 grip
       out.grudge = g
     end
+  end
+  -- 1.5.0 grip: the nameplate mark (Plate.lua): plates seen, players among them, marks set, secret, forbidden, no frame,
+  -- in an instance, errors, the last error (text cut), shown now, the pool
+  if ns.Plate and ns.Plate.ProbeSnapshot then
+    local okp, pg = pcall(ns.Plate.ProbeSnapshot)
+    if okp and type(pg) == "table" then out.grip = S(pg) end
   end
   if db then
     local keep = db.probe and db.probe.deaths
@@ -286,6 +295,21 @@ function Probe.Run(verbose, opts)
         tostring(out.grudge.meter), c.meterOk or 0, c.meterSecret or 0, c.meterOnly or 0, c.combatUnknown or 0,
         c.unitCombat or 0, c.healthOk or 0, c.healthSecret or 0, c.combatOk or 0, c.combatSecret or 0, c.targetMe or 0,
         c.targetSecret or 0, c.nameSecret or 0))
+      -- 1.5.0 grip: the second signals and the creature cross-check
+      Util.Print(("grudge signals s %d j %d r %d (cast alone %d) · mob %d (target secret %d, threat ok %d secret %d)"
+        .. " · held %d promoted %d held at end %d · sure %d probable %d · cases %d")
+        :format(c.s or 0, c.j or 0, c.r or 0, c.castAlone or 0, c.mob or 0, c.mobSecret or 0, c.threatOk or 0,
+        c.threatSecret or 0, c.held or 0, c.promoted or 0, c.heldEnd or 0, c.sure or 0, c.probable or 0,
+        #(out.grudge.cases or {})))
+    end
+    -- technical line (no translation): the nameplate mark since login (1.5.0 grip)
+    if type(out.grip) == "table" and type(out.grip.counts) == "table" then
+      local c = out.grip.counts
+      Util.Print(("plate mark %s (%s) · api %s · plates %d (players %d) · marks %d · secret %d · forbidden %d · no frame %d"
+        .. " · instance %d · errors %d · shown %d")
+        :format(out.grip.enabled and "on" or "off", tostring(out.grip.size), tostring(out.grip.api), c.seen or 0,
+        c.players or 0, c.marks or 0, c.secret or 0, c.forbidden or 0, c.noFrame or 0, c.instance or 0, c.errors or 0,
+        tonumber(out.grip.shown) or 0))
     end
     if out.target then
       Util.Print(Fmt(L.PROBE_TARGET, { name = tostring(out.target.name), guid = tostring(out.target.guid),

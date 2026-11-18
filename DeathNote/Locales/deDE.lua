@@ -858,4 +858,25 @@ L.EMPTY_SEARCHHAS_SUB = "Nur nicht auf dieser Seite. Enter öffnet ihn."
 L.FILTER_TWO = "{count} Filter"
 L.CHAT_NEWS_140 = "Neu in 1.4.0: nach einem Angriff fragt eine kleine Meldung, ob der Angreifer ins Buch soll (Rachsucht; an/aus: /dn rachsucht oder {rules}, Blatt {sheet}); „{takeall}“ steht unter {guild}, Filter und Suche unter {wanted}."
 L.GRUDGE_TIP_OFF = "Abstellen: /dn rachsucht oder {rules}, Blatt {sheet}."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Unsicher: wenig spricht für ihn. Haken nur, wenn du ihn gesehen hast."
+L.GRUDGE_TIP_MOB = "Zugleich griff dich eine Kreatur an"
+L.GRUDGE_TIP_CAST = "Wirkte einen Zauber, als du getroffen wurdest"
+L.GRUDGE_TIP_JOIN = "Ging mit deinem Treffer in den Kampf"
+L.GRUDGE_TIP_REPEAT = "Hatte dich bei mehreren Treffern im Ziel"
+L.SET_GRUDGE_SIZE = "Größe der Meldung"  -- [max 34]
+L.SIZE_SMALL = "klein"  -- [max 10]
+L.SIZE_MEDIUM = "mittel"  -- [max 10]
+L.SIZE_LARGE = "groß"  -- [max 10]
+L.SET_SEC_PLATE = "NAMENSPLAKETTEN"  -- [max 24]
+L.SET_PLATE = "Marke über Feinden im Buch"  -- [max 34]
+L.BIND_TOGGLE = "Buch öffnen oder schließen"
+L.BIND_ADD = "Ziel ins Buch"
+L.BIND_HUNT = "Ziel auf die Abschussliste"
+L.BIND_ALARM = "Alarm aus / an"
+L.GRIP_NO_TARGET = "Kein Ziel: zuerst einen feindlichen Spieler anvisieren."
+L.GRIP_NOT_ENEMY = "Dein Ziel ist kein feindlicher Spieler."
+L.GRIP_ALREADY = "{name} steht schon im Buch."
+L.GRIP_HUNT_WHY = "Im Kampf markiert"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Grund: „{why}“. Ändern: „{action}“ im Buch."
 end)

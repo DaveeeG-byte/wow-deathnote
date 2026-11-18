@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.5.0
+
+<!-- grip -->
+### Added
+- Key bindings (Esc > Options > Key Bindings, a section of their own, no keys set by default): open or close the book; target into the book (like `/dn add`, with class, level, guild from the target); target on the hit list (like `/dn hunt`, with the reason "Marked in a fight", no question in combat; releasing again from the book with another reason replaces it); alarm off / on. All of them work in combat. Without a target, or with a creature, a friendly player or a group member as target, one clear line and nothing is written.
+- A mark on the nameplate of everyone in your book: a red thumbtack and the standing "me : him" for the wanted, a plain grey thumbtack for those who only attacked you, a crosshair stamp for the hit list; pardoned players and suspects get none. Only in the open world and only while enemy nameplates are on; the mark is a small frame of its own on the plate, nothing of the plate itself is changed. House Rules, sheet Rap Sheet, section NAMEPLATES: off, small, medium (default), large.
+- Grudge notice size: small, medium (default) or large (House Rules, sheet Rap Sheet, under GRUDGE).
+- Grudge rows show how sure they are: a row seen only once (or while a creature also had you targeted) is paler and carries a "?", its tooltip says why; sure rows come first.
+- `/dn probe` shows the new grudge signals and the nameplate mark (`probe.grip`); the grudge cases (no names) are kept without `/dn probe`, at most 20, and the counters of a session are kept at logout.
+
+### Changed
+- Grudge detection: a spell cast by an enemy who has you targeted no longer counts on its own (a self-buff or mounting opened notices); it counts only together with a hit on you. New second signals: he goes into combat right with a hit on you, or he has you targeted at two hits a second or more apart. When a hostile creature has you targeted (or you on its threat list) at the same moment, the player is held back until a second signal comes.
+
+### Known open
+- Unmeasured in the game: the nameplate mark (whether `C_NamePlate.GetNamePlateForUnit` answers on Forever in the open world, how the mark sits on the client's plates and on plate addons), the creature cross-check (whether a creature's target and its threat are readable in a fight), and the new signals. `/dn probe` and `probe.grip` / `probe.grudge` count all of it.
+
 ## 1.4.0 (2026-11-17)
 
 ### Added

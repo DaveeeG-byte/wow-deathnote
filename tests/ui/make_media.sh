@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Rebuilds DeathNote's own textures (ImageMagick 7, `magick`).
 # Output: <addon folder>/Media/*.tga (DeathNote/, or the old Staatsfeind/), 32-bit RGBA, uncompressed, edges a power of two.
-# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade]
+# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade|grip]
 #   all (default) = everything; base = the black book's files; kit = the shared grey parts of the themes (g_*.tga);
 #   harbor, trade = the kit plus the files of that theme only (<id>_*.tga). The header check runs over every file.
 set -euo pipefail
@@ -319,13 +319,29 @@ theme_trade() {
   tga "$TMP/trade_clamp.png" "$OUT/trade_clamp.tga"
 }
 
+# 1.5.0 grip: the crosshair stamp of the nameplate mark (hit list), 64x64: a red ring with four ticks and a dot, worn
+# like the stamps (noise mask), drawn at 256x256 for clean edges. Shown at 14 to 24 px above a nameplate.
+grip_media() {
+  magick -size 256x256 xc:none -fill none -stroke white -strokewidth 22 -draw 'circle 128,128 128,40' \
+    -strokewidth 18 -draw 'line 128,8 128,84' -draw 'line 128,172 128,248' \
+    -draw 'line 8,128 84,128' -draw 'line 172,128 248,128' \
+    -stroke none -fill white -draw 'circle 128,128 128,146' "$TMP/cx_mask.png"
+  magick -seed 151 -size 256x256 xc:gray50 +noise Random -colorspace gray -blur 0x0.9 -auto-level \
+    -threshold 86% -alpha copy "$TMP/cx_holes.png"
+  magick "$TMP/cx_mask.png" "$TMP/cx_holes.png" -compose DstOut -composite -blur 0x0.6 "$TMP/cx_worn.png"
+  magick -size 256x256 xc:'#b00a0a' \( "$TMP/cx_worn.png" -alpha extract \) -alpha off -compose copy_opacity -composite \
+    -compose over -background none -virtual-pixel transparent -distort SRT 8 -resize 64x64 "$TMP/cx_out.png"
+  tga "$TMP/cx_out.png" "$OUT/crosshair.tga"
+}
+
 case "$WHAT" in
-  all) base_media; kit_media; theme_harbor; theme_trade ;;
+  all) base_media; kit_media; theme_harbor; theme_trade; grip_media ;;
+  grip) grip_media ;;
   base) base_media ;;
   kit) kit_media ;;
   harbor) kit_media; theme_harbor ;;
   trade) kit_media; theme_trade ;;
-  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade)" >&2; exit 2 ;;
+  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip)" >&2; exit 2 ;;
 esac
 
 # Check the headers: type 2 (uncompressed), 32 bpp, descriptor 0x08, edges a power of two
