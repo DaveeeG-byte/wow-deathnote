@@ -94,9 +94,10 @@ end
 local function ser(v)
   if type(v) ~= "table" then return tostring(v) end
   local keys = {}
-  -- 1.6.0 feud: additive fields 1.2.2 does not know (play day, guilds of the revenge, keep, the guild of a deed)
+  -- 1.6.0 feud: additive fields 1.2.2 does not know (play day, guilds of the revenge, keep, the guild of a deed);
+  -- 1.6.0 fixer: statusHand (a standing set by hand, Feud.MayKeep)
   for k in pairs(v) do
-    if k ~= "revengeForeign" and k ~= "day" and k ~= "revGuild" and k ~= "keep" and not (k == "guild" and v.role ~= nil) then
+    if k ~= "revengeForeign" and k ~= "day" and k ~= "revGuild" and k ~= "keep" and k ~= "statusHand" and not (k == "guild" and v.role ~= nil) then
       keys[#keys + 1] = k
     end
   end
