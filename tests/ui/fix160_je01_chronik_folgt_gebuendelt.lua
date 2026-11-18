@@ -77,7 +77,7 @@ local rows, shown, same = GL.Rows("all"), {}, true
 for _, b in ipairs(PL.lines) do if b:IsVisible() and b.event then shown[#shown + 1] = b.text._text end end
 local i = 0
 for _, r in ipairs(rows) do
-  if r.event and i < #shown then i = i + 1; if r.text ~= shown[i] then same = false end end
+  if r.event and i < #shown then i = i + 1; if (r.say or r.text) ~= shown[i] then same = false end end
 end
 check("die Seite zeigt den Stand nach der letzten Tat", same and #shown > 0 and #GL.All("all") >= 11, #shown)
 

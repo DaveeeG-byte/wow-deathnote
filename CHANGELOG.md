@@ -33,12 +33,14 @@
 - New texts in all 21 languages.
 
 ### Fixed
+- A call for help from the guild comes as a quiet chat line only when both "Share with the guild" and "Warn of killers of guild and friends" are off.
 - Names in another script (Cyrillic, Chinese, Korean) showed as boxes on a client of another language; every text of the book now takes the fonts of the script it needs. The same holds while typing such a name into the search, the note, the reason or the import field.
 - Damage by the world (falling, drowning, lava and the like) in the death recap was taken for a player of unknown name; alone it is a death by the world now. After a player's damage the death stays in the player journal as before, with the players as candidates.
 
 ### Known open
 - Unmeasured in the game: whether the death recap of Forever carries lines of the world (falling, drowning) and whether `C_CreatureInfo.GetCreatureID` exists (`probe.pve`); whether a call for help goes through in combat and in a chat lockdown, and over party, raid and Battle.net (`probe.call`); whether the layer mark read from creatures differs per layer; whether the guild roster says who is online (`probe.glog`); whether an enemy's guild is readable in the open world and in combat (`probe.feud`).
 - A feud guild has no mark on the nameplate yet; a claim shows under Unsolved, not on the poster.
+- The open guild chronicle steps aside when a new deed of the guild changes the row chosen in the guild tab; the ribbon opens it again.
 
 ---
 ## 1.5.0 (2026-11-18)
