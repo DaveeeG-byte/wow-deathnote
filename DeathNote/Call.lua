@@ -584,6 +584,11 @@ function Call.Receive(text, short, full, from)
   rec.same = Call.SameZone(m.mapID)
   -- 1.6.0 fix: in a dungeon, raid or battleground only the quiet chat line (no sound, no slip; the pin still comes)
   if not Util.IsOpenWorld() then rec.quiet = true; Call.Count("quiet") end
+  -- fixer 2 1.6.0 (jb06): a call of the guild while "Share with the guild" and "Warn about killers in the shared books"
+  -- are both off: only the quiet chat line
+  if from == "guild" and not rec.quiet and B.setting and B.setting("share") == false and B.setting("alert") == false then
+    rec.quiet = true; Call.Count("quiet")
+  end
   remember(rec)
   Call.Count("received")
   Util.Print(Call.InLine(rec) .. " " .. Call.Link("map", rec, L.CALL_MAP))
