@@ -942,7 +942,7 @@ L.OPT_SCENE_OPEN = "Only open debts"  -- [max 32] the map's switch: only scenes 
 L.SCENE_DAYS_ALL = "all"  -- [max 10] the period in the map's switch: every scene, however old
 L.SCENE_DAYS_LINE = "Period: {days}"  -- [max 32] the map's switch: the period; a click steps 7 days, 30 days, all; {days} = "30 days" or SCENE_DAYS_ALL
 L.SCENE_KIND_OWN = "My deaths and kills"  -- [max 32] the map's switch: your own deaths and kills
-L.OPT_G_SENDPLACE = "Send the spot of my death"  -- [max 44] check box (House Rules, sheet Guild, More): the exact spot of your death goes to guild and friends with it
+L.OPT_G_SENDPLACE = "Send the spot of my death"  -- [max 44] check box (House Rules, sheet Guild, group SHARE): the exact spot of your death goes to guild and friends with it
 L.SCENE_MAP_TIP = "Crime scenes of your book"  -- tooltip head of the small button at the world map's corner
 L.SCENE_MAP_CLICK = "Click: filter the crime scenes"  -- tooltip line of that button: what a click does
 L.SCENE_SOMEONE = "someone"  -- name for a killer nobody knows (map tooltip)
@@ -960,7 +960,7 @@ L.SCENE_SHOW = "Click: show on the map"  -- tooltip line over a place in the boo
 L.SCENE_NO_SPOT = "Exact spot unknown: this is the zone."  -- hint on the map after a click in the book when the entry has no coordinates
 L.SCENE_NO_MAP = "No map known for this place."  -- chat line after a click in the book when the place has no map
 L.SCENE_COMBAT = "In combat the map stays shut. Click again afterwards."  -- chat line after a click in the book during combat
-L.CHRON_OPEN = "Chronicle"  -- [max 14] word below the photo on the poster: opens the chronicle of the feud
+L.CHRON_OPEN = "Chronicle"  -- [max 14] word right of DEEDS on the poster: opens the chronicle of the feud
 L.CHRON_HEAD = "Chronicle"  -- [max 20] head of the chronicle card (big handwriting, 26 pt)
 L.CHRON_BACK = "Back to poster"  -- [max 19] word at the bottom right of the chronicle: back to the poster
 L.CHRON_EMPTY = "Nothing written yet."  -- chronicle without any event

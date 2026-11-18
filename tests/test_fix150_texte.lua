@@ -1,7 +1,7 @@
 -- 1.5.0 fixer: texts after the UI hunt, in all 21 languages (stand-alone like test_fix140_texte.lua).
 -- U10: the word that puts a line into the chat is not the word that shows a place on the map (deDE "Aushängen",
 -- enUS "Post"; the switch, the section, the status and the guest card use the same verb; the window's head stays).
--- U11: one word for one thing.
+-- U11: one word for one thing. U14: the translators' notes say where a word stands.
 local ROOT = (arg and arg[0] and arg[0]:match("^(.*)/tests/")) or "."
 local DIR = ROOT .. "/DeathNote/"
 local pass, fail = 0, 0
@@ -55,6 +55,14 @@ for c, w in pairs(DEBT) do
   check(c .. " Kartenschalter und Woche: dasselbe Wort", T.OPT_SCENE_OPEN:find(w, 1, true) ~= nil and T.SHARE_WEEK_DEBTS:find(w, 1, true) ~= nil,
     T.OPT_SCENE_OPEN .. " / " .. T.SHARE_WEEK_DEBTS)
 end
+
+-- U14: the translators' notes in enUS say where the words stand
+local ENF = read(DIR .. "Locales/enUS.lua")
+local function note(key) return ENF:match("\nL%." .. key .. " = \"[^\n]-\"%s*%-%-([^\n]*)") or "" end
+check("enUS Hinweis CHRON_OPEN: rechts neben DEEDS", note("CHRON_OPEN"):find("right of DEEDS", 1, true) and not note("CHRON_OPEN"):find("below the photo", 1, true),
+  note("CHRON_OPEN"))
+check("enUS Hinweis OPT_G_SENDPLACE: Gruppe SHARE", note("OPT_G_SENDPLACE"):find("group SHARE", 1, true) and not note("OPT_G_SENDPLACE"):find("More", 1, true),
+  note("OPT_G_SENDPLACE"))
 
 print(("fix150 texte        %d ok, %d rot"):format(pass, fail))
 os.exit(fail == 0 and 0 or 1)
