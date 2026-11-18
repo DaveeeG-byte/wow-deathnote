@@ -195,8 +195,8 @@ end
 -- whose plate is it (players only; the identity of the Tracker, the GUID beats the first name), then its mark
 local function identify(unit)
   unitKey[unit] = nil
-  if not Plate.Enabled() then return end
-  if not Util.IsOpenWorld() then counts.instance = counts.instance + 1; return end
+  if not Plate.Enabled() then release(unit); return end
+  if not Util.IsOpenWorld() then release(unit); counts.instance = counts.instance + 1; return end
   local T = ns.Tracker
   local key = T and T.Identity and T.Identity(unit)
   if not key then return end
@@ -282,4 +282,14 @@ ns:On("STANDING_CHANGED", function() Plate.Refresh() end)
 ns:On("PLATES_CHANGED", function() Plate.Refresh() end)
 ns:On("SETTINGS_CHANGED", function(path)
   if type(path) == "string" and path:find("^plate%.") then Plate.Refresh(nil, true) end
+end)
+-- the counters also without /dn probe: kept at logout in probe.grip (no names, plain numbers)
+ns:RegisterEvent("PLAYER_LOGOUT", function()
+  local S = ns.Store
+  local db = S and S.DB and S.DB()
+  if not db or counts.seen == 0 then return end
+  if type(db.probe) ~= "table" then db.probe = {} end
+  local P = ns.Probe
+  local snap = Plate.ProbeSnapshot()
+  db.probe.grip = P and P.Sanitize and P.Sanitize(snap) or snap
 end)

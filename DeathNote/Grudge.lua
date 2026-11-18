@@ -918,6 +918,17 @@ ns:RegisterEvent("PLAYER_REGEN_ENABLED", function()
   Grudge.UpdateEvents()
 end)
 ns:RegisterEvent("PLAYER_DEAD", function() Grudge.OnPlayerDead() end)
+-- 1.5.0 grip: the counters of the session also without /dn probe (probe.grudge.session, numbers only)
+ns:RegisterEvent("PLAYER_LOGOUT", function()
+  local db = ns.Store and ns.Store.DB and ns.Store.DB()
+  if not db or (counts.hits == 0 and counts.episodes == 0) then return end
+  if type(db.probe) ~= "table" then db.probe = {} end
+  if type(db.probe.grudge) ~= "table" then db.probe.grudge = {} end
+  local c = {}
+  for k, v in pairs(counts) do c[k] = v end
+  c.t = time()
+  db.probe.grudge.session = c
+end)
 ns:On("DEATH_RECORDED", function(journal, fired) Grudge.OnDeathRecorded(journal, fired) end)
 ns:RegisterEvent("DUEL_REQUESTED", function() dueling = now() end)
 ns:RegisterEvent("DUEL_INBOUNDS", function() dueling = now() end)

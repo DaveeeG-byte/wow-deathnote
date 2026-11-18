@@ -235,8 +235,15 @@ function Probe.Run(verbose, opts)
     local okg, g = pcall(ns.Grudge.ProbeSnapshot)
     if okg and type(g) == "table" then
       g.cases = keepGrudge and type(keepGrudge.cases) == "table" and keepGrudge.cases or {}
+      g.session = keepGrudge and type(keepGrudge.session) == "table" and keepGrudge.session or nil   -- 1.5.0 grip
       out.grudge = g
     end
+  end
+  -- 1.5.0 grip: the nameplate mark (Plate.lua): plates seen, players among them, marks set, secret, forbidden, no frame,
+  -- in an instance, errors, the last error (text cut), shown now, the pool
+  if ns.Plate and ns.Plate.ProbeSnapshot then
+    local okp, pg = pcall(ns.Plate.ProbeSnapshot)
+    if okp and type(pg) == "table" then out.grip = S(pg) end
   end
   if db then
     local keep = db.probe and db.probe.deaths
@@ -294,6 +301,15 @@ function Probe.Run(verbose, opts)
         :format(c.s or 0, c.j or 0, c.r or 0, c.castAlone or 0, c.mob or 0, c.mobSecret or 0, c.threatOk or 0,
         c.threatSecret or 0, c.held or 0, c.promoted or 0, c.heldEnd or 0, c.sure or 0, c.probable or 0,
         #(out.grudge.cases or {})))
+    end
+    -- technical line (no translation): the nameplate mark since login (1.5.0 grip)
+    if type(out.grip) == "table" and type(out.grip.counts) == "table" then
+      local c = out.grip.counts
+      Util.Print(("plate mark %s (%s) · api %s · plates %d (players %d) · marks %d · secret %d · forbidden %d · no frame %d"
+        .. " · instance %d · errors %d · shown %d")
+        :format(out.grip.enabled and "on" or "off", tostring(out.grip.size), tostring(out.grip.api), c.seen or 0,
+        c.players or 0, c.marks or 0, c.secret or 0, c.forbidden or 0, c.noFrame or 0, c.instance or 0, c.errors or 0,
+        tonumber(out.grip.shown) or 0))
     end
     if out.target then
       Util.Print(Fmt(L.PROBE_TARGET, { name = tostring(out.target.name), guid = tostring(out.target.guid),
