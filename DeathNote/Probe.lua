@@ -236,6 +236,11 @@ function Probe.Run(verbose, opts)
       out.grudge = g
     end
   end
+  -- 1.5.0 scene: the map (API there, pins, clicks from the book, in combat, without a spot, places sent/received)
+  if ns.Scene and ns.Scene.ProbeSnapshot then
+    local oks, sc = pcall(ns.Scene.ProbeSnapshot)
+    if oks and type(sc) == "table" then out.scene = sc end
+  end
   if db then
     local keep = db.probe and db.probe.deaths
     db.probe = out
@@ -286,6 +291,15 @@ function Probe.Run(verbose, opts)
         tostring(out.grudge.meter), c.meterOk or 0, c.meterSecret or 0, c.meterOnly or 0, c.combatUnknown or 0,
         c.unitCombat or 0, c.healthOk or 0, c.healthSecret or 0, c.combatOk or 0, c.combatSecret or 0, c.targetMe or 0,
         c.targetSecret or 0, c.nameSecret or 0))
+    end
+    -- technical line (no translation): the crime scene map since login (1.5.0 scene)
+    if out.scene then
+      local c = out.scene
+      Util.Print(("scene map %s (open %s, rect %s, attached %s) · scenes %d (spot %d, zone %d) · pins %d bundles %d · clicks %d"
+        .. " · combat %d · no spot %d · no map %d · deferred %d · places sent %d received %d dropped %d · errors %d")
+        :format(tostring(c.mapFrame), tostring(c.openWorldMap), tostring(c.mapRect), tostring(c.attached), c.scenes or 0,
+        c.withSpot or 0, c.zoneOnly or 0, c.pins or 0, c.bundles or 0, c.clicks or 0, c.combat or 0, c.noCoords or 0,
+        c.noMap or 0, c.deferred or 0, c.placeSent or 0, c.placeReceived or 0, c.placeDropped or 0, c.errors or 0))
     end
     if out.target then
       Util.Print(Fmt(L.PROBE_TARGET, { name = tostring(out.target.name), guid = tostring(out.target.guid),

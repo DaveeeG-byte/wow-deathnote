@@ -69,6 +69,9 @@ Friends.lua
 Bounty.lua
 # 1.4.0: attacked without dying: the episode and the book entry (role "attack"); the notice is GrudgeCard.lua
 Grudge.lua
+# 1.5.0 scene: crime scenes (which places go on the map, bundled) and the feud's chronicle; data and words only
+Scene.lua
+Chronicle.lua
 Alert.lua
 UI.lua
 # 1.3.0: the first-start window (language and cover), only on a new installation; /dn start
@@ -76,4 +79,6 @@ Start.lua
 Extras.lua
 # 1.4.0: the small grudge notice on the right edge (tick and cross per attacker)
 GrudgeCard.lua
+# 1.5.0 scene: the pins on the world map, the map's switch and the way from the book to the map
+SceneMap.lua
 Humor.lua
