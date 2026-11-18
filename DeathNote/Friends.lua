@@ -53,8 +53,8 @@ local FC = {
   HELLO_MIN = 22, HELLO_MAX_DELAY = 34,   -- after the guild hello (8 to 20 s) and its answers
   ONLINE_MIN = 25, ONLINE_MAX = 40,       -- a friend came online: after his own guild hello (8 to 20 s)
   HELLO_RETRY = 15, HELLO_TRIES = 12,     -- a hello that found the queue full is tried again
-  -- an answer waits until the shared queue has room for a whole one (R + M + X + J + A, 1.2.1: H, Z, B, Y)
-  REPLY_ROOM = C.REPLY_MAX + C.LISTED_REPLY + C.UNLISTED_REPLY + C.HUNT_REPLY + C.HUNTOFF_REPLY + C.BOUNTY_REPLY + 3,
+  -- an answer waits until the shared queue has room for a whole one (R + M + X + J + A, 1.2.1: H, Z, B, Y; 1.5.0: L)
+  REPLY_ROOM = C.REPLY_MAX + (C.PLACE_REPLY or 0) + C.LISTED_REPLY + C.UNLISTED_REPLY + C.HUNT_REPLY + C.HUNTOFF_REPLY + C.BOUNTY_REPLY + 3,
   REPLY_WAIT = 10, REPLY_TRIES = 12,
   FAIL_MAX = 3,            -- refused whispers in a row to one friend: that friend rests for the session
   SCAN_DELAY = 1,          -- friend list events come in bursts: one scan
