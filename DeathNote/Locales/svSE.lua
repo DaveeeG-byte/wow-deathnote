@@ -864,7 +864,7 @@ L.FILTER_TWO = "{count} filter"
 L.CHAT_NEWS_140 = "Nytt i 1.4.0: efter ett anfall frågar ett litet meddelande om anfallaren ska in i boken (Agg; på/av: /dn grudge eller {rules}, fliken {sheet}); \"{takeall}\" finns under {guild}, filter och sökning under {wanted}."
 L.GRUDGE_TIP_OFF = "Stäng av: /dn grudge eller {rules}, fliken {sheet}."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Osäkert: hade dig som mål vid bara en träff"
+L.GRUDGE_TIP_PROBABLE = "Osäkert: lite talar för honom. Bocka bara om du såg honom."
 L.GRUDGE_TIP_MOB = "En varelse anföll dig samtidigt"
 L.GRUDGE_TIP_CAST = "Kastade en besvärjelse medan du träffades"
 L.GRUDGE_TIP_JOIN = "Gick i strid med din träff"

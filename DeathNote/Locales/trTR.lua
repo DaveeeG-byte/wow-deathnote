@@ -874,7 +874,7 @@ L.FILTER_TWO = "{count} filtre"
 L.CHAT_NEWS_140 = "1.4.0'da yeni: bir saldırıdan sonra küçük bir bildirim saldırganın deftere yazılıp yazılmayacağını sorar (Kin; aç/kapat: /dn grudge ya da {rules}, {sheet} sayfası); \"{takeall}\": {guild} sekmesi; filtre ve arama: {wanted} sekmesi."
 L.GRUDGE_TIP_OFF = "Kapatmak için: /dn grudge ya da {rules}, {sheet} sayfası."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Emin değil: seni yalnızca bir vuruşta hedef almıştı"
+L.GRUDGE_TIP_PROBABLE = "Emin değil: az iz var. Yalnızca onu gördüysen işaretle."
 L.GRUDGE_TIP_MOB = "Aynı anda bir yaratık da sana saldırıyordu"
 L.GRUDGE_TIP_CAST = "Sen vurulurken büyü yaptı"
 L.GRUDGE_TIP_JOIN = "Senin vuruşunla savaşa girdi"

@@ -864,7 +864,7 @@ L.FILTER_TWO = "{count} filters"
 L.CHAT_NEWS_140 = "Nieuw in 1.4.0: na een aanval vraagt een kleine melding of de aanvaller in je boek komt (Wrok; aan/uit: /dn grudge of {rules}, blad {sheet}); \"{takeall}\" staat onder {guild}, filter en zoeken onder {wanted}."
 L.GRUDGE_TIP_OFF = "Uitzetten: /dn grudge of {rules}, blad {sheet}."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Onzeker: had jou maar bij één treffer als doelwit"
+L.GRUDGE_TIP_PROBABLE = "Onzeker: weinig wijst op hem. Vink alleen aan als je hem zag."
 L.GRUDGE_TIP_MOB = "Tegelijk viel een wezen je aan"
 L.GRUDGE_TIP_CAST = "Sprak een spreuk uit terwijl je geraakt werd"
 L.GRUDGE_TIP_JOIN = "Ging met jouw treffer het gevecht in"

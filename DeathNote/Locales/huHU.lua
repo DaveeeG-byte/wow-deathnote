@@ -873,7 +873,7 @@ L.FILTER_TWO = "{count} szűrő"
 L.CHAT_NEWS_140 = "Újdonság az 1.4.0-ban: támadás után egy kis üzenet megkérdezi, beírja-e a támadót a könyvbe (Harag; be/ki: /dn grudge vagy {rules}, {sheet} lap); „{takeall}”: {guild} fül; szűrő és keresés: {wanted} fül."
 L.GRUDGE_TIP_OFF = "Kikapcsolás: /dn grudge vagy {rules}, {sheet} lap."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Bizonytalan: csak egy találatnál tartott célpontként"
+L.GRUDGE_TIP_PROBABLE = "Bizonytalan: kevés jel szól ellene. Csak akkor pipáld, ha láttad."
 L.GRUDGE_TIP_MOB = "Közben egy lény is támadott"
 L.GRUDGE_TIP_CAST = "Varázsolt, miközben eltaláltak"
 L.GRUDGE_TIP_JOIN = "A találatoddal együtt harcba lépett"

@@ -858,7 +858,7 @@ L.FILTER_TWO = "{count} filtres"
 L.CHAT_NEWS_140 = "Nouveau en 1.4.0 : après une attaque, un petit avis demande si l’attaquant va dans ton carnet (Rancune ; activer/désactiver : /dn grudge ou {rules}, feuille {sheet}) ; « {takeall} » est sous {guild}, filtre et recherche sous {wanted}."
 L.GRUDGE_TIP_OFF = "Désactiver : /dn grudge ou {rules}, feuille {sheet}."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Pas sûr : vu te ciblant lors d'un seul coup"
+L.GRUDGE_TIP_PROBABLE = "Pas sûr : peu d'indices contre lui. Coche seulement si tu l'as vu."
 L.GRUDGE_TIP_MOB = "Une créature t'attaquait en même temps"
 L.GRUDGE_TIP_CAST = "A lancé un sort pendant que tu étais touché"
 L.GRUDGE_TIP_JOIN = "Est entré en combat avec ton coup"

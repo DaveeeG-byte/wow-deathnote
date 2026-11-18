@@ -115,7 +115,7 @@ local function fill(m, kind, score)
   local okT = m.icon:SetTexture(tex)
   if okT == false then m.icon:SetColorTexture(0.7, 0.05, 0.05, 1) end
   if m.icon.SetDesaturated then m.icon:SetDesaturated(kind == "grudge") end
-  if kind == "grudge" then m.icon:SetVertexColor(0.55, 0.52, 0.48, 0.9) else m.icon:SetVertexColor(1, 1, 1, 1) end
+  if kind == "grudge" then m.icon:SetVertexColor(0.86, 0.83, 0.76, 0.95) else m.icon:SetVertexColor(1, 1, 1, 1) end
   local text = kind ~= "grudge" and type(score) == "string" and score or ""
   if Look and Look.Font then Look.Font(m.score, "body", sz.font, "OUTLINE") end
   local bone = Look and Look.BONE or { 0.93, 0.89, 0.8, 1 }

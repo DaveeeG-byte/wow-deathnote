@@ -858,7 +858,7 @@ L.FILTER_TWO = "{count} filtri"
 L.CHAT_NEWS_140 = "Novità in 1.4.0: dopo un attacco un piccolo avviso chiede se l’aggressore va nel tuo libro (Rancore; on/off: /dn grudge o {rules}, foglio {sheet}); «{takeall}» è in {guild}, filtro e ricerca in {wanted}."
 L.GRUDGE_TIP_OFF = "Disattivare: /dn grudge o {rules}, foglio {sheet}."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Incerto: ti aveva nel bersaglio a un solo colpo"
+L.GRUDGE_TIP_PROBABLE = "Incerto: pochi indizi su di lui. Spunta solo se l'hai visto."
 L.GRUDGE_TIP_MOB = "Una creatura ti attaccava nello stesso momento"
 L.GRUDGE_TIP_CAST = "Ha lanciato un incantesimo mentre venivi colpito"
 L.GRUDGE_TIP_JOIN = "È entrato in combattimento col tuo colpo"

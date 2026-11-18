@@ -871,7 +871,7 @@ L.FILTER_TWO = "Filtri: {count}"
 L.CHAT_NEWS_140 = "Novo u 1.4.0: nakon napada mala poruka pita treba li napadača upisati u knjigu (Kivnost; uklj./isklj.: /dn grudge ili {rules}, list {sheet}); „{takeall}”: kartica {guild}; filtar i pretraga: kartica {wanted}."
 L.GRUDGE_TIP_OFF = "Isključivanje: /dn grudge ili {rules}, list {sheet}."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Nesigurno: imao te u meti samo pri jednom pogotku"
+L.GRUDGE_TIP_PROBABLE = "Nesigurno: malo tragova. Označi samo ako si ga vidio."
 L.GRUDGE_TIP_MOB = "Istodobno te napadalo stvorenje"
 L.GRUDGE_TIP_CAST = "Bacao je čaroliju dok su te pogađali"
 L.GRUDGE_TIP_JOIN = "Ušao je u borbu s tvojim pogotkom"

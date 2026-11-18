@@ -871,7 +871,7 @@ L.FILTER_TWO = "Filtry: {count}"
 L.CHAT_NEWS_140 = "Novinka v 1.4.0: po útoku se malá zpráva zeptá, zda útočníka zapsat do knihy (Zášť; zap./vyp.: /dn grudge nebo {rules}, list {sheet}); „{takeall}“: záložka {guild}; filtr a hledání: záložka {wanted}."
 L.GRUDGE_TIP_OFF = "Vypnutí: /dn grudge nebo {rules}, list {sheet}."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Nejisté: měl tě v cíli jen při jednom zásahu"
+L.GRUDGE_TIP_PROBABLE = "Nejisté: málo stop. Zaškrtni, jen když jsi ho viděl."
 L.GRUDGE_TIP_MOB = "Současně na tebe útočil tvor"
 L.GRUDGE_TIP_CAST = "Sesílal kouzlo, když tě zasahovali"
 L.GRUDGE_TIP_JOIN = "Vstoupil do boje s tvým zásahem"

@@ -865,7 +865,7 @@ L.FILTER_TWO = "Suodattimia: {count}"
 L.CHAT_NEWS_140 = "Uutta 1.4.0:ssa: hyökkäyksen jälkeen pieni ilmoitus kysyy, kirjataanko hyökkääjä kirjaan (Kauna; päälle/pois: /dn grudge tai {rules}, välilehti {sheet}); ”{takeall}”: välilehti {guild}; suodatin ja haku: välilehti {wanted}."
 L.GRUDGE_TIP_OFF = "Pois päältä: /dn grudge tai {rules}, välilehti {sheet}."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Epävarma: piti sinua kohteena vain yhdellä osumalla"
+L.GRUDGE_TIP_PROBABLE = "Epävarma: vähän näyttöä. Merkitse vain, jos näit hänet."
 L.GRUDGE_TIP_MOB = "Olento hyökkäsi kimppuusi samaan aikaan"
 L.GRUDGE_TIP_CAST = "Loitsi, kun sinuun osui"
 L.GRUDGE_TIP_JOIN = "Meni taisteluun osumasi kanssa"

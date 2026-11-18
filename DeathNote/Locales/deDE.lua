@@ -859,7 +859,7 @@ L.FILTER_TWO = "{count} Filter"
 L.CHAT_NEWS_140 = "Neu in 1.4.0: nach einem Angriff fragt eine kleine Meldung, ob der Angreifer ins Buch soll (Rachsucht; an/aus: /dn rachsucht oder {rules}, Blatt {sheet}); „{takeall}“ steht unter {guild}, Filter und Suche unter {wanted}."
 L.GRUDGE_TIP_OFF = "Abstellen: /dn rachsucht oder {rules}, Blatt {sheet}."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Unsicher: nur bei einem Treffer mit dir im Ziel gesehen"
+L.GRUDGE_TIP_PROBABLE = "Unsicher: wenig spricht für ihn. Haken nur, wenn du ihn gesehen hast."
 L.GRUDGE_TIP_MOB = "Zugleich griff dich eine Kreatur an"
 L.GRUDGE_TIP_CAST = "Wirkte einen Zauber, als du getroffen wurdest"
 L.GRUDGE_TIP_JOIN = "Ging mit deinem Treffer in den Kampf"

@@ -872,7 +872,7 @@ L.FILTER_TWO = "{count}個篩選"
 L.CHAT_NEWS_140 = "1.4.0新內容：遭到攻擊後，一個小提示會問是否把攻擊者記入本子（記恨；開/關：/dn grudge 或{rules}的{sheet}頁）；「{takeall}」在{guild}，篩選和搜尋在{wanted}。"
 L.GRUDGE_TIP_OFF = "關閉：/dn grudge 或{rules}的{sheet}頁。"
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "不確定：只在一次受擊時以你為目標"
+L.GRUDGE_TIP_PROBABLE = "不確定：線索不多。只有親眼看到他時才打勾。"
 L.GRUDGE_TIP_MOB = "同時有怪物在攻擊你"
 L.GRUDGE_TIP_CAST = "你受擊時他在施法"
 L.GRUDGE_TIP_JOIN = "隨你受擊進入戰鬥"

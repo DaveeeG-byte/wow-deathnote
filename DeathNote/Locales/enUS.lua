@@ -879,7 +879,7 @@ L.FILTER_TWO = "{count} filters"  -- filter word when role and class are both on
 L.CHAT_NEWS_140 = "New in 1.4.0: after an attack a small notice asks whether the attacker goes into your book (Grudge; on/off: /dn grudge or {rules}, sheet {sheet}); \"{takeall}\" is under {guild}, a filter and a search under {wanted}."  -- chat, once per account after the update to 1.4.0 for players who had the book before; {rules} {sheet} {guild} {wanted} = the names of the House Rules, the rap sheet sheet and the tabs in the active cover, {takeall} = the button
 L.GRUDGE_TIP_OFF = "Turn it off: /dn grudge or {rules}, sheet {sheet}."  -- last line of the grudge notice's tooltip: how to turn it off; {rules} {sheet} = names of the House Rules and the sheet in the active cover
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Not sure: seen targeting you at one hit only"  -- row tooltip of the grudge notice: why the row is pale and carries a "?" (he only had you targeted at a single hit)
+L.GRUDGE_TIP_PROBABLE = "Not sure: little points at him. Tick only if you saw him."  -- row tooltip of the grudge notice: why the row is pale and carries a "?" (one sign only, or a creature attacked you too); second sentence: tick only if you saw him yourself
 L.GRUDGE_TIP_MOB = "A creature was attacking you at the same time"  -- row tooltip: a hostile creature had you targeted (or was fighting you) at the same moment, so the hit may have been its
 L.GRUDGE_TIP_CAST = "Cast a spell while you were hit"  -- row tooltip: he cast a spell within two seconds of a hit on you
 L.GRUDGE_TIP_JOIN = "Went into combat with your hit"  -- row tooltip: he went from out of combat into combat right at a hit on you

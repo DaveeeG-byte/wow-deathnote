@@ -871,7 +871,7 @@ L.FILTER_TWO = "Filtry: {count}"
 L.CHAT_NEWS_140 = "Nowość w 1.4.0: po ataku mały komunikat pyta, czy wpisać napastnika do księgi (Uraza; wł./wył.: /dn grudge albo {rules}, karta {sheet}); „{takeall}”: zakładka {guild}; filtr i wyszukiwanie: zakładka {wanted}."
 L.GRUDGE_TIP_OFF = "Wyłączanie: /dn grudge albo {rules}, karta {sheet}."
 -- 1.5.0 grip
-L.GRUDGE_TIP_PROBABLE = "Niepewne: miał cię w celu tylko przy jednym trafieniu"
+L.GRUDGE_TIP_PROBABLE = "Niepewne: mało poszlak. Zaznacz tylko, jeśli go widziałeś."
 L.GRUDGE_TIP_MOB = "W tym samym czasie atakował cię stwór"
 L.GRUDGE_TIP_CAST = "Rzucał czar, gdy obrywałeś"
 L.GRUDGE_TIP_JOIN = "Wszedł do walki razem z twoim trafieniem"
