@@ -1054,7 +1054,7 @@ L.GLOG_ONLINE = "online now"  -- tooltip of a row
 L.GLOG_HEARD = "last heard {time}"  -- tooltip of a row ({time} = "3 h ago")
 L.GLOG_VERSION_OLD = "{version} · older"  -- a guildmate with an older version of the addon
 L.GLOG_VERSION_UNKNOWN = "version ?"  -- no version heard yet
-L.GLOG_HOLDERS_HINT = "Only who sent something with Revenge Book stands here. Nobody is listed for not having it."  -- under the list
+L.GLOG_HOLDERS_HINT = "Only those who sent something with Revenge Book are listed. Nobody is listed for not having it."  -- under the list
 L.GLOG_RECOMMEND = "Recommend to the guild"  -- button: one line into the guild chat
 L.GLOG_RECOMMEND_LINE = "I keep a Revenge Book: whoever kills one of us is written in, and the guild sees it. Free on CurseForge: Revenge Book."  -- the line the button sends to the guild chat (plain text, no link, no brackets)
 L.GLOG_REC_WAIT = "Again in {minutes} min"  -- the button while it waits (once per 30 minutes)
@@ -1103,7 +1103,7 @@ L.CALL_OTHER_ZONE = "other zone"  -- in brackets after the zone of a help call: 
 L.CALL_SOMEWHERE = "unknown place"  -- zone name when the map ID has no name in this client
 L.CALL_MAP = "Map"  -- clickable word in the chat after a help call or sighting: opens the world map there
 L.CALL_TIP = "Click: open the map there · Right-click: close"  -- tooltip and last line of the help call notice: what the clicks do
-L.CALL_BUTTON = "Help"  -- [max 8] small button on the grudge notice (after an attack): sends a help call; one short word
+L.CALL_BUTTON = "Call"  -- [max 8] small button on the grudge notice (after an attack): sends a help call; one short word
 L.CALL_BUTTON_TIP = "Sends your position to guild, group and friends with Revenge Book."  -- tooltip of CALL_BUTTON (head: BIND_HELP)
 L.SIGHT_LINE = "{name} seen by {by}: {zone}, {ago}."  -- quiet chat line: a guildmate or friend saw one of your killers; {name} = the killer, {by} = who saw him, {zone} = zone, {ago} = '3 min ago'
 L.SIGHT_LINE_LAYER = "{name} seen by {by}: {zone}, {ago}, other layer."  -- as SIGHT_LINE when he is on another layer (shard) of the zone than you
@@ -1181,7 +1181,7 @@ L.EMPTY_FCLAIMS_HEAD = "No claims."  -- right page, Unsolved > Claims without an
 L.EMPTY_FCLAIMS_SUB = "When guild or friends take down a target of your bounty, the claim stands here."  -- under it: what a claim is
 L.EMPTY_FFILED_HEAD = "Nothing filed."  -- right page, Unsolved > Filed without any entry
 L.EMPTY_FFILED_SUB = "Suspicions and attacks with no news for 30 play days are filed here."  -- under it: what is filed
-L.CLAIM_LINE = "{name} got your target {target}: {gold} gold open"  -- notice, chat and claim page: a guildmate or friend killed a target of your own bounty; {name} = his first name, {target} = the target, {gold} = whole gold (number); the addon pays nothing
+L.CLAIM_LINE = "{name} got your target {target}: {gold} gold owed"  -- notice, chat and claim page: a guildmate or friend killed a target of your own bounty; {name} = his first name, {target} = the target, {gold} = whole gold (number); the addon pays nothing
 L.CLAIM_BY = "by {name}"  -- claim row, sub line: who claims it; {name} = first name
 L.CLAIM_OPEN = "open"  -- mark of a claim: not settled yet
 L.CLAIM_PAID = "paid"  -- mark of a claim: you paid it (by trade, yourself)
@@ -1191,7 +1191,7 @@ L.ACT_DECLINE = "Decline"  -- button on a claim: decline it
 L.ACT_REOPEN = "Open again"  -- button on a settled claim: open again
 L.BANNER_CLAIM = "Bounty earned"  -- kicker of the notice (letter-spaced): a bounty of yours was earned
 L.FILED_SINCE = "filed {time}"  -- row of a filed entry, sub line; {time} = '3 days ago'
-L.FILED_TINY = "Filed on {time} after 30 play days without news. Taken back, it stays."  -- page of a filed entry: why it is there and what taking it back does; {time} = date
+L.FILED_TINY = "Filed on {time} after 30 play days without news. Take it back and it stays."  -- page of a filed entry: why it is there and what taking it back does; {time} = date
 L.ACT_RESTORE = "Take back"  -- word and button: take a filed entry back into the book
 L.ACT_KEEP = "Keep"  -- row menu and poster menu: never file this entry away
 L.ACT_UNKEEP = "Keep no longer"  -- row menu and poster menu: may be filed away again

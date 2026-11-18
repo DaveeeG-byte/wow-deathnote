@@ -161,7 +161,7 @@ local card = rawget(G, "DeathNoteGrudge")
 ns.Grudge.Test(3); W.tick()
 card = rawget(G, "DeathNoteGrudge")
 local btn = card and card.dnCall
-check("Knopf Hilfe an der Meldung", btn ~= nil and btn:IsShown() and btn.text:GetText() == "Hilfe", btn and btn.text:GetText())
+check("Knopf Rufen an der Meldung (fixer 1.6.0: Rufen statt Hilfe)", btn ~= nil and btn:IsShown() and btn.text:GetText() == "Rufen", btn and btn.text:GetText())
 check("Kopfzeile macht Platz", card.head:GetWidth() <= 210 - 16 - 2 - 54, card.head:GetWidth())
 local sent0 = #AM.addonSent
 W.tick(31)
