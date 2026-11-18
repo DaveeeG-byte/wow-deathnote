@@ -29,7 +29,7 @@ L.SHEET_BOOK  = "Kirja"          -- [max 14]
 L.SHEET_ALERT = "Hälytys"        -- [max 14]
 
 -- Stamps on the wanted poster (capitals, short; WANTED itself is never translated) ----------------
-L.STAMP_NR1      = "YLEINEN VIHOLLINEN NRO 1"  -- [max 24]
+L.STAMP_NR1      = "VIHOLLINEN NRO 1"  -- [max 24]
 L.STAMP_REVENGE  = "KOSTETTU"             -- [max 16]
 L.STAMP_PARDONED = "ARMAHDETTU"           -- [max 16]
 L.STAMP_SUSPECT  = "EPÄILTY"              -- [max 16]
