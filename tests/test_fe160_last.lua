@@ -98,16 +98,30 @@ test("Gilde und Freunde: nach einer Aenderung keine neue Kopie, Zahl einmal je A
   local builds, put, runs = st.viewBuilds or 0, st.viewPut or 0, st.countRuns or 0
   for _ = 1, 10 do G.Count("all"); G.Count("guild") end
   eq((st.countRuns or 0) - runs, 0, "zehn Abfragen ohne Aenderung: nicht neu gezaehlt")
-  -- a change in the guild list: the view is filled again in place, nothing of one list alone is put again
+  -- a change elsewhere: the view is filled again in place, nothing of one list alone is put again, an entry of both lists
+  -- that did not change keeps its joined table (before 1.6.0: both books copied and every joined entry built anew)
+  local both = G.Get("G1x1-Ling", "all")
+  ok(both and both.both, "Eintrag aus beiden Listen")
+  local joinedBefore = st.viewJoined or 0
   for _ = 1, 5 do
     G.Bridge.updated()
     G.Count("all")
   end
   ok((st.viewBuilds or 0) - builds >= 5, "fuenfmal neu aufgebaut")
   eq((st.viewPut or 0) - put, 0, "kein Eintrag neu hineinkopiert")
+  eq((st.viewJoined or 0) - joinedBefore, 0, "kein Eintrag beider Listen neu verbunden")
+  ok(G.Get("G1x1-Ling", "all") == both, "derselbe verbundene Eintrag")
   eq((st.countRuns or 0) - runs, 5, "je Aenderung einmal gezaehlt")
   local _, n = G.Count("all")
   ok(n > 0, "Taten gezaehlt")
+  -- a new deed on one side: that entry is joined again, with the deed
+  local ge = ns.Store.DB().guild.lists["Gilde Nr 1"].enemies["G1x1-Ling"]
+  table.insert(ge.deeds, 1, { t = time(), victim = "Kollege Nr9", by = "Kollege Nr9", zone = "Z" })
+  G.Bridge.updated()
+  G.Count("all")
+  local again = G.Get("G1x1-Ling", "all")
+  ok(again ~= both and again.deeds[1].victim == "Kollege Nr9", "neu verbunden mit der neuen Tat")
+  eq((st.viewJoined or 0) - joinedBefore, 1, "genau einer")
 end)
 
 M.done("fe160_last")
