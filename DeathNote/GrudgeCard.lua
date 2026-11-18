@@ -30,6 +30,7 @@ Card.DEFAULT = { "RIGHT", "RIGHT", -110, 80 }   -- right edge, a little inward (
 Card.STRATA, Card.LEVEL = "DIALOG", 1
 Card.DONE_DELAY = 1.5     -- seconds the notice stays after the last answer
 Card.WAIT_STEP, Card.WAIT_MAX = 0.5, 12   -- after a death: look every 0.5 s whether the death's notice has gone
+Card.TICKS = 4            -- fixer 2 1.6.0 (je05): the OnUpdate does its work at most this often per second
 Card.TICK = "Interface\\RaidFrame\\ReadyCheck-Ready"
 Card.CROSS = "Interface\\RaidFrame\\ReadyCheck-NotReady"
 Card.FIT_NAME = { sizes = { 11, 10, 9 } }
@@ -228,7 +229,15 @@ local function Build()
     Tip(self, { L.GRUDGE_HEAD, L.GRUDGE_TIP, Fmt(L.GRUDGE_TIP_OFF, { rules = L.HEAD_RULES, sheet = L.SHEET_RECORD }) })
   end)
   card:SetScript("OnLeave", TipHide)
-  card:SetScript("OnUpdate", function(self, dt) Card.Tick(dt) end)
+  -- fixer 2 1.6.0 (je05): the countdown, the bar and the mouse check at most TICKS times per second (the time adds up)
+  local acc = 0
+  card:SetScript("OnUpdate", function(self, dt)
+    acc = acc + (tonumber(dt) or 0)
+    if acc < 1 / Card.TICKS then return end
+    local d = acc
+    acc = 0
+    Card.Tick(d)
+  end)
   Card.ApplySize()
   Card.Place()
 end

@@ -496,6 +496,21 @@ local FIXED = { "target", "focus", "mouseover", "party1target", "party2target", 
 
 local function mobRecent() return mobAt ~= nil and now() - mobAt <= Grudge.HIT_WINDOW end
 
+-- fixer 2 1.6.0 (je05): what a look can change on the notice: the episode, its rows, this row's certainty, signals and
+-- fields. A look that changes none of it tells the notice nothing (it came 28 times per second in a fight).
+local function look(row)
+  if not ep then return "-" end
+  local n, p = 0, 0
+  if row then
+    for _ in pairs(row) do n = n + 1 end
+    for _ in pairs(row.proofs or {}) do p = p + 1 end
+  end
+  return table.concat({ ep.id, tostring(ep.running), tostring(ep.closed), tostring(ep.test), #ep.order, tostring(ep.mob),
+    tostring(ep.endGT), row and tostring(row.conf) or "", row and tostring(row.level) or "", row and tostring(row.skull) or "",
+    row and tostring(row.mob) or "", n, p }, "\t")
+end
+Grudge.quietLooks = 0
+
 -- fromScan: the look right after a hit on me (signals r and s count there)
 local function consider(unit, proof, fromScan)
   local key, info = enemyOf(unit, true)
@@ -503,6 +518,7 @@ local function consider(unit, proof, fromScan)
   local c = unitInCombat(unit)
   if c == false then outAt[key] = now(); return nil end
   if c == nil then counts.combatUnknown = counts.combatUnknown + 1 end
+  local before = look(ep and not ep.test and ep.rows[key] or nil)
   local row = addRow(key, info, proof or "a")
   if row then
     local t = now()
@@ -527,7 +543,7 @@ local function consider(unit, proof, fromScan)
     grade(row)
     -- a new attacker after the end of the fight: the episode runs again (the notice waits for its end)
     if ep.endGT and not ep.running then ep.running = true; ep.endGT = nil; Grudge.Watch() end
-    fire()
+    if look(row) ~= before then fire() else Grudge.quietLooks = Grudge.quietLooks + 1 end
   end
   return row
 end
@@ -682,9 +698,10 @@ local function onCast(unit)
   if not (lastHit and now() - lastHit <= Grudge.HIT_WINDOW) then counts.castAlone = counts.castAlone + 1; return end
   local row = consider(unit, "a")
   if row then
+    local before = look(row)
     mark(row, "s")
     grade(row)
-    fire()
+    if look(row) ~= before then fire() else Grudge.quietLooks = Grudge.quietLooks + 1 end
     if not row.cast then row.cast = true; counts.cast = counts.cast + 1 end
   end
 end
