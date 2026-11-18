@@ -991,4 +991,5 @@ L.CHAT_NEWS_150 = "DeathNote теперь называется Revenge Book. Т�
 L.SCENE_TIP_SUSPECT = "Здесь ты погиб; подозрение: {name}"
 L.CHRON_EARLIER = "Более ранних дел в книге уже нет."
 L.GRUDGE_TIP_PET = "Его питомец тоже напал на тебя"
+L.SHARE_GUEST_WEEK = "Неделя: {name}"
 end)

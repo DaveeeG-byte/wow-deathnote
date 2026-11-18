@@ -992,4 +992,5 @@ L.CHAT_NEWS_150 = "DeathNote se sada zove Revenge Book. Tvoja knjiga i /dn ostaj
 L.SCENE_TIP_SUSPECT = "Ovdje si poginuo; sumnja: {name}"
 L.CHRON_EARLIER = "Ranijih djela više nema u knjizi."
 L.GRUDGE_TIP_PET = "I njegov ljubimac te napao"
+L.SHARE_GUEST_WEEK = "Tjedan: {name}"
 end)

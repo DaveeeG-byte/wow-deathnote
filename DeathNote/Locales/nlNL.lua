@@ -985,4 +985,5 @@ L.CHAT_NEWS_150 = "DeathNote heet nu Revenge Book. Je boek en /dn blijven. Nieuw
 L.SCENE_TIP_SUSPECT = "Hier ben je gestorven; verdenking: {name}"
 L.CHRON_EARLIER = "Eerdere daden staan niet meer in het boek."
 L.GRUDGE_TIP_PET = "Zijn huisdier viel je ook aan"
+L.SHARE_GUEST_WEEK = "Week van {name}"
 end)

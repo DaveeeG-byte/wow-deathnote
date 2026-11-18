@@ -339,15 +339,32 @@ local function BuildGuest()
   if type(special) == "table" then special[#special + 1] = "DeathNoteShareGuest" end
 end
 
+-- 1.5.0 fixer: the head follows the kind of the line (in the receiver's cover); a week line is no poster but a plain
+-- card "<sender>'s week"; "Copy to my book" only for a line about somebody wanted (or one in another language)
+local GUEST_HEAD = { wanted = "POSTER_HEAD", pardoned = "SHARE_KIND_PARDONED", revenge = "BANNER_REVENGE",
+  guild = "POSTER_GUILDBOOK", friends = "POSTER_FRIENDSBOOK", hunt = "POSTER_HUNTLIST" }
+function ShareUI.GuestHead(rec)
+  local kind = rec.kind
+  if kind == "week" then return Fmt(L.SHARE_GUEST_WEEK, { name = rec.sender or "?" }) end
+  if GUEST_HEAD[kind] then return L[GUEST_HEAD[kind]] end
+  local first = type(rec.segs) == "table" and rec.segs[1]
+  return type(first) == "string" and first or L.POSTER_HEAD
+end
+function ShareUI.MayAdopt(rec) return type(rec) == "table" and (rec.kind == "wanted" or rec.kind == nil) end
+
 -- rec = Share.Parse(...) plus sender
 function ShareUI.Guest(rec)
   if type(rec) ~= "table" or type(rec.name) ~= "string" or not K() then return false end
   if not GP then BuildGuest() end
   GP.rec = rec
-  Look.FitText(GP.head, L.POSTER_HEAD, ShareUI.FIT_GUEST_HEAD)
-  Look.FitText(GP.by, Fmt(L.SHARE_GUEST_BY, { name = rec.sender or "?" }), ShareUI.FIT_ONE)
+  Look.FitText(GP.head, ShareUI.GuestHead(rec), ShareUI.FIT_GUEST_HEAD)
+  local week = rec.kind == "week"
+  Look.FitText(GP.by, week and "" or Fmt(L.SHARE_GUEST_BY, { name = rec.sender or "?" }), ShareUI.FIT_ONE)
   Look.FitText(GP.name, rec.name, ShareUI.FIT_NAME)
-  local segs = type(rec.segs) == "table" and rec.segs or {}
+  -- the head word stands in the head, not again as a line
+  local all = type(rec.segs) == "table" and rec.segs or {}
+  local segs = {}
+  for i = 2, #all do segs[#segs + 1] = all[i] end
   for i, l in ipairs(GP.lines) do
     local s = segs[i]
     l:SetShown(s ~= nil)
@@ -358,6 +375,7 @@ function ShareUI.Guest(rec)
   Look.FitText(GP.hint, L.SHARE_GUEST_HINT, ShareUI.FIT_TWO)
   GP.add:SetLabel(L.ACT_TAKE)
   GP.add.fn = function() ShareUI.Adopt(GP.rec) end
+  GP.add:SetShown(ShareUI.MayAdopt(rec))
   GP.close:SetLabel(L.SHARE_CLOSE)
   GP:Show()
   GP:Raise()
@@ -370,7 +388,7 @@ function ShareUI.GuestFrame() return GP end
 -- "Copy to my book": a hand entry marked as copied from the sender (never shared on, like every copied entry)
 function ShareUI.Adopt(rec)
   local S = ns.Store
-  if type(rec) ~= "table" or not (S and S.AddManual) then return nil end
+  if type(rec) ~= "table" or not (S and S.AddManual) or not ShareUI.MayAdopt(rec) then return nil end
   local key = S.AddManual(rec.name, nil, { adopt = { from = rec.sender, src = "text", kills = rec.h or 0 } })
   if type(key) ~= "string" then return nil end
   Share.Count("guestAdd")
@@ -384,6 +402,8 @@ end
 ------------------------------------------------------------------------
 function ShareUI.OpenRecord(rec)
   if type(rec) ~= "table" or type(rec.name) ~= "string" then return nil end
+  -- 1.5.0 fixer: a week line tells about the sender, not about the name in it: always the week card
+  if rec.kind == "week" then ShareUI.Guest(rec); return "guest" end
   local S = ns.Store
   local key = S and S.Find and S.Find(rec.name)
   if key and S.Get(key) and ns.UI and ns.UI.ShowEnemy then

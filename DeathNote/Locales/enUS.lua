@@ -1000,4 +1000,5 @@ L.CHAT_NEWS_150 = "DeathNote is now Revenge Book. Your book and /dn stay. New in
 L.SCENE_TIP_SUSPECT = "Here you died; suspicion: {name}"  -- map pin tooltip, your death without a sure killing blow (the book holds a suspicion); {name} = full name in class colour; never say he killed you
 L.CHRON_EARLIER = "Earlier deeds are no longer in the book."  -- chronicle, second line of a long feud whose oldest deeds the book no longer keeps (it keeps 30 per enemy); the last line still gives the full standing
 L.GRUDGE_TIP_PET = "His pet attacked you too"  -- grudge notice, row tooltip: a unit he controls (hunter pet, demon, elemental) had you targeted at the same hit
+L.SHARE_GUEST_WEEK = "{name}'s week"  -- [max 24] head of the card a click on a received week line opens (no wanted poster); {name} = the sender's first name
 end)

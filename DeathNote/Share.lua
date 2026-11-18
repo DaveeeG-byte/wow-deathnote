@@ -38,6 +38,15 @@ Share.CHANNEL_WORD = { GUILD = "SHARE_CH_GUILD", RAID = "SHARE_CH_RAID", INSTANC
 local IsSecret = Util.IsSecret
 local function G(name) return rawget(_G, name) end
 
+-- 1.5.0 fixer: what goes into a chat or the Discord block uses the plain words of the language (WANTED, PAYBACK, hit
+-- list), never the chosen cover's (a reader without the addon or with another cover would not know them)
+function Share.Word(key)
+  local Lc = ns.Locale
+  if Lc and Lc.Plain then return Lc.Plain(key) end
+  return L[key]
+end
+local W = Share.Word
+
 ------------------------------------------------------------------------
 -- Probe (probe.share): counters since login (session) and over all sessions (counts, in DeathNoteDB.probe.share)
 ------------------------------------------------------------------------
@@ -251,8 +260,8 @@ end
 
 -- kind word of an own entry: WANTED (the poster's head), PARDONED
 local function kindOf(e)
-  if e.status == "pardoned" then return L.SHARE_KIND_PARDONED end
-  return L.POSTER_HEAD
+  if e.status == "pardoned" then return W("SHARE_KIND_PARDONED") end
+  return W("POSTER_HEAD")
 end
 
 ------------------------------------------------------------------------
@@ -270,7 +279,7 @@ function Share.RevengeLine(e)
   local m, h = standing(e.key)
   local seg = m and Fmt(L.SHARE_REVENGE_NOW, { score = m .. " : " .. h }) or nil
   local z, sz = Util.Zone()
-  return Share.Build(display(e), { L.BANNER_REVENGE, seg, bountySeg(e.key, e), place(z, sz) })
+  return Share.Build(display(e), { W("BANNER_REVENGE"), seg, bountySeg(e.key, e), place(z, sz) })
 end
 
 -- guild or friends' book entry (src: "guild" | "friends" | "both" | nil)
@@ -278,7 +287,7 @@ function Share.GuildLine(g, src)
   if not Share.OfferGuild(g) then return nil end
   local ls = type(g.lastSeen) == "table" and g.lastSeen or nil
   local z = ls and Share.Clean(ls.zone)
-  return Share.Build(display(g), { src == "friends" and L.POSTER_FRIENDSBOOK or L.POSTER_GUILDBOOK,
+  return Share.Build(display(g), { src == "friends" and W("POSTER_FRIENDSBOOK") or W("POSTER_GUILDBOOK"),
     Fmt(L.ROW_GKILLED, { kills = tonumber(g.kills) or 0 }), bountySeg(g.key), z and Fmt(L.SHARE_SEEN, { zone = z }) or nil })
 end
 
@@ -287,7 +296,7 @@ function Share.HuntLine(h)
   if not Share.OfferHunt(h) then return nil end
   local ls = type(h.lastSeen) == "table" and h.lastSeen or nil
   local z = ls and Share.Clean(ls.zone)
-  return Share.Build(display(h), { L.POSTER_HUNTLIST, Fmt(L.POSTER_RELEASED_N, { times = times(tonumber(h.n) or 0) }),
+  return Share.Build(display(h), { W("POSTER_HUNTLIST"), Fmt(L.POSTER_RELEASED_N, { times = times(tonumber(h.n) or 0) }),
     bountySeg(h.key), z and Fmt(L.SHARE_SEEN, { zone = z }) or nil })
 end
 
@@ -388,9 +397,9 @@ function Share.Discord(item, kind, src)
   local head
   if kind == "guild" then
     if not Share.OfferGuild(item) then return nil end
-    head = src == "friends" and L.POSTER_FRIENDSBOOK or L.POSTER_GUILDBOOK
+    head = src == "friends" and W("POSTER_FRIENDSBOOK") or W("POSTER_GUILDBOOK")
   elseif kind == "hunt" then
-    head = L.POSTER_HUNTLIST
+    head = W("POSTER_HUNTLIST")
   else
     if not Share.Offer(item) then return nil end
     head = kindOf(item)
@@ -443,6 +452,23 @@ function Share.Find(msg, init)
   return nil
 end
 
+-- 1.5.0 fixer: what kind of line a received one is, from its first segment (the sender's head word): "wanted",
+-- "pardoned", "revenge", "guild", "friends", "hunt", "week", or nil when the word is not one of ours (another
+-- language). Both the plain word and the receiver's cover word are known (a sender of the same language).
+local KIND_KEYS = { { "POSTER_HEAD", "wanted" }, { "SHARE_KIND_PARDONED", "pardoned" }, { "BANNER_REVENGE", "revenge" },
+  { "POSTER_GUILDBOOK", "guild" }, { "POSTER_FRIENDSBOOK", "friends" }, { "POSTER_HUNTLIST", "hunt" },
+  { "SHARE_WEEK_HEAD", "week" } }
+Share.KIND_KEYS = KIND_KEYS
+function Share.KindOf(rec)
+  local first = type(rec) == "table" and type(rec.segs) == "table" and rec.segs[1]
+  if type(first) ~= "string" then return nil end
+  for _, kk in ipairs(KIND_KEYS) do
+    local a, b = Share.Clean(W(kk[1])), Share.Clean(L[kk[1]])
+    if first == a or first == b then return kk[2] end
+  end
+  return nil
+end
+
 -- { name, segs = { ... }, m, h } of a received line, nil when it has no pattern
 function Share.Parse(msg)
   local s, e, name = Share.Find(msg)
@@ -465,6 +491,7 @@ function Share.Parse(msg)
     local m, h = seg:match("(%d+) : (%d+)")
     if m then rec.m, rec.h = tonumber(m), tonumber(h); break end
   end
+  rec.kind = Share.KindOf(rec)
   return rec
 end
 

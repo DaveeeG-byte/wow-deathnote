@@ -557,18 +557,33 @@ end
 
 -- Lays the words of `theme` in `code` over `into` (show keys only, only keys English has, no empty text).
 -- Returns the number of words taken.
+-- 1.5.0 fixer: also returns the plain words it replaced (key -> the language's own word), so what goes into a chat or
+-- the Discord block can use the neutral words of the base theme (Locale.Plain)
 function Locale.ApplyWords(theme, code, into)
-  if not theme then return 0 end
+  local plain = {}
+  if not theme then return 0, plain end
   local t, err = Locale.RawWords(theme, code)
   if not t then
     if err ~= "not registered" then report("DeathNote Locale " .. tostring(theme) .. " " .. tostring(code) .. ": " .. tostring(err)) end
-    return 0
+    return 0, plain
   end
   local n = 0
   for k, v in pairs(t) do
-    if Locale.THEME_KEYS[k] and rawget(into, k) ~= nil and type(v) == "string" and v ~= "" then into[k] = v; n = n + 1 end
+    if Locale.THEME_KEYS[k] and rawget(into, k) ~= nil and type(v) == "string" and v ~= "" then
+      plain[k] = rawget(into, k)
+      into[k] = v; n = n + 1
+    end
   end
-  return n
+  return n, plain
+end
+
+-- 1.5.0 fixer: the word of `key` in the active language without the theme's words (chat lines, the Discord block:
+-- readers without the addon or with another cover read the plain word); any other key as ns.L has it
+Locale.plainWords = {}
+function Locale.Plain(key)
+  local v = Locale.plainWords[key]
+  if v ~= nil then return v end
+  return L[key]
 end
 
 -- 1.3.0: the names a player may type for a theme (/dn theme <name>): its name and its book title, in the active
@@ -624,7 +639,9 @@ function Locale.Build(code, into, theme)
   end
   if code == Locale.DEFAULT then
     if into == L then gatherThemeNames(code, en, into) end
-    Locale.themeWords = Locale.ApplyWords(theme, code, into)
+    local plain
+    Locale.themeWords, plain = Locale.ApplyWords(theme, code, into)
+    if into == L then Locale.plainWords = plain end
     return into, total, total, 0
   end
   local own, extra = 0, 0
@@ -648,7 +665,9 @@ function Locale.Build(code, into, theme)
     end
   end
   if into == L then gatherThemeNames(code, en, into) end
-  Locale.themeWords = Locale.ApplyWords(theme, code, into)
+  local plain
+  Locale.themeWords, plain = Locale.ApplyWords(theme, code, into)
+  if into == L then Locale.plainWords = plain end
   return into, own, total, extra
 end
 

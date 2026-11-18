@@ -993,4 +993,5 @@ L.CHAT_NEWS_150 = "DeathNote 现在叫 Revenge Book。你的记仇本和 /dn 都
 L.SCENE_TIP_SUSPECT = "你在这里死去；嫌疑：{name}"
 L.CHRON_EARLIER = "更早的事已不在本子里。"
 L.GRUDGE_TIP_PET = "他的宠物也攻击了你"
+L.SHARE_GUEST_WEEK = "{name}的一周"
 end)
