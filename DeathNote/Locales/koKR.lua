@@ -992,4 +992,5 @@ L.CHAT_NEWS_150 = "DeathNote는 이제 Revenge Book이다. 네 수첩과 /dn은 
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "여기서 죽었다; 의심: {name}"
 L.CHRON_EARLIER = "이전 기록은 더 이상 수첩에 없다."
+L.GRUDGE_TIP_PET = "그의 소환수도 너를 공격했다"
 end)

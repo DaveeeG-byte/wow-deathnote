@@ -97,6 +97,7 @@ local function RowTip(self)
   if p.s then t[#t + 1] = L.GRUDGE_TIP_CAST end
   if p.j then t[#t + 1] = L.GRUDGE_TIP_JOIN end
   if p.r then t[#t + 1] = L.GRUDGE_TIP_REPEAT end
+  if p.p then t[#t + 1] = L.GRUDGE_TIP_PET end   -- 1.5.0 fixer: his pet had me targeted
   if r.mob then t[#t + 1] = L.GRUDGE_TIP_MOB end
   if r.conf == "probable" then t[#t + 1] = L.GRUDGE_TIP_PROBABLE end
   Tip(self, t)

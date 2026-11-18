@@ -129,7 +129,8 @@ end)
 ---------------------------------------------------------------------------
 -- The creature cross-check
 ---------------------------------------------------------------------------
-test("Gegenprobe: eine Kreatur hat mich im Ziel -> Spieler mit Ziel auf mir wird zurueckgehalten, keine Meldung", function()
+-- 1.5.0 fixer: held during the fight, shown at its end (rather show than keep quiet; 1.4.0 showed him)
+test("Gegenprobe: eine Kreatur hat mich im Ziel -> Spieler mit Ziel auf mir wird im Kampf zurueckgehalten, am Ende gezeigt", function()
   local ns = load()
   local G = ns.Grudge
   local seen = 0
@@ -144,7 +145,9 @@ test("Gegenprobe: eine Kreatur hat mich im Ziel -> Spieler mit Ziel auf mir wird
   eq(shown(G), ""); no(G.Asks(ep), "nichts zu fragen"); eq(seen, 0)
   eq(G.Answer("Grimm-Bart", true), false, "zurueckgehalten: kein Haken moeglich")
   fightEnd()
-  no(G.Current(), "ohne Frage endet die Episode")
+  ok(G.Current(), "am Ende des Kampfes fragt die Episode nach ihm")
+  eq(ep.rows["Grimm-Bart"].conf, "probable"); eq(ep.rows["Grimm-Bart"].late, true)
+  eq(shown(G), "Grimm-Bart"); ok(G.Asks(ep)); ok(seen >= 1)
   no(ns.Store.Get("Grimm-Bart"))
   local c = G.ProbeSnapshot().counts
   eq(c.mob, 1); eq(c.held, 1); eq(c.heldEnd, 1); eq(c.promoted, 0)
@@ -199,7 +202,8 @@ test("Gegenprobe: wiederholte Treffer zaehlen nur ohne Kreatur auf mir; danach w
   w.target = nil
   M.FireEvent("NAME_PLATE_UNIT_REMOVED", "nameplate1"); M.units.nameplate1 = nil
   M.Advance(2.5); hit(); M.Advance(1.2); hit()
-  eq(r.proofs.r, true); eq(r.conf, "probable")
+  -- 1.5.0 fixer: the creature only lowered the hits it was there for; clean hits plus r = sure
+  eq(r.proofs.r, true); eq(r.conf, "sure")
   eq(shown(G), "Grimm-Bart")
   eq(G.ProbeSnapshot().counts.promoted, 1)
   noErrors()
@@ -260,7 +264,8 @@ test("Faelle: ohne /dn debug festgehalten, je Zeile Belege, Sicherheit, Gegenpro
   eq(#c.list, 2)
   local byP = {}
   for _, x in ipairs(c.list) do byP[x.p] = x end
-  eq(byP.a.c, "held"); eq(byP.a.st, "held"); eq(byP.a.m, true)
+  -- 1.5.0 fixer: held in the fight, shown at its end (late), left unanswered
+  eq(byP.a.c, "probable"); eq(byP.a.st, "gone"); eq(byP.a.m, true); eq(byP.a.late, true)
   eq(byP.aj.c, "probable"); eq(byP.aj.st, "no")
   -- no names anywhere in the case
   local function scan(t)

@@ -993,4 +993,5 @@ L.CHAT_NEWS_150 = "A DeathNote mostantól Revenge Book. A könyved és a /dn mar
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Itt haltál meg; gyanú: {name}"
 L.CHRON_EARLIER = "A korábbi tettek már nincsenek a könyvben."
+L.GRUDGE_TIP_PET = "A társa is megtámadott"
 end)

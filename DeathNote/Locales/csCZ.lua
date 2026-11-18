@@ -991,4 +991,5 @@ L.CHAT_NEWS_150 = "DeathNote se teď jmenuje Revenge Book. Tvoje kniha i /dn zů
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Tady jsi zemřel; podezření: {name}"
 L.CHRON_EARLIER = "Starší činy už v knize nejsou."
+L.GRUDGE_TIP_PET = "Jeho mazlíček tě taky napadl"
 end)

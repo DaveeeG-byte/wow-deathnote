@@ -994,4 +994,5 @@ L.CHAT_NEWS_150 = "DeathNote artık Revenge Book. Defterin ve /dn kalıyor. 1.5.
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Burada öldün; şüpheli: {name}"
 L.CHRON_EARLIER = "Daha eski olaylar artık defterde yok."
+L.GRUDGE_TIP_PET = "Evcil hayvanı da sana saldırdı"
 end)

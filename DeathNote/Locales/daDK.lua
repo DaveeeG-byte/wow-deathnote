@@ -984,4 +984,5 @@ L.CHAT_NEWS_150 = "DeathNote hedder nu Revenge Book. Din bog og /dn bliver. Nyt 
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Her døde du; mistanke: {name}"
 L.CHRON_EARLIER = "Tidligere gerninger står ikke længere i bogen."
+L.GRUDGE_TIP_PET = "Hans kæledyr angreb dig også"
 end)

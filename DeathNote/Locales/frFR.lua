@@ -978,4 +978,5 @@ L.CHAT_NEWS_150 = "DeathNote s'appelle désormais Revenge Book. Ton carnet et /d
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Ici, tu es mort ; soupçon : {name}"
 L.CHRON_EARLIER = "Les faits plus anciens ne sont plus dans le livre."
+L.GRUDGE_TIP_PET = "Son familier t’a attaqué aussi"
 end)

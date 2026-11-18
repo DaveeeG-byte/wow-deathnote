@@ -992,4 +992,5 @@ L.CHAT_NEWS_150 = "DeathNote 现在叫 Revenge Book。你的记仇本和 /dn 都
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "你在这里死去；嫌疑：{name}"
 L.CHRON_EARLIER = "更早的事已不在本子里。"
+L.GRUDGE_TIP_PET = "他的宠物也攻击了你"
 end)

@@ -14,6 +14,13 @@
 -- creature that had me targeted (or me on its threat table) within HIT_WINDOW lowers the certainty by one step.
 -- Certainty of a row (Grudge.Grade): b or c = "sure"; else a plus a second signal "sure", a alone "probable"; with
 -- the creature one step lower ("held" = kept in the episode, not shown and not asked, until a second signal comes).
+-- 1.5.0 fixer (rather show than keep quiet, the player is the filter; nothing 1.4.0 showed may be missing):
+--   * the creature only counts for the hit it was there for: one hit of his without a creature on me (cleanA) and the
+--     creature no longer lowers him; a row never falls below a certainty it once had (a shown row never goes);
+--   * a pet, demon, totem or other unit a player controls is no creature; where the client says whose it is, it
+--     supports its owner (signal p, second signal like s, j, r);
+--   * a cast belongs to the unit that cast it (its GUID), never to the next target of the same token;
+--   * a row still held at the end of the fight is shown then (counted heldEnd): the cross-check only delays it.
 -- Enemy = a player, attackable, not me, not in my group, not my duel partner, not the opponent of a duel to the death.
 -- An episode starts with the first attacker, gathers the others (groups: all of them) and ends with the end of the
 -- fight or my death. Who was answered (or let go) in the last ASKED_WINDOW seconds is not asked again.
@@ -52,9 +59,10 @@ local dueling                -- GetTime of a duel request or start, nil after th
 local inCombat = false
 local allowed = false        -- the place and the switches allow the notice right now
 local unitFrame              -- own frame for the unit events of the player and the casts
-local castAt = {}             -- 1.5.0 grip: unit token -> GetTime of his last cast
+local castAt = {}             -- 1.5.0 grip: unit -> GetTime of his last cast (1.5.0 fixer: by GUID, else by token)
 local outAt = {}              -- 1.5.0 grip: key -> GetTime he was last seen out of combat
 local mobAt                   -- 1.5.0 grip: GetTime a hostile creature last had me targeted (or me on its threat table)
+local petsOnMe = {}           -- 1.5.0 fixer: unit tokens of player-controlled units on me at the last look
 local counts = { episodes = 0, rows = 0, a = 0, b = 0, c = 0, cast = 0, hits = 0, hitsCombat = 0, hitsHealth = 0,
   shown = 0, yes = 0, no = 0, expired = 0, meterOk = 0, meterSecret = 0, meterNone = 0, meterOnly = 0,
   combatUnknown = 0, dropped = 0,
@@ -66,7 +74,9 @@ local counts = { episodes = 0, rows = 0, a = 0, b = 0, c = 0, cast = 0, hits = 0
   -- threat readable or secret), casts without a hit (no proof), rows held back / shown later / left held at the end,
   -- certainty of the rows at the end of their episode
   s = 0, j = 0, r = 0, castAlone = 0, mob = 0, mobSecret = 0, threatOk = 0, threatSecret = 0, held = 0, promoted = 0,
-  heldEnd = 0, sure = 0, probable = 0 }
+  heldEnd = 0, sure = 0, probable = 0,
+  -- 1.5.0 fixer: player-controlled units on me (no creature), whose owner the client named (signal p)
+  mobPet = 0, p = 0, ownerApi = 0 }
 local meterLast              -- why the last meter read gave nothing ("secret", "keine Daten", ...) or "ok"
 local events = {}            -- event -> registered (true/false), for the probe
 
@@ -192,7 +202,11 @@ Grudge.EnemyOf = enemyOf
 ---------------------------------------------------------------------------
 -- Episode
 ---------------------------------------------------------------------------
-local function fire() ns:Fire("GRUDGE_UPDATE", ep) end
+local function fire()
+  -- 1.5.0 fixer: what the notice is told now is the least each row keeps
+  if ep and ep.rows then for _, row in pairs(ep.rows) do row.floor = row.conf end end
+  ns:Fire("GRUDGE_UPDATE", ep)
+end
 
 local function newEpisode()
   nextId = nextId + 1
@@ -206,22 +220,28 @@ local function newEpisode()
 end
 
 -- 1.5.0 grip: the certainty of a row: "sure", "probable" or "held" (see the head of the file)
-local SECOND = { "s", "j", "r" }
+local SECOND = { "s", "j", "r", "p" }
 function Grudge.Grade(row)
   if type(row) ~= "table" then return "probable" end
   local p = type(row.proofs) == "table" and row.proofs or {}
   if p.b or p.c then return "sure" end
   local n = 0
   for i = 1, #SECOND do if p[SECOND[i]] then n = n + 1 end end
-  if row.mob then n = n - 1 end
+  if row.mob and not row.cleanA then n = n - 1 end
   if n >= 1 then return "sure" end
   if n == 0 then return "probable" end
   return "held"
 end
 
+local RANK = { held = 0, probable = 1, sure = 2 }
 local function grade(row)
   local was = row.conf
-  row.conf = Grudge.Grade(row)
+  local now2 = Grudge.Grade(row)
+  -- 1.5.0 fixer: a row only ever gets surer (what stood on the notice stays on it): row.floor is the certainty it had
+  -- when the notice was last told (fire), never less
+  local floor = row.floor
+  if floor and (RANK[now2] or 1) < (RANK[floor] or 1) then now2 = floor end
+  row.conf = now2
   if row.conf == "held" and was ~= "held" then counts.held = counts.held + 1 end
   if was == "held" and row.conf ~= "held" then counts.promoted = counts.promoted + 1 end
 end
@@ -370,14 +390,14 @@ function Grudge.Close(why)
       local row = e.rows[key]
       local st = row.state
       if st == "yes" then c.yes = c.yes + 1 elseif st == "no" then c.no = c.no + 1 elseif st == "gone" then c.gone = c.gone + 1 end
-      if row.conf == "held" then counts.heldEnd = counts.heldEnd + 1
+      if row.conf == "held" then counts.held = counts.held   -- (1.5.0 fixer: counted when shown at the fight's end)
       elseif row.conf == "sure" then counts.sure = counts.sure + 1 else counts.probable = counts.probable + 1 end
       if #c.list < Grudge.CASE_ROWS then
         local p = {}
         for k in pairs(row.proofs) do p[#p + 1] = k end
         table.sort(p)
         c.list[#c.list + 1] = { p = table.concat(p, ""), c = row.conf or "probable", m = row.mob or false,
-          st = row.inBook and "book" or st or "held", kb = row.kb or false }
+          st = row.inBook and "book" or st or "held", kb = row.kb or false, late = row.late or false }
       end
     end
     table.insert(g.cases, 1, c)
@@ -454,6 +474,14 @@ function endEpisode()
   if not ep or ep.closed then return end
   ep.running = false
   ep.endGT = now()
+  -- 1.5.0 fixer: who is still held at the end of the fight is shown now (1.4.0 showed him; the player decides)
+  for _, key in ipairs(ep.order) do
+    local row = ep.rows[key]
+    if row and row.conf == "held" and not ep.test then
+      row.conf, row.late = "probable", true
+      counts.heldEnd = counts.heldEnd + 1
+    end
+  end
   fire()
   if not ep or ep.closed then return end
   -- nothing to ask (everybody in the book by my death, everybody answered) and no notice that shows it: over now
@@ -479,7 +507,9 @@ local function consider(unit, proof, fromScan)
   if row then
     local t = now()
     local mob = mobRecent()
-    if mob then row.mob = true; if ep then ep.mob = true end end
+    -- 1.5.0 fixer: the creature counts for this hit only; a hit of his without one is a clean proof a
+    row.mob = mob or nil
+    if mob then if ep then ep.mob = true end elseif proof == nil or proof == "a" then row.cleanA = true end
     -- j: out of combat right around a hit on me, in combat now
     if c == true and outAt[key] and lastHit and math.abs(outAt[key] - lastHit) <= Grudge.JOIN_WINDOW then mark(row, "j") end
     if fromScan then
@@ -488,9 +518,11 @@ local function consider(unit, proof, fromScan)
         if row.cleanHit and t - row.cleanHit >= Grudge.REPEAT_GAP then mark(row, "r") end
         row.cleanHit = row.cleanHit or t
       end
-      -- s: he cast within HIT_WINDOW of the hit
-      local ct = castAt[unit]
+      -- s: he cast within HIT_WINDOW of the hit (his own cast: by his GUID, else by the token)
+      local ct = castAt[info.guid or unit]
       if ct and math.abs(t - ct) <= Grudge.HIT_WINDOW then mark(row, "s") end
+      -- p: a unit he controls (his pet) had me targeted at this look
+      if Grudge.OwnsPetOnMe(unit) then mark(row, "p") end
     end
     grade(row)
     -- a new attacker after the end of the fight: the episode runs again (the notice waits for its end)
@@ -501,20 +533,57 @@ local function consider(unit, proof, fromScan)
 end
 Grudge.Consider = consider
 
--- 1.5.0 grip: the creature cross-check. A hostile non-player that has me targeted, or has me on its threat table
+-- 1.5.0 fixer: a unit a player controls (pet, demon, totem, water elemental): UnitPlayerControlled, else
+-- UnitIsOtherPlayersPet (both only where the client has them; a secret answer counts as not known)
+local function playerControlled(unit)
+  local fn = _G.UnitPlayerControlled
+  if type(fn) == "function" then
+    local v = Call(fn, unit)
+    if not IsSecret(v) and v == true then return true end
+  end
+  fn = _G.UnitIsOtherPlayersPet
+  if type(fn) == "function" then
+    local v = Call(fn, unit)
+    if not IsSecret(v) and v == true then return true end
+  end
+  return false
+end
+
+-- 1.5.0 grip: the creature cross-check. A hostile non-player that has me targeted, or has me on its threat table.
+-- 1.5.0 fixer: returns "pet" for a unit a player controls (no creature; noted for its owner, signal p)
 local function mobOnMe(unit)
   if not True(Call(_G.UnitExists, unit)) then return false end
   local isP = Call(_G.UnitIsPlayer, unit)
   if IsSecret(isP) or isP == true then return false end
   if not True(Call(_G.UnitCanAttack, "player", unit)) then return false end
+  local on = false
   local me = Call(_G.UnitIsUnit, unit .. "target", "player")
   if IsSecret(me) then counts.mobSecret = counts.mobSecret + 1
-  elseif me == true then return true end
-  local fn = _G.UnitThreatSituation
-  if type(fn) == "function" then
-    local st = Call(fn, "player", unit)
-    if IsSecret(st) then counts.threatSecret = counts.threatSecret + 1
-    elseif type(st) == "number" then counts.threatOk = counts.threatOk + 1; return true end
+  elseif me == true then on = true end
+  if not on then
+    local fn = _G.UnitThreatSituation
+    if type(fn) == "function" then
+      local st = Call(fn, "player", unit)
+      if IsSecret(st) then counts.threatSecret = counts.threatSecret + 1
+      elseif type(st) == "number" then counts.threatOk = counts.threatOk + 1; on = true end
+    end
+  end
+  if not on then return false end
+  if playerControlled(unit) then return "pet" end
+  return true
+end
+
+-- does the player behind `unit` own one of the pets that were on me at the last look? (only where the client has
+-- UnitIsOwnerOrControllerOfUnit; unmeasured on Forever: probe.grudge ownerApi / p)
+function Grudge.OwnsPetOnMe(unit)
+  local fn = _G.UnitIsOwnerOrControllerOfUnit
+  if type(fn) ~= "function" or not next(petsOnMe) then return false end
+  for pet in pairs(petsOnMe) do
+    local v = Call(fn, unit, pet)
+    if not IsSecret(v) then
+      counts.ownerApi = counts.ownerApi + 1
+      if v == true then return true end
+    end
   end
   return false
 end
@@ -538,8 +607,17 @@ local function scan()
   local list = plateList()
   -- 1.5.0 grip: first the creatures (the cross-check holds for this very hit), then the players
   local mob = false
-  for i = 1, #FIXED do if not mob and mobOnMe(FIXED[i]) then mob = true end end
-  for i = 1, #list do if not mob and mobOnMe(list[i]) then mob = true end end
+  petsOnMe = {}
+  local function look(unit)
+    local m = mobOnMe(unit)
+    if m == "pet" then
+      if not petsOnMe[unit] then petsOnMe[unit] = true; counts.mobPet = counts.mobPet + 1 end
+    elseif m then
+      mob = true
+    end
+  end
+  for i = 1, #FIXED do look(FIXED[i]) end
+  for i = 1, #list do look(list[i]) end
   if mob then mobAt = now(); counts.mob = counts.mob + 1 end
   for i = 1, #FIXED do consider(FIXED[i], "a", true) end
   for i = 1, #list do consider(list[i], "a", true) end
@@ -596,7 +674,11 @@ end
 local function onCast(unit)
   if not allowed or IsSecret(unit) or type(unit) ~= "string" then return end
   if not (plates[unit] or unit == "target" or unit == "focus" or unit == "mouseover") then return end
-  castAt[unit] = now()
+  -- 1.5.0 fixer: the cast belongs to who cast it (his GUID), not to the token: a new target does not inherit it
+  local guid = Str(Call(_G.UnitGUID, unit))
+  local t = now()
+  for k, v in pairs(castAt) do if t - v > Grudge.HIT_WINDOW * 2 then castAt[k] = nil end end
+  castAt[guid or unit] = t
   if not (lastHit and now() - lastHit <= Grudge.HIT_WINDOW) then counts.castAlone = counts.castAlone + 1; return end
   local row = consider(unit, "a")
   if row then
@@ -846,7 +928,7 @@ end
 -- tests: back to the state after loading
 function Grudge.Reset()
   ep, asked, lastHit, lastHP, lastScan, scanQueued, plates, dueling = nil, {}, nil, nil, -1, false, {}, nil
-  castAt, outAt, mobAt = {}, {}, nil
+  castAt, outAt, mobAt, petsOnMe = {}, {}, nil, {}
   inCombat = false
   Grudge.pendingDeath = nil
   expireToken = expireToken + 1
