@@ -182,7 +182,8 @@ check("G12 Meldung Täter unklar anklickbar", G.DeathNoteBanner._mouse == true a
 W.step("c Klick auf die Meldung oeffnet den Fall", function() G.DeathNoteBanner._scripts.OnMouseUp(G.DeathNoteBanner, "LeftButton"); W.settle() end)
 check("c Reiter Zu klären aktiv, Fall aufgeschlagen", F.tabs[2].mark:IsShown() and W.text("U N K L A R", true) and W.text("Todesfall", true))
 check("G30 Karteikarte: Klebestreifen statt Reisszwecke", W.find(function(f) return f._kind == "Texture" and f._tex and f._tex:find("pin.tga") and f:IsVisible() end) == nil)
-check("G19 Ort mit Koordinaten in Klammern, kein Etikett", W.text("Schlingendorntal, Die ungezähmte Küste (24, 18)", true) and not W.text("Koordinaten", true))
+-- fixer 1.6.0: a no-break space inside the coordinates
+check("G19 Ort mit Koordinaten in Klammern, kein Etikett", W.text("Schlingendorntal, Die ungezähmte Küste (24,\194\16018)", true) and not W.text("Koordinaten", true))
 check("G19 Quelle nur bei Verdacht", W.text("Verdacht: hatte dich kurz vor dem Tod im Ziel.", true) and not W.text("Quelle:", true))
 check("IA Zu klären: Fall und Verdacht, neueste zuerst", (function()
   local rs = W.all(function(f) return f._kind == "Button" and f.item and f._shown and f.under end)
