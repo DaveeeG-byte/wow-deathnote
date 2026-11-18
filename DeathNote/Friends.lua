@@ -449,6 +449,26 @@ function Friends.Broadcast(text, kind, mates)
   return n
 end
 
+-- 1.6.0 call: the friends a live message reaches right now, as Broadcast picks them (answered with the book in this
+-- session, online, not a guildmate: he hears GUILD), each with its way: { name, channel = "WHISPER" | "BN", bn }.
+-- Call.lua sends the help call (own prefix) and the sighting T on these ways itself, past the shared queue.
+function Friends.Peers()
+  local out = {}
+  if not on or blocked or not fdb then return out end
+  for name in pairs(peers) do
+    local x = byName[name]
+    if x and x.online and not isMate(x) then
+      if x.listed and x.listOnline and not suspended[x.name] then
+        out[#out + 1] = { name = x.name, channel = "WHISPER" }
+      elseif x.bn then
+        out[#out + 1] = { name = x.name, channel = "BN", bn = x.bn }
+      end
+    end
+  end
+  table.sort(out, function(a, b) return a.name < b.name end)
+  return out
+end
+
 -- 1.2.0: per own char and friend. The last logout of the logged-in char (not of the account), and
 -- all the way back for a friend this char never heard from.
 local function since(x)

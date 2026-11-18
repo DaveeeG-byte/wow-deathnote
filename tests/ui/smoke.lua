@@ -1241,7 +1241,8 @@ for _, o in ipairs({ { "shareManual", "Von Hand Eingetragene teilen", true }, { 
   if cb then cb:SetChecked(false); cb._scripts.OnClick(cb) end
   check("1.1 Haken " .. o[1] .. " gespeichert", ns.db.settings.guild[o[1]] == false)
 end
-check("1.1 Blatt Gilde: sieben Haken", #findAll(function(f) return f._kind == "CheckButton" and f.opt and f.opt.guild and f:IsVisible() end) == 7)
+-- 1.6.0 call: the eighth check, sightings of my killers with place and layer (layerSight)
+check("1.1 Blatt Gilde: acht Haken", #findAll(function(f) return f._kind == "CheckButton" and f.opt and f.opt.guild and f:IsVisible() end) == 8)
 
 ------------------------------------------------------------------------
 -- sound

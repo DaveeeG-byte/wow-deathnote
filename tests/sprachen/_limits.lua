@@ -357,4 +357,9 @@ return {
   SCENE_LEG_BUNDLE = { max = 32, field = "legend line in the map switch's tooltip (1.5.0 fixer)" },
   CHRON_HEAD = { max = 20, field = "head of the chronicle card (big handwriting, 26 pt)" },
   CHRON_BACK = { max = 19, field = "word at the bottom right of the chronicle: back to the poster" },
+  -- 1.6.0 call
+  CALL_BUTTON = { max = 8, field = "button on the grudge notice, 54 px, Friz 10 (shrinks to 9, tooltip when cut)" },
+  SCENE_LEG_CALL = { max = 32, field = "legend line in the map switch's tooltip (1.6.0 call)" },
+  SCENE_LEG_SIGHT = { max = 32, field = "legend line in the map switch's tooltip (1.6.0 call)" },
+  OPT_G_LAYERSIGHT = { max = 44, field = "check box label, 280 px, Friz 11, one line" },
 }

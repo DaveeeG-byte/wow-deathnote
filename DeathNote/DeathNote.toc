@@ -76,6 +76,8 @@ Scene.lua
 Chronicle.lua
 # 1.6.0 guildlog: the guild's chronicle, who has the book, the week (data only; the pages are GuildLogUI.lua)
 GuildLog.lua
+# 1.6.0 call: the help call (own prefix) and sightings with place and layer (message T); data only, the screen is CallUI.lua
+Call.lua
 Alert.lua
 UI.lua
 # 1.3.0: the first-start window (language and cover), only on a new installation; /dn start
@@ -92,4 +94,6 @@ ShareUI.lua
 SceneMap.lua
 # 1.6.0 guildlog: the guild's chronicle in the fourth tab (two pages over the book, the ribbon on the fold)
 GuildLogUI.lua
+# 1.6.0 call: the help call's notice, the button on the grudge notice, the chat links, the map's way
+CallUI.lua
 Humor.lua

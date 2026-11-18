@@ -11,6 +11,12 @@
 - A small red dot on the guild tab when something happened in the guild since you last looked there (no sound, no window); the ribbon counts what is new since the chronicle was last open.
 - Your own deaths appear only while "Share deaths with the guild" is on.
 - `/dn probe` writes `probe.glog`: book holders heard, chronicle events per kind, whether the guild roster was readable.
+<!-- call -->
+### Added
+- **Call for help:** a new key (Esc > Options > Key Bindings > Revenge Book, "Call for help") and a small "Help" button on the grudge notice while an attacker stands on it send your position (and the attacker: your hostile target, else the first attacker of the fight) to your guild, your party or raid and your friends with the book. It goes at once, also in combat, as an invisible addon message (never in dungeons, raids, battlegrounds or a chat lockdown; one call per 30 seconds). You get one line "Call for help sent to guild, friends (2)." or why not; a click on "Call in guild chat" in that line posts one visible line there.
+- Receiving a call: your alarm sound and a slip at the top of the screen, "Anna calls for help: Ashenvale (other zone), attacker Grimm"; a click opens the world map there (out of combat), a right click closes it. A red pin pulses there for 3 minutes. Only from guild, group and friends; at most one call per sender per 30 seconds and five per minute. With the alarm off (/dn quiet) only the chat line.
+- **Sightings with place and layer:** when you see an enemy who killed you or a guildmate or friend in the last 30 days, a target of the hit list or of a bounty, your guild and friends with the book get a quiet chat line "Grimm seen by Anna: Ashenvale, 1 min ago." (with "other layer" when he stands on another layer than you), a pin on the map for 10 minutes and his "last seen". At most once per enemy every 2 minutes, after a short random wait, and not when someone else just reported him. On by default for sending and receiving (House Rules, sheet Guild: "Share sightings of my killers"). The old switch "Share sightings with guild and friends" keeps sending the plain zone line to older versions.
+- `/dn probe net` tries once whether an own chat channel and yell carry addon messages (for a test with two clients); `/dn probe` keeps the result codes of calls and sightings.
 
 ## 1.5.0 (2026-11-18)
 

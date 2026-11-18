@@ -8,6 +8,8 @@
 --   "kill"    my own kill on a player of the book or a revenge (rap sheet log): "Here you took down <name>"
 --   "guild"   a guildmate's death, "friend" a friend's death (1.5.0: the sender's spot comes with message L, Sync.lua):
 --             "Here <mate> was killed by <killer>"
+--   "call"    1.6.0 call: a help call of a guildmate, group member or friend (Call.lua), pulsing for 3 minutes
+--   "sight"   1.6.0 call: a killer seen by a guildmate or friend (message T), for 10 minutes
 -- A scene needs a map ID and x/y (percent of the map, as Util.Zone stores them). Older entries without them have no
 -- pin; with a map ID only, a click in the book opens the zone's map ("exact spot unknown").
 -- Attacks (grudge), suspicions without a death, notes and anything taken over never become a scene of their own.
@@ -161,6 +163,12 @@ function Scene.All(now)
       end
     end
   end
+  -- 1.6.0 call: help calls and sightings of guild, group and friends while they are fresh (Call.lua)
+  local CX = ns.Call
+  if CX and CX.Scenes then
+    local ok = pcall(CX.Scenes, out, now)
+    if not ok then Scene.Error("call") end
+  end
   return out
 end
 
@@ -189,13 +197,14 @@ function Scene.Keep(item, now, focus)
     return true
   end
   if item.kind == "guild" then return Scene.Setting("guild") ~= false end
+  if item.kind == "call" or item.kind == "sight" then return true end   -- 1.6.0 call: fresh ones only (Call.Scenes)
   if item.kind == "friend" then return Scene.Setting("friends") ~= false end
   return false
 end
 
 -- order of the pin's look when kinds share a bundle: a fresh mate's death first (go and help), then my death, then
 -- my kill, then guild and friends
-local RANK = { death = 2, kill = 3, guild = 4, friend = 5 }
+local RANK = { death = 2, kill = 3, guild = 4, friend = 5, sight = 6, call = 1 }
 local function rankOf(it) return it.fresh and 1 or RANK[it.kind] or 9 end
 
 -- The pins of one map: { { x, y, items = { the lead first, then newest first }, kind, fresh, count, lead } }, and how
@@ -288,6 +297,10 @@ function Scene.Head(it)
     return Fmt(L.SCENE_TIP_DEATH, { killer = colored(it.name, it.class) })
   elseif it.kind == "kill" then
     return Fmt(L.SCENE_TIP_KILL, { name = colored(it.name, it.class) })
+  elseif it.kind == "call" then
+    return Fmt(L.SCENE_TIP_CALL, { caller = str(it.caller) or "?" })
+  elseif it.kind == "sight" then
+    return Fmt(L.SCENE_TIP_SIGHT, { name = colored(it.name, it.class), by = str(it.caller) or "?" })
   end
   return Fmt(L.SCENE_TIP_MATE, { victim = str(it.victim) or "?", killer = colored(it.name, it.class) })
 end
@@ -337,6 +350,11 @@ function Scene.TipLines(pin, now)
     elseif it.kind == "guild" or it.kind == "friend" then
       out[#out + 1] = { it.kind == "guild" and L.SCENE_SRC_GUILD or L.SCENE_SRC_FRIEND, 0.7, 0.7, 0.7 }
       if it.fresh then out[#out + 1] = { Fmt(L.SCENE_FRESH, { ago = Util.Ago(it.t) }), 1, 0.82, 0 } end
+    elseif it.kind == "call" then
+      if it.name then out[#out + 1] = { Fmt(L.SCENE_TIP_ATTACKER, { name = it.name }) } end
+      out[#out + 1] = { Fmt(L.SCENE_FRESH, { ago = Util.Ago(it.t) }), 1, 0.82, 0 }
+    elseif it.kind == "sight" and it.layer == "other" then
+      out[#out + 1] = { L.SIGHT_OTHER_LAYER, 1, 0.82, 0 }
     end
   else
     out[1] = { Fmt(L.SCENE_BUNDLE, { count = #items }), 1, 1, 1 }

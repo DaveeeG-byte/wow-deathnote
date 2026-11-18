@@ -30,7 +30,7 @@ local function target(o)
   M.FireEvent("PLAYER_TARGET_CHANGED")
 end
 
-test("Bindings.xml: vier Tasten, eigene Abteilung, keine Standardbelegung, jede ruft DeathNote_Binding", function()
+test("Bindings.xml: fünf Tasten (1.6.0: Hilferuf), eigene Abteilung, keine Standardbelegung, jede ruft DeathNote_Binding", function()
   local f = assert(io.open(ROOT .. "/DeathNote/Bindings.xml", "r"))
   local x = f:read("*a"); f:close()
   local names = {}
@@ -40,7 +40,7 @@ test("Bindings.xml: vier Tasten, eigene Abteilung, keine Standardbelegung, jede 
     local what = body:match('^DeathNote_Binding%("(%u+)"%)$')
     ok(what and name == "DEATHNOTE_" .. what, body)
   end
-  eq(table.concat(names, ","), "DEATHNOTE_TOGGLE,DEATHNOTE_ADD,DEATHNOTE_HUNT,DEATHNOTE_ALARM")
+  eq(table.concat(names, ","), "DEATHNOTE_TOGGLE,DEATHNOTE_ADD,DEATHNOTE_HUNT,DEATHNOTE_ALARM,DEATHNOTE_HELP")
   local code = x:gsub("<!%-%-.-%-%->", "")
   no(code:find("[Kk]ey[12]?%s*=") or code:find("default", 1, true), "keine Standardbelegung")
   -- the game loads the file by itself: it is not in the TOC (an XML file of the TOC would be read as a UI file)

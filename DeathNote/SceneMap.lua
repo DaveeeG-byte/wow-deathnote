@@ -28,12 +28,15 @@ SceneMap.HINT_SECONDS = 6  -- the hint on the map ("exact spot unknown")
 
 local TEX = {
   death = "scene_death.tga", kill = "scene_kill.tga", guild = "scene_guild.tga", friend = "scene_friend.tga",
+  -- 1.6.0 call: a help call (the guild's pin in alarm red, pulsing) and a sighting (the friend's pin in amber)
+  call = "scene_guild.tga", sight = "scene_friend.tga",
 }
 SceneMap.TEX = TEX
 SceneMap.SWITCH = "scene_switch.tga"   -- the switch at the map's corner
 SceneMap.PICK_MAX = 8                  -- scenes in the list of a bundle (the rest: "… and n more")
 -- the mates' quiet colours (multiplied into the light pin): guild a muted green, friends a muted blue
-SceneMap.TINT = { guild = { 0.62, 0.80, 0.58 }, friend = { 0.60, 0.72, 0.92 } }
+SceneMap.TINT = { guild = { 0.62, 0.80, 0.58 }, friend = { 0.60, 0.72, 0.92 }, call = { 1, 0.35, 0.25 },
+  sight = { 0.95, 0.75, 0.30 } }
 
 local function G(name) return rawget(_G, name) end
 local function Scene() return ns.Scene end
@@ -397,6 +400,8 @@ function SceneMap.OpenBook(it)
       UI.ShowEnemy(it.key)
     elseif (it.kind == "guild" or it.kind == "friend") and UI.ShowGuildEnemy then
       UI.ShowGuildEnemy(it.key, it.kind == "friend" and "friends" or "guild")
+    elseif (it.kind == "call" or it.kind == "sight") and ns.CallUI and ns.CallUI.OpenBook then
+      ns.CallUI.OpenBook(it)   -- 1.6.0 call
     elseif UI.Open then
       UI.Open()
     end
@@ -536,7 +541,7 @@ function SceneMap.Button() return button end
 
 -- the legend of the switch's tooltip: one line per kind of pin, its picture in front
 local LEGEND = { { "death", "SCENE_LEG_DEATH" }, { "kill", "SCENE_LEG_KILL" }, { "guild", "SCENE_SRC_GUILD" },
-  { "friend", "SCENE_SRC_FRIEND" } }
+  { "friend", "SCENE_SRC_FRIEND" }, { "call", "SCENE_LEG_CALL" }, { "sight", "SCENE_LEG_SIGHT" } }
 function SceneMap.Legend()
   local out = {}
   for _, row in ipairs(LEGEND) do
