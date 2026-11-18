@@ -22,7 +22,8 @@ Plate.ORDER = { "off", "small", "medium", "large" }   -- the stepper on the Hous
 Plate.MEDIA = "Interface\\AddOns\\" .. (ADDON or "DeathNote") .. "\\Media\\"
 Plate.TEX = { pin = Plate.MEDIA .. "pin.tga", cross = Plate.MEDIA .. "crosshair.tga" }
 Plate.GAP = 2            -- px between the top of the plate and the mark
-Plate.MAX_POOL = 40      -- marks kept for reuse
+-- 1.5.0 fixer: every mark goes back to the pool (the game never frees a frame, so a cap below the marks ever built
+-- only builds new ones on the next wave); the pool never grows beyond the most marks shown at once
 
 local active = {}        -- unit token -> mark (shown)
 local unitKey = {}       -- unit token -> book key of the plate (players only)
@@ -103,7 +104,7 @@ local function release(unit)
   m:Hide()
   m:ClearAllPoints()
   m.unit, m.key = nil, nil
-  if #pool < Plate.MAX_POOL then pool[#pool + 1] = m end
+  pool[#pool + 1] = m
 end
 
 local function fill(m, kind, score)
