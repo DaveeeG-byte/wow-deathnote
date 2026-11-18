@@ -450,7 +450,12 @@ function Call.Trigger()
   local line = ok and Call.SentLine(got) or Call.WhyLine(got, detail)
   local ef = rawget(_G, "UIErrorsFrame")
   if type(ef) == "table" and type(ef.AddMessage) == "function" then pcall(ef.AddMessage, ef, line, 1, 0.82, 0.3, 1) end
-  if ok and B.inGuild() then line = line .. " " .. Call.Link("gchat", nil, L.CALL_GCHAT_LINK) end
+  -- 1.6.0 fix: the link only where it can send (Share.lua never sends in combat or in a chat lockdown)
+  local S = ns.Share
+  local hold = S and S.Hold and S.Hold() or nil
+  if ok and B.inGuild() and hold ~= "combat" and hold ~= "lockdown" then
+    line = line .. " " .. Call.Link("gchat", nil, L.CALL_GCHAT_LINK)
+  end
   Util.Print(line)
   return ok, got
 end
