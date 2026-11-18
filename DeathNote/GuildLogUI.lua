@@ -669,6 +669,7 @@ function GLUI.FillCard()
     GLUI.FIT_CARD)
   v.brand:SetText((ns.Share and ns.Share.BRAND) or "Revenge Book")
   v.post:SetLabel(L.ACT_SHARE)
+  v.post:SetShown(not GLd.QuietWeek(c.w))   -- fixer 1.6.0: nothing to post in a quiet week
   v.copy:SetLabel(L.GLOG_DISCORD)
   if not v.sent then Status(v.status, "") end
 end

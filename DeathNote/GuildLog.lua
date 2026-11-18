@@ -689,12 +689,13 @@ function GL.CardTexts(w)
   local top, av = w.wanted[1], w.avengers[1]
   return {
     guild = w.guild and Fmt(L.GLOG_CARD_GUILD, { guild = w.guild }) or L.GLOG_CARD_NOGUILD,
-    week = Fmt(L.GLOG_CARD_WEEK, { from = day(w.from), to = day(w.to) }),
+    -- fixer 1.6.0: seven calendar days on the card ("04.11. to 10.11."), the count stays the rolling 7 x 24 hours
+    week = Fmt(L.GLOG_CARD_WEEK, { from = day(w.to - GL.WEEK + 86400), to = day(w.to) }),
     deaths = Fmt(L.GLOG_CARD_DEATHS, { count = w.deaths }),
     avenged = Fmt(L.GLOG_CARD_AVENGED, { count = w.avenged }),
     wanted = top and Fmt(L.GLOG_CARD_WANTED, { name = top.name or "?", count = top.n }) or L.GLOG_CARD_WANTED_NONE,
     avenger = av and Fmt(L.GLOG_CARD_AVENGER, { name = first(av.char), count = av.n }) or L.GLOG_CARD_AVENGER_NONE,
-    top = top, av = av,
+    top = top, av = av, w = w,
   }
 end
 
@@ -705,7 +706,8 @@ function GL.WeekLine(t)
   if not Sh then return nil end
   local w = GL.Week(t)
   local c = GL.CardTexts(w)
-  local segs = { c.guild, c.week, c.deaths, c.avenged,
+  -- fixer 1.6.0: a count of 0 is no segment ("0 avenged" is not posted)
+  local segs = { c.guild, c.week, w.deaths > 0 and c.deaths or nil, w.avenged > 0 and c.avenged or nil,
     c.top and Fmt(L.GLOG_LINE_WANTED, { count = c.top.n }) or nil, c.av and c.avenger or nil }
   local list = {}
   for i = 1, 6 do if segs[i] then list[#list + 1] = segs[i] end end
@@ -763,12 +765,19 @@ function GL.Recommend()
   return true
 end
 
+function GL.QuietWeek(w)
+  w = w or GL.Week()
+  return (w.deaths or 0) == 0 and (w.avenged or 0) == 0
+end
+
 function GL.PostWeek()
   local Sh = ns.Share
   if not Sh then return false, "noapi" end
   local okc = false
   for _, ch in ipairs(Sh.Channels()) do if ch == "GUILD" then okc = true end end
   if not okc then return false, "noguild" end
+  -- fixer 1.6.0: a quiet week (no death, nothing avenged) is not posted
+  if GL.QuietWeek() then return false, "empty" end
   local line = GL.WeekLine()
   local ok, why = Sh.Send(line, "GUILD")
   if ok then GL.Count("weekPosted") end
