@@ -923,7 +923,7 @@ L.OPT_SHARE_REVENGE = "Knop 'Plaatsen' bij de wraakmelding"
 -- 1.5.0 scene
 L.SET_SEC_MAP = "KAART"  -- [max 24]
 L.OPT_SCENE = "Plaatsen delict op de wereldkaart"  -- [max 44]
-L.OPT_SCENE_OPEN = "Alleen open schulden"  -- [max 32]
+L.OPT_SCENE_OPEN = "Alleen open rekeningen"  -- [max 32]
 L.SCENE_DAYS_ALL = "alle"  -- [max 10]
 L.SCENE_DAYS_LINE = "Periode: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Mijn doden en kills"  -- [max 32]

@@ -917,7 +917,7 @@ L.OPT_SHARE_REVENGE = "Pulsante «Pubblica» sull'avviso di vendetta"
 -- 1.5.0 scene
 L.SET_SEC_MAP = "MAPPA"  -- [max 24]
 L.OPT_SCENE = "Scene del crimine sulla mappa"  -- [max 44]
-L.OPT_SCENE_OPEN = "Solo debiti aperti"  -- [max 32]
+L.OPT_SCENE_OPEN = "Solo conti aperti"  -- [max 32]
 L.SCENE_DAYS_ALL = "tutto"  -- [max 10]
 L.SCENE_DAYS_LINE = "Periodo: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Le mie morti e uccisioni"  -- [max 32]

@@ -930,7 +930,7 @@ L.OPT_SHARE_REVENGE = "Przycisk „Opublikuj” przy komunikacie o zemście"
 -- 1.5.0 scene
 L.SET_SEC_MAP = "MAPA"  -- [max 24]
 L.OPT_SCENE = "Miejsca zbrodni na mapie świata"  -- [max 44]
-L.OPT_SCENE_OPEN = "Tylko otwarte długi"  -- [max 32]
+L.OPT_SCENE_OPEN = "Tylko otwarte rachunki"  -- [max 32]
 L.SCENE_DAYS_ALL = "wszystko"  -- [max 10]
 L.SCENE_DAYS_LINE = "Okres: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Moje śmierci i zabójstwa"  -- [max 32]

@@ -881,7 +881,7 @@ L.GRIP_HUNT_CHANGE = "Grund: „{why}“. Ändern: „{action}“ im Buch."
 -- 1.5.0 share
 L.ACT_SHARE = "Aushängen"
 L.SHARE_HEAD = "Im Chat zeigen"
-L.SHARE_TAB_LINE = "Steckbrief"
+L.SHARE_TAB_LINE = "Plakat"
 L.SHARE_TAB_WEEK = "Meine Woche"
 L.SHARE_TAB_DISCORD = "Discord"
 L.SHARE_PREVIEW = "Diese Zeile geht raus"
@@ -918,7 +918,7 @@ L.OPT_SHARE_REVENGE = "Knopf „Aushängen“ an der Rache-Meldung"
 -- 1.5.0 scene
 L.SET_SEC_MAP = "KARTE"  -- [max 24]
 L.OPT_SCENE = "Tatorte auf der Weltkarte"  -- [max 44]
-L.OPT_SCENE_OPEN = "Nur offene Schulden"  -- [max 32]
+L.OPT_SCENE_OPEN = "Nur offene Rechnungen"  -- [max 32]
 L.SCENE_DAYS_ALL = "alle"  -- [max 10]
 L.SCENE_DAYS_LINE = "Zeitraum: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Meine Tode und Kills"  -- [max 32]

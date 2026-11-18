@@ -1,6 +1,7 @@
 -- 1.5.0 fixer: texts after the UI hunt, in all 21 languages (stand-alone like test_fix140_texte.lua).
 -- U10: the word that puts a line into the chat is not the word that shows a place on the map (deDE "Aushängen",
 -- enUS "Post"; the switch, the section, the status and the guest card use the same verb; the window's head stays).
+-- U11: one word for one thing.
 local ROOT = (arg and arg[0] and arg[0]:match("^(.*)/tests/")) or "."
 local DIR = ROOT .. "/DeathNote/"
 local pass, fail = 0, 0
@@ -43,6 +44,17 @@ end
 check("deDE Neuigkeit: aushängen", de.CHAT_NEWS_150:find("aushängen", 1, true) ~= nil, de.CHAT_NEWS_150)
 check("enUS Neuigkeit: post", en.CHAT_NEWS_150:find("post a poster", 1, true) ~= nil or en.CHAT_NEWS_150:find("Post", 1, true) ~= nil,
   en.CHAT_NEWS_150)
+
+-- U11: one word for one thing (the poster is "Plakat" in the window too; the map's switch and the week line say the
+-- same for open debts)
+check("deDE Reiter Plakat wie 'Zum Plakat'", de.SHARE_TAB_LINE == "Plakat" and de.CHRON_BACK:find(de.SHARE_TAB_LINE, 1, true) ~= nil,
+  de.SHARE_TAB_LINE)
+local DEBT = { deDE = "Rechnungen", nlNL = "rekeningen", plPL = "rachunki", itIT = "conti", ruRU = "сч" }
+for c, w in pairs(DEBT) do
+  local T = Raw(c)
+  check(c .. " Kartenschalter und Woche: dasselbe Wort", T.OPT_SCENE_OPEN:find(w, 1, true) ~= nil and T.SHARE_WEEK_DEBTS:find(w, 1, true) ~= nil,
+    T.OPT_SCENE_OPEN .. " / " .. T.SHARE_WEEK_DEBTS)
+end
 
 print(("fix150 texte        %d ok, %d rot"):format(pass, fail))
 os.exit(fail == 0 and 0 or 1)
