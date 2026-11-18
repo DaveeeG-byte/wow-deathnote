@@ -20,7 +20,7 @@ ns.Plate = Plate
 Plate.SIZES = { small = { icon = 14, font = 9 }, medium = { icon = 18, font = 11 }, large = { icon = 24, font = 13 } }
 Plate.ORDER = { "off", "small", "medium", "large" }   -- the stepper on the House Rules (off = plate.enabled false)
 Plate.MEDIA = "Interface\\AddOns\\" .. (ADDON or "DeathNote") .. "\\Media\\"
-Plate.TEX = { pin = Plate.MEDIA .. "pin.tga", cross = Plate.MEDIA .. "crosshair.tga" }
+Plate.TEX = { pin = Plate.MEDIA .. "pin.tga", cross = Plate.MEDIA .. "crosshair.tga", rim = Plate.MEDIA .. "plate_rim.tga" }
 Plate.GAP = 2            -- px between the top of the plate and the mark
 Plate.RIM = 1            -- px of the light rim around the grey thumbtack (1.5.0 fixer)
 -- 1.5.0 fixer: every mark goes back to the pool (the game never frees a frame, so a cap below the marks ever built
@@ -90,8 +90,8 @@ local function newMark()
   if f.EnableMouse then f:EnableMouse(false) end
   f.icon = f:CreateTexture(nil, "ARTWORK")
   f.icon:SetPoint("LEFT", 0, 0)
-  -- 1.5.0 fixer: a light rim behind the grey thumbtack (the same picture, a little bigger, pale), so it reads on
-  -- dark ground too; hidden for the other marks
+  -- 1.5.0 fixer: a light rim behind the grey thumbtack (a bone-white disc where its head is, a little bigger), so it
+  -- reads on dark ground too; hidden for the other marks
   f.rim = f:CreateTexture(nil, "BACKGROUND")
   f.rim:SetPoint("CENTER", f.icon, "CENTER", 0, 0)
   f.rim:Hide()
@@ -126,10 +126,9 @@ local function fill(m, kind, score)
   if m.rim then
     if kind == "grudge" and okT ~= false then
       m.rim:SetSize(icon + Plate.RIM * 2, icon + Plate.RIM * 2)
-      m.rim:SetTexture(tex)
-      if m.rim.SetDesaturated then m.rim:SetDesaturated(true) end
-      m.rim:SetVertexColor(1, 0.98, 0.92, 1)
-      m.rim:Show()
+      local okR = m.rim:SetTexture(Plate.TEX.rim)
+      m.rim:SetVertexColor(1, 1, 1, 0.95)
+      m.rim:SetShown(okR ~= false)
     else
       m.rim:Hide()
     end

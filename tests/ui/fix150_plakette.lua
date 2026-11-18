@@ -1,5 +1,5 @@
 -- 1.5.0 fixer (U13): the grey thumbtack ("attacks only") on the nameplate carries a light rim, so it reads on dark
--- ground: the same picture behind it, 2 x Plate.RIM bigger, pale, one layer below. The other marks have no rim, and a
+-- ground: a bone-white disc where its head is (plate_rim.tga), 2 x Plate.RIM bigger, one layer below. The other marks have no rim, and a
 -- mark taken from the pool for another kind loses it. Stand-in plates as in tests/ui/grip.lua. Names made up.
 local DIR = ((arg and arg[1]) or "."):gsub("/+$", "")
 package.path = DIR .. "/tests/ui/?.lua;" .. DIR .. "/tests/?.lua;" .. package.path
@@ -39,7 +39,8 @@ local mw, mg = P.Active("nameplate1"), P.Active("nameplate2")
 J.check("zwei Marken", mw and mg and mg.kind == "grudge" and mw.kind == "wanted", mg and mg.kind)
 local rim = mg and mg.rim
 J.check("graue Marke: Rand da und sichtbar", rim ~= nil and rim:IsShown())
-J.check("Rand: dasselbe Bild wie die Marke", rim and tex(rim) == tex(mg.icon) and tex(rim):find("pin", 1, true), rim and tex(rim))
+J.check("Rand: eigenes helles Bild (Scheibe unter dem Nadelkopf)", rim and tex(rim):find("plate_rim", 1, true)
+  and io.open(ADDON .. "/Media/plate_rim.tga", "rb") ~= nil, rim and tex(rim))
 local RIM = P.RIM or 0
 J.check("Rand: ringsum groesser", rim and RIM >= 1 and rim:GetWidth() == mg.icon:GetWidth() + 2 * RIM
   and rim:GetHeight() == mg.icon:GetHeight() + 2 * RIM, rim and rim:GetWidth())

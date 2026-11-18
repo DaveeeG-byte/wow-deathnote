@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Rebuilds DeathNote's own textures (ImageMagick 7, `magick`).
 # Output: <addon folder>/Media/*.tga (DeathNote/, or the old Staatsfeind/), 32-bit RGBA, uncompressed, edges a power of two.
-# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade|grip|scene|scenefix]
+# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade|grip|griprim|scene|scenefix]
 #   all (default) = everything; base = the black book's files; kit = the shared grey parts of the themes (g_*.tga);
 #   harbor, trade = the kit plus the files of that theme only (<id>_*.tga). The header check runs over every file.
 set -euo pipefail
@@ -414,8 +414,16 @@ scene_fix_media() {
   tga "$TMP/scene_switch.png" "$OUT/scene_switch.tga"
 }
 
+# 1.5.0 fixer: the light rim behind the grey thumbtack on a nameplate: a bone-white disc where the thumbtack's head is
+# (pin.tga: head circle 31,30 radius 17), drawn 2 px bigger than the mark, so 1 px of light shows around the head
+plate_rim_media() {
+  magick -size 64x64 xc:none -fill '#f2ead8' -draw 'circle 31,30 31,47' -blur 0x0.6 "$TMP/plate_rim.png"
+  tga "$TMP/plate_rim.png" "$OUT/plate_rim.tga"
+}
+
 case "$WHAT" in
-  all) base_media; kit_media; theme_harbor; theme_trade; grip_media; scene_media; scene_fix_media ;;
+  all) base_media; kit_media; theme_harbor; theme_trade; grip_media; plate_rim_media; scene_media; scene_fix_media ;;
+  griprim) plate_rim_media ;;
   scenefix) scene_fix_media ;;
   grip) grip_media ;;
   scene) scene_media ;;
@@ -423,7 +431,7 @@ case "$WHAT" in
   kit) kit_media ;;
   harbor) kit_media; theme_harbor ;;
   trade) kit_media; theme_trade ;;
-  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip, scene, scenefix)" >&2; exit 2 ;;
+  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip, griprim, scene, scenefix)" >&2; exit 2 ;;
 esac
 
 # Check the headers: type 2 (uncompressed), 32 bpp, descriptor 0x08, edges a power of two
