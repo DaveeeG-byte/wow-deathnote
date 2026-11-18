@@ -403,7 +403,6 @@ function Call.Send()
   if not text then return false, "place" end
   local ways = Call.Ways("P")
   if #ways == 0 then return false, "none" end
-  lastSend = gt
   local got = { guild = false, group = false, friends = 0 }
   local any, lastCode = false, nil
   for _, w in ipairs(ways) do
@@ -417,6 +416,8 @@ function Call.Send()
     end
   end
   if not any then Call.Count("sendRefused"); return false, "failed", lastCode end
+  -- 1.6.0 fix: the cooldown begins only once the call reached somebody (a refused call may be tried again at once)
+  lastSend = gt
   Call.Count("sent")
   local m = Call.Decode(text, now())
   Call.last = { mapID = mapID, x = x, y = y, zone = Str(zone) or Call.MapName(mapID), display = m and m.display }

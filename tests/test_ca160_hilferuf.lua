@@ -165,14 +165,19 @@ H.lauf("Nur offene Welt, nie in der Chat-Sperre, niemand da: der Grund", functio
   H.erwartet("ohne Gilde, Gruppe, Freunde: niemand", ok == false and why == "none", why)
   c.ns.Call.Trigger()
   H.erwartet("der Grund steht im Chat", (M.chat[#M.chat] or ""):find("weder Gilde noch Gruppe", 1, true), M.chat[#M.chat])
-  -- a refusing client: the code is named, the cooldown is spent
+  -- a refusing client: the code is named; nothing went out, so no cooldown (fixer 1.6.0, jl02)
   local d = W.client("Dora", "Nein", G)
   d.login(); W.run(5)
   d.sendResult = 9
   ok, why = d.ns.Call.Send()
-  local det = select(3, d.ns.Call.Send())
+  local _, why2, det = d.ns.Call.Send()
   H.erwartet("abgelehnt: Code 9", ok == false and why == "failed", why)
-  H.erwartet("danach Abklingzeit", det == 30 or det == 29, det)
+  H.erwartet("danach keine Abklingzeit (nichts ging hinaus)", why2 == "failed" and det == 9, tostring(why2) .. " " .. tostring(det))
+  d.sendResult = nil
+  ok = d.ns.Call.Send()
+  local _, why3, det3 = d.ns.Call.Send()
+  H.erwartet("nach dem gelungenen Senden die Abklingzeit", ok == true and why3 == "wait" and (det3 == 30 or det3 == 29),
+    tostring(why3) .. " " .. tostring(det3))
 end)
 
 H.lauf("Angreifer: feindliches Ziel, sonst der erste der Rachsucht-Episode", function()
