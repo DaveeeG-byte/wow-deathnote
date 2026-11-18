@@ -2110,8 +2110,17 @@ function GF.ShareWord(E, item, kind)
   -- without the word the strip stays as before (no width) until the word was there once
   if on or E.doa.dnShrunk then
     E.doa.dnShrunk = true
+    E.doa:ClearAllPoints()
+    E.doa:SetPoint("TOP", 0, -61)
     E.doa:SetWidth(room)
-    Look.FitText(E.doa, doa, GF.FIT_DOA)
+    -- still too wide at 9 pt (ruRU, esES guild book): the words take the whole room left of the word, a little off
+    -- the middle, but whole
+    if not Look.FitText(E.doa, doa, GF.FIT_DOA) and on then
+      E.doa:ClearAllPoints()
+      E.doa:SetPoint("TOPLEFT", 24, -61)
+      E.doa:SetWidth(GF.STRIP_W - (E.share:GetWidth() + 8))
+      Look.FitText(E.doa, doa, GF.FIT_DOA)
+    end
   end
 end
 
