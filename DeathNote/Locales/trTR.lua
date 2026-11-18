@@ -877,7 +877,6 @@ L.GRUDGE_TIP_OFF = "Kapatmak için: /dn grudge ya da {rules}, {sheet} sayfası."
 L.SET_SEC_MAP = "HARİTA"  -- [max 24]
 L.OPT_SCENE = "Dünya haritasında olay yerleri"  -- [max 44]
 L.OPT_SCENE_OPEN = "Yalnızca açık borçlar"  -- [max 32]
-L.SET_SCENE_DAYS = "Harita gösteriyor"  -- [max 30]
 L.SCENE_DAYS_ALL = "hepsi"  -- [max 10]
 L.SCENE_DAYS_LINE = "Dönem: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Kendi ölümlerim ve öldürmelerim"  -- [max 32]

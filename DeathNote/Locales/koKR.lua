@@ -875,7 +875,6 @@ L.GRUDGE_TIP_OFF = "끄기: /dn grudge 또는 {rules}의 {sheet} 탭."
 L.SET_SEC_MAP = "지도"  -- [max 24]
 L.OPT_SCENE = "세계 지도에 사건 현장 표시"  -- [max 44]
 L.OPT_SCENE_OPEN = "갚지 못한 빚만"  -- [max 32]
-L.SET_SCENE_DAYS = "지도 표시"  -- [max 30]
 L.SCENE_DAYS_ALL = "전부"  -- [max 10]
 L.SCENE_DAYS_LINE = "기간: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "내 죽음과 처치"  -- [max 32]

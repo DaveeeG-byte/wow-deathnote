@@ -874,7 +874,6 @@ L.GRUDGE_TIP_OFF = "Вимкнути: /dn grudge або {rules}, аркуш «{s
 L.SET_SEC_MAP = "МАПА"  -- [max 24]
 L.OPT_SCENE = "Місця злочинів на мапі світу"  -- [max 44]
 L.OPT_SCENE_OPEN = "Лише відкриті борги"  -- [max 32]
-L.SET_SCENE_DAYS = "Мапа показує"  -- [max 30]
 L.SCENE_DAYS_ALL = "усі"  -- [max 10]
 L.SCENE_DAYS_LINE = "Період: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Мої смерті та вбивства"  -- [max 32]

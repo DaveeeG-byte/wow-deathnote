@@ -867,7 +867,6 @@ L.GRUDGE_TIP_OFF = "Slå av: /dn grudge eller {rules}, arket {sheet}."
 L.SET_SEC_MAP = "KART"  -- [max 24]
 L.OPT_SCENE = "Åsteder på verdenskartet"  -- [max 44]
 L.OPT_SCENE_OPEN = "Bare åpne gjelder"  -- [max 32]
-L.SET_SCENE_DAYS = "Kartet viser"  -- [max 30]
 L.SCENE_DAYS_ALL = "alle"  -- [max 10]
 L.SCENE_DAYS_LINE = "Periode: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Mine dødsfall og drap"  -- [max 32]

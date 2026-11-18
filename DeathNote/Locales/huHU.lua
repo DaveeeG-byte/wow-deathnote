@@ -876,7 +876,6 @@ L.GRUDGE_TIP_OFF = "Kikapcsolás: /dn grudge vagy {rules}, {sheet} lap."
 L.SET_SEC_MAP = "TÉRKÉP"  -- [max 24]
 L.OPT_SCENE = "Tetthelyek a világtérképen"  -- [max 44]
 L.OPT_SCENE_OPEN = "Csak nyitott tartozások"  -- [max 32]
-L.SET_SCENE_DAYS = "A térkép mutat"  -- [max 30]
 L.SCENE_DAYS_ALL = "mind"  -- [max 10]
 L.SCENE_DAYS_LINE = "Időszak: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Saját halálaim és ölések"  -- [max 32]

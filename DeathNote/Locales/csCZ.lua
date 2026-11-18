@@ -874,7 +874,6 @@ L.GRUDGE_TIP_OFF = "Vypnutí: /dn grudge nebo {rules}, list {sheet}."
 L.SET_SEC_MAP = "MAPA"  -- [max 24]
 L.OPT_SCENE = "Místa činu na mapě světa"  -- [max 44]
 L.OPT_SCENE_OPEN = "Jen otevřené dluhy"  -- [max 32]
-L.SET_SCENE_DAYS = "Mapa ukazuje"  -- [max 30]
 L.SCENE_DAYS_ALL = "vše"  -- [max 10]
 L.SCENE_DAYS_LINE = "Období: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Moje smrti a zabití"  -- [max 32]

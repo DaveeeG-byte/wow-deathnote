@@ -874,7 +874,6 @@ L.GRUDGE_TIP_OFF = "Wyłączanie: /dn grudge albo {rules}, karta {sheet}."
 L.SET_SEC_MAP = "MAPA"  -- [max 24]
 L.OPT_SCENE = "Miejsca zbrodni na mapie świata"  -- [max 44]
 L.OPT_SCENE_OPEN = "Tylko otwarte długi"  -- [max 32]
-L.SET_SCENE_DAYS = "Mapa pokazuje"  -- [max 30]
 L.SCENE_DAYS_ALL = "wszystko"  -- [max 10]
 L.SCENE_DAYS_LINE = "Okres: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Moje śmierci i zabójstwa"  -- [max 32]

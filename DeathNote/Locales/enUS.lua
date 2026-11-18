@@ -882,8 +882,7 @@ L.GRUDGE_TIP_OFF = "Turn it off: /dn grudge or {rules}, sheet {sheet}."  -- last
 L.SET_SEC_MAP = "MAP"  -- [max 24] section label on the House Rules, sheet Book: the crime scenes on the world map
 L.OPT_SCENE = "Crime scenes on the world map"  -- [max 44] check box (House Rules, sheet Book, and the map's own switch): pins of the book on the world map
 L.OPT_SCENE_OPEN = "Only open debts"  -- [max 32] the map's switch: only scenes of enemies who still lead against you
-L.SET_SCENE_DAYS = "Map shows"  -- [max 30] stepper label (sheet Book): how far back the map shows scenes; value: "30 days" / SCENE_DAYS_ALL
-L.SCENE_DAYS_ALL = "all"  -- [max 10] value of SET_SCENE_DAYS: every scene, however old
+L.SCENE_DAYS_ALL = "all"  -- [max 10] the period in the map's switch: every scene, however old
 L.SCENE_DAYS_LINE = "Period: {days}"  -- [max 32] the map's switch: the period; a click steps 7 days, 30 days, all; {days} = "30 days" or SCENE_DAYS_ALL
 L.SCENE_KIND_OWN = "My deaths and kills"  -- [max 32] the map's switch: your own deaths and kills
 L.OPT_G_SENDPLACE = "Send the spot of my death"  -- [max 44] check box (House Rules, sheet Guild, More): the exact spot of your death goes to guild and friends with it

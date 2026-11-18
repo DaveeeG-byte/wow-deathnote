@@ -874,7 +874,6 @@ L.GRUDGE_TIP_OFF = "Isključivanje: /dn grudge ili {rules}, list {sheet}."
 L.SET_SEC_MAP = "KARTA"  -- [max 24]
 L.OPT_SCENE = "Mjesta zločina na karti svijeta"  -- [max 44]
 L.OPT_SCENE_OPEN = "Samo otvoreni dugovi"  -- [max 32]
-L.SET_SCENE_DAYS = "Karta prikazuje"  -- [max 30]
 L.SCENE_DAYS_ALL = "sve"  -- [max 10]
 L.SCENE_DAYS_LINE = "Razdoblje: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Moje smrti i ubojstva"  -- [max 32]

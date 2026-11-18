@@ -873,7 +873,6 @@ L.GRUDGE_TIP_OFF = "Отключить: /dn grudge или {rules}, лист «{s
 L.SET_SEC_MAP = "КАРТА"  -- [max 24]
 L.OPT_SCENE = "Места преступлений на карте мира"  -- [max 44]
 L.OPT_SCENE_OPEN = "Только открытые долги"  -- [max 32]
-L.SET_SCENE_DAYS = "Карта показывает"  -- [max 30]
 L.SCENE_DAYS_ALL = "все"  -- [max 10]
 L.SCENE_DAYS_LINE = "Период: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Мои смерти и убийства"  -- [max 32]

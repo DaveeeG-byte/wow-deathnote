@@ -868,7 +868,6 @@ L.GRUDGE_TIP_OFF = "Pois päältä: /dn grudge tai {rules}, välilehti {sheet}."
 L.SET_SEC_MAP = "KARTTA"  -- [max 24]
 L.OPT_SCENE = "Rikospaikat maailmankartalla"  -- [max 44]
 L.OPT_SCENE_OPEN = "Vain avoimet velat"  -- [max 32]
-L.SET_SCENE_DAYS = "Kartta näyttää"  -- [max 30]
 L.SCENE_DAYS_ALL = "kaikki"  -- [max 10]
 L.SCENE_DAYS_LINE = "Aikaväli: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Omat kuolemat ja tapot"  -- [max 32]

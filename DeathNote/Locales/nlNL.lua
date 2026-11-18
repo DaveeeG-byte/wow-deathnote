@@ -867,7 +867,6 @@ L.GRUDGE_TIP_OFF = "Uitzetten: /dn grudge of {rules}, blad {sheet}."
 L.SET_SEC_MAP = "KAART"  -- [max 24]
 L.OPT_SCENE = "Plaatsen delict op de wereldkaart"  -- [max 44]
 L.OPT_SCENE_OPEN = "Alleen open schulden"  -- [max 32]
-L.SET_SCENE_DAYS = "Kaart toont"  -- [max 30]
 L.SCENE_DAYS_ALL = "alle"  -- [max 10]
 L.SCENE_DAYS_LINE = "Periode: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Mijn doden en kills"  -- [max 32]

@@ -862,7 +862,6 @@ L.GRUDGE_TIP_OFF = "Desligar: /dn grudge ou {rules}, folha {sheet}."
 L.SET_SEC_MAP = "MAPA"  -- [max 24]
 L.OPT_SCENE = "Cenas do crime no mapa-múndi"  -- [max 44]
 L.OPT_SCENE_OPEN = "Só dívidas abertas"  -- [max 32]
-L.SET_SCENE_DAYS = "O mapa mostra"  -- [max 30]
 L.SCENE_DAYS_ALL = "tudo"  -- [max 10]
 L.SCENE_DAYS_LINE = "Período: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Minhas mortes e abates"  -- [max 32]

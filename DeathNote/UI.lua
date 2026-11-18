@@ -1778,12 +1778,15 @@ function UX.BuildPoster()
 
   E.fileLabel = Label(E, "")
   E.fileLabel:SetPoint("TOPLEFT", 20, -256)
-  -- 1.5.0 scene: the feud's chronicle, one page of the file: a word below the photo (under "Put on hit list"; the
-  -- right half belongs to the bounty and the stamps)
+  -- 1.5.0 scene: the feud's chronicle, one page of the file: a word in the row of the label DEEDS (below the photo
+  -- stands the bounty, the right half belongs to the stamps)
   E.chron = WordButton(E, "", "hand", 13)
-  E.chron:SetPoint("TOPLEFT", 20, -214)
-  E.chron:SetSize(112, 18)
-  E.chron.text:SetWidth(112)
+  E.fileLabel:SetText(Spaced(L.POSTER_DEEDS))
+  -- right after the label DEEDS, never into the stamp's place (x 176 on): 60 to 120 px, cut words in the tooltip
+  local cw = math.max(60, math.min(120, 172 - 20 - math.ceil(TextWidth(E.fileLabel, 60)) - 12))
+  E.chron:SetPoint("LEFT", E.fileLabel, "RIGHT", 12, 0)
+  E.chron:SetSize(cw, 18)
+  E.chron.text:SetWidth(cw)
   Look.FitText(E.chron.text, L.CHRON_OPEN, GF.FIT_WORD)
   Look.TipIfCut(E.chron, E.chron.text)
   E.chron:SetScript("OnClick", function(self) Look.Sound("click"); if self.key then GF.ShowChron(self.key) end end)
@@ -2161,13 +2164,16 @@ end
 -- b: a button over the line; place: a table with mapID (or nil: no link); kind: "death", "kill" or "mate"; ref: the
 -- entry behind it (its pin is highlighted)
 -- made once with the button (no new objects while the book is used): the pin texture and the click
+-- (the pin hangs on the button's parent, not on the button: an invisible hit area over a text stays invisible)
 function GF.MakePin(b)
-  b.mapPin = b:CreateTexture(nil, "ARTWORK")
+  b.mapPin = b:GetParent():CreateTexture(nil, "ARTWORK")
   b.mapPin:SetSize(GF.SCENE_PIN, GF.SCENE_PIN)
   b.mapPin:SetPoint("RIGHT", b, "LEFT", -1, 0)
   b.mapPin:Hide()
   b.mapPin.scenePart = true   -- (tests: a part of 1.5.0)
   b:HookScript("OnClick", function(self) if self.place then GF.ShowPlace(self.place, self.placeRef) end end)
+  b:HookScript("OnHide", function(self) self.mapPin:Hide() end)
+  b:HookScript("OnShow", function(self) self.mapPin:SetShown(self.place ~= nil) end)
   return b
 end
 function GF.LinkPin(b, place, kind, ref)
@@ -3085,6 +3091,7 @@ end
 -- 1.5.0 scene: the feud's chronicle (Chronicle.lua), a card of the file in place of the poster; it stays open over
 -- refreshes while its poster is the selected one (state.chron), the foot word goes back to the poster
 ------------------------------------------------------------------------
+GF.FIT_CHRON_NAME = { sizes = { 19, 16, 13 } }   -- the enemy's name below the head (cut: tooltip)
 GF.CHRON_LINES = 24     -- line buttons (Chronicle.lua cuts long feuds to 3 + 1 + 10 lines plus first, avenged, last)
 function GF.BuildChron()
   local K = RS.Card(P)
@@ -3122,7 +3129,7 @@ function GF.FillChron(key)
   local K = GF.chron
   local ch = ns.Chronicle and ns.Chronicle.Build(key)
   if not ch then return false end
-  Look.FitText(K.name, ch.name or "", GF.FIT_NAME26)
+  Look.FitText(K.name, ch.name or "", GF.FIT_CHRON_NAME)
   K.right:SetText("")
   local y = 92
   local n = math.min(#ch.lines, GF.CHRON_LINES)
@@ -4107,10 +4114,11 @@ BuildSettings = function()
   A.bottom = -(y - 4) + 22
   -- 1.5.0 scene: section MAP
   if ns.Scene then
-    y = section(A, y - 4 - 22 - 4, L.SET_SEC_MAP)
+    y = section(A, y - 4 - 22 - 10, L.SET_SEC_MAP)
+    -- one switch only: the sheet is full (a stepper more made it scroll in German); the period, only open debts and
+    -- the kinds are in the map's own switch (SceneMap.lua)
     y = checks(A, GF.SCENE_OPTIONS, nil, y)
-    S.sdays = Stepper(A, y, L.SET_SCENE_DAYS, function(d) ns.Scene.StepDays(d) end, 110)
-    A.bottom = -(y - OPT_H) + 2
+    A.bottom = -y - 2
   end
   hint(A, L.SET_HINT_BOOK)
 
@@ -4678,7 +4686,6 @@ function UI.FillSettings()
   S.mk:SetValue(tostring(Look.Setting("alert.minKills", 1) or 1))
   S.size:SetValue(Percent(ClampScale(tonumber(Look.Setting("ui.scale", 1)) or 1)))
   S.asize:SetValue(Percent(Look.Setting("alert.scale", 1)))
-  if S.sdays and ns.Scene then S.sdays:SetValue(ns.Scene.DaysWord(ns.Scene.Setting("days"))) end   -- 1.5.0 scene
   if S.gsec then S.gsec:SetValue(Fmt(L.SET_SECONDS, { seconds = tonumber(Look.Setting("grudge.seconds", 20)) or 20 })) end
   S.gmk:SetValue(tostring(Look.GuildSetting("minKills") or 1))
   local days = tonumber(Look.GuildSetting("huntExpire")) or 0

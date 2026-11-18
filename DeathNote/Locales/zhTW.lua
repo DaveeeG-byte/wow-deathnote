@@ -875,7 +875,6 @@ L.GRUDGE_TIP_OFF = "關閉：/dn grudge 或{rules}的{sheet}頁。"
 L.SET_SEC_MAP = "地圖"  -- [max 24]
 L.OPT_SCENE = "在世界地圖上顯示案發現場"  -- [max 44]
 L.OPT_SCENE_OPEN = "只顯示未還的債"  -- [max 32]
-L.SET_SCENE_DAYS = "地圖顯示"  -- [max 30]
 L.SCENE_DAYS_ALL = "全部"  -- [max 10]
 L.SCENE_DAYS_LINE = "時間範圍：{days}"  -- [max 32]
 L.SCENE_KIND_OWN = "我的死亡與擊殺"  -- [max 32]

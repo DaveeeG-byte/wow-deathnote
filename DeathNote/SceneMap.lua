@@ -19,7 +19,7 @@ local L, Fmt = ns.L, ns.F
 local SceneMap = {}
 ns.SceneMap = SceneMap
 
-SceneMap.PIN = 24          -- pin size in map pixels (the canvas scale is taken out: the pin stays this size)
+SceneMap.PIN = 28          -- pin size in map pixels (the canvas scale is taken out: the pin stays this size)
 SceneMap.PULSES = 3        -- pulses of the ring after a click from the book
 SceneMap.HINT_SECONDS = 6  -- the hint on the map ("exact spot unknown")
 
@@ -72,6 +72,7 @@ local function pinEnter(self)
   tip:SetOwner(self, "ANCHOR_RIGHT")
   local lines = S.TipLines(p, now())
   for i, l in ipairs(lines) do
+    -- every line may wrap (long names; the client sets the width)
     if i == 1 then tip:SetText(l[1], l[2] or 1, l[3] or 1, l[4] or 1, 1, true)
     else tip:AddLine(l[1], l[2] or 0.85, l[3] or 0.82, l[4] or 0.75, true) end
   end
@@ -108,8 +109,8 @@ local function makePin()
   g:SetLooping("REPEAT")
   f.pulse = g
   -- count of a bundle: a bone badge with the number
-  f.badge = f:CreateTexture(nil, "OVERLAY", nil, 1)
-  f.badge:SetSize(14, 14)
+  f.badge = f:CreateTexture(nil, "ARTWORK", nil, 2)   -- above the pin, below the number (OVERLAY)
+  f.badge:SetSize(15, 15)
   f.badge:SetPoint("CENTER", f, "TOPRIGHT", -2, -3)
   Look.Tex(f.badge, media("scene_badge.tga"))
   f.count = Look.Text(f, "type", 9, Look.INK, nil, "OVERLAY")
