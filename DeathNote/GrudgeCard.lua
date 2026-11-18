@@ -4,7 +4,7 @@ local ADDON, ns = ...
 -- A head "ATTACKED", one row per attacker (class ink, name, level, tick and cross), the killing blow with a skull, who
 -- my death put into the book anyway with "in the book" and no buttons; at most ROWS rows, then "… and n more". A thin
 -- bar counts the time down (Grudge.Seconds after the fight or the last new attacker); the mouse over the notice holds
--- it. Gone = not entered. Shift-drag moves it (kept in grudge.point), a right click closes it. No sound.
+-- it. Gone = not entered. a drag moves it (kept in grudge.point; no Shift needed since 1.5.0), a right click closes it. No sound.
 -- One event, one window: after my death the notice waits until the death's notice (Extras.lua) has gone.
 -- The OnUpdate runs only while the notice is shown (the bar), never for logic.
 -- 1.5.0 grip: a "probable" row (Grudge.Grade: seen targeting me at one hit only) carries a faint "?" in the skull
@@ -212,8 +212,6 @@ local function Build()
     if mouse == "RightButton" and ns.Grudge then ns.Grudge.Close("click") end
   end)
   card:SetScript("OnDragStart", function(self)
-    local ok, shift = pcall(IsShiftKeyDown)
-    if not (ok and shift == true) then return end
     self.moving = true
     self:StartMoving()
   end)

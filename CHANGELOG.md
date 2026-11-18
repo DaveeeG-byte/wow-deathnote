@@ -15,6 +15,10 @@
 
 ### Known open
 - Unmeasured in the game: the nameplate mark (whether `C_NamePlate.GetNamePlateForUnit` answers on Forever in the open world, how the mark sits on the client's plates and on plate addons), the creature cross-check (whether a creature's target and its threat are readable in a fight), and the new signals. `/dn probe` and `probe.grip` / `probe.grudge` count all of it.
+<!-- orchestrator -->
+### Changed
+- The grudge notice moves with a plain drag; Shift is no longer needed. The place is kept as before.
+
 <!-- share -->
 ### Added
 - Show in the chat: the word "Show" at the top right of a poster (own book, guild and friends' book, hit list) and in the row menu opens a small window with the line as it goes out and the channels that work right now (guild, party or raid or instance group, say). One click sends one plain line, e.g. `[Revenge Book: Grimwald Ashbrand] WANTED · Score 2 : 5 · 131g bounty · last seen Stranglethorn Vale`, in your language. Anybody can read it; at most one line every 10 seconds, never in combat or while the game locks the chat (the window says why and when).

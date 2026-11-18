@@ -2,7 +2,7 @@
 -- Built hidden at READY; shows only when it asks something; tick enters, cross does not; the killing blow carries a
 -- skull, who my death put into the book stands as "in the book" without buttons; 8 rows at most ("… and n more"),
 -- the open ones come up as the others are answered; the time runs from the end of the fight, the mouse holds it;
--- Shift-drag moves it (kept), the House Rules put it back; right click closes it. After my death it waits for the
+-- A drag moves it (kept), the House Rules put it back; right click closes it. After my death it waits for the
 -- death's notice (one event, one window). In the book: core line "attacked 1×", stamp GRUDGE, the deed's role, the
 -- alarm for an entry with attacks only, the section on the House Rules. No overlap in 21 languages (8 and 12 rows).
 -- Use: luajit tests/ui/grudge_card.lua [project folder]
@@ -117,14 +117,13 @@ do
   W.run(2)
   check("10 s: gone at 11 s", not card:IsShown())
 
-  -- right click closes; Shift-drag moves and keeps the place; reset puts it back
+  -- right click closes; a drag moves and keeps the place; reset puts it back
   W.tick(400)
   W.fight({ { "Fuenfter", "Mann" } })
+  -- 1.5.0: a plain drag moves the notice, no Shift needed (red without the change: the drag did nothing)
+  W.BM.shift = false
   card._scripts.OnDragStart(card)
-  check("drag without Shift: no move", not card._moving)
-  W.BM.shift = true
-  card._scripts.OnDragStart(card)
-  check("Shift-drag: moves", card._moving)
+  check("plain drag: moves", card._moving)
   card:ClearAllPoints(); card:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 300, -200)
   card._scripts.OnDragStop(card)
   W.BM.shift = false
