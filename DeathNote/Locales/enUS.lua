@@ -878,4 +878,25 @@ L.EMPTY_SEARCHHAS_SUB = "Just not on this page. Enter opens it."  -- under it
 L.FILTER_TWO = "{count} filters"  -- filter word when role and class are both on and the two words do not fit (the tooltip names both)
 L.CHAT_NEWS_140 = "New in 1.4.0: after an attack a small notice asks whether the attacker goes into your book (Grudge; on/off: /dn grudge or {rules}, sheet {sheet}); \"{takeall}\" is under {guild}, a filter and a search under {wanted}."  -- chat, once per account after the update to 1.4.0 for players who had the book before; {rules} {sheet} {guild} {wanted} = the names of the House Rules, the rap sheet sheet and the tabs in the active cover, {takeall} = the button
 L.GRUDGE_TIP_OFF = "Turn it off: /dn grudge or {rules}, sheet {sheet}."  -- last line of the grudge notice's tooltip: how to turn it off; {rules} {sheet} = names of the House Rules and the sheet in the active cover
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Not sure: seen targeting you at one hit only"  -- row tooltip of the grudge notice: why the row is pale and carries a "?" (he only had you targeted at a single hit)
+L.GRUDGE_TIP_MOB = "A creature was attacking you at the same time"  -- row tooltip: a hostile creature had you targeted (or was fighting you) at the same moment, so the hit may have been its
+L.GRUDGE_TIP_CAST = "Cast a spell while you were hit"  -- row tooltip: he cast a spell within two seconds of a hit on you
+L.GRUDGE_TIP_JOIN = "Went into combat with your hit"  -- row tooltip: he went from out of combat into combat right at a hit on you
+L.GRUDGE_TIP_REPEAT = "Had you targeted at several hits"  -- row tooltip: he had you targeted at two or more hits, seconds apart
+L.SET_GRUDGE_SIZE = "Notice size"  -- [max 34] stepper label under GRUDGE (value: SIZE_SMALL, SIZE_MEDIUM, SIZE_LARGE): size of the grudge notice
+L.SIZE_SMALL = "small"  -- [max 10] stepper value: small
+L.SIZE_MEDIUM = "medium"  -- [max 10] stepper value: medium (the default)
+L.SIZE_LARGE = "large"  -- [max 10] stepper value: large
+L.SET_SEC_PLATE = "NAMEPLATES"  -- [max 24] section label on the House Rules, sheet Rap Sheet: the mark on nameplates
+L.SET_PLATE = "Mark over names in the book"  -- [max 34] stepper label (value: WORD_OFF or a size word): the small mark over the nameplate of somebody in your book
+L.BIND_TOGGLE = "Open or close the book"  -- the game's key bindings window, under the addon's title: open or close the book
+L.BIND_ADD = "Target into the book"  -- key binding: write the current target into the book (as /dn add)
+L.BIND_HUNT = "Target on the hit list"  -- key binding: put the current target on the hit list (as /dn hunt), with the standard reason GRIP_HUNT_WHY
+L.BIND_ALARM = "Alarm off / on"  -- key binding: alarm off and on again (as /dn quiet)
+L.GRIP_NO_TARGET = "No target: target an enemy player first."  -- chat and screen line after a key binding without a target
+L.GRIP_NOT_ENEMY = "Your target is no enemy player."  -- ... when the target is a creature, a friendly player, a group member or yourself
+L.GRIP_ALREADY = "{name} is in the book already."  -- after the key binding 'Target into the book' when he is in the book already (class, level, guild follow in brackets)
+L.GRIP_HUNT_WHY = "Marked in a fight"  -- [max 40] the standard reason of a hit list call made by key in a fight; shared with guild and friends as the reason
+L.GRIP_HUNT_CHANGE = "Reason: \"{why}\". To change it: \"{action}\" in the book."  -- after the key binding 'Target on the hit list'; {why} = GRIP_HUNT_WHY, {action} = ACT_RELEASE (the button on the poster)
 end)

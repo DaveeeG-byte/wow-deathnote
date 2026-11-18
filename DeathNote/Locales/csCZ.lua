@@ -870,4 +870,25 @@ L.EMPTY_SEARCHHAS_SUB = "Jen ne na této stránce. Enter ho otevře."
 L.FILTER_TWO = "Filtry: {count}"
 L.CHAT_NEWS_140 = "Novinka v 1.4.0: po útoku se malá zpráva zeptá, zda útočníka zapsat do knihy (Zášť; zap./vyp.: /dn grudge nebo {rules}, list {sheet}); „{takeall}“: záložka {guild}; filtr a hledání: záložka {wanted}."
 L.GRUDGE_TIP_OFF = "Vypnutí: /dn grudge nebo {rules}, list {sheet}."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Nejisté: měl tě v cíli jen při jednom zásahu"
+L.GRUDGE_TIP_MOB = "Současně na tebe útočil tvor"
+L.GRUDGE_TIP_CAST = "Sesílal kouzlo, když tě zasahovali"
+L.GRUDGE_TIP_JOIN = "Vstoupil do boje s tvým zásahem"
+L.GRUDGE_TIP_REPEAT = "Měl tě v cíli při více zásazích"
+L.SET_GRUDGE_SIZE = "Velikost hlášení"  -- [max 34]
+L.SIZE_SMALL = "malé"  -- [max 10]
+L.SIZE_MEDIUM = "střední"  -- [max 10]
+L.SIZE_LARGE = "velké"  -- [max 10]
+L.SET_SEC_PLATE = "JMENOVKY"  -- [max 24]
+L.SET_PLATE = "Značka nad nepřáteli z knihy"  -- [max 34]
+L.BIND_TOGGLE = "Otevřít nebo zavřít knihu"
+L.BIND_ADD = "Cíl do knihy"
+L.BIND_HUNT = "Cíl na seznam honu"
+L.BIND_ALARM = "Poplach vyp. / zap."
+L.GRIP_NO_TARGET = "Žádný cíl: nejdřív zaměř nepřátelského hráče."
+L.GRIP_NOT_ENEMY = "Tvůj cíl není nepřátelský hráč."
+L.GRIP_ALREADY = "{name}: už je v knize."
+L.GRIP_HUNT_WHY = "Označen v boji"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Důvod: „{why}“. Změna: „{action}“ v knize."
 end)

@@ -7,6 +7,8 @@ local ADDON, ns = ...
 -- it. Gone = not entered. Shift-drag moves it (kept in grudge.point), a right click closes it. No sound.
 -- One event, one window: after my death the notice waits until the death's notice (Extras.lua) has gone.
 -- The OnUpdate runs only while the notice is shown (the bar), never for logic.
+-- 1.5.0 grip: a "probable" row (Grudge.Grade: seen targeting me at one hit only) carries a faint "?" in the skull
+-- column and paler ink; the row's tooltip says why. The size (grudge.size: small, medium, large) scales the notice.
 
 local Look = ns.Look
 local L, Fmt = ns.L, ns.F
@@ -33,6 +35,9 @@ Card.CROSS = "Interface\\RaidFrame\\ReadyCheck-NotReady"
 Card.FIT_NAME = { sizes = { 11, 10, 9 } }
 Card.FIT_STATE = { sizes = { 10, 9 } }
 Card.FIT_HEAD = { sizes = { 10, 9 } }
+Card.SCALES = { small = 0.85, medium = 1, large = 1.25 }   -- 1.5.0 grip: grudge.size
+Card.SIZES = { "small", "medium", "large" }
+Card.PROBABLE_ALPHA = 0.72   -- name ink of a probable row (a skipped one: 0.45)
 
 local card
 local shownId            -- id of the episode on the notice
@@ -88,6 +93,12 @@ local function RowTip(self)
   if p.a then t[#t + 1] = L.GRUDGE_TIP_SEEN end
   if p.b then t[#t + 1] = L.GRUDGE_TIP_RECAP end
   if p.c then t[#t + 1] = L.GRUDGE_TIP_METER end
+  -- 1.5.0 grip: the second signals, the creature, why a row is only probable
+  if p.s then t[#t + 1] = L.GRUDGE_TIP_CAST end
+  if p.j then t[#t + 1] = L.GRUDGE_TIP_JOIN end
+  if p.r then t[#t + 1] = L.GRUDGE_TIP_REPEAT end
+  if r.mob then t[#t + 1] = L.GRUDGE_TIP_MOB end
+  if r.conf == "probable" then t[#t + 1] = L.GRUDGE_TIP_PROBABLE end
   Tip(self, t)
 end
 
@@ -125,6 +136,14 @@ local function MakeRow(i)
   Look.Skin(r.mark, "skull")
   local st = Look.COLOR.skullTint
   if st then r.mark:SetVertexColor(C(st)) end
+  -- 1.5.0 grip: "?" of a probable row, in the skull column (a probable row never carries the skull)
+  r.maybe = Look.Text(r, "body", 11, Look.INK)
+  r.maybe:SetPoint("LEFT", 2, 0)
+  r.maybe:SetWidth(Card.MARK_W - 2)
+  r.maybe:SetJustifyH("LEFT")
+  r.maybe:SetText("?")
+  r.maybe:SetTextColor(C(Look.INK, 0.5))
+  r.maybe:Hide()
   r.no = MakeButton(r, Card.CROSS, { 0.6, 0.1, 0.1 }, false)
   r.no:SetPoint("RIGHT", 0, 0)
   r.yes = MakeButton(r, Card.TICK, { 0.1, 0.5, 0.1 }, true)
@@ -211,7 +230,18 @@ local function Build()
   end)
   card:SetScript("OnLeave", TipHide)
   card:SetScript("OnUpdate", function(self, dt) Card.Tick(dt) end)
+  Card.ApplySize()
   Card.Place()
+end
+
+-- 1.5.0 grip: the size of the notice (grudge.size), the whole notice scaled alike (the layout stays as it is)
+function Card.Size()
+  local v = Setting("grudge.size", "medium")
+  return Card.SCALES[v] and v or "medium"
+end
+function Card.ApplySize()
+  if not card then return end
+  card:SetScale(Card.SCALES[Card.Size()])
 end
 Card.Build = function() if not card then Build() end return card end
 
@@ -226,6 +256,8 @@ local function FillRow(fr, r)
   fr.row = r
   fr:Show()
   fr.mark:SetShown(r.kb == true)
+  local probable = r.conf == "probable" and r.kb ~= true
+  fr.maybe:SetShown(probable)
   local ink = Ink(r.class)
   local open = ns.Grudge.Open(r)
   local word = (r.inBook and L.GRUDGE_IN_BOOK) or (r.state == "yes" and L.GRUDGE_ADDED)
@@ -237,7 +269,7 @@ local function FillRow(fr, r)
   fr.state:SetShown(word ~= nil)
   if word then Look.FitText(fr.state, word, Card.FIT_STATE) end
   local dim = r.state == "no" or r.state == "gone"
-  fr.name:SetTextColor(ink[1], ink[2], ink[3], dim and 0.45 or 1)
+  fr.name:SetTextColor(ink[1], ink[2], ink[3], dim and 0.45 or (probable and Card.PROBABLE_ALPHA) or 1)
   fr.state:SetTextColor(C(Look.INK, (r.state == "yes" or r.inBook) and 0.9 or 0.5))
   local right = open and (Card.BTN * 2 + 4 + 4 + Card.LEVEL_W) or Card.STATE_W
   fr.name:SetWidth(Card.W - 2 * Card.PAD - Card.MARK_W - right - 4)
@@ -407,8 +439,55 @@ ns:On("GRUDGE_CLOSED", function(e)
 end)
 ns:On("SETTINGS_CHANGED", function(path)
   if path == "grudge.point" and card and not card.moving then Card.Place() end
+  if path == "grudge.size" and card then Card.ApplySize(); Card.Place() end
 end)
 ns:On("READY", function()
   -- built hidden at once (as the death's notice), so the first appearance equals every later one
   if not card then Build() end
 end)
+
+---------------------------------------------------------------------------
+-- 1.5.0 grip: the House Rules rows of this package (sheet Rap Sheet, UI.lua calls these while it builds the sheet):
+-- the size of the grudge notice under GRUDGE, the section NAMEPLATE with the mark's stepper (off, small, medium, large)
+---------------------------------------------------------------------------
+local GripUI = {}
+ns.GripUI = GripUI
+GripUI.OPT_H = 24
+GripUI.VALUE_W = 96
+local SIZE_WORD = { small = "SIZE_SMALL", medium = "SIZE_MEDIUM", large = "SIZE_LARGE" }
+
+local function stepIn(list, cur, d)
+  local idx = 1
+  for i, v in ipairs(list) do if v == cur then idx = i end end
+  return list[math.max(1, math.min(#list, idx + d))]
+end
+
+-- the size row below "Notice stays for" (y = that row's y); returns the y of the new row
+function GripUI.Size(S, page, y, Stepper)
+  y = y - GripUI.OPT_H
+  S.gsize = Stepper(page, y, L.SET_GRUDGE_SIZE, function(d)
+    local v = stepIn(Card.SIZES, Card.Size(), d)
+    if ns.Store and ns.Store.Setting then ns.Store.Setting("grudge.size", v) end
+  end, GripUI.VALUE_W)
+  return y
+end
+
+-- the section NAMEPLATE from y; returns the sheet's new bottom (positive, as RR.bottom)
+function GripUI.Plate(S, page, y, section, Stepper)
+  local P = ns.Plate
+  if not P then return nil end
+  y = section(page, y, L.SET_SEC_PLATE)
+  S.plate = Stepper(page, y, L.SET_PLATE, function(d)
+    P.SetChoice(stepIn(P.ORDER, P.Choice(), d))
+  end, GripUI.VALUE_W)
+  return -y + 22
+end
+
+function GripUI.Fill(S)
+  if S.gsize then S.gsize:SetValue(L[SIZE_WORD[Card.Size()]]) end
+  local P = ns.Plate
+  if S.plate and P then
+    local c = P.Choice()
+    S.plate:SetValue(c == "off" and L.WORD_OFF or L[SIZE_WORD[c]])
+  end
+end

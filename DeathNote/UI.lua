@@ -4100,6 +4100,8 @@ BuildSettings = function()
       S.gsec = Stepper(RR, y, L.SET_GRUDGE_SECONDS, function(d)
         Set("grudge.seconds", Step(GF.GRUDGE_SECONDS, tonumber(Look.Setting("grudge.seconds", 20)) or 20, d))
       end)
+      -- 1.5.0 grip: the size of the notice (small, medium, large)
+      if ns.GripUI then y = ns.GripUI.Size(S, RR, y, Stepper) end
       y = y - OPT_H - 6
       local gtest = InkButton(RR, L.SET_GRUDGE_TEST, 104, 22, function() ns.Grudge.Test() end)
       gtest:SetPoint("TOPLEFT", 30, y - 4)
@@ -4109,6 +4111,8 @@ BuildSettings = function()
       greset:SetLabel(L.SET_GRUDGE_RESET)
       S.grudgeButtons = { gtest, greset }
       RR.bottom = -(y - 4) + 22
+      -- 1.5.0 grip: the section NAMEPLATE (the mark on the plates of the book's enemies: off, small, medium, large)
+      if ns.GripUI then RR.bottom = ns.GripUI.Plate(S, RR, y - 22 - 14, section, Stepper) or RR.bottom end
     end
   end
 
@@ -4478,6 +4482,7 @@ function UI.FillSettings()
   S.size:SetValue(Percent(ClampScale(tonumber(Look.Setting("ui.scale", 1)) or 1)))
   S.asize:SetValue(Percent(Look.Setting("alert.scale", 1)))
   if S.gsec then S.gsec:SetValue(Fmt(L.SET_SECONDS, { seconds = tonumber(Look.Setting("grudge.seconds", 20)) or 20 })) end
+  if ns.GripUI then ns.GripUI.Fill(S) end   -- 1.5.0 grip
   S.gmk:SetValue(tostring(Look.GuildSetting("minKills") or 1))
   local days = tonumber(Look.GuildSetting("huntExpire")) or 0
   S.hexp:SetValue(days > 0 and Fmt(L.SET_EXPIRE_DAYS, { count = days }) or L.SET_EXPIRE_NEVER)

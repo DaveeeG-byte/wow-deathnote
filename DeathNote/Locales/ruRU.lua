@@ -869,4 +869,25 @@ L.EMPTY_SEARCHHAS_SUB = "Просто не на этой странице. Enter
 L.FILTER_TWO = "Фильтров: {count}"
 L.CHAT_NEWS_140 = "Новое в 1.4.0: после нападения маленькое окно спрашивает, записать ли нападавшего в книгу (Злопамятство; вкл./выкл.: /dn grudge или {rules}, лист «{sheet}»); «{takeall}»: вкладка «{guild}»; фильтр и поиск: вкладка «{wanted}»."
 L.GRUDGE_TIP_OFF = "Отключить: /dn grudge или {rules}, лист «{sheet}»."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Не точно: держал тебя в цели лишь при одном ударе"
+L.GRUDGE_TIP_MOB = "Одновременно тебя атаковало существо"
+L.GRUDGE_TIP_CAST = "Произносил заклинание, когда по тебе били"
+L.GRUDGE_TIP_JOIN = "Вступил в бой вместе с ударом по тебе"
+L.GRUDGE_TIP_REPEAT = "Держал тебя в цели при нескольких ударах"
+L.SET_GRUDGE_SIZE = "Размер сообщения"  -- [max 34]
+L.SIZE_SMALL = "малый"  -- [max 10]
+L.SIZE_MEDIUM = "средний"  -- [max 10]
+L.SIZE_LARGE = "большой"  -- [max 10]
+L.SET_SEC_PLATE = "ТАБЛИЧКИ ИМЁН"  -- [max 24]
+L.SET_PLATE = "Метка над врагами из книги"  -- [max 34]
+L.BIND_TOGGLE = "Открыть или закрыть книгу"
+L.BIND_ADD = "Цель в книгу"
+L.BIND_HUNT = "Цель в список охоты"
+L.BIND_ALARM = "Тревога выкл. / вкл."
+L.GRIP_NO_TARGET = "Нет цели: сначала выбери вражеского игрока."
+L.GRIP_NOT_ENEMY = "Твоя цель не вражеский игрок."
+L.GRIP_ALREADY = "{name} уже в книге."
+L.GRIP_HUNT_WHY = "Отмечен в бою"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Причина: «{why}». Изменить: «{action}» в книге."
 end)

@@ -863,4 +863,25 @@ L.EMPTY_SEARCHHAS_SUB = "Bare ikke på denne side. Enter åbner den."
 L.FILTER_TWO = "{count} filtre"
 L.CHAT_NEWS_140 = "Nyt i 1.4.0: efter et angreb spørger en lille besked, om angriberen skal i bogen (Nag; til/fra: /dn grudge eller {rules}, fanen {sheet}); \"{takeall}\" står under {guild}, filter og søgning under {wanted}."
 L.GRUDGE_TIP_OFF = "Slå fra: /dn grudge eller {rules}, fanen {sheet}."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Usikkert: havde dig som mål ved kun ét slag"
+L.GRUDGE_TIP_MOB = "Et væsen angreb dig samtidig"
+L.GRUDGE_TIP_CAST = "Kastede en besværgelse, mens du blev ramt"
+L.GRUDGE_TIP_JOIN = "Gik i kamp med dit slag"
+L.GRUDGE_TIP_REPEAT = "Havde dig som mål ved flere slag"
+L.SET_GRUDGE_SIZE = "Beskedens størrelse"  -- [max 34]
+L.SIZE_SMALL = "lille"  -- [max 10]
+L.SIZE_MEDIUM = "mellem"  -- [max 10]
+L.SIZE_LARGE = "stor"  -- [max 10]
+L.SET_SEC_PLATE = "NAVNESKILTE"  -- [max 24]
+L.SET_PLATE = "Mærke over fjender i bogen"  -- [max 34]
+L.BIND_TOGGLE = "Åbn eller luk bogen"
+L.BIND_ADD = "Målet ind i bogen"
+L.BIND_HUNT = "Målet på jagtlisten"
+L.BIND_ALARM = "Alarm fra / til"
+L.GRIP_NO_TARGET = "Intet mål: vælg først en fjendtlig spiller."
+L.GRIP_NOT_ENEMY = "Dit mål er ikke en fjendtlig spiller."
+L.GRIP_ALREADY = "{name} står allerede i bogen."
+L.GRIP_HUNT_WHY = "Mærket i kamp"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Grund: »{why}«. Ændr: »{action}« i bogen."
 end)

@@ -334,4 +334,12 @@ return {
   SET_GRUDGE_SECONDS = { max = 34, field = "stepper label (value: \"20 s\")" },
   SET_GRUDGE_TEST = { max = 17, field = "button 104 px" },
   SET_GRUDGE_RESET = { max = 24, field = "button 132 to 180 px (grows with the word)" },
+  -- 1.5.0 grip
+  SET_GRUDGE_SIZE = { max = 34, field = "stepper label (value: a size word, 96 px)" },
+  SIZE_SMALL = { max = 10, field = "stepper value, 96 px, hand 16/13/11 pt" },
+  SIZE_MEDIUM = { max = 10, field = "stepper value, 96 px, hand 16/13/11 pt" },
+  SIZE_LARGE = { max = 10, field = "stepper value, 96 px, hand 16/13/11 pt" },
+  SET_SEC_PLATE = { max = 24, field = "section label" },
+  SET_PLATE = { max = 34, field = "stepper label (value: off or a size word, 96 px)" },
+  GRIP_HUNT_WHY = { max = 40, field = "hit list reason (shared, at most 60 characters)" },
 }

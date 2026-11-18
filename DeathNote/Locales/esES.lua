@@ -858,4 +858,25 @@ L.EMPTY_SEARCHHAS_SUB = "Solo que no en esta página. Intro lo abre."
 L.FILTER_TWO = "{count} filtros"
 L.CHAT_NEWS_140 = "Novedad en 1.4.0: tras un ataque, un pequeño aviso pregunta si el atacante va a tu libro (Rencor; activar/desactivar: /dn grudge o {rules}, hoja {sheet}); «{takeall}» está en {guild}, filtro y búsqueda en {wanted}."
 L.GRUDGE_TIP_OFF = "Desactivar: /dn grudge o {rules}, hoja {sheet}."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "No es seguro: solo te tenía en el objetivo en un golpe"
+L.GRUDGE_TIP_MOB = "Una criatura te atacaba a la vez"
+L.GRUDGE_TIP_CAST = "Lanzó un hechizo mientras recibías golpes"
+L.GRUDGE_TIP_JOIN = "Entró en combate con tu golpe"
+L.GRUDGE_TIP_REPEAT = "Te tenía en el objetivo en varios golpes"
+L.SET_GRUDGE_SIZE = "Tamaño del aviso"  -- [max 34]
+L.SIZE_SMALL = "pequeño"  -- [max 10]
+L.SIZE_MEDIUM = "mediano"  -- [max 10]
+L.SIZE_LARGE = "grande"  -- [max 10]
+L.SET_SEC_PLATE = "PLACAS DE NOMBRE"  -- [max 24]
+L.SET_PLATE = "Marca sobre enemigos del libro"  -- [max 34]
+L.BIND_TOGGLE = "Abrir o cerrar el libro"
+L.BIND_ADD = "Objetivo al libro"
+L.BIND_HUNT = "Objetivo a la lista de caza"
+L.BIND_ALARM = "Alarma sí / no"
+L.GRIP_NO_TARGET = "Sin objetivo: selecciona primero a un jugador enemigo."
+L.GRIP_NOT_ENEMY = "Tu objetivo no es un jugador enemigo."
+L.GRIP_ALREADY = "{name} ya está en el libro."
+L.GRIP_HUNT_WHY = "Marcado en combate"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Motivo: «{why}». Para cambiarlo: «{action}» en el libro."
 end)

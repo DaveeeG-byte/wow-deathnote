@@ -870,4 +870,25 @@ L.EMPTY_SEARCHHAS_SUB = "Tylko nie na tej stronie. Enter otwiera."
 L.FILTER_TWO = "Filtry: {count}"
 L.CHAT_NEWS_140 = "Nowość w 1.4.0: po ataku mały komunikat pyta, czy wpisać napastnika do księgi (Uraza; wł./wył.: /dn grudge albo {rules}, karta {sheet}); „{takeall}”: zakładka {guild}; filtr i wyszukiwanie: zakładka {wanted}."
 L.GRUDGE_TIP_OFF = "Wyłączanie: /dn grudge albo {rules}, karta {sheet}."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Niepewne: miał cię w celu tylko przy jednym trafieniu"
+L.GRUDGE_TIP_MOB = "W tym samym czasie atakował cię stwór"
+L.GRUDGE_TIP_CAST = "Rzucał czar, gdy obrywałeś"
+L.GRUDGE_TIP_JOIN = "Wszedł do walki razem z twoim trafieniem"
+L.GRUDGE_TIP_REPEAT = "Miał cię w celu przy kilku trafieniach"
+L.SET_GRUDGE_SIZE = "Rozmiar komunikatu"  -- [max 34]
+L.SIZE_SMALL = "mały"  -- [max 10]
+L.SIZE_MEDIUM = "średni"  -- [max 10]
+L.SIZE_LARGE = "duży"  -- [max 10]
+L.SET_SEC_PLATE = "TABLICZKI"  -- [max 24]
+L.SET_PLATE = "Znak nad wrogami z księgi"  -- [max 34]
+L.BIND_TOGGLE = "Otwórz lub zamknij księgę"
+L.BIND_ADD = "Cel do księgi"
+L.BIND_HUNT = "Cel na listę łowów"
+L.BIND_ALARM = "Alarm wył. / wł."
+L.GRIP_NO_TARGET = "Brak celu: najpierw wybierz wrogiego gracza."
+L.GRIP_NOT_ENEMY = "Twój cel nie jest wrogim graczem."
+L.GRIP_ALREADY = "{name}: już w księdze."
+L.GRIP_HUNT_WHY = "Oznaczony w walce"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Powód: „{why}”. Zmiana: „{action}” w księdze."
 end)

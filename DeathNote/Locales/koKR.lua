@@ -871,4 +871,25 @@ L.EMPTY_SEARCHHAS_SUB = "이 쪽에 없을 뿐입니다. Enter로 엽니다."
 L.FILTER_TWO = "필터 {count}개"
 L.CHAT_NEWS_140 = "1.4.0 새 기능: 공격받은 뒤 작은 알림이 공격자를 수첩에 적을지 묻는다 (앙심; 켜기/끄기: /dn grudge 또는 {rules}의 {sheet} 탭); \"{takeall}\"은 {guild} 탭, 필터와 검색은 {wanted} 탭에 있다."
 L.GRUDGE_TIP_OFF = "끄기: /dn grudge 또는 {rules}의 {sheet} 탭."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "불확실: 한 번 맞을 때만 너를 대상으로 잡았음"
+L.GRUDGE_TIP_MOB = "같은 때에 몬스터도 너를 공격했음"
+L.GRUDGE_TIP_CAST = "네가 맞는 동안 주문을 시전했음"
+L.GRUDGE_TIP_JOIN = "네가 맞는 순간 전투에 들어갔음"
+L.GRUDGE_TIP_REPEAT = "여러 번 맞는 동안 너를 대상으로 잡았음"
+L.SET_GRUDGE_SIZE = "알림 크기"  -- [max 34]
+L.SIZE_SMALL = "작게"  -- [max 10]
+L.SIZE_MEDIUM = "보통"  -- [max 10]
+L.SIZE_LARGE = "크게"  -- [max 10]
+L.SET_SEC_PLATE = "이름표"  -- [max 24]
+L.SET_PLATE = "수첩에 있는 적 표시"  -- [max 34]
+L.BIND_TOGGLE = "수첩 열기/닫기"
+L.BIND_ADD = "대상을 수첩에"
+L.BIND_HUNT = "대상을 척살 명단에"
+L.BIND_ALARM = "경보 끄기/켜기"
+L.GRIP_NO_TARGET = "대상 없음: 먼저 적 플레이어를 대상으로 잡아라."
+L.GRIP_NOT_ENEMY = "대상이 적 플레이어가 아니다."
+L.GRIP_ALREADY = "{name}: 이미 수첩에 있음."
+L.GRIP_HUNT_WHY = "전투 중 표시"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "사유: \"{why}\". 바꾸려면 수첩에서 \"{action}\"."
 end)

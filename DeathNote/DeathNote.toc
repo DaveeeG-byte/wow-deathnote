@@ -76,4 +76,7 @@ Start.lua
 Extras.lua
 # 1.4.0: the small grudge notice on the right edge (tick and cross per attacker)
 GrudgeCard.lua
+# 1.5.0 grip: key bindings (Bindings.xml is loaded by the game itself, not listed here) and the nameplate mark
+Grip.lua
+Plate.lua
 Humor.lua

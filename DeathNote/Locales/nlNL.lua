@@ -863,4 +863,25 @@ L.EMPTY_SEARCHHAS_SUB = "Alleen niet op deze pagina. Enter opent het."
 L.FILTER_TWO = "{count} filters"
 L.CHAT_NEWS_140 = "Nieuw in 1.4.0: na een aanval vraagt een kleine melding of de aanvaller in je boek komt (Wrok; aan/uit: /dn grudge of {rules}, blad {sheet}); \"{takeall}\" staat onder {guild}, filter en zoeken onder {wanted}."
 L.GRUDGE_TIP_OFF = "Uitzetten: /dn grudge of {rules}, blad {sheet}."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Onzeker: had jou maar bij één treffer als doelwit"
+L.GRUDGE_TIP_MOB = "Tegelijk viel een wezen je aan"
+L.GRUDGE_TIP_CAST = "Sprak een spreuk uit terwijl je geraakt werd"
+L.GRUDGE_TIP_JOIN = "Ging met jouw treffer het gevecht in"
+L.GRUDGE_TIP_REPEAT = "Had jou bij meerdere treffers als doelwit"
+L.SET_GRUDGE_SIZE = "Grootte van de melding"  -- [max 34]
+L.SIZE_SMALL = "klein"  -- [max 10]
+L.SIZE_MEDIUM = "middel"  -- [max 10]
+L.SIZE_LARGE = "groot"  -- [max 10]
+L.SET_SEC_PLATE = "NAAMPLATEN"  -- [max 24]
+L.SET_PLATE = "Teken boven vijanden uit het boek"  -- [max 34]
+L.BIND_TOGGLE = "Boek openen of sluiten"
+L.BIND_ADD = "Doelwit in het boek"
+L.BIND_HUNT = "Doelwit op de jachtlijst"
+L.BIND_ALARM = "Alarm uit / aan"
+L.GRIP_NO_TARGET = "Geen doelwit: kies eerst een vijandige speler."
+L.GRIP_NOT_ENEMY = "Je doelwit is geen vijandige speler."
+L.GRIP_ALREADY = "{name} staat al in het boek."
+L.GRIP_HUNT_WHY = "Gemarkeerd in gevecht"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Reden: ‘{why}’. Wijzigen: ‘{action}’ in het boek."
 end)

@@ -857,4 +857,25 @@ L.EMPTY_SEARCHHAS_SUB = "Simplement pas sur cette page. Entrée l’ouvre."
 L.FILTER_TWO = "{count} filtres"
 L.CHAT_NEWS_140 = "Nouveau en 1.4.0 : après une attaque, un petit avis demande si l’attaquant va dans ton carnet (Rancune ; activer/désactiver : /dn grudge ou {rules}, feuille {sheet}) ; « {takeall} » est sous {guild}, filtre et recherche sous {wanted}."
 L.GRUDGE_TIP_OFF = "Désactiver : /dn grudge ou {rules}, feuille {sheet}."
+-- 1.5.0 grip
+L.GRUDGE_TIP_PROBABLE = "Pas sûr : vu te ciblant lors d'un seul coup"
+L.GRUDGE_TIP_MOB = "Une créature t'attaquait en même temps"
+L.GRUDGE_TIP_CAST = "A lancé un sort pendant que tu étais touché"
+L.GRUDGE_TIP_JOIN = "Est entré en combat avec ton coup"
+L.GRUDGE_TIP_REPEAT = "T'avait en cible lors de plusieurs coups"
+L.SET_GRUDGE_SIZE = "Taille de l'avis"  -- [max 34]
+L.SIZE_SMALL = "petit"  -- [max 10]
+L.SIZE_MEDIUM = "moyen"  -- [max 10]
+L.SIZE_LARGE = "grand"  -- [max 10]
+L.SET_SEC_PLATE = "BARRES DE NOM"  -- [max 24]
+L.SET_PLATE = "Marque sur les ennemis du carnet"  -- [max 34]
+L.BIND_TOGGLE = "Ouvrir ou fermer le carnet"
+L.BIND_ADD = "Cible dans le carnet"
+L.BIND_HUNT = "Cible sur la liste de chasse"
+L.BIND_ALARM = "Alerte coupée / active"
+L.GRIP_NO_TARGET = "Aucune cible : cible d'abord un joueur ennemi."
+L.GRIP_NOT_ENEMY = "Ta cible n'est pas un joueur ennemi."
+L.GRIP_ALREADY = "{name} figure déjà dans le carnet."
+L.GRIP_HUNT_WHY = "Marqué en combat"  -- [max 40]
+L.GRIP_HUNT_CHANGE = "Raison : « {why} ». Pour la changer : « {action} » dans le carnet."
 end)
