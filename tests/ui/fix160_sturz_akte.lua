@@ -25,7 +25,7 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   ns.UI.ShowCase(j[1]); W.settle()
   local note = ns.F(L.FATE_NOTE_ENV, { name = L.FATE_ENV_FALL })
   J.check(code .. ": Akte nennt die Umwelt als Zusatz", W.visible(note) ~= nil, note)
-  -- the totem: like a pet without owner, the shaman stays the unsure killer, no creature
+  -- the totem: the shaman's fresh damage makes an open case with him as candidate (fixer 2, jb01: never wanted), no creature
   W.AM.Advance(120)
   W.AM.recap = { id = 4712, events = {
     ev({ guid = "Player-93-0000BEEF", name = "Grimm Bart", amount = 900, spell = "Blitzschlag" }),
@@ -35,8 +35,10 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   W.AM.FireEvent("PLAYER_DEAD")
   W.tick(6)
   j = ns.Store.Journal()
-  J.check(code .. ": Totem: Journalzeile mit dem Schamanen als unsicherem Taeter",
-    #j == 2 and j[1].kind == "pvp" and j[1].sure == false and j[1].killerKey ~= nil, #j .. " " .. tostring(j[1] and j[1].kind))
+  J.check(code .. ": Totem: offener Fall mit dem Schamanen als Kandidat, kein Taeter",
+    #j == 2 and j[1].kind == "pvp" and j[1].sure == false and j[1].killerKey == nil and ns.Store.IsOpenCase(j[1])
+    and (j[1].candidates or {})[1] == "Grimm-Bart", #j .. " " .. tostring(j[1] and j[1].kind))
+  J.check(code .. ": Totem: der Schamane steht nicht im Buch", ns.Store.Get("Grimm-Bart") == nil)
   J.check(code .. ": Totem: keine Kreatur unter Ursachen", #ns.Fates.Rows() == 0, #ns.Fates.Rows())
 end
 J.done()

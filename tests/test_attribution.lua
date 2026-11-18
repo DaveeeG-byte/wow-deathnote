@@ -57,12 +57,30 @@ test("Decide: Todesstoß Spieler -> sicher, Mittäter in others", function()
   eq(#r.others, 1); eq(r.others[1], "A-X"); ok(r.othersInfo["A-X"])
 end)
 
--- 1.6.0 fixer (jl05): a creature's blow after a player's damage in the same stage is handled like a pet's without
--- owner (totems, guardians: "Creature-" GUIDs without owner); only a stage without any player is "pve"
-test("Decide: Todesstoß Mob nach Spielerschaden -> wie Begleiter: Verdacht auf stärksten Spieler", function()
+-- 1.6.0 fixer (jl05), narrowed by fixer 2 (jb01): a creature's blow after a hostile player's fresh damage (at most
+-- A.FRESH_HIT seconds before it, both stamps of the recap) makes an open case with the player as candidate: never a
+-- killer, never an assist; anything else is the creature's death ("pve"), as in 1.5.0
+test("Decide: Todesstoß Mob nach frischem Spielerschaden -> offener Fall, Spieler nur Kandidat", function()
   local r = A0.Decide({ { stage = "recap", ok = true, sources = {
-    { isPlayer = false, kb = true, amount = 1 }, src("A-X") } } })
-  eq(r.kind, "pvp"); eq(r.killerKey, "A-X"); eq(r.sure, false); eq(r.candidates[1], "A-X")
+    { isPlayer = false, kb = true, amount = 1, ts = 1000 }, src("A-X", { ts = 995 }) } } })
+  eq(r.kind, "pvp"); no(r.killerKey); eq(r.sure, false); eq(r.candidates[1], "A-X"); eq(#r.others, 0)
+end)
+
+test("Decide: Todesstoß Mob, Spielerschaden alt, ohne Zeit, eigene Fraktion oder nach einem Duell -> pve", function()
+  local function decide(p, opts, kbTs)
+    return A0.Decide({ { stage = "recap", ok = true, sources = {
+      { isPlayer = false, kb = true, amount = 1, ts = kbTs == nil and 1000 or kbTs or nil }, p } } }, nil, opts)
+  end
+  eq(decide(src("A-X", { ts = 1000 - A0.FRESH_HIT - 1 })).kind, "pve", "alt")
+  eq(decide(src("A-X")).kind, "pve", "Spieler ohne Zeit")
+  eq(decide(src("A-X", { ts = 999 }), nil, false).kind, "pve", "Todesstoß ohne Zeit")
+  local own = src("A-X", { ts = 999 }); own.info.faction = "Horde"
+  eq(decide(own, { myFaction = "Horde" }).kind, "pve", "eigene Fraktion")
+  local race = src("A-X", { ts = 999 }); race.info.race = "Orc"
+  eq(decide(race, { myFaction = "Horde" }).kind, "pve", "eigene Fraktion über das Volk")
+  eq(decide(src("A-X", { ts = 999 }), { duel = true }).kind, "pve", "während oder kurz nach einem Duell")
+  local foe = src("A-X", { ts = 999 }); foe.info.faction = "Alliance"
+  eq(decide(foe, { myFaction = "Horde" }).kind, "pvp", "feindlich und frisch")
 end)
 
 test("Decide: Todesstoß Mob ohne Spieler -> pve", function()
@@ -70,11 +88,15 @@ test("Decide: Todesstoß Mob ohne Spieler -> pve", function()
   eq(r.kind, "pve"); no(r.killerKey); eq(#r.candidates, 0)
 end)
 
--- 1.6.0 fixer (jl04): the world's blow after a player's damage stays unclear with the player as candidate (1.5.0)
+-- 1.6.0 fixer (jl04), narrowed by fixer 2 (jb01): the world's blow after a fresh player's damage stays unclear with the
+-- player as candidate; an old hit plus a fall is a fall
 test("Decide: Todesstoß Umwelt nach Spielerschaden -> unklar, Spieler Kandidat, Umwelt als Ursache", function()
   local r = A0.Decide({ { stage = "recap", ok = true, sources = {
-    { isPlayer = false, env = "Falling", kb = true, amount = 150 }, src("A-X", { amount = 900 }) } } })
+    { isPlayer = false, env = "Falling", kb = true, amount = 150, ts = 1000 }, src("A-X", { amount = 900, ts = 998 }) } } })
   eq(r.kind, "unknown"); no(r.killerKey); eq(r.candidates[1], "A-X"); eq(r.cause and r.cause.art, "env")
+  local old = A0.Decide({ { stage = "recap", ok = true, sources = {
+    { isPlayer = false, env = "Falling", kb = true, amount = 150, ts = 1000 }, src("A-X", { amount = 900, ts = 400 }) } } })
+  eq(old.kind, "pve", "alter Treffer plus Sturz ist ein Sturz"); eq(old.cause and old.cause.art, "env")
 end)
 
 test("Decide: Todesstoß Pet ohne Besitzer -> Verdacht auf stärksten Spieler", function()

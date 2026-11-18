@@ -20,6 +20,8 @@ A.STALE_RECAP = 60            -- seconds: recap older than this belongs to an ea
 A.REVENGE_ENGAGE = 15         -- seconds: "I was fighting him"
 A.REVENGE_DEDUPE = 10         -- seconds: one kill reported by several events
 A.DUEL_WINDOW = 30            -- seconds after a duel event in which a death counts as duel
+A.FRESH_HIT = 10              -- fixer 2 1.6.0 (jb01): a player's damage at most this long before the killing blow
+A.DUEL_AFTER = 30             -- fixer 2 1.6.0 (jb01): seconds after the end of a duel in which no player's old damage counts
 A.PENDING_MAX = 10            -- seconds: an unfinished evaluation older than this is dropped
 A.DEATH_DUEL_AFTER = 30       -- 1.3.0: seconds after a duel to the death in which the opponent's kill or death is the duel's
 A.DEATH_DUEL_MAX = 900        -- 1.3.0: a duel to the death under way that never finished is let go after this long
@@ -43,7 +45,8 @@ function A.Classify(src, ctx)
   local guid = Str(src.guid)
   local name = Str(src.name)
   if guid and ctx.myGUID and guid == ctx.myGUID then return nil end
-  local out = { amount = tonumber(src.amount) or 0, kb = src.kb and true or false, spell = src.spell }
+  local out = { amount = tonumber(src.amount) or 0, kb = src.kb and true or false, spell = src.spell,
+    ts = type(src.ts) == "number" and not IsSecret(src.ts) and src.ts or nil }
   -- 1.6.0 deaths: a row of the world (falling, drowning, fire, ...) is no player and no creature
   if src.env then
     out.isPlayer, out.env, out.name = false, src.env, name
@@ -118,6 +121,7 @@ local function playersOf(sources)
         list[#list + 1] = p
       end
       p.amount = p.amount + (s.amount or 0)
+      if s.ts and (not p.last or s.ts > p.last) then p.last = s.ts end
       if s.kb then p.kb = true; p.spell = s.spell end
       p.spell = p.spell or s.spell
     end
@@ -144,6 +148,37 @@ local function causeOf(kb)
   return { art = art, env = kb.env, name = kb.name, guid = kb.guid, spell = kb.spell, nameSecret = kb.nameSecret }
 end
 A.CauseOf = causeOf
+
+-- fixer 2 1.6.0 (jb01): the players whose damage may stand behind a killing blow of a creature or of the world: never
+-- during or shortly after a duel (opts.duel), never of the own faction (opts.myFaction against the faction the tracker
+-- saw or the race's), and only with their newest row at most FRESH_HIT seconds before the killing blow (both time stamps
+-- of the same recap; without a readable one nobody qualifies)
+local HORDE = { Orc = true, Scourge = true, Undead = true, Tauren = true, Troll = true, BloodElf = true, Goblin = true }
+local ALLIANCE = { Human = true, Dwarf = true, NightElf = true, Gnome = true, Draenei = true, Worgen = true }
+local function factionOf(info)
+  if type(info) ~= "table" then return nil end
+  local f = info.faction
+  if f == "Horde" or f == "Alliance" then return f end
+  local r = info.race
+  if type(r) == "string" then
+    if HORDE[r] then return "Horde" end
+    if ALLIANCE[r] then return "Alliance" end
+  end
+  return nil
+end
+A.FactionOf = factionOf
+local function freshPlayers(players, kb, opts)
+  local out = {}
+  if opts.duel or type(kb.ts) ~= "number" then return out end
+  for _, p in ipairs(players) do
+    local f = factionOf(p.info)
+    local own = f ~= nil and opts.myFaction ~= nil and f == opts.myFaction
+    if not own and type(p.last) == "number" and p.last <= kb.ts + 1 and kb.ts - p.last <= A.FRESH_HIT then
+      out[#out + 1] = p
+    end
+  end
+  return out
+end
 
 -- stages: array of { stage = "recap"|"meter"|"combatlog", ok = bool, sources = { classified... } }
 -- suspects: { targeters = { {key, info}... } (window 6 s), recent = { ... } (window 20 s) }
@@ -183,20 +218,26 @@ function A.Decide(stages, suspects, opts)
         -- PvE death; this stage cannot name the owner -> next stage / suspects decide
         petCause = petCause or causeOf(kb)
         res = nil
-      elseif kb and kb.isPlayer == false and not kb.env and #players > 0 then
-        -- 1.6.0 fix: a creature's killing blow after a player's damage in the same stage is handled like a pet's
-        -- without owner (a totem, a guardian, a mirror image carry "Creature-" GUIDs and no owner in the recap):
-        -- never a creature of the death log, the player with the most damage stays the unsure killer
-        local top = players[1]
-        res.kind, res.killerKey, res.killerInfo, res.sure, res.spell = "pvp", top.key, top.info, false, kb.spell
-        res.others = keysExcept(players, top.key)
-        res.candidates = keysExcept(players, nil)
+      elseif kb and kb.isPlayer == false then
+        -- killing blow by a creature or the world. 1.6.0 fix, narrowed by fixer 2 (jb01): only a hostile player's
+        -- fresh damage (freshPlayers) keeps a player in it: after a creature's blow (a totem, a guardian, a mirror
+        -- image carry "Creature-" GUIDs and no owner in the recap) he is a suspicion to clear up (an open case with
+        -- the players as candidates: never wanted, never an assist, no alarm from this death alone); after the
+        -- world's blow (a fall after a knockback, lava, drowning) the death stays unclear with the players as
+        -- candidates and the world as a note. Anything else is the creature's or the world's death, as in 1.5.0.
+        local fresh = freshPlayers(players, kb, opts)
+        res.spell = kb.spell
+        res.candidates = keysExcept(fresh, nil)
+        if #fresh > 0 and not kb.env then
+          res.kind, res.sure = "pvp", false
+          return res
+        end
+        res.kind = #fresh == 0 and "pve" or "unknown"
+        res.cause = causeOf(kb)
         return res
       elseif kb then
-        -- killing blow by a creature / environment / someone we cannot identify. 1.6.0 fix: the world's blow after a
-        -- player's damage in the same stage (a fall after a knockback, lava, drowning) stays unclear with the players
-        -- as candidates, as in 1.5.0; the world is only noted with the death (no row among the causes)
-        res.kind = (kb.isPlayer == false and #players == 0) and "pve" or "unknown"
+        -- killing blow by someone we cannot identify
+        res.kind = "unknown"
         res.spell = kb.spell
         res.cause = causeOf(kb)
         res.candidates = keysExcept(players, nil)
@@ -597,6 +638,8 @@ local duelAt          -- GetTime of a duel request/start, cleared when the duel 
 -- a declined request sends no DUEL_FINISHED: the window is short (deaths in a duel itself
 -- do not happen, the duel ends at 1 HP; this only covers dying to someone else meanwhile)
 local function inDuel() return duelAt ~= nil and GetTime() - duelAt < A.DUEL_WINDOW end
+local duelEndAt       -- fixer 2 1.6.0 (jb01): GetTime of the last DUEL_FINISHED
+local function afterDuel() return duelEndAt ~= nil and GetTime() >= duelEndAt and GetTime() - duelEndAt < A.DUEL_AFTER end
 
 -- 1.3.0: a duel to the death ends with a real death, which is no world PvP. Only the opponent is held out (a third
 -- player who kills one of us meanwhile still counts): his death by me is no revenge, no rap sheet kill and no "taken
@@ -912,7 +955,8 @@ function attempt(p)
     stages[#stages + 1] = classifyAll(ev, ctx)
   end
   p.evidence = evidence
-  local result = A.Decide(stages, p.suspects, { suspect = stageOn("suspect") })
+  local result = A.Decide(stages, p.suspects, { suspect = stageOn("suspect"), duel = p.duel or p.afterDuel,
+    myFaction = Str(Call(_G.UnitFactionGroup, "player")) })
   local decisive = result.source and result.source ~= "suspect"
   if not decisive and not final then
     if _G.C_Timer and _G.C_Timer.After then
@@ -945,7 +989,7 @@ function A.OnPlayerDead()
   local p = {
     t = time(), gt = t, zone = zone, subzone = sub, mapID = mapID, x = x, y = y,
     me = Str(me) and (Str(second) and (me .. " " .. second) or me) or nil, myLevel = level,
-    openWorld = Util.IsOpenWorld(), duel = inDuel(), tries = 0,
+    openWorld = Util.IsOpenWorld(), duel = inDuel(), afterDuel = afterDuel(), tries = 0,
   }
   p.suspects = snapshotSuspects(t)
   pending = p
@@ -1114,6 +1158,7 @@ end
 ns:RegisterEvent("PLAYER_ENTERING_WORLD", function() A.OnDeathDuelEnded() end)
 ns:RegisterEvent("ZONE_CHANGED_NEW_AREA", function() A.OnDeathDuelZone() end)
 ns:RegisterEvent("DUEL_FINISHED", function()
+  duelEndAt = GetTime()
   A.OnDeathDuelEnded()
   if _G.C_Timer and _G.C_Timer.After then _G.C_Timer.After(1, function() duelAt = nil end) else duelAt = nil end
 end)

@@ -456,7 +456,11 @@ deaths to monsters and the environment (`pve`) were only counted (`DeathNoteDB.t
 `/dn beichte`). Since 1.6.0 they are kept in `DeathNoteDB.fates` (300 deaths, 150 causes; creature name, NPC id, spell,
 kind of the world, place) and the tab has three views: Players, All (default, a sign per kind) and Causes (ranked, a
 NEMESIS stamp from three deaths). They never ring the alarm and are never sent; the switch "Also record deaths by
-creatures and the world" stands in the foot of such a file. `/dn probe` writes `probe.pve`. Old `pve` rows from 1.1.0
+creatures and the world" stands in the foot of such a file. `/dn probe` writes `probe.pve`. A killing blow of a
+creature or of the world is a player's death only by a hostile player's fresh damage: never of the own faction, never
+during or within 30 s after a duel, his newest row at most 10 s before the killing blow (time stamps of the recap).
+Then a creature's blow makes an open case under Unsolved with him as candidate (never wanted, no alarm from it), the
+world's blow an unclear death with him as candidate; anything else counts as the creature's or the world's death. Old `pve` rows from 1.1.0
 stay in the file (1.1.0 shows them again), they are just not shown.
 
 ## Dry remarks (1.2.0, German and English only)
