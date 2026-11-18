@@ -3875,7 +3875,6 @@ do
 local BOOK_OPTIONS = {
   { "tooltip",         "OPT_TOOLTIP", true },
   { "ui.minimap.hide", "OPT_MINIMAP", false, invert = true },
-  { "fates.on",        "OPT_FATES", true },   -- 1.6.0 deaths: also deaths by creatures and the world (Fates.lua)
 }
 local ALERT_OPTIONS = {
   { "alert.enabled",   "OPT_ALERT", true },
@@ -4437,6 +4436,7 @@ BuildSettings = function()
       -- 1.5.0 grip: the section NAMEPLATE (the mark on the plates of the book's enemies: off, small, medium, large)
       if ns.GripUI then RR.bottom = ns.GripUI.Plate(S, RR, y - 22 - 14, section, Stepper) or RR.bottom end
     end
+
   end
 
   local back = InkButton(S, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
@@ -7000,4 +7000,5 @@ end)
 -- 1.6.0 deaths: the journal's views (FatesUI.lua) use the book's own row and page kit
 UI.JK = { state = state, SetRow = SetRow, SetRank = SetRank, SetRowMode = SetRowMode, InkWidth = InkWidth,
   PlaceText = PlaceText, Spaced = Spaced, Tip = Tip, TextWidth = TextWidth, Label = Label, WordTab = WordTab, GF = GF,
+  InkCheck = UX.InkCheck,
   Refresh = function() Refresh() end, FIT_NAME26 = GF.FIT_NAME26 }

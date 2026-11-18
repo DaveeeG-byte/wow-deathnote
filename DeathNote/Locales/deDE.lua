@@ -1034,7 +1034,7 @@ L.FATE_AW_STREAK = "Pechsträhne"
 L.FATE_AW_STREAK_COND = "Drei Tode durch Kreaturen oder Umwelt binnen zehn Minuten."
 L.FATE_AW_ZOO = "Tierkunde"
 L.FATE_AW_ZOO_COND = "Von zehn verschiedenen Kreaturen getötet."
-L.OPT_FATES = "Auch Tode durch Kreaturen und Umwelt festhalten"
+L.OPT_FATES = "Tode durch Kreaturen und Umwelt festhalten"
 L.SHARE_WEEK_OTHERS = "andere Tode: {count}"
 L.SHARE_WEEK_BEAST = "tödlichste Kreatur: {name} {times}"
 end)

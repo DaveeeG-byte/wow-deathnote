@@ -6,7 +6,8 @@
 --   * The feud between players stays the heart. A death by a player never gets a row here (the journal has it).
 --   * No alarm, no sharing: nothing of this goes over the wire (Sync.lua and Friends.lua never read db.fates).
 --   * Fed by DEATH_RECORDED (Attribution.lua: the journal entry with `cause`), one row per death of kind "pve".
---     The switch fates.on (House Rules, sheet Book, default on): off = nothing new is recorded, what is there stays.
+--     The switch fates.on (default on; in the foot of the file of such a death, FatesUI.lua: every sheet of the House
+--     Rules is full): off = nothing new is recorded, what is there stays.
 --   * Caps: 300 rows (oldest go first), 150 causes (the one met longest ago goes first). One death touches one row
 --     and one cause, never the whole book.
 --   * Every value from the client is checked with IsSecret first (Core.lua Util.Str/Num), only then compared.

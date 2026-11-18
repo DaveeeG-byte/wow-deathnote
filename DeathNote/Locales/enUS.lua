@@ -1054,7 +1054,7 @@ L.FATE_AW_STREAK = "Bad Streak"  -- award name: three deaths in ten minutes
 L.FATE_AW_STREAK_COND = "Three deaths by creatures or the world within ten minutes."  -- award condition
 L.FATE_AW_ZOO = "Field Guide"  -- award name: killed by ten different creatures
 L.FATE_AW_ZOO_COND = "Killed by ten different creatures."  -- award condition
-L.OPT_FATES = "Also record deaths by creatures and the world"  -- switch on the House Rules sheet Book, section Death Log: also record deaths by creatures and the world (default on; off = nothing new, what is there stays)
+L.OPT_FATES = "Also record deaths by creatures and the world"  -- check box in the foot of the file of a death by a creature or the world (Death Log): also record deaths by creatures and the world (default on; off = nothing new, what is there stays)
 L.SHARE_WEEK_OTHERS = "other deaths: {count}"  -- week line: deaths by creatures and the world this week
 L.SHARE_WEEK_BEAST = "deadliest creature: {name} {times}"  -- week line: the creature that killed you most this week; {name} = its name, {times} = '3x'
 end)

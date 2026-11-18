@@ -199,11 +199,38 @@ local function stampOf(D, k)
   return s
 end
 
+-- the switch fates.on in the file's foot (a death by a creature or the world, a cause): every sheet of the House Rules
+-- is full (Book: a row more scrolls in German; Rap Sheet: the section NAMEPLATE fills it; Alarm: 7 px left; Guild only
+-- with a guild), so it stands where those deaths are shown
+local function switchOf(D, k)
+  local cb = D.fateSwitch
+  if cb then return cb end
+  cb = k.InkCheck(D.page.foot, L.OPT_FATES, 304)
+  cb:SetPoint("BOTTOMLEFT", 20, 14)
+  cb.label:SetWidth(276)
+  cb.label:SetJustifyH("LEFT")
+  cb.label:SetWordWrap(false)
+  Look.FitText(cb.label, L.OPT_FATES, { sizes = { 11, 10 } })
+  Look.TipIfCut(cb, cb.label)
+  cb.opt = { path = "fates.on", def = true }
+  cb.fatePart = true
+  cb:SetScript("OnClick", function(self)
+    local on = self:GetChecked() and true or false
+    self.cross:SetShown(on)
+    if ns.Store and ns.Store.Setting then ns.Store.Setting("fates.on", on) end
+    Look.Sound("click")
+  end)
+  cb:Hide()
+  D.fateSwitch = cb
+  return cb
+end
+
 -- after FillDeath (UI.lua): the cause's own lines; any other file gets its head back and no stamp
 function FU.FillDeath(D, d, nInfo)
   local Fa, k = ns.Fates, K()
   if D.fateHead then D.fateHead:Hide(); D.head:Show() end
   if D.fateStamp and k then k.GF.ShowStamp(D.fateStamp, false) end
+  if D.fateSwitch then D.fateSwitch:Hide() end
   if not (Fa and k) or type(d) ~= "table" then return end
   if not (d.art or d.foe) then
     if type(d.cause) == "table" and d.kind ~= "pvp" and d.cause.art == "pet" then
@@ -211,6 +238,9 @@ function FU.FillDeath(D, d, nInfo)
     end
     return
   end
+  local sw = switchOf(D, k)
+  sw:SetInk(Fa.On())
+  sw:Show()
   local art = d.art or "unknown"
   D.killLabel:SetText(k.Spaced(Fa.ArtWord(art)))
   Look.FitText(D.killer.text, Fa.Name(d), k.FIT_NAME26)

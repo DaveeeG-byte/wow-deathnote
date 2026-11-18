@@ -1,6 +1,6 @@
 -- 1.6.0 deaths (UI): the death log's views "Players | All | Causes" (default All), deaths by creatures and the world
 -- mixed with the deaths by players and told apart by a small sign, the place as a link to the map, the view Causes with
--- the stamp on number one, the switch on the House Rules sheet Book, the awards for dying on the rap sheet, the dry
+-- the stamp on number one, the switch in the foot of such a file, the awards for dying on the rap sheet, the dry
 -- remark per kind (German and English only). Still five tabs. Names made up.
 local WT = arg[1] or "."
 local J = dofile((arg[0]:match("^(.*)/") or ".") .. "/_ju.lua")
@@ -155,17 +155,32 @@ for _, code in ipairs({ "deDE", "enUS", "frFR" }) do
   J.check(code .. ": Suche findet die Kreatur", #rows == 3 and rows[1].item.art == "creature", #rows)
   search:SetText(""); search._scripts.OnTextChanged(search); W.settle()
 
-  -- House Rules, sheet Book: the switch
-  ns.UI.OpenPanel("settings"); W.settle()
-  local cb
-  for _, f in ipairs(W.BM.frames) do
-    if f._kind == "CheckButton" and f.opt and f.opt.path == "fates.on" then cb = f end
+  -- the switch: in the foot of the file of a death by a creature (every sheet of the House Rules is full)
+  local function fateSwitch()
+    for _, f in ipairs(W.BM.frames) do
+      if f._kind == "CheckButton" and f.opt and f.opt.path == "fates.on" and f:IsVisible() then return f end
+    end
   end
-  J.check(code .. ": Schalter auf dem Blatt Buch", cb ~= nil and cb:IsVisible() and cb.label._text == L.OPT_FATES)
-  J.check(code .. ": Schalter steht an", cb and cb:GetChecked())
+  click(rowsShown(W)[1]); W.settle()
+  local cb = fateSwitch()
+  J.check(code .. ": Schalter in der Akte eines Kreaturentods", cb ~= nil and cb.label._text == L.OPT_FATES)
+  J.check(code .. ": Schalter steht an", cb and cb:GetChecked() and cb.cross:IsShown())
   if cb then
     cb:SetChecked(false); cb._scripts.OnClick(cb, "LeftButton")
-    J.check(code .. ": aus gespeichert", ns.Store.Setting("fates.on") == false)
+    J.check(code .. ": aus gespeichert", ns.Store.Setting("fates.on") == false and not cb.cross:IsShown())
+  end
+  ns.FatesUI.SetMode("players"); W.settle()
+  click(rowsShown(W)[1]); W.settle()
+  J.check(code .. ": kein Schalter in der Akte eines Spielertods", fateSwitch() == nil)
+  ns.FatesUI.SetMode("all"); W.settle()
+  ns.UI.OpenPanel("settings"); W.settle()
+  local SS
+  for _, f in ipairs(W.BM.frames) do if f.pageA and f.pageR then SS = f end end
+  for i = 1, 4 do
+    if SS and SS.tabs[i] and SS.tabs[i]:IsShown() then
+      SS.tabs[i]._scripts.OnClick(SS.tabs[i]); W.settle()
+      J.check(code .. ": Blatt " .. i .. " rollt nicht", (SS.page.range or 0) == 0, SS.page.range)
+    end
   end
   ns.UI.ClosePanel()
 

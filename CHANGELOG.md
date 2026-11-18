@@ -9,7 +9,7 @@
 - Eight awards for dying on the rap sheet's file, in every language (first fall, drowned, burned, fatigue, three and ten times by the same creature, three deaths in ten minutes, ten different creatures).
 - Dry remarks per kind of death in German and English ("Trockene Bemerkungen"); a creature that gets you for the third time gets a line of its own.
 - My week names the other deaths of the week and the deadliest creature, when there were any.
-- House Rules, sheet Book: "Also record deaths by creatures and the world" (on by default; off records nothing new, what is there stays). `/dn probe` writes `probe.pve` (per kind, names secret or empty, NPC ids missing).
+- "Also record deaths by creatures and the world" in the foot of the file of such a death (on by default; off records nothing new, what is there stays). `/dn probe` writes `probe.pve` (per kind, names secret or empty, NPC ids missing).
 
 ## 1.5.0 (2026-11-18)
 
