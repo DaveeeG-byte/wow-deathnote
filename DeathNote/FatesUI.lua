@@ -235,6 +235,9 @@ function FU.FillDeath(D, d, nInfo)
   if not (d.art or d.foe) then
     if type(d.cause) == "table" and d.kind ~= "pvp" and d.cause.art == "pet" then
       D.note:SetText(Fmt(L.FATE_NOTE_PET, { name = Fa.Name(d.cause) }))
+    elseif type(d.cause) == "table" and d.kind ~= "pvp" and d.cause.art == "env" then
+      -- 1.6.0 fix: a player hurt you and the world dealt the blow: the death stays in the book, the world is a note
+      D.note:SetText(Fmt(L.FATE_NOTE_ENV, { name = Fa.Name(d.cause) }))
     end
     return
   end

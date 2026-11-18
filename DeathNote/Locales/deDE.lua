@@ -1185,4 +1185,6 @@ L.GLOG_EV_CALL_BY = "{by} rief um Hilfe: {zone}, Angreifer {name}"
 L.GLOG_EV_SIGHT = "{by} hat {name} gesehen: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} {count}× gesehen, zuletzt von {by}: {zone}"
 L.CHAT_NEWS_160 = "Neu in 1.6.0: Im Reiter {log} stehen jetzt alle Tode, auch durch Kreaturen und Umwelt. Die Gildenchronik liegt hinter dem roten Bändchen im Reiter {guild}; der Hilferuf holt Gilde und Freunde zu dir (Taste belegen: Esc > Optionen > Tastaturbelegung > Revenge Book). Sichtungen deiner Mörder gehen jetzt an Gilde und Freunde ({rules}, {sheet}: {switch})."
+-- 1.6.0 fixer
+L.FATE_NOTE_ENV = "Todesstoß durch die Umwelt: {name}."
 end)

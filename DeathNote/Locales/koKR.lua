@@ -1198,4 +1198,6 @@ L.GLOG_EV_CALL_BY = "{by}님의 도움 요청: {zone}, 공격자 {name}"
 L.GLOG_EV_SIGHT = "{by}님이 {name} 목격: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} {count}회 목격, 마지막 {by}: {zone}"
 L.CHAT_NEWS_160 = "1.6.0 새 기능: {log} 탭에 이제 생물과 환경에 의한 죽음까지 모두 기록된다. 길드 연대기는 {guild} 탭의 빨간 리본 뒤에 있다. 도움 요청은 길드와 친구를 부른다 (단축키: Esc > 설정 > 단축키 > Revenge Book). 너를 죽인 자의 목격 정보가 이제 길드와 친구에게 간다 ({rules}, {sheet}: {switch})."
+-- 1.6.0 fixer
+L.FATE_NOTE_ENV = "환경의 결정타: {name}."
 end)

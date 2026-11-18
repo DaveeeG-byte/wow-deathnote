@@ -63,6 +63,13 @@ test("Decide: Todesstoß Mob -> pve, Spieler nur Kandidaten", function()
   eq(r.kind, "pve"); no(r.killerKey); eq(r.candidates[1], "A-X")
 end)
 
+-- 1.6.0 fixer (jl04): the world's blow after a player's damage stays unclear with the player as candidate (1.5.0)
+test("Decide: Todesstoß Umwelt nach Spielerschaden -> unklar, Spieler Kandidat, Umwelt als Ursache", function()
+  local r = A0.Decide({ { stage = "recap", ok = true, sources = {
+    { isPlayer = false, env = "Falling", kb = true, amount = 150 }, src("A-X", { amount = 900 }) } } })
+  eq(r.kind, "unknown"); no(r.killerKey); eq(r.candidates[1], "A-X"); eq(r.cause and r.cause.art, "env")
+end)
+
 test("Decide: Todesstoß Pet ohne Besitzer -> Verdacht auf stärksten Spieler", function()
   local r = A0.Decide({ { stage = "recap", ok = true, sources = {
     { isPlayer = false, isPet = true, kb = true }, src("A-X", { amount = 5 }), src("B-Y", { amount = 50 }) } } })

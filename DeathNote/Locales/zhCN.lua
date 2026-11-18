@@ -1198,4 +1198,6 @@ L.GLOG_EV_CALL_BY = "{by} 求援：{zone}，攻击者 {name}"
 L.GLOG_EV_SIGHT = "{by} 看到了 {name}：{zone}"
 L.GLOG_EV_SIGHT_N = "{name} 被看到 {count} 次，最后是 {by}：{zone}"
 L.CHAT_NEWS_160 = "1.6.0 新功能：{log} 现在记录你的所有死亡，包括生物和环境造成的。公会编年史在 {guild} 标签的红色书签后面；求援会召唤公会和好友（按键：Esc > 选项 > 按键设置 > Revenge Book）。你的仇人被看到时，现在会通知公会和好友（{rules}，{sheet}：{switch}）。"
+-- 1.6.0 fixer
+L.FATE_NOTE_ENV = "环境给了致命一击：{name}。"
 end)

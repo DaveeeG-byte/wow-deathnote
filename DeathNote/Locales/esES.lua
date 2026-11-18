@@ -1185,4 +1185,6 @@ L.GLOG_EV_CALL_BY = "{by} pidió ayuda: {zone}, atacante {name}"
 L.GLOG_EV_SIGHT = "{by} vio a {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} visto {count}×, la última por {by}: {zone}"
 L.CHAT_NEWS_160 = "Nuevo en 1.6.0: la pestaña {log} guarda ahora todas tus muertes, también por criaturas y el entorno. La crónica de hermandad está tras la cinta roja de la pestaña {guild}; la llamada de ayuda trae a hermandad y amigos (tecla: Esc > Opciones > Asignación de teclas > Revenge Book). Los avistamientos de tus asesinos van ahora a hermandad y amigos ({rules}, {sheet}: {switch})."
+-- 1.6.0 fixer
+L.FATE_NOTE_ENV = "Golpe mortal del entorno: {name}."
 end)

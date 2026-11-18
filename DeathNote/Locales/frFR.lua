@@ -1184,4 +1184,6 @@ L.GLOG_EV_CALL_BY = "{by} a appelé à l'aide : {zone}, agresseur {name}"
 L.GLOG_EV_SIGHT = "{by} a vu {name} : {zone}"
 L.GLOG_EV_SIGHT_N = "{name} vu {count}×, en dernier par {by} : {zone}"
 L.CHAT_NEWS_160 = "Nouveau en 1.6.0 : l'onglet {log} note maintenant toutes tes morts, aussi par les créatures et le monde. La chronique de guilde est derrière le ruban rouge de l'onglet {guild} ; un appel à l'aide fait venir guilde et amis (touche : Échap > Options > Raccourcis > Revenge Book). Les observations de tes tueurs vont maintenant à la guilde et aux amis ({rules}, {sheet} : {switch})."
+-- 1.6.0 fixer
+L.FATE_NOTE_ENV = "Coup fatal de l'environnement : {name}."
 end)

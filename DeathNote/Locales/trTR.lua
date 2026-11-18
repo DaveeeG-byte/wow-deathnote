@@ -1200,4 +1200,6 @@ L.GLOG_EV_CALL_BY = "{by} yardım çağırdı: {zone}, saldıran {name}"
 L.GLOG_EV_SIGHT = "{by}, {name} oyuncusunu gördü: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} {count}× görüldü, son gören {by}: {zone}"
 L.CHAT_NEWS_160 = "1.6.0'da yeni: {log} sekmesi artık yaratıklar ve çevre dahil tüm ölümlerini tutar. Lonca vakayinamesi {guild} sekmesindeki kırmızı kurdelenin arkasında; yardım çağrısı loncayı ve arkadaşları sana çağırır (tuş: Esc > Options > Key Bindings > Revenge Book). Katillerinin görülmesi artık loncaya ve arkadaşlara gider ({rules}, {sheet}: {switch})."
+-- 1.6.0 fixer
+L.FATE_NOTE_ENV = "Öldürücü darbeyi çevre vurdu: {name}."
 end)

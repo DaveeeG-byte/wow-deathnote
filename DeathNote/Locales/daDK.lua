@@ -1190,4 +1190,6 @@ L.GLOG_EV_CALL_BY = "{by} råbte om hjælp: {zone}, angriber {name}"
 L.GLOG_EV_SIGHT = "{by} så {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} set {count}×, sidst af {by}: {zone}"
 L.CHAT_NEWS_160 = "Nyt i 1.6.0: fanen {log} gemmer nu alle dine dødsfald, også ved væsner og omgivelser. Laugets krønike ligger bag det røde bånd i fanen {guild}; et råb om hjælp kalder laug og venner til dig (tast: Esc > Options > Key Bindings > Revenge Book). Observationer af dine mordere går nu til laug og venner ({rules}, {sheet}: {switch})."
+-- 1.6.0 fixer
+L.FATE_NOTE_ENV = "Dødsstød fra omgivelserne: {name}."
 end)
