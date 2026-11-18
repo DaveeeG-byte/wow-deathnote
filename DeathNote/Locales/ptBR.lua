@@ -3,7 +3,7 @@
 -- Plural: 2 forms {count|one|other} (0 and 1 | everything else). Rule in Locale.lua (PLURAL_OF.ptBR), not here.
 -- Fonts: latin (as 1.1.0: Skurri, Morpheus, Friz Quadrata, Nimrod) (Locale.lua, FONTS). Copy the keys of enUS.lua, keep the order and the [max N].
 --
--- TOC-Notes: Lista de caça para PvP no mundo aberto: lembra quem matou você e avisa quando essa pessoa está por perto.
+-- TOC-Notes: Livro de vingança para PvP no mundo: lembra quem matou você e avisa quando essa pessoa está por perto.
 
 local _, ns = ...
 local Locale = ns and ns.Locale
@@ -90,7 +90,7 @@ L.MONEY_SILVER = "{count} p"
 L.MONEY_COPPER = "{count} c"
 
 -- Guild and friends status (House Rules, /dn guild, /dn friends) ----------------------------------
-L.GUILD_HEARD    = "Sinal de {count} {count|membro|membros} da guilda com DeathNote."
+L.GUILD_HEARD    = "Sinal de {count} {count|membro|membros} da guilda com Revenge Book."
 L.HEALTH_NOGUILD = "Você não está em nenhuma guilda, nada é compartilhado."
 L.HEALTH_OFF     = "O compartilhamento está desligado."
 L.HEALTH_SHORT_NOGUILD = "Sem guilda"         -- [max 18]
@@ -128,8 +128,8 @@ L.HELP_ADD      = "/dn add <Nome [Sobrenome]>  incluir um assassino no livro à 
 L.HELP_DEL      = "/dn del <Nome [Sobrenome]>  riscar um assassino do livro"
 L.HELP_QUIET    = "/dn quiet  alarme desligado/ligado"
 L.HELP_TEST     = "/dn test  mostrar um alarme de teste"
-L.HELP_GUILD    = "/dn guild  livro da guilda: estado e quais membros têm DeathNote"
-L.HELP_FRIENDS  = "/dn friends  livro dos amigos: estado e quais amigos têm DeathNote"
+L.HELP_GUILD    = "/dn guild  livro da guilda: estado e quais membros têm Revenge Book"
+L.HELP_FRIENDS  = "/dn friends  livro dos amigos: estado e quais amigos têm Revenge Book"
 L.HELP_SYNC     = "/dn sync  sincronizar agora o livro da guilda e o dos amigos"
 L.HELP_HUNT     = "/dn hunt <Nome [Sobrenome]>  abrir a caçada (sem nome: mostrar a lista de caça)"
 L.HELP_CALLOFF  = "/dn calloff <Nome [Sobrenome]>  suspender a sua caçada"
@@ -159,16 +159,16 @@ L.CHAT_GUILD_STATE = "Guilda {guild}: envio {share}, recebimento {receive}."
 L.CHAT_GUILD_BOOK = "Livro da guilda: {enemies} assassinos ({listed} só incluídos à mão), {deeds} {deeds|crime|crimes}, {foreign} assassinos de membros da guilda. Compartilhar entradas à mão: {manual}."
 L.CHAT_STATE_OK   = "Estado: {text}"
 L.CHAT_STATE_WARN = "Atenção: {text}"
-L.CHAT_NO_MATES   = "Nenhum sinal de membros da guilda com DeathNote ainda."
-L.CHAT_HAVE_DN      = "Têm DeathNote: {names}"
-L.CHAT_HAVE_DN_MORE = "Têm DeathNote: {names} e mais {count}"
+L.CHAT_NO_MATES   = "Nenhum sinal de membros da guilda com Revenge Book ainda."
+L.CHAT_HAVE_DN      = "Têm Revenge Book: {names}"
+L.CHAT_HAVE_DN_MORE = "Têm Revenge Book: {names} e mais {count}"
 L.CHAT_SYNC_ASKED = "Sincronização solicitada. As respostas chegam nos próximos segundos."
 L.CHAT_SYNC_FAIL  = "A sincronização não funciona: {reason}"
 L.CHAT_SYNC_FAIL_DEFAULT = "sem guilda ou o compartilhamento está desligado."
 L.CHAT_FRIENDS_NOT_LOADED = "O livro dos amigos não está carregado."
 L.CHAT_FRIENDS_STATE = "Amigos: envio {share}, {online} de {total} online."
 L.CHAT_FRIENDS_BOOK  = "Livro dos amigos: {enemies} assassinos ({listed} só incluídos à mão), {deeds} {deeds|crime|crimes}."
-L.CHAT_NO_FRIENDS    = "Nenhum sinal de amigos com DeathNote ainda."
+L.CHAT_NO_FRIENDS    = "Nenhum sinal de amigos com Revenge Book ainda."
 L.CHAT_HUNT_NOT_LOADED = "A lista de caça não está carregada."
 L.CHAT_HUNT_UNKNOWN = "Nome desconhecido: {name}. Use também o sobrenome, como aparece no jogo."
 L.CHAT_HUNT_CAP     = "Não dá para abrir a caçada: no máximo {own} ordens suas e {targets} alvos por lista."
@@ -195,7 +195,7 @@ L.THEME_TRADE = "A Oficina"
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "O livro está pronto. Quem matar você no mundo aberto vai parar nele. Abra com /dn ou no botão do minimapa."
 L.WELCOME_PLATES = "As placas de identificação inimigas estão desligadas. Sem elas, o alarme só vê o seu alvo."
-L.WELCOME_SHARE = "A guilda e os amigos que têm DeathNote também o leem. Notas e suspeitas ficam com você."
+L.WELCOME_SHARE = "A guilda e os amigos que têm Revenge Book também o leem. Notas e suspeitas ficam com você."
 
 -- Unit tooltip (one line under the player's tooltip) ---------------------------------------------
 L.TIP_IN_BOOK   = "NO LIVRO:"
@@ -245,10 +245,10 @@ L.SYNC_HOLD_AGAIN    = "voltar a funcionar"
 L.SYNC_HOLD_SHORT_INSTANCE = "Aguarda: instância" -- [max 18]
 L.SYNC_HOLD_SHORT_COMBAT   = "Aguarda: combate"   -- [max 18]
 L.SYNC_HOLD_SHORT_LOCKDOWN = "Aguarda: chat"      -- [max 18]
-L.SYNC_QUIET       = "Enviado, mas nenhum sinal de membros com DeathNote ainda."
-L.SYNC_READY       = "Pronto. Nenhum sinal de membros com DeathNote ainda."
-L.SYNC_RUNNING     = "Funcionando: {count} {count|membro|membros} da guilda com DeathNote."
-L.SYNC_RUNNING_ALL = "Funcionando: {count} com DeathNote entre guilda e amigos."
+L.SYNC_QUIET       = "Enviado, mas nenhum sinal de membros com Revenge Book ainda."
+L.SYNC_READY       = "Pronto. Nenhum sinal de membros com Revenge Book ainda."
+L.SYNC_RUNNING     = "Funcionando: {count} {count|membro|membros} da guilda com Revenge Book."
+L.SYNC_RUNNING_ALL = "Funcionando: {count} com Revenge Book entre guilda e amigos."
 L.FRIENDS_OFF      = "O compartilhamento com amigos está desligado (Regras da casa, folha Guilda)."
 L.FRIENDS_BLOCKED  = "O reino bloqueia sussurros. Os amigos não recebem nada."
 L.FRIENDS_SHORT_BLOCKED = "Sussurros bloqueados"  -- [max 22]
@@ -257,17 +257,17 @@ L.FRIENDS_SHORT_FAILING = "Sussurros travados" -- [max 18]
 L.FRIENDS_NONE_LISTED = "Ninguém na lista de amigos."
 L.FRIENDS_NONE_ONLINE = "Nenhum amigo online agora."
 L.FRIENDS_SHORT_NONE_ONLINE = "Ninguém online"    -- [max 18]
-L.FRIENDS_QUIET    = "Solicitado, mas nenhum sinal de amigos com DeathNote ainda."
-L.FRIENDS_READY    = "Pronto. Nenhum sinal de amigos com DeathNote ainda."
+L.FRIENDS_QUIET    = "Solicitado, mas nenhum sinal de amigos com Revenge Book ainda."
+L.FRIENDS_READY    = "Pronto. Nenhum sinal de amigos com Revenge Book ainda."
 L.FRIENDS_HOLD     = "O envio aos amigos aguarda voltar a funcionar."
-L.FRIENDS_RUNNING  = "Funcionando: {count} {count|amigo|amigos} com DeathNote."
+L.FRIENDS_RUNNING  = "Funcionando: {count} {count|amigo|amigos} com Revenge Book."
 L.NOTE_FROM_GUILD  = "Copiado do livro da guilda (matou membros da guilda {kills}×)."
 
 -- Import book (House Rules, Import book): messages under the text field ---------------------------
 L.IMPORT_NO_DB      = "Banco de dados não carregado."
 L.IMPORT_NO_TEXT    = "Nenhum texto."
 L.IMPORT_NO_HEADER  = "Falta a primeira linha (ela começa com {header}). Copie o texto inteiro."
-L.IMPORT_NOT_EXPORT = "Não é uma exportação do DeathNote (falta o cabeçalho ou versão errada)."
+L.IMPORT_NOT_EXPORT = "Não é uma exportação do Revenge Book (falta o cabeçalho ou versão errada)."
 L.IMPORT_TOO_LONG   = "Linhas demais (no máximo {count})."
 L.IMPORT_BAD_KEY    = "Linha {line}: chave inválida."
 L.IMPORT_BAD_TIME   = "Linha {line}: hora inválida."
@@ -311,20 +311,20 @@ L.EMPTY_NOGUILD_SUB = "Dá para morrer sozinho também."
 L.EMPTY_GUILDOFF_HEAD = "O livro da guilda está fechado."
 L.EMPTY_GUILDOFF_SUB = "O compartilhamento está desligado. As Regras da casa sabem onde."
 L.EMPTY_GUILDNIL_HEAD = "Nenhum sinal da guilda ainda."
-L.EMPTY_GUILDNIL_SUB = "O seu livro sai assim que um membro da guilda tiver DeathNote."
+L.EMPTY_GUILDNIL_SUB = "O seu livro sai assim que um membro da guilda tiver Revenge Book."
 L.EMPTY_GUILDQUIET_HEAD = "Nada no livro da guilda ainda."
 L.EMPTY_GUILDQUIET_SUB = "A sua guilda teve paz até agora."
 L.EMPTY_FRIENDSOFF_HEAD = "O livro dos amigos está fechado."
 L.EMPTY_FRIENDSOFF_SUB = "O compartilhamento com amigos está desligado. As Regras da casa sabem onde."
-L.EMPTY_FRIENDSNIL_HEAD = "Nenhum sinal de amigos com DeathNote ainda."
-L.EMPTY_FRIENDSNIL_SUB = "O seu livro sai assim que um amigo tiver DeathNote."
+L.EMPTY_FRIENDSNIL_HEAD = "Nenhum sinal de amigos com Revenge Book ainda."
+L.EMPTY_FRIENDSNIL_SUB = "O seu livro sai assim que um amigo tiver Revenge Book."
 L.EMPTY_FRIENDSQUIET_HEAD = "Nada dos seus amigos ainda."
 L.EMPTY_FRIENDSQUIET_SUB = "Os seus amigos tiveram paz até agora."
 L.EMPTY_NOBODY_HEAD = "Sem guilda, sem amigos."
 L.EMPTY_NOBODY_SUB = "Dá para morrer sozinho também."
-L.EMPTY_NOBODY_HINT = "Quando membros da sua guilda ou amigos da sua lista de amigos tiverem DeathNote, esta página mostra o que acontece com eles."
-L.EMPTY_SHAREDNIL_HEAD = "Nenhum sinal de ninguém com DeathNote ainda."
-L.EMPTY_SHAREDNIL_SUB = "O seu livro sai assim que membros da guilda ou amigos tiverem DeathNote."
+L.EMPTY_NOBODY_HINT = "Quando membros da sua guilda ou amigos da sua lista de amigos tiverem Revenge Book, esta página mostra o que acontece com eles."
+L.EMPTY_SHAREDNIL_HEAD = "Nenhum sinal de ninguém com Revenge Book ainda."
+L.EMPTY_SHAREDNIL_SUB = "O seu livro sai assim que membros da guilda ou amigos tiverem Revenge Book."
 L.EMPTY_SHAREDQUIET_HEAD = "Nada aqui ainda."
 L.EMPTY_SHAREDQUIET_SUB = "Guilda e amigos tiveram paz até agora."
 L.EMPTY_HUNT_HEAD = "A lista de caça está vazia."
@@ -346,9 +346,9 @@ L.MANUAL_ALERT = "Quando um assassino aparece como placa de identificação, alv
 L.MANUAL_ADD_HEAD = "INCLUIR"  -- [max 12]
 L.MANUAL_ADD = "Digite um nome no campo de busca, Enter. Botão direito numa linha: anotar vingança, perdoar, riscar."
 L.MANUAL_GUILD_HEAD = "GUILDA"  -- [max 12]
-L.MANUAL_GUILD = "Membros da guilda e amigos com DeathNote veem as suas mortes confirmadas e entradas à mão. Cartaz ou /dn hunt Nome: abrir a caçada. Clique na recompensa: ofereça a sua, uma promessa acertada entre vocês."
+L.MANUAL_GUILD = "Membros da guilda e amigos com Revenge Book veem as suas mortes confirmadas e entradas à mão. Cartaz ou /dn hunt Nome: abrir a caçada. Clique na recompensa: ofereça a sua, uma promessa acertada entre vocês."
 L.MANUAL_SHARE_HEAD = "PASSAR"  -- [max 12]
-L.MANUAL_SHARE = "Regras da casa, Salvar cópia: um texto para copiar, para todos sem DeathNote."
+L.MANUAL_SHARE = "Regras da casa, Salvar cópia: um texto para copiar, para todos sem Revenge Book."
 L.MANUAL_QUIET_HEAD = "SILÊNCIO"  -- [max 12]
 L.MANUAL_QUIET = "Em masmorras e campos de batalha o alarme fica quieto. Fora isso: clique do meio no botão do minimapa ou /dn quiet."
 -- Questions before something is destroyed (game dialog) -------------------------------------------
@@ -401,7 +401,7 @@ L.MARK_BOTH = "GUILDA, AMIGO"  -- [max 20]
 L.MARK_TAKEN_DOWN = "ABATIDO {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "VIVO OU MORTO"  -- [max 24]
-L.BOOK_TITLE = "DeathNote"
+L.BOOK_TITLE = "Revenge Book"
 L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "CRIMES"  -- [max 14]
 L.POSTER_NOTE = "NOTA"  -- [max 8]
@@ -518,16 +518,16 @@ L.SET_SEC_WARN = "ALARME"
 L.SET_MORE = "Mais"
 L.SET_GUILD_CLEAR = "Limpar livro da guilda"  -- [max 26]
 L.SET_HINT_GUILD = "Só a sua própria guilda recebe algo. O que vem de lá fica separado do seu livro até você mesmo copiar."
-L.SET_HINT_FRIENDS = "Só guilda e amigos com DeathNote recebem algo."
+L.SET_HINT_FRIENDS = "Só guilda e amigos com Revenge Book recebem algo."
 L.BTN_BACK = "Voltar"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Sincronizar"  -- [max 14]
 L.SYNC_AGAIN_IN = "aguarde {seconds} s"  -- [max 16]
 L.TIP_FRIENDS = "Amigos"
 L.TIP_GUILD_NAME = "Guilda {guild}"
-L.TIP_MATES_WITH = "Membros da guilda com DeathNote:"
-L.TIP_NO_MATE = "Nenhum sinal de membros com DeathNote ainda."
-L.TIP_FRIENDS_WITH = "Amigos com DeathNote:"
+L.TIP_MATES_WITH = "Membros da guilda com Revenge Book:"
+L.TIP_NO_MATE = "Nenhum sinal de membros com Revenge Book ainda."
+L.TIP_FRIENDS_WITH = "Amigos com Revenge Book:"
 L.TIP_SHARED = "Compartilhado: as suas mortes confirmadas, entradas à mão e as suas ordens de caçada."
 L.TIP_NOT_SHARED = "Não compartilhado: notas, suspeitas, perdoados, entradas importadas."
 -- Back up / import page ---------------------------------------------------------------------------
@@ -542,9 +542,9 @@ L.IO_MSG_BIG = "Livro grande ({size}): selecionar e copiar demora um pouco."
 L.IO_HELP_EXPORT = "O texto está selecionado: Ctrl+C copia. Guarde ou passe para os amigos."
 L.IO_HELP_IMPORT = "Cole um texto salvo com Ctrl+V, depois Importar. Nada é sobrescrito."
 -- Sheet Put on the hit list (right page) ----------------------------------------------------------
-L.REL_HINT_ALL = "Todos da sua guilda e os seus amigos com DeathNote veem o motivo."
-L.REL_HINT_GUILD = "Todos da sua guilda com DeathNote veem o motivo."
-L.REL_HINT_FRIENDS = "Os seus amigos com DeathNote veem o motivo."
+L.REL_HINT_ALL = "Todos da sua guilda e os seus amigos com Revenge Book veem o motivo."
+L.REL_HINT_GUILD = "Todos da sua guilda com Revenge Book veem o motivo."
+L.REL_HINT_FRIENDS = "Os seus amigos com Revenge Book veem o motivo."
 L.REL_HEAD = "Abrir a caçada"  -- [max 24]
 L.REL_FOR = "PARA"  -- [max 6]
 L.REL_REASON = "MOTIVO"  -- [max 8]
@@ -612,7 +612,7 @@ L.HUNT_ROW_HIDDEN = "invisível para você"
 L.HUNT_ROW_CALLS = "{count} {count|ordem|ordens}: {names}"
 L.POSTER_ON_HUNTLIST = "Na lista de caça ({names})"
 L.REL_SELF = "Você não pode se colocar na lista de caça."
-L.REL_MATE = "É gente sua (guilda ou amigos com DeathNote)."
+L.REL_MATE = "É gente sua (guilda ou amigos com Revenge Book)."
 -- Friends listed without surname: which full name is behind the entry (1.2.0) ------------------------
 L.FRIENDS_CONFLICT = "Quem é seu amigo {friend}: {a} ou {b}? Escolha."
 L.FRIENDS_SHORT_CONFLICT = "Amigo incerto"  -- [max 22]
@@ -625,12 +625,12 @@ L.CHAT_FRIENDS_TIES = "Nomes completos vinculados (* = primeiro contato, ainda n
 -- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
 L.HELP_BOUNTY = "/dn bounty <Nome [Sobrenome]> <ouro>  oferecer sua própria recompensa (sem ouro: retirar)"
 L.CHAT_WHO_BOUNTY = "Por quem? /dn bounty <Nome> <ouro>"
-L.CHAT_BOUNTY_SET = "{name}: você ofereceu {gold} de ouro de recompensa. Guilda e amigos com DeathNote veem."
+L.CHAT_BOUNTY_SET = "{name}: você ofereceu {gold} de ouro de recompensa. Guilda e amigos com Revenge Book veem."
 L.CHAT_BOUNTY_OFF = "{name}: sua recompensa foi retirada."
 L.CHAT_BOUNTY_NONE = "Você não ofereceu nenhuma recompensa por {name}."
 L.CHAT_BOUNTY_BAD = "Recompensa: um número inteiro de ouro, de 1 a 99999 (0 retira)."
 L.CHAT_BOUNTY_CAP = "Sem recompensa: no máximo {count} suas."
-L.CHAT_BOUNTY_OURS = "Nenhuma recompensa por você ou pelos seus (guilda ou amigos com DeathNote)."
+L.CHAT_BOUNTY_OURS = "Nenhuma recompensa por você ou pelos seus (guilda ou amigos com Revenge Book)."
 L.ACT_BOUNTY = "Oferecer recompensa"  -- [max 24]
 L.ACT_UNDO = "Desfazer"  -- [max 19]
 L.ACT_REVENGE_TAKE = "Tirar uma vingança"  -- [max 24]
@@ -641,7 +641,7 @@ L.POSTER_AVENGED = "Vingado por {names}"
 L.ROW_AVENGED = "vingado {times}"
 L.BOUNTY_TIP_HEAD = "Sua própria recompensa, em ouro"
 L.BOUNTY_TIP_RULES = "Um número inteiro, de 1 a 99999. Vazio ou 0: volta ao valor do livro. Enter confirma, Esc cancela."
-L.BOUNTY_TIP_PROMISE = "Guilda e amigos com DeathNote veem. É só uma promessa: o acerto é entre vocês."
+L.BOUNTY_TIP_PROMISE = "Guilda e amigos com Revenge Book veem. É só uma promessa: o acerto é entre vocês."
 L.BOUNTY_TIP_CLICK = "Clique: oferecer sua recompensa"
 L.CHAT_AVENGED = "{name} abateu {killer} por você."
 L.NAMES_PLUS = "{name} +{count}"
@@ -856,7 +856,6 @@ L.EMPTY_HIDDEN_SUB = "Enter ou a linha embaixo os mostra."
 L.EMPTY_SEARCHHAS_HEAD = "Já está no seu livro."
 L.EMPTY_SEARCHHAS_SUB = "Só não nesta página. Enter abre."
 L.FILTER_TWO = "{count} filtros"
-L.CHAT_NEWS_140 = "Novidade na 1.4.0: depois de um ataque, um pequeno aviso pergunta se o agressor vai para o seu livro (Rancor; ligar/desligar: /dn grudge ou {rules}, folha {sheet}); \"{takeall}\" fica em {guild}, filtro e busca em {wanted}."
 L.GRUDGE_TIP_OFF = "Desligar: /dn grudge ou {rules}, folha {sheet}."
 -- 1.5.0 grip
 L.GRUDGE_TIP_PROBABLE = "Incerto: há poucos indícios. Marque só se você o viu."
@@ -974,4 +973,7 @@ L.CHRON_AVENGED = "{names} abateram {name} pelos outros."
 L.CHRON_PARDONED = "Você perdoou {name}."
 L.CHRON_END = "Agora: {score} · {state}"
 L.CHRON_END_NONE = "Até agora: matou você {times}."
+-- 1.5.0 name
+L.HELP_ALIASES = "/rb, /revengebook  o mesmo que /dn"
+L.CHAT_NEWS_150 = "DeathNote agora se chama Revenge Book. Seu livro e o /dn continuam. Novo na 1.5.0: mostrar um cartaz no chat, cenas do crime no mapa-múndi, teclas de atalho, uma marca na placa de nome dos seus assassinos."
 end)

@@ -3,7 +3,7 @@
 -- Fonts: latinExt (Nimrod MT, Arial Narrow) (Locale.lua, FONTS). Copy the keys of enUS.lua, keep the order and the [max N].
 -- No Croatian game client: zone, class and race names come in the client's language (SAMPLE_ZONE stays English).
 --
--- TOC-Notes: Popis smrti za PvP u otvorenom svijetu: pamti tko te je ubio i upozorava kad je ubojica blizu.
+-- TOC-Notes: Knjiga osvete za PvP u svijetu: pamti tko te je ubio i upozorava kad je ubojica blizu.
 
 local _, ns = ...
 local Locale = ns and ns.Locale
@@ -93,7 +93,7 @@ L.MONEY_SILVER = "{count}s"
 L.MONEY_COPPER = "{count}c"
 
 -- Guild and friends status (House Rules, /dn guild, /dn friends) ----------------------------------
-L.GUILD_HEARD = "Članova ceha s DeathNoteom na vezi: {count}."
+L.GUILD_HEARD = "Članova ceha s Revenge Bookom na vezi: {count}."
 L.HEALTH_NOGUILD = "Nisi ni u jednom cehu, ništa se ne dijeli."
 L.HEALTH_OFF = "Dijeljenje je isključeno."
 L.HEALTH_SHORT_NOGUILD = "Nema ceha"  -- [max 18]
@@ -133,8 +133,8 @@ L.HELP_ADD = "/dn add <Ime [Prezime]>  ručno upiši ubojicu u knjigu"
 L.HELP_DEL = "/dn del <Ime [Prezime]>  precrtaj ubojicu iz knjige"
 L.HELP_QUIET = "/dn quiet  uzbuna isklj./uklj."
 L.HELP_TEST = "/dn test  prikaži probnu uzbunu"
-L.HELP_GUILD = "/dn guild  knjiga ceha: stanje i tko iz ceha ima DeathNote"
-L.HELP_FRIENDS = "/dn friends  knjiga prijatelja: stanje i tko od prijatelja ima DeathNote"
+L.HELP_GUILD = "/dn guild  knjiga ceha: stanje i tko iz ceha ima Revenge Book"
+L.HELP_FRIENDS = "/dn friends  knjiga prijatelja: stanje i tko od prijatelja ima Revenge Book"
 L.HELP_SYNC = "/dn sync  odmah uskladi knjigu ceha i knjigu prijatelja"
 L.HELP_HUNT = "/dn hunt <Ime [Prezime]>  raspiši lov (bez imena: prikaži popis za odstrel)"
 L.HELP_CALLOFF = "/dn calloff <Ime [Prezime]>  otkaži vlastiti poziv na lov"
@@ -164,16 +164,16 @@ L.CHAT_GUILD_STATE = "Ceh {guild}: dijeljenje {share}, primanje {receive}"
 L.CHAT_GUILD_BOOK = "Knjiga ceha. Ubojice: {enemies} (samo ručno: {listed}), nedjela: {deeds}, sa žrtvama u cehu: {foreign}. Dijeljenje ručnih upisa: {manual}"
 L.CHAT_STATE_OK = "Stanje: {text}"
 L.CHAT_STATE_WARN = "Pažnja: {text}"
-L.CHAT_NO_MATES = "Još se nitko iz ceha s DeathNoteom nije javio."
-L.CHAT_HAVE_DN = "DeathNote imaju: {names}"
-L.CHAT_HAVE_DN_MORE = "DeathNote imaju: {names} i još {count}"
+L.CHAT_NO_MATES = "Još se nitko iz ceha s Revenge Bookom nije javio."
+L.CHAT_HAVE_DN = "Revenge Book imaju: {names}"
+L.CHAT_HAVE_DN_MORE = "Revenge Book imaju: {names} i još {count}"
 L.CHAT_SYNC_ASKED = "Usklađivanje zatraženo. Odgovori stižu u idućih nekoliko sekundi."
 L.CHAT_SYNC_FAIL = "Usklađivanje ne radi: {reason}"
 L.CHAT_SYNC_FAIL_DEFAULT = "nema ceha ili je dijeljenje isključeno."
 L.CHAT_FRIENDS_NOT_LOADED = "Knjiga prijatelja nije učitana."
 L.CHAT_FRIENDS_STATE = "Prijatelji: dijeljenje {share}, online {online} od {total}."
 L.CHAT_FRIENDS_BOOK = "Knjiga prijatelja. Ubojice: {enemies} (samo ručno: {listed}), nedjela: {deeds}."
-L.CHAT_NO_FRIENDS = "Još se nitko od prijatelja s DeathNoteom nije javio."
+L.CHAT_NO_FRIENDS = "Još se nitko od prijatelja s Revenge Bookom nije javio."
 L.CHAT_HUNT_NOT_LOADED = "Popis za odstrel nije učitan."
 L.CHAT_HUNT_UNKNOWN = "Nepoznato: {name}. Navedi i prezime, onako kako piše u igri."
 L.CHAT_HUNT_CAP = "Lov se ne može raspisati: najviše {own} vlastitih poziva i {targets} meta po popisu."
@@ -201,7 +201,7 @@ L.THEME_TRADE = "Radionica"
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Knjiga je spremna. Tko te ubije u otvorenom svijetu, bit će u njoj. Otvori je s /dn ili gumbom uz minikartu."
 L.WELCOME_PLATES = "Pločice neprijatelja su isključene. Bez njih uzbuna vidi samo tvoju metu."
-L.WELCOME_SHARE = "Ceh i prijatelji koji imaju DeathNote čitaju s tobom. Bilješke i sumnje ostaju kod tebe."
+L.WELCOME_SHARE = "Ceh i prijatelji koji imaju Revenge Book čitaju s tobom. Bilješke i sumnje ostaju kod tebe."
 
 -- Unit tooltip (one line under the player's tooltip) ---------------------------------------------
 -- The labels stand in red before the line, with their colon: "IN THE BOOK: killed you 2× · rank 1"
@@ -255,10 +255,10 @@ L.SYNC_HOLD_AGAIN = "dok opet ne proradi"
 L.SYNC_HOLD_SHORT_INSTANCE = "Čeka: instanca"  -- [max 18]
 L.SYNC_HOLD_SHORT_COMBAT = "Čeka: borba"  -- [max 18]
 L.SYNC_HOLD_SHORT_LOCKDOWN = "Čeka: chat"  -- [max 18]
-L.SYNC_QUIET = "Poslano, ali još se nitko iz ceha s DeathNoteom nije javio."
-L.SYNC_READY = "Spremno. Još se nitko iz ceha s DeathNoteom nije javio."
-L.SYNC_RUNNING = "Radi: {count} {count|osoba|osobe|osoba} iz ceha s DeathNoteom."
-L.SYNC_RUNNING_ALL = "Radi. S DeathNoteom u cehu i među prijateljima: {count}."
+L.SYNC_QUIET = "Poslano, ali još se nitko iz ceha s Revenge Bookom nije javio."
+L.SYNC_READY = "Spremno. Još se nitko iz ceha s Revenge Bookom nije javio."
+L.SYNC_RUNNING = "Radi: {count} {count|osoba|osobe|osoba} iz ceha s Revenge Bookom."
+L.SYNC_RUNNING_ALL = "Radi. S Revenge Bookom u cehu i među prijateljima: {count}."
 L.FRIENDS_OFF = "Dijeljenje s prijateljima je isključeno (Kućni red, list Ceh)."
 L.FRIENDS_BLOCKED = "Server blokira šapat. Prijatelji ne dobivaju ništa."
 L.FRIENDS_SHORT_BLOCKED = "Server blokira šapat"  -- [max 22]
@@ -267,10 +267,10 @@ L.FRIENDS_SHORT_FAILING = "Šapat zapinje"  -- [max 18]
 L.FRIENDS_NONE_LISTED = "Na popisu prijatelja nema nikoga."
 L.FRIENDS_NONE_ONLINE = "Trenutno nijedan prijatelj nije online."
 L.FRIENDS_SHORT_NONE_ONLINE = "Prijatelji offline"  -- [max 18]
-L.FRIENDS_QUIET = "Upitano, ali još se nitko od prijatelja s DeathNoteom nije javio."
-L.FRIENDS_READY = "Spremno. Još se nitko od prijatelja s DeathNoteom nije javio."
+L.FRIENDS_QUIET = "Upitano, ali još se nitko od prijatelja s Revenge Bookom nije javio."
+L.FRIENDS_READY = "Spremno. Još se nitko od prijatelja s Revenge Bookom nije javio."
 L.FRIENDS_HOLD = "Slanje prijateljima čeka dok opet ne proradi."
-L.FRIENDS_RUNNING = "Radi: {count} {count|prijatelj|prijatelja|prijatelja} s DeathNoteom."
+L.FRIENDS_RUNNING = "Radi: {count} {count|prijatelj|prijatelja|prijatelja} s Revenge Bookom."
 -- A killer taken over from the guild book into your own book gets this note (your note from then on)
 L.NOTE_FROM_GUILD = "Preuzeto iz knjige ceha (ubijeno članova ceha: {kills}×)."
 
@@ -279,7 +279,7 @@ L.NOTE_FROM_GUILD = "Preuzeto iz knjige ceha (ubijeno članova ceha: {kills}×).
 L.IMPORT_NO_DB = "Baza podataka nije učitana."
 L.IMPORT_NO_TEXT = "Nema teksta."
 L.IMPORT_NO_HEADER = "Nedostaje prvi redak (počinje s {header}). Kopiraj cijeli tekst."
-L.IMPORT_NOT_EXPORT = "Ovo nije DeathNote izvoz (nema zaglavlja ili kriva verzija)."
+L.IMPORT_NOT_EXPORT = "Ovo nije Revenge Book izvoz (nema zaglavlja ili kriva verzija)."
 L.IMPORT_TOO_LONG = "Previše redaka (najviše {count})."
 L.IMPORT_BAD_KEY = "Redak {line}: neispravan ključ."
 L.IMPORT_BAD_TIME = "Redak {line}: neispravno vrijeme."
@@ -323,20 +323,20 @@ L.EMPTY_NOGUILD_SUB = "Umire se i u samoći."
 L.EMPTY_GUILDOFF_HEAD = "Knjiga ceha je zatvorena."
 L.EMPTY_GUILDOFF_SUB = "Dijeljenje je isključeno. Kućni red zna gdje."
 L.EMPTY_GUILDNIL_HEAD = "Iz ceha još ni riječi."
-L.EMPTY_GUILDNIL_SUB = "Tvoja knjiga kreće čim netko iz ceha ima DeathNote."
+L.EMPTY_GUILDNIL_SUB = "Tvoja knjiga kreće čim netko iz ceha ima Revenge Book."
 L.EMPTY_GUILDQUIET_HEAD = "U knjizi ceha još nema ničega."
 L.EMPTY_GUILDQUIET_SUB = "Tvoj ceh je dosad imao mira."
 L.EMPTY_FRIENDSOFF_HEAD = "Knjiga prijatelja je zatvorena."
 L.EMPTY_FRIENDSOFF_SUB = "Dijeljenje s prijateljima je isključeno. Kućni red zna gdje."
-L.EMPTY_FRIENDSNIL_HEAD = "Još se nitko od prijatelja s DeathNoteom nije javio."
-L.EMPTY_FRIENDSNIL_SUB = "Tvoja knjiga kreće čim netko od prijatelja ima DeathNote."
+L.EMPTY_FRIENDSNIL_HEAD = "Još se nitko od prijatelja s Revenge Bookom nije javio."
+L.EMPTY_FRIENDSNIL_SUB = "Tvoja knjiga kreće čim netko od prijatelja ima Revenge Book."
 L.EMPTY_FRIENDSQUIET_HEAD = "Od prijatelja još ništa."
 L.EMPTY_FRIENDSQUIET_SUB = "Tvoji prijatelji su dosad imali mira."
 L.EMPTY_NOBODY_HEAD = "Nema ceha, nema prijatelja."
 L.EMPTY_NOBODY_SUB = "Umire se i u samoći."
-L.EMPTY_NOBODY_HINT = "Kad članovi ceha ili prijatelji s popisa prijatelja imaju DeathNote, ovdje piše što im se događa."
-L.EMPTY_SHAREDNIL_HEAD = "Još se nitko s DeathNoteom nije javio."
-L.EMPTY_SHAREDNIL_SUB = "Tvoja knjiga kreće čim članovi ceha ili prijatelji imaju DeathNote."
+L.EMPTY_NOBODY_HINT = "Kad članovi ceha ili prijatelji s popisa prijatelja imaju Revenge Book, ovdje piše što im se događa."
+L.EMPTY_SHAREDNIL_HEAD = "Još se nitko s Revenge Bookom nije javio."
+L.EMPTY_SHAREDNIL_SUB = "Tvoja knjiga kreće čim članovi ceha ili prijatelji imaju Revenge Book."
 L.EMPTY_SHAREDQUIET_HEAD = "Ovdje još nema ničega."
 L.EMPTY_SHAREDQUIET_SUB = "Ceh i prijatelji su dosad imali mira."
 L.EMPTY_HUNT_HEAD = "Popis za odstrel je prazan."
@@ -358,9 +358,9 @@ L.MANUAL_ALERT = "Kad se ubojica pojavi kao pločica, meta ili pod mišem, knjig
 L.MANUAL_ADD_HEAD = "UPIS"  -- [max 12]
 L.MANUAL_ADD = "Upiši ime u polje za pretragu, Enter. Desni klik na redak: zabilježi osvetu, pomiluj, precrtaj."
 L.MANUAL_GUILD_HEAD = "CEH"  -- [max 12]
-L.MANUAL_GUILD = "Članovi ceha i prijatelji koji imaju DeathNote vide tvoje potvrđene smrti i ručne upise. Tjeralica ili /dn hunt Ime: raspiši lov. Klik na ucjenu: raspiši svoju, samo obećanje, namirujete se međusobno."
+L.MANUAL_GUILD = "Članovi ceha i prijatelji koji imaju Revenge Book vide tvoje potvrđene smrti i ručne upise. Tjeralica ili /dn hunt Ime: raspiši lov. Klik na ucjenu: raspiši svoju, samo obećanje, namirujete se međusobno."
 L.MANUAL_SHARE_HEAD = "PROSLIJEDI"  -- [max 12]
-L.MANUAL_SHARE = "Kućni red, Spremi knjigu: tekst za kopiranje, za sve bez DeathNotea."
+L.MANUAL_SHARE = "Kućni red, Spremi knjigu: tekst za kopiranje, za sve bez Revenge Booka."
 L.MANUAL_QUIET_HEAD = "TIŠINA"  -- [max 12]
 L.MANUAL_QUIET = "U tamnicama i na bojištima uzbuna šuti. Inače: srednji klik na gumb uz minikartu ili /dn quiet."
 -- Questions before something is destroyed (game dialog) -------------------------------------------
@@ -413,7 +413,7 @@ L.MARK_BOTH = "IZ CEHA, PRIJATELJ"  -- [max 20]
 L.MARK_TAKEN_DOWN = "ULOV {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ŽIV ILI MRTAV"  -- [max 24]
-L.BOOK_TITLE = "DeathNote"
+L.BOOK_TITLE = "Revenge Book"
 L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "NEDJELA"  -- [max 14]
 L.POSTER_NOTE = "BILJEŠKA"  -- [max 8]
@@ -530,16 +530,16 @@ L.SET_SEC_WARN = "UZBUNA"
 L.SET_MORE = "Više"
 L.SET_GUILD_CLEAR = "Isprazni knjigu ceha"  -- [max 26]
 L.SET_HINT_GUILD = "Podatke dobiva samo tvoj ceh. Ono što dođe odande ostaje odvojeno od tvoje knjige dok to ne preuzmeš."
-L.SET_HINT_FRIENDS = "Podatke dobivaju samo ceh i prijatelji s DeathNoteom."
+L.SET_HINT_FRIENDS = "Podatke dobivaju samo ceh i prijatelji s Revenge Bookom."
 L.BTN_BACK = "Natrag"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Uskladi"  -- [max 14]
 L.SYNC_AGAIN_IN = "opet za {seconds} s"  -- [max 16]
 L.TIP_FRIENDS = "Prijatelji"
 L.TIP_GUILD_NAME = "Ceh {guild}"
-L.TIP_MATES_WITH = "Iz ceha s DeathNoteom:"
-L.TIP_NO_MATE = "Još se nitko iz ceha s DeathNoteom nije javio."
-L.TIP_FRIENDS_WITH = "Prijatelji s DeathNoteom:"
+L.TIP_MATES_WITH = "Iz ceha s Revenge Bookom:"
+L.TIP_NO_MATE = "Još se nitko iz ceha s Revenge Bookom nije javio."
+L.TIP_FRIENDS_WITH = "Prijatelji s Revenge Bookom:"
 L.TIP_SHARED = "Dijeli se: tvoje potvrđene smrti, ručni upisi i tvoji pozivi na lov."
 L.TIP_NOT_SHARED = "Ne dijeli se: bilješke, sumnje, pomilovani, učitani upisi."
 -- Back up / import page ---------------------------------------------------------------------------
@@ -554,9 +554,9 @@ L.IO_MSG_BIG = "Velika knjiga ({size}): označavanje i kopiranje malo traju."
 L.IO_HELP_EXPORT = "Tekst je označen: Ctrl+C ga kopira. Sačuvaj ga ili proslijedi prijateljima."
 L.IO_HELP_IMPORT = "Zalijepi spremljeni tekst s Ctrl+V, zatim Učitaj. Ništa se ne prepisuje."
 -- Sheet Put on the hit list (right page) ----------------------------------------------------------
-L.REL_HINT_ALL = "Razlog vide svi u tvom cehu i tvoji prijatelji s DeathNoteom."
-L.REL_HINT_GUILD = "Razlog vide svi u tvom cehu s DeathNoteom."
-L.REL_HINT_FRIENDS = "Razlog vide tvoji prijatelji s DeathNoteom."
+L.REL_HINT_ALL = "Razlog vide svi u tvom cehu i tvoji prijatelji s Revenge Bookom."
+L.REL_HINT_GUILD = "Razlog vide svi u tvom cehu s Revenge Bookom."
+L.REL_HINT_FRIENDS = "Razlog vide tvoji prijatelji s Revenge Bookom."
 L.REL_HEAD = "Raspiši lov"  -- [max 24]
 L.REL_FOR = "ZA"  -- [max 6]
 L.REL_REASON = "RAZLOG"  -- [max 8]
@@ -624,7 +624,7 @@ L.HUNT_ROW_HIDDEN = "skriveno za tebe"
 L.HUNT_ROW_CALLS = "{count} {count|poziv|poziva|poziva}: {names}"
 L.POSTER_ON_HUNTLIST = "Na popisu za odstrel ({names})"
 L.REL_SELF = "Ne možeš raspisati lov na sebe."
-L.REL_MATE = "To je netko vaš (ceh ili prijatelji s DeathNoteom)."
+L.REL_MATE = "To je netko vaš (ceh ili prijatelji s Revenge Bookom)."
 -- Friends listed without surname: which full name is behind the entry (1.2.0) ------------------------
 L.FRIENDS_CONFLICT = "Tko je tvoj prijatelj {friend}: {a} ili {b}? Odaberi."
 L.FRIENDS_SHORT_CONFLICT = "Prijatelj nejasan"  -- [max 22]
@@ -637,12 +637,12 @@ L.CHAT_FRIENDS_TIES = "Povezana puna imena (* = prvi kontakt, još nije potvrđe
 -- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
 L.HELP_BOUNTY = "/dn bounty <Ime [Prezime]> <zlato>  raspiši vlastitu ucjenu (bez iznosa: povuci)"
 L.CHAT_WHO_BOUNTY = "Na koga? /dn bounty <Ime> <zlato>"
-L.CHAT_BOUNTY_SET = "{name}: tvoja ucjena od {gold}g je raspisana. Ceh i prijatelji s DeathNoteom je vide."
+L.CHAT_BOUNTY_SET = "{name}: tvoja ucjena od {gold}g je raspisana. Ceh i prijatelji s Revenge Bookom je vide."
 L.CHAT_BOUNTY_OFF = "{name}: tvoja ucjena je povučena."
 L.CHAT_BOUNTY_NONE = "{name}: nemaš vlastitu ucjenu."
 L.CHAT_BOUNTY_BAD = "Ucjena: cijeli broj zlatnika, od 1 do 99999 (0 je povlači)."
 L.CHAT_BOUNTY_CAP = "Nema ucjene: najviše {count} vlastitih."
-L.CHAT_BOUNTY_OURS = "Nema ucjene na sebe ni na svoje (ceh ili prijatelji s DeathNoteom)."
+L.CHAT_BOUNTY_OURS = "Nema ucjene na sebe ni na svoje (ceh ili prijatelji s Revenge Bookom)."
 L.ACT_BOUNTY = "Raspiši ucjenu"  -- [max 24]
 L.ACT_UNDO = "Poništi"  -- [max 19]
 L.ACT_REVENGE_TAKE = "Oduzmi jednu osvetu"  -- [max 24]
@@ -653,7 +653,7 @@ L.POSTER_AVENGED = "Osvetili: {names}"
 L.ROW_AVENGED = "osvećeno {times}"
 L.BOUNTY_TIP_HEAD = "Tvoja vlastita ucjena u zlatu"
 L.BOUNTY_TIP_RULES = "Cijeli broj od 1 do 99999. Prazno ili 0: natrag na vrijednost knjige. Enter postavlja, Esc odustaje."
-L.BOUNTY_TIP_PROMISE = "Ceh i prijatelji s DeathNoteom je vide. Samo obećanje: namirujete se međusobno."
+L.BOUNTY_TIP_PROMISE = "Ceh i prijatelji s Revenge Bookom je vide. Samo obećanje: namirujete se međusobno."
 L.BOUNTY_TIP_CLICK = "Klik: raspiši vlastitu ucjenu"
 L.CHAT_AVENGED = "Osveta za tebe: {killer}, od {name}."
 L.NAMES_PLUS = "{name} +{count}"
@@ -868,7 +868,6 @@ L.EMPTY_HIDDEN_SUB = "Enter ili redak dolje ih prikazuje."
 L.EMPTY_SEARCHHAS_HEAD = "Već je u tvojoj knjizi."
 L.EMPTY_SEARCHHAS_SUB = "Samo ne na ovoj stranici. Enter ga otvara."
 L.FILTER_TWO = "Filtri: {count}"
-L.CHAT_NEWS_140 = "Novo u 1.4.0: nakon napada mala poruka pita treba li napadača upisati u knjigu (Kivnost; uklj./isklj.: /dn grudge ili {rules}, list {sheet}); „{takeall}”: kartica {guild}; filtar i pretraga: kartica {wanted}."
 L.GRUDGE_TIP_OFF = "Isključivanje: /dn grudge ili {rules}, list {sheet}."
 -- 1.5.0 grip
 L.GRUDGE_TIP_PROBABLE = "Nesigurno: malo tragova. Označi samo ako si ga vidio."
@@ -986,4 +985,7 @@ L.CHRON_AVENGED = "{names} srušili su {name} za ostale."
 L.CHRON_PARDONED = "Pomilovao si: {name}."
 L.CHRON_END = "Sad: {score} · {state}"
 L.CHRON_END_NONE = "Dosad: ubio te {times}."
+-- 1.5.0 name
+L.HELP_ALIASES = "/rb, /revengebook  isto kao /dn"
+L.CHAT_NEWS_150 = "DeathNote se sada zove Revenge Book. Tvoja knjiga i /dn ostaju. Novo u 1.5.0: pokaži tjeralicu u chatu, mjesta zločina na karti svijeta, prečaci tipkovnice, oznaka na pločicama tvojih ubojica."
 end)

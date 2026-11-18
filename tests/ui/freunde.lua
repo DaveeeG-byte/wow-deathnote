@@ -94,7 +94,7 @@ clean("Reiter")
 ------------------------------------------------------------------------
 -- Empty states per source
 ------------------------------------------------------------------------
-check("Leer Alle: noch niemand gehoert", vis("Noch niemand mit DeathNote gehört.") ~= nil)
+check("Leer Alle: noch niemand gehoert", vis("Noch niemand mit Revenge Book gehört.") ~= nil)
 -- fix-3: the empty states per source only exist with both sources (see below); without guild and friends
 -- the calm empty state without a red line, without a switch and without sync
 ns.Store.Setting("guild.friends", false); tick(1)
@@ -120,7 +120,7 @@ guildMsg(P.EncodeKill({ key = "Rauf-Bold", display = "Rauf Bold", class = "ROGUE
 tick(2); settle()
 clean("Daten empfangen")
 check("Freund im Freundesbuch", ns.Guild.Get("Grimm-Bart", "friends") ~= nil)
-check("Statuszeile Alle zaehlt beide", vis("Läuft: 2 mit DeathNote in Gilde und Freunden.") ~= nil)
+check("Statuszeile Alle zaehlt beide", vis("Läuft: 2 mit Revenge Book in Gilde und Freunden.") ~= nil)
 -- by killer, All: both
 VIEWS.items[2]._scripts.OnClick(VIEWS.items[2]); tick()
 local names = {}
@@ -158,12 +158,12 @@ local hw = word("Zur Jagd freigeben")
 check("Zeilenmenue: Zur Jagd freigeben", hw ~= nil)
 click(hw)
 check("Waehrend des Anlegens: Abschussliste-Ansicht sichtbar", VIEWS.items[3]:IsShown())
-check("Blatt Zur Jagd freigeben offen", vis("Den Grund sehen alle in deiner Gilde und deine Freunde mit DeathNote.") ~= nil)
+check("Blatt Zur Jagd freigeben offen", vis("Den Grund sehen alle in deiner Gilde und deine Freunde mit Revenge Book.") ~= nil)
 check("Name auf dem Blatt", vis("Grimm Bart") ~= nil)
 local R = ns.UI and frameWith(function(f) return f.edit and f.tabs and f.go end)
 check("Drei Ziele, Gilde & Freunde gewaehlt", R and #R.tabs == 3 and R.tabs[1].mark:IsShown())
 click(R.tabs[3])
-check("Hinweis passt zur Wahl", vis("Den Grund sehen deine Freunde mit DeathNote.") ~= nil)
+check("Hinweis passt zur Wahl", vis("Den Grund sehen deine Freunde mit Revenge Book.") ~= nil)
 click(R.tabs[1])
 R.edit:SetText("Campt am |cffff0000Flugpunkt|r\nimmer")
 click(R.go)

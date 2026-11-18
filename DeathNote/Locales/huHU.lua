@@ -5,7 +5,7 @@
 -- Terms: book könyv, guild book céhkönyv, friends' book baráti könyv, killer gyilkos, guildmate céhtárs,
 -- Hit List halállista, call kiírás. No suffix is attached to {name}/{zone}: colon forms instead.
 --
--- TOC-Notes: Halállista nyílt világú PvP-hez: megjegyzi, ki ölt meg, és szól, ha a közelben van.
+-- TOC-Notes: Bosszúkönyv világ PvP-hez: megjegyzi, ki ölt meg, és szól, ha a közelben van.
 
 local _, ns = ...
 local Locale = ns and ns.Locale
@@ -95,7 +95,7 @@ L.MONEY_SILVER = "{count} ezüst"
 L.MONEY_COPPER = "{count} réz"
 
 -- Guild and friends status (House Rules, /dn guild, /dn friends) ----------------------------------
-L.GUILD_HEARD = "DeathNote-os céhtársak: {count}."
+L.GUILD_HEARD = "Revenge Book-os céhtársak: {count}."
 L.HEALTH_NOGUILD = "Nem vagy céhben, semmi sincs megosztva."
 L.HEALTH_OFF = "A megosztás ki van kapcsolva."
 L.HEALTH_SHORT_NOGUILD = "Nincs céh"  -- [max 18]
@@ -135,8 +135,8 @@ L.HELP_ADD = "/dn add <Név [Vezetéknév]>  gyilkos kézi beírása a könyvbe"
 L.HELP_DEL = "/dn del <Név [Vezetéknév]>  gyilkos kihúzása a könyvből"
 L.HELP_QUIET = "/dn quiet  riasztás ki/be"
 L.HELP_TEST = "/dn test  próbariasztás"
-L.HELP_GUILD = "/dn guild  céhkönyv: állapot, és mely céhtársaknak van DeathNote-ja"
-L.HELP_FRIENDS = "/dn friends  baráti könyv: állapot, és mely barátoknak van DeathNote-ja"
+L.HELP_GUILD = "/dn guild  céhkönyv: állapot, és mely céhtársaknak van Revenge Book-ja"
+L.HELP_FRIENDS = "/dn friends  baráti könyv: állapot, és mely barátoknak van Revenge Book-ja"
 L.HELP_SYNC = "/dn sync  a céhkönyv és a baráti könyv egyeztetése most"
 L.HELP_HUNT = "/dn hunt <Név [Vezetéknév]>  vadászat kiírása (név nélkül: a halállista)"
 L.HELP_CALLOFF = "/dn calloff <Név [Vezetéknév]>  a saját vadászatod lefújása"
@@ -166,16 +166,16 @@ L.CHAT_GUILD_STATE = "Céh: {guild} · megosztás {share}, fogadás {receive}."
 L.CHAT_GUILD_BOOK = "Céhkönyv: {enemies} gyilkos ({listed} csak kézzel bejegyezve), {deeds} tett, {foreign} céhtársakat is érint. Kézi bejegyzések megosztása: {manual}."
 L.CHAT_STATE_OK = "Állapot: {text}"
 L.CHAT_STATE_WARN = "Figyelem: {text}"
-L.CHAT_NO_MATES = "Még nem jelentkezett céhtárs DeathNote-tal."
-L.CHAT_HAVE_DN = "DeathNote-ot használ: {names}"
-L.CHAT_HAVE_DN_MORE = "DeathNote-ot használ: {names} és még {count}"
+L.CHAT_NO_MATES = "Még nem jelentkezett céhtárs Revenge Book-kal."
+L.CHAT_HAVE_DN = "Revenge Book-ot használ: {names}"
+L.CHAT_HAVE_DN_MORE = "Revenge Book-ot használ: {names} és még {count}"
 L.CHAT_SYNC_ASKED = "Egyeztetés kérve. A válaszok a következő másodpercekben jönnek."
 L.CHAT_SYNC_FAIL = "Az egyeztetés nem megy: {reason}"
 L.CHAT_SYNC_FAIL_DEFAULT = "nincs céh, vagy ki van kapcsolva a megosztás."
 L.CHAT_FRIENDS_NOT_LOADED = "A baráti könyv nincs betöltve."
 L.CHAT_FRIENDS_STATE = "Barátok: megosztás {share}, online: {online}/{total}."
 L.CHAT_FRIENDS_BOOK = "Baráti könyv: {enemies} gyilkos ({listed} csak kézzel bejegyezve), {deeds} tett."
-L.CHAT_NO_FRIENDS = "Még nem jelentkezett barát DeathNote-tal."
+L.CHAT_NO_FRIENDS = "Még nem jelentkezett barát Revenge Book-kal."
 L.CHAT_HUNT_NOT_LOADED = "A halállista nincs betöltve."
 L.CHAT_HUNT_UNKNOWN = "Ismeretlen: {name}. Add meg a vezetéknevet is, ahogy a név a játékban látszik."
 L.CHAT_HUNT_CAP = "Nem tehető halállistára: listánként legfeljebb {own} saját kiírás és {targets} célpont lehet."
@@ -203,7 +203,7 @@ L.THEME_TRADE = "Szakszerviz"
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "A könyv készen áll. Aki megöl a nyílt világban, utána benne lesz. Kinyitás: /dn vagy a minitérkép-gomb."
 L.WELCOME_PLATES = "Az ellenséges névtáblák ki vannak kapcsolva. Nélkülük a riasztás csak a célpontodat látja."
-L.WELCOME_SHARE = "A DeathNote-os céhtársak és barátok is olvassák. A jegyzetek és a gyanúk nálad maradnak."
+L.WELCOME_SHARE = "A Revenge Book-os céhtársak és barátok is olvassák. A jegyzetek és a gyanúk nálad maradnak."
 
 -- Unit tooltip (one line under the player's tooltip) ---------------------------------------------
 -- The labels stand in red before the line, with their colon: "IN THE BOOK: killed you 2× · rank 1"
@@ -257,10 +257,10 @@ L.SYNC_HOLD_AGAIN = "amíg újra nem megy"
 L.SYNC_HOLD_SHORT_INSTANCE = "Vár: instance"  -- [max 18]
 L.SYNC_HOLD_SHORT_COMBAT = "Vár: harc"  -- [max 18]
 L.SYNC_HOLD_SHORT_LOCKDOWN = "Vár: chat"  -- [max 18]
-L.SYNC_QUIET = "Elküldve, de még nem jelentkezett céhtárs DeathNote-tal."
-L.SYNC_READY = "Kész. Még nem jelentkezett céhtárs DeathNote-tal."
-L.SYNC_RUNNING = "Működik: {count} DeathNote-os céhtárs."
-L.SYNC_RUNNING_ALL = "Működik: {count} DeathNote-os a céhben és a barátok közt."
+L.SYNC_QUIET = "Elküldve, de még nem jelentkezett céhtárs Revenge Book-kal."
+L.SYNC_READY = "Kész. Még nem jelentkezett céhtárs Revenge Book-kal."
+L.SYNC_RUNNING = "Működik: {count} Revenge Book-os céhtárs."
+L.SYNC_RUNNING_ALL = "Működik: {count} Revenge Book-os a céhben és a barátok közt."
 L.FRIENDS_OFF = "A megosztás a barátokkal ki van kapcsolva (Házirend, Céh lap)."
 L.FRIENDS_BLOCKED = "A szerver tiltja a suttogást. A barátok semmit sem kapnak."
 L.FRIENDS_SHORT_BLOCKED = "Suttogás letiltva"  -- [max 22]
@@ -269,10 +269,10 @@ L.FRIENDS_SHORT_FAILING = "Suttogás akadozik"  -- [max 18]
 L.FRIENDS_NONE_LISTED = "Senki sincs a barátlistán."
 L.FRIENDS_NONE_ONLINE = "Most egy barát sincs online."
 L.FRIENDS_SHORT_NONE_ONLINE = "Nincs online barát"  -- [max 18]
-L.FRIENDS_QUIET = "Megkérdezve, de még nem jelentkezett barát DeathNote-tal."
-L.FRIENDS_READY = "Kész. Még nem jelentkezett barát DeathNote-tal."
+L.FRIENDS_QUIET = "Megkérdezve, de még nem jelentkezett barát Revenge Book-kal."
+L.FRIENDS_READY = "Kész. Még nem jelentkezett barát Revenge Book-kal."
 L.FRIENDS_HOLD = "A küldés a barátoknak vár, amíg újra nem megy."
-L.FRIENDS_RUNNING = "Működik: {count} DeathNote-os barát."
+L.FRIENDS_RUNNING = "Működik: {count} Revenge Book-os barát."
 -- A killer taken over from the guild book into your own book gets this note (your note from then on)
 L.NOTE_FROM_GUILD = "Átvéve a céhkönyvből ({kills}× ölt céhtársat)."
 
@@ -281,7 +281,7 @@ L.NOTE_FROM_GUILD = "Átvéve a céhkönyvből ({kills}× ölt céhtársat)."
 L.IMPORT_NO_DB = "Az adatbázis nincs betöltve."
 L.IMPORT_NO_TEXT = "Nincs szöveg."
 L.IMPORT_NO_HEADER = "Hiányzik az első sor (így kezdődik: {header}). Másold ki az egész szöveget."
-L.IMPORT_NOT_EXPORT = "Ez nem DeathNote-export (hiányzik a fejléc, vagy rossz a verzió)."
+L.IMPORT_NOT_EXPORT = "Ez nem Revenge Book-export (hiányzik a fejléc, vagy rossz a verzió)."
 L.IMPORT_TOO_LONG = "Túl sok sor (legfeljebb {count})."
 L.IMPORT_BAD_KEY = "{line}. sor: érvénytelen kulcs."
 L.IMPORT_BAD_TIME = "{line}. sor: érvénytelen idő."
@@ -325,20 +325,20 @@ L.EMPTY_NOGUILD_SUB = "Egyedül is meg lehet halni."
 L.EMPTY_GUILDOFF_HEAD = "A céhkönyv be van csukva."
 L.EMPTY_GUILDOFF_SUB = "A megosztás ki van kapcsolva. A Házirend tudja, hol."
 L.EMPTY_GUILDNIL_HEAD = "Még semmi hír a céhből."
-L.EMPTY_GUILDNIL_SUB = "A könyved útnak indul, amint egy céhtársnak is lesz DeathNote-ja."
+L.EMPTY_GUILDNIL_SUB = "A könyved útnak indul, amint egy céhtársnak is lesz Revenge Book-ja."
 L.EMPTY_GUILDQUIET_HEAD = "A céhkönyvben még nincs semmi."
 L.EMPTY_GUILDQUIET_SUB = "A céhtársaidnak eddig nyugtuk volt."
 L.EMPTY_FRIENDSOFF_HEAD = "A baráti könyv be van csukva."
 L.EMPTY_FRIENDSOFF_SUB = "A megosztás a barátokkal ki van kapcsolva. A Házirend tudja, hol."
-L.EMPTY_FRIENDSNIL_HEAD = "Még nem jelentkezett barát DeathNote-tal."
-L.EMPTY_FRIENDSNIL_SUB = "A könyved útnak indul, amint egy barátodnak is lesz DeathNote-ja."
+L.EMPTY_FRIENDSNIL_HEAD = "Még nem jelentkezett barát Revenge Book-kal."
+L.EMPTY_FRIENDSNIL_SUB = "A könyved útnak indul, amint egy barátodnak is lesz Revenge Book-ja."
 L.EMPTY_FRIENDSQUIET_HEAD = "A barátaidtól még nincs semmi."
 L.EMPTY_FRIENDSQUIET_SUB = "A barátaidnak eddig nyugtuk volt."
 L.EMPTY_NOBODY_HEAD = "Nincs céh, nincsenek barátok."
 L.EMPTY_NOBODY_SUB = "Egyedül is meg lehet halni."
-L.EMPTY_NOBODY_HINT = "Ha a céhtársaidnak vagy a barátlistádon lévő barátaidnak lesz DeathNote-juk, itt látod, mi történik velük."
-L.EMPTY_SHAREDNIL_HEAD = "Még senki nem jelentkezett DeathNote-tal."
-L.EMPTY_SHAREDNIL_SUB = "A könyved útnak indul, amint céhtársaknak vagy barátoknak is lesz DeathNote-juk."
+L.EMPTY_NOBODY_HINT = "Ha a céhtársaidnak vagy a barátlistádon lévő barátaidnak lesz Revenge Book-juk, itt látod, mi történik velük."
+L.EMPTY_SHAREDNIL_HEAD = "Még senki nem jelentkezett Revenge Book-kal."
+L.EMPTY_SHAREDNIL_SUB = "A könyved útnak indul, amint céhtársaknak vagy barátoknak is lesz Revenge Book-juk."
 L.EMPTY_SHAREDQUIET_HEAD = "Itt még nincs semmi."
 L.EMPTY_SHAREDQUIET_SUB = "A céhnek és a barátoknak eddig nyugtuk volt."
 L.EMPTY_HUNT_HEAD = "A halállista üres."
@@ -360,9 +360,9 @@ L.MANUAL_ALERT = "Ha egy gyilkos felbukkan névtáblaként, célpontként vagy a
 L.MANUAL_ADD_HEAD = "BEÍRÁS"  -- [max 12]
 L.MANUAL_ADD = "Írj egy nevet a keresőbe, Enter. Jobb klikk egy soron: bosszú feljegyzése, kegyelem, kihúzás."
 L.MANUAL_GUILD_HEAD = "CÉH"  -- [max 12]
-L.MANUAL_GUILD = "A DeathNote-os céhtársaid és barátaid látják a tisztázott halálaidat és a kézi bejegyzéseidet. Plakát vagy /dn hunt Név: vadászat kiírása. Kattints a vérdíjra: tűzd ki a sajátod, csak ígéret."
+L.MANUAL_GUILD = "A Revenge Book-os céhtársaid és barátaid látják a tisztázott halálaidat és a kézi bejegyzéseidet. Plakát vagy /dn hunt Név: vadászat kiírása. Kattints a vérdíjra: tűzd ki a sajátod, csak ígéret."
 L.MANUAL_SHARE_HEAD = "TOVÁBBADÁS"  -- [max 12]
-L.MANUAL_SHARE = "Házirend, Könyv mentése: másolható szöveg mindenkinek, akinek nincs DeathNote-ja."
+L.MANUAL_SHARE = "Házirend, Könyv mentése: másolható szöveg mindenkinek, akinek nincs Revenge Book-ja."
 L.MANUAL_QUIET_HEAD = "CSEND"  -- [max 12]
 L.MANUAL_QUIET = "Dungeonben és csatatéren a riasztás hallgat. Máskor: középső klikk a minitérkép-gombra vagy /dn quiet."
 -- Questions before something is destroyed (game dialog) -------------------------------------------
@@ -415,7 +415,7 @@ L.MARK_BOTH = "CÉHTÁRS, BARÁT"  -- [max 20]
 L.MARK_TAKEN_DOWN = "LETERÍTVE {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ÉLVE VAGY HALVA"  -- [max 24]
-L.BOOK_TITLE = "DeathNote"
+L.BOOK_TITLE = "Revenge Book"
 L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "TETTEK"  -- [max 14]
 L.POSTER_NOTE = "JEGYZET"  -- [max 8]
@@ -532,16 +532,16 @@ L.SET_SEC_WARN = "RIASZTÁS"
 L.SET_MORE = "Több"
 L.SET_GUILD_CLEAR = "Céhkönyv kiürítése"  -- [max 26]
 L.SET_HINT_GUILD = "Csak a saját céhed kap bármit. Ami onnan jön, külön marad a könyvedtől, amíg magad át nem veszed."
-L.SET_HINT_FRIENDS = "Csak a DeathNote-os céhtársak és barátok kapnak bármit."
+L.SET_HINT_FRIENDS = "Csak a Revenge Book-os céhtársak és barátok kapnak bármit."
 L.BTN_BACK = "Vissza"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Egyeztetés"  -- [max 14]
 L.SYNC_AGAIN_IN = "{seconds} mp múlva"  -- [max 16]
 L.TIP_FRIENDS = "Barátok"
 L.TIP_GUILD_NAME = "Céh: {guild}"
-L.TIP_MATES_WITH = "DeathNote-os céhtársak:"
-L.TIP_NO_MATE = "Még nem jelentkezett céhtárs DeathNote-tal."
-L.TIP_FRIENDS_WITH = "DeathNote-os barátok:"
+L.TIP_MATES_WITH = "Revenge Book-os céhtársak:"
+L.TIP_NO_MATE = "Még nem jelentkezett céhtárs Revenge Book-kal."
+L.TIP_FRIENDS_WITH = "Revenge Book-os barátok:"
 L.TIP_SHARED = "Megosztva: tisztázott halálaid, kézi bejegyzéseid és halállistás kiírásaid."
 L.TIP_NOT_SHARED = "Nincs megosztva: jegyzetek, gyanúk, megkegyelmezettek, betöltött bejegyzések."
 -- Back up / import page ---------------------------------------------------------------------------
@@ -556,9 +556,9 @@ L.IO_MSG_BIG = "Nagy könyv ({size}): a kijelölés és a másolás eltart egy k
 L.IO_HELP_EXPORT = "A szöveg ki van jelölve: a Ctrl+C kimásolja. Őrizd meg, vagy add tovább a barátaidnak."
 L.IO_HELP_IMPORT = "Illeszd be a mentett szöveget a Ctrl+V-vel, aztán Betöltés. Semmi sem íródik felül."
 -- Sheet Put on the hit list (right page) ----------------------------------------------------------
-L.REL_HINT_ALL = "Az indokot a céhedben és a barátaid közt mindenki látja, akinek van DeathNote-ja."
-L.REL_HINT_GUILD = "Az indokot a céhedben mindenki látja, akinek van DeathNote-ja."
-L.REL_HINT_FRIENDS = "Az indokot a DeathNote-os barátaid látják."
+L.REL_HINT_ALL = "Az indokot a céhedben és a barátaid közt mindenki látja, akinek van Revenge Book-ja."
+L.REL_HINT_GUILD = "Az indokot a céhedben mindenki látja, akinek van Revenge Book-ja."
+L.REL_HINT_FRIENDS = "Az indokot a Revenge Book-os barátaid látják."
 L.REL_HEAD = "Vadászat kiírása"  -- [max 24]
 L.REL_FOR = "KINEK"  -- [max 6]
 L.REL_REASON = "INDOK"  -- [max 8]
@@ -626,7 +626,7 @@ L.HUNT_ROW_HIDDEN = "nálad elrejtve"
 L.HUNT_ROW_CALLS = "{count} kiírás: {names}"
 L.POSTER_ON_HUNTLIST = "A halállistán ({names})"
 L.REL_SELF = "Magadat nem teheted halállistára."
-L.REL_MATE = "Ő a tieid közül való (céh vagy barát DeathNote-tal)."
+L.REL_MATE = "Ő a tieid közül való (céh vagy barát Revenge Book-kal)."
 -- Friends listed without surname: which full name is behind the entry (1.2.0) ------------------------
 L.FRIENDS_CONFLICT = "Ki a barátod, {friend}: {a} vagy {b}? Válassz."
 L.FRIENDS_SHORT_CONFLICT = "Barát kétséges"  -- [max 22]
@@ -639,12 +639,12 @@ L.CHAT_FRIENDS_TIES = "Összekapcsolt teljes nevek (* = első kapcsolat, még ne
 -- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
 L.HELP_BOUNTY = "/dn bounty <Név [Vezetéknév]> <arany>  saját vérdíj kitűzése (összeg nélkül: visszavonás)"
 L.CHAT_WHO_BOUNTY = "Kire? /dn bounty <Név> <arany>"
-L.CHAT_BOUNTY_SET = "{name}: {gold} arany vérdíjat tűztél ki. A DeathNote-os céhtársak és barátok látják."
+L.CHAT_BOUNTY_SET = "{name}: {gold} arany vérdíjat tűztél ki. A Revenge Book-os céhtársak és barátok látják."
 L.CHAT_BOUNTY_OFF = "{name}: a vérdíjadat visszavontad."
 L.CHAT_BOUNTY_NONE = "Nincs saját vérdíjad rá: {name}"
 L.CHAT_BOUNTY_BAD = "Vérdíj: egész szám aranyban, 1 és 99999 között (a 0 visszavonja)."
 L.CHAT_BOUNTY_CAP = "Nincs vérdíj: legfeljebb {count} sajátod lehet."
-L.CHAT_BOUNTY_OURS = "Magadra és a tieidre (DeathNote-os céhtárs vagy barát) nem tűzhetsz ki vérdíjat."
+L.CHAT_BOUNTY_OURS = "Magadra és a tieidre (Revenge Book-os céhtárs vagy barát) nem tűzhetsz ki vérdíjat."
 L.ACT_BOUNTY = "Vérdíj kitűzése"  -- [max 24]
 L.ACT_UNDO = "Visszavonás"  -- [max 19]
 L.ACT_REVENGE_TAKE = "Egy bosszú levonása"  -- [max 24]
@@ -655,7 +655,7 @@ L.POSTER_AVENGED = "Megbosszulta: {names}"
 L.ROW_AVENGED = "megbosszulva {times}"
 L.BOUNTY_TIP_HEAD = "A saját vérdíjad aranyban"
 L.BOUNTY_TIP_RULES = "Egész szám 1 és 99999 között. Üres vagy 0: vissza a könyv értékére. Enter beállítja, Esc mégse."
-L.BOUNTY_TIP_PROMISE = "A DeathNote-os céhtársak és barátok látják. Csak ígéret: egymás között rendezitek."
+L.BOUNTY_TIP_PROMISE = "A Revenge Book-os céhtársak és barátok látják. Csak ígéret: egymás között rendezitek."
 L.BOUNTY_TIP_CLICK = "Kattintás: saját vérdíj kitűzése"
 L.CHAT_AVENGED = "{name} megbosszult téged: {killer}."
 L.NAMES_PLUS = "{name} +{count}"
@@ -870,7 +870,6 @@ L.EMPTY_HIDDEN_SUB = "Az Enter vagy a lenti sor megmutatja őket."
 L.EMPTY_SEARCHHAS_HEAD = "Már benne van a könyvedben."
 L.EMPTY_SEARCHHAS_SUB = "Csak nem ezen az oldalon. Az Enter megnyitja."
 L.FILTER_TWO = "{count} szűrő"
-L.CHAT_NEWS_140 = "Újdonság az 1.4.0-ban: támadás után egy kis üzenet megkérdezi, beírja-e a támadót a könyvbe (Harag; be/ki: /dn grudge vagy {rules}, {sheet} lap); „{takeall}”: {guild} fül; szűrő és keresés: {wanted} fül."
 L.GRUDGE_TIP_OFF = "Kikapcsolás: /dn grudge vagy {rules}, {sheet} lap."
 -- 1.5.0 grip
 L.GRUDGE_TIP_PROBABLE = "Bizonytalan: kevés jel szól ellene. Csak akkor pipáld, ha láttad."
@@ -988,4 +987,7 @@ L.CHRON_AVENGED = "{names} leterítették a többiekért: {name}."
 L.CHRON_PARDONED = "Megkegyelmeztél: {name}."
 L.CHRON_END = "Most: {score} · {state}"
 L.CHRON_END_NONE = "Eddig: megölt {times}."
+-- 1.5.0 name
+L.HELP_ALIASES = "/rb, /revengebook  ugyanaz, mint a /dn"
+L.CHAT_NEWS_150 = "A DeathNote mostantól Revenge Book. A könyved és a /dn marad. Újdonság az 1.5.0-ban: plakát mutatása a chatben, tetthelyek a világtérképen, gyorsbillentyűk, jel a gyilkosaid névtábláján."
 end)

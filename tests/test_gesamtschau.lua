@@ -5,9 +5,9 @@ local M = require("mock_wow")
 local test, eq, ok, no = M.test, M.eq, M.ok, M.no
 
 local GUILD = "Die Fachkräfte"
-local WELCOME = "DeathNote: Das Buch liegt bereit. Wer dich in der offenen Welt tötet, steht danach drin. "
+local WELCOME = "Revenge Book: Das Buch liegt bereit. Wer dich in der offenen Welt tötet, steht danach drin. "
   .. "Aufschlagen mit /dn oder am Minimap-Knopf."
-local PLATES = "DeathNote: Feindliche Namensplaketten sind aus. Ohne sie sieht der Alarm nur dein Ziel."
+local PLATES = "Revenge Book: Feindliche Namensplaketten sind aus. Ohne sie sieht der Alarm nur dein Ziel."
 
 local function plain(msg) return (msg:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
 local function count(lines, text)
@@ -77,10 +77,10 @@ test("/dn still schaltet den Alarm um, meldet es und feuert SETTINGS_CHANGED", f
   local ns = M.Load()
   M.ClearFired()
   slash("still")
-  eq(ns.Store.Setting("alert.enabled"), false); eq(plain(M.chat[#M.chat]), "DeathNote: Alarm aus.")
+  eq(ns.Store.Setting("alert.enabled"), false); eq(plain(M.chat[#M.chat]), "Revenge Book: Alarm aus.")
   eq(M.Fired("SETTINGS_CHANGED")[1][2], "alert.enabled")
   slash("STILL")
-  eq(ns.Store.Setting("alert.enabled"), true); eq(plain(M.chat[#M.chat]), "DeathNote: Alarm an.")
+  eq(ns.Store.Setting("alert.enabled"), true); eq(plain(M.chat[#M.chat]), "Revenge Book: Alarm an.")
   local n = #M.chat
   slash("hilfe")
   local help = table.concat(M.chat, "\n", n + 1)

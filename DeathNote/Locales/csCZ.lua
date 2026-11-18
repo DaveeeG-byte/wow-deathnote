@@ -3,7 +3,7 @@
 -- Fonts: latinExt (Nimrod MT, Arial Narrow) (Locale.lua, FONTS). Copy the keys of enUS.lua, keep the order and the [max N].
 -- No Czech game client: zone, class and race names come in the client's language (SAMPLE_ZONE stays English).
 --
--- TOC-Notes: Seznam smrtí pro PvP v otevřeném světě: pamatuje si, kdo tě zabil, a varuje, když je vrah poblíž.
+-- TOC-Notes: Kniha pomsty pro světové PvP: pamatuje si, kdo tě zabil, a varuje, když je vrah poblíž.
 
 local _, ns = ...
 local Locale = ns and ns.Locale
@@ -93,7 +93,7 @@ L.MONEY_SILVER = "{count}s"
 L.MONEY_COPPER = "{count}c"
 
 -- Guild and friends status (House Rules, /dn guild, /dn friends) ----------------------------------
-L.GUILD_HEARD = "Členové guildy s DeathNote, kteří se ozvali: {count}."
+L.GUILD_HEARD = "Členové guildy s Revenge Book, kteří se ozvali: {count}."
 L.HEALTH_NOGUILD = "Nejsi v žádné guildě, nic se nesdílí."
 L.HEALTH_OFF = "Sdílení je vypnuté."
 L.HEALTH_SHORT_NOGUILD = "Žádná guilda"  -- [max 18]
@@ -133,8 +133,8 @@ L.HELP_ADD = "/dn add <Jméno [Příjmení]>  ručně zapsat vraha do knihy"
 L.HELP_DEL = "/dn del <Jméno [Příjmení]>  vyškrtnout vraha z knihy"
 L.HELP_QUIET = "/dn quiet  poplach vyp./zap."
 L.HELP_TEST = "/dn test  ukázat zkušební poplach"
-L.HELP_GUILD = "/dn guild  kniha guildy: stav a kdo z guildy má DeathNote"
-L.HELP_FRIENDS = "/dn friends  kniha přátel: stav a kdo z přátel má DeathNote"
+L.HELP_GUILD = "/dn guild  kniha guildy: stav a kdo z guildy má Revenge Book"
+L.HELP_FRIENDS = "/dn friends  kniha přátel: stav a kdo z přátel má Revenge Book"
 L.HELP_SYNC = "/dn sync  hned synchronizovat knihu guildy a knihu přátel"
 L.HELP_HUNT = "/dn hunt <Jméno [Příjmení]>  vyhlásit hon (bez jména: ukázat seznam na odstřel)"
 L.HELP_CALLOFF = "/dn calloff <Jméno [Příjmení]>  odvolat vlastní vyhlášení honu"
@@ -164,16 +164,16 @@ L.CHAT_GUILD_STATE = "Guilda {guild}: sdílení {share}, příjem {receive}"
 L.CHAT_GUILD_BOOK = "Kniha guildy. Vrazi: {enemies} (jen ručně: {listed}), činy: {deeds}, s oběťmi v guildě: {foreign}. Sdílet ruční zápisy: {manual}"
 L.CHAT_STATE_OK = "Stav: {text}"
 L.CHAT_STATE_WARN = "Pozor: {text}"
-L.CHAT_NO_MATES = "Zatím se neozval nikdo z guildy s DeathNote."
-L.CHAT_HAVE_DN = "DeathNote mají: {names}"
-L.CHAT_HAVE_DN_MORE = "DeathNote mají: {names} a ještě {count}"
+L.CHAT_NO_MATES = "Zatím se neozval nikdo z guildy s Revenge Book."
+L.CHAT_HAVE_DN = "Revenge Book mají: {names}"
+L.CHAT_HAVE_DN_MORE = "Revenge Book mají: {names} a ještě {count}"
 L.CHAT_SYNC_ASKED = "Synchronizace vyžádána. Odpovědi dorazí během pár sekund."
 L.CHAT_SYNC_FAIL = "Synchronizace nefunguje: {reason}"
 L.CHAT_SYNC_FAIL_DEFAULT = "žádná guilda nebo je sdílení vypnuté."
 L.CHAT_FRIENDS_NOT_LOADED = "Kniha přátel není načtená."
 L.CHAT_FRIENDS_STATE = "Přátelé: sdílení {share}, online {online} z {total}."
 L.CHAT_FRIENDS_BOOK = "Kniha přátel. Vrazi: {enemies} (jen ručně: {listed}), činy: {deeds}."
-L.CHAT_NO_FRIENDS = "Zatím se neozval nikdo z přátel s DeathNote."
+L.CHAT_NO_FRIENDS = "Zatím se neozval nikdo z přátel s Revenge Book."
 L.CHAT_HUNT_NOT_LOADED = "Seznam na odstřel není načtený."
 L.CHAT_HUNT_UNKNOWN = "Neznámé jméno: {name}. Uveď i příjmení, tak jak je jméno ve hře."
 L.CHAT_HUNT_CAP = "Hon nelze vyhlásit: nejvýš {own} vlastních vyhlášení a {targets} cílů na seznam."
@@ -201,7 +201,7 @@ L.THEME_TRADE = "Dílna"
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Kniha je připravená. Kdo tě zabije v otevřeném světě, bude pak v ní. Otevřeš ji přes /dn nebo tlačítkem u minimapy."
 L.WELCOME_PLATES = "Jmenovky nepřátel jsou vypnuté. Bez nich poplach vidí jen tvůj cíl."
-L.WELCOME_SHARE = "Guilda a přátelé, kteří mají DeathNote, čtou s tebou. Poznámky a podezření zůstávají u tebe."
+L.WELCOME_SHARE = "Guilda a přátelé, kteří mají Revenge Book, čtou s tebou. Poznámky a podezření zůstávají u tebe."
 
 -- Unit tooltip (one line under the player's tooltip) ---------------------------------------------
 -- The labels stand in red before the line, with their colon: "IN THE BOOK: killed you 2× · rank 1"
@@ -255,10 +255,10 @@ L.SYNC_HOLD_AGAIN = "dokud to zase nepůjde"
 L.SYNC_HOLD_SHORT_INSTANCE = "Čeká: instance"  -- [max 18]
 L.SYNC_HOLD_SHORT_COMBAT = "Čeká: boj"  -- [max 18]
 L.SYNC_HOLD_SHORT_LOCKDOWN = "Čeká: chat"  -- [max 18]
-L.SYNC_QUIET = "Odesláno, ale zatím se neozval nikdo z guildy s DeathNote."
-L.SYNC_READY = "Připraveno. Zatím se neozval nikdo z guildy s DeathNote."
-L.SYNC_RUNNING = "Běží: {count} {count|člen|členové|členů} guildy s DeathNote."
-L.SYNC_RUNNING_ALL = "Běží. S DeathNote v guildě a mezi přáteli: {count}."
+L.SYNC_QUIET = "Odesláno, ale zatím se neozval nikdo z guildy s Revenge Book."
+L.SYNC_READY = "Připraveno. Zatím se neozval nikdo z guildy s Revenge Book."
+L.SYNC_RUNNING = "Běží: {count} {count|člen|členové|členů} guildy s Revenge Book."
+L.SYNC_RUNNING_ALL = "Běží. S Revenge Book v guildě a mezi přáteli: {count}."
 L.FRIENDS_OFF = "Sdílení s přáteli je vypnuté (Domácí řád, list Guilda)."
 L.FRIENDS_BLOCKED = "Realm blokuje šepot. Přátelé nedostanou nic."
 L.FRIENDS_SHORT_BLOCKED = "Realm blokuje šepot"  -- [max 22]
@@ -267,10 +267,10 @@ L.FRIENDS_SHORT_FAILING = "Šepot vázne"  -- [max 18]
 L.FRIENDS_NONE_LISTED = "Na seznamu přátel nikdo není."
 L.FRIENDS_NONE_ONLINE = "Teď není online nikdo z přátel."
 L.FRIENDS_SHORT_NONE_ONLINE = "Přátelé offline"  -- [max 18]
-L.FRIENDS_QUIET = "Dotázáno, ale zatím se neozval nikdo z přátel s DeathNote."
-L.FRIENDS_READY = "Připraveno. Zatím se neozval nikdo z přátel s DeathNote."
+L.FRIENDS_QUIET = "Dotázáno, ale zatím se neozval nikdo z přátel s Revenge Book."
+L.FRIENDS_READY = "Připraveno. Zatím se neozval nikdo z přátel s Revenge Book."
 L.FRIENDS_HOLD = "Odesílání přátelům čeká, dokud to zase nepůjde."
-L.FRIENDS_RUNNING = "Běží: {count} {count|přítel|přátelé|přátel} s DeathNote."
+L.FRIENDS_RUNNING = "Běží: {count} {count|přítel|přátelé|přátel} s Revenge Book."
 -- A killer taken over from the guild book into your own book gets this note (your note from then on)
 L.NOTE_FROM_GUILD = "Převzato z knihy guildy (zabití členů guildy: {kills}×)."
 
@@ -279,7 +279,7 @@ L.NOTE_FROM_GUILD = "Převzato z knihy guildy (zabití členů guildy: {kills}×
 L.IMPORT_NO_DB = "Databáze není načtená."
 L.IMPORT_NO_TEXT = "Žádný text."
 L.IMPORT_NO_HEADER = "Chybí první řádek (začíná na {header}). Zkopíruj prosím celý text."
-L.IMPORT_NOT_EXPORT = "Tohle není export DeathNote (chybí hlavička nebo špatná verze)."
+L.IMPORT_NOT_EXPORT = "Tohle není export Revenge Book (chybí hlavička nebo špatná verze)."
 L.IMPORT_TOO_LONG = "Příliš mnoho řádků (nejvýš {count})."
 L.IMPORT_BAD_KEY = "Řádek {line}: neplatný klíč."
 L.IMPORT_BAD_TIME = "Řádek {line}: neplatný čas."
@@ -323,20 +323,20 @@ L.EMPTY_NOGUILD_SUB = "Umírat se dá i o samotě."
 L.EMPTY_GUILDOFF_HEAD = "Kniha guildy je zavřená."
 L.EMPTY_GUILDOFF_SUB = "Sdílení je vypnuté. Domácí řád ví, kde."
 L.EMPTY_GUILDNIL_HEAD = "Z guildy zatím ani slovo."
-L.EMPTY_GUILDNIL_SUB = "Tvoje kniha se odešle, jakmile bude mít někdo z guildy DeathNote."
+L.EMPTY_GUILDNIL_SUB = "Tvoje kniha se odešle, jakmile bude mít někdo z guildy Revenge Book."
 L.EMPTY_GUILDQUIET_HEAD = "V knize guildy zatím nic není."
 L.EMPTY_GUILDQUIET_SUB = "Tvoje guilda měla zatím klid."
 L.EMPTY_FRIENDSOFF_HEAD = "Kniha přátel je zavřená."
 L.EMPTY_FRIENDSOFF_SUB = "Sdílení s přáteli je vypnuté. Domácí řád ví, kde."
-L.EMPTY_FRIENDSNIL_HEAD = "Zatím se neozval nikdo z přátel s DeathNote."
-L.EMPTY_FRIENDSNIL_SUB = "Tvoje kniha se odešle, jakmile bude mít někdo z přátel DeathNote."
+L.EMPTY_FRIENDSNIL_HEAD = "Zatím se neozval nikdo z přátel s Revenge Book."
+L.EMPTY_FRIENDSNIL_SUB = "Tvoje kniha se odešle, jakmile bude mít někdo z přátel Revenge Book."
 L.EMPTY_FRIENDSQUIET_HEAD = "Od přátel zatím nic."
 L.EMPTY_FRIENDSQUIET_SUB = "Tvoji přátelé měli zatím klid."
 L.EMPTY_NOBODY_HEAD = "Žádná guilda, žádní přátelé."
 L.EMPTY_NOBODY_SUB = "Umírat se dá i o samotě."
-L.EMPTY_NOBODY_HINT = "Až budou mít lidé z guildy nebo přátelé ze seznamu přátel DeathNote, uvidíš tady, co se jim děje."
-L.EMPTY_SHAREDNIL_HEAD = "Zatím se neozval nikdo s DeathNote."
-L.EMPTY_SHAREDNIL_SUB = "Tvoje kniha se odešle, jakmile budou mít lidé z guildy nebo přátelé DeathNote."
+L.EMPTY_NOBODY_HINT = "Až budou mít lidé z guildy nebo přátelé ze seznamu přátel Revenge Book, uvidíš tady, co se jim děje."
+L.EMPTY_SHAREDNIL_HEAD = "Zatím se neozval nikdo s Revenge Book."
+L.EMPTY_SHAREDNIL_SUB = "Tvoje kniha se odešle, jakmile budou mít lidé z guildy nebo přátelé Revenge Book."
 L.EMPTY_SHAREDQUIET_HEAD = "Zatím tu nic není."
 L.EMPTY_SHAREDQUIET_SUB = "Guilda i přátelé měli zatím klid."
 L.EMPTY_HUNT_HEAD = "Seznam na odstřel je prázdný."
@@ -358,9 +358,9 @@ L.MANUAL_ALERT = "Když se vrah objeví jako jmenovka, cíl nebo pod myší, kni
 L.MANUAL_ADD_HEAD = "ZÁPIS"  -- [max 12]
 L.MANUAL_ADD = "Napiš jméno do vyhledávání, Enter. Pravý klik na řádek: zapsat pomstu, omilostnit, vyškrtnout."
 L.MANUAL_GUILD_HEAD = "GUILDA"  -- [max 12]
-L.MANUAL_GUILD = "Lidé z guildy a přátelé s DeathNote vidí tvoje potvrzené smrti a ruční zápisy. Plakát nebo /dn hunt Jméno: vyhlásit hon. Klik na odměnu: vypsat vlastní, jen slib, vyrovnáte se mezi sebou."
+L.MANUAL_GUILD = "Lidé z guildy a přátelé s Revenge Book vidí tvoje potvrzené smrti a ruční zápisy. Plakát nebo /dn hunt Jméno: vyhlásit hon. Klik na odměnu: vypsat vlastní, jen slib, vyrovnáte se mezi sebou."
 L.MANUAL_SHARE_HEAD = "PŘEDAT"  -- [max 12]
-L.MANUAL_SHARE = "Domácí řád, Zálohovat knihu: text ke zkopírování, pro všechny bez DeathNote."
+L.MANUAL_SHARE = "Domácí řád, Zálohovat knihu: text ke zkopírování, pro všechny bez Revenge Book."
 L.MANUAL_QUIET_HEAD = "KLID"  -- [max 12]
 L.MANUAL_QUIET = "V dungeonech a na bojištích poplach mlčí. Jinak: prostřední klik na tlačítko u minimapy nebo /dn quiet."
 -- Questions before something is destroyed (game dialog) -------------------------------------------
@@ -413,7 +413,7 @@ L.MARK_BOTH = "Z GUILDY, PŘÍTEL"  -- [max 20]
 L.MARK_TAKEN_DOWN = "ULOVENO {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ŽIVÝ NEBO MRTVÝ"  -- [max 24]
-L.BOOK_TITLE = "DeathNote"
+L.BOOK_TITLE = "Revenge Book"
 L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "ČINY"  -- [max 14]
 L.POSTER_NOTE = "POZNÁMKA"  -- [max 8]
@@ -530,16 +530,16 @@ L.SET_SEC_WARN = "POPLACH"
 L.SET_MORE = "Více"
 L.SET_GUILD_CLEAR = "Vyčistit knihu guildy"  -- [max 26]
 L.SET_HINT_GUILD = "Dostává to jen tvoje guilda. Co přijde odtamtud, zůstává odděleně od tvé knihy, dokud si to nepřevezmeš."
-L.SET_HINT_FRIENDS = "Dostávají to jen guilda a přátelé s DeathNote."
+L.SET_HINT_FRIENDS = "Dostávají to jen guilda a přátelé s Revenge Book."
 L.BTN_BACK = "Zpět"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Synchronizovat"  -- [max 14]
 L.SYNC_AGAIN_IN = "znovu za {seconds} s"  -- [max 16]
 L.TIP_FRIENDS = "Přátelé"
 L.TIP_GUILD_NAME = "Guilda {guild}"
-L.TIP_MATES_WITH = "Z guildy s DeathNote:"
-L.TIP_NO_MATE = "Zatím se neozval nikdo z guildy s DeathNote."
-L.TIP_FRIENDS_WITH = "Přátelé s DeathNote:"
+L.TIP_MATES_WITH = "Z guildy s Revenge Book:"
+L.TIP_NO_MATE = "Zatím se neozval nikdo z guildy s Revenge Book."
+L.TIP_FRIENDS_WITH = "Přátelé s Revenge Book:"
 L.TIP_SHARED = "Sdílí se: tvoje potvrzené smrti, ruční zápisy a tvoje vyhlášení honu."
 L.TIP_NOT_SHARED = "Nesdílí se: poznámky, podezření, omilostnění, načtené zápisy."
 -- Back up / import page ---------------------------------------------------------------------------
@@ -554,9 +554,9 @@ L.IO_MSG_BIG = "Velká kniha ({size}): označení a kopírování chvíli trvá.
 L.IO_HELP_EXPORT = "Text je označený: Ctrl+C ho zkopíruje. Uschovej ho nebo ho předej přátelům."
 L.IO_HELP_IMPORT = "Vlož zálohovaný text přes Ctrl+V, pak Načíst. Nic se nepřepíše."
 -- Sheet Put on the hit list (right page) ----------------------------------------------------------
-L.REL_HINT_ALL = "Důvod uvidí všichni v tvé guildě a tvoji přátelé s DeathNote."
-L.REL_HINT_GUILD = "Důvod uvidí všichni v tvé guildě s DeathNote."
-L.REL_HINT_FRIENDS = "Důvod uvidí tvoji přátelé s DeathNote."
+L.REL_HINT_ALL = "Důvod uvidí všichni v tvé guildě a tvoji přátelé s Revenge Book."
+L.REL_HINT_GUILD = "Důvod uvidí všichni v tvé guildě s Revenge Book."
+L.REL_HINT_FRIENDS = "Důvod uvidí tvoji přátelé s Revenge Book."
 L.REL_HEAD = "Vyhlásit hon"  -- [max 24]
 L.REL_FOR = "PRO"  -- [max 6]
 L.REL_REASON = "DŮVOD"  -- [max 8]
@@ -624,7 +624,7 @@ L.HUNT_ROW_HIDDEN = "skryto pro tebe"
 L.HUNT_ROW_CALLS = "{count} vyhlášení: {names}"
 L.POSTER_ON_HUNTLIST = "Na seznamu na odstřel ({names})"
 L.REL_SELF = "Na sebe hon vyhlásit nemůžeš."
-L.REL_MATE = "To je někdo z vašich (guilda nebo přátelé s DeathNote)."
+L.REL_MATE = "To je někdo z vašich (guilda nebo přátelé s Revenge Book)."
 -- Friends listed without surname: which full name is behind the entry (1.2.0) ------------------------
 L.FRIENDS_CONFLICT = "Kdo je tvůj přítel {friend}: {a}, nebo {b}? Vyber."
 L.FRIENDS_SHORT_CONFLICT = "Přítel nejasný"  -- [max 22]
@@ -637,12 +637,12 @@ L.CHAT_FRIENDS_TIES = "Propojená celá jména (* = první kontakt, zatím nepot
 -- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
 L.HELP_BOUNTY = "/dn bounty <Jméno [Příjmení]> <zlato>  vypsat vlastní odměnu (bez částky: stáhnout)"
 L.CHAT_WHO_BOUNTY = "Na koho? /dn bounty <Jméno> <zlato>"
-L.CHAT_BOUNTY_SET = "{name}: tvoje odměna {gold}g je vypsaná. Guilda a přátelé s DeathNote ji vidí."
+L.CHAT_BOUNTY_SET = "{name}: tvoje odměna {gold}g je vypsaná. Guilda a přátelé s Revenge Book ji vidí."
 L.CHAT_BOUNTY_OFF = "{name}: tvoje odměna je stažena."
 L.CHAT_BOUNTY_NONE = "{name}: nemáš tu vlastní odměnu."
 L.CHAT_BOUNTY_BAD = "Odměna: celé číslo ve zlatě, od 1 do 99999 (0 ji stáhne)."
 L.CHAT_BOUNTY_CAP = "Bez odměny: nejvýš {count} vlastních."
-L.CHAT_BOUNTY_OURS = "Žádná odměna na sebe ani na své (guilda nebo přátelé s DeathNote)."
+L.CHAT_BOUNTY_OURS = "Žádná odměna na sebe ani na své (guilda nebo přátelé s Revenge Book)."
 L.ACT_BOUNTY = "Vypsat odměnu"  -- [max 24]
 L.ACT_UNDO = "Vrátit zpět"  -- [max 19]
 L.ACT_REVENGE_TAKE = "Odečíst jednu pomstu"  -- [max 24]
@@ -653,7 +653,7 @@ L.POSTER_AVENGED = "Pomstili: {names}"
 L.ROW_AVENGED = "pomstěno {times}"
 L.BOUNTY_TIP_HEAD = "Tvoje vlastní odměna ve zlatě"
 L.BOUNTY_TIP_RULES = "Celé číslo od 1 do 99999. Prázdné nebo 0: zpět na hodnotu knihy. Enter nastaví, Esc zruší."
-L.BOUNTY_TIP_PROMISE = "Guilda a přátelé s DeathNote ji vidí. Jen slib: vyrovnáte se mezi sebou."
+L.BOUNTY_TIP_PROMISE = "Guilda a přátelé s Revenge Book ji vidí. Jen slib: vyrovnáte se mezi sebou."
 L.BOUNTY_TIP_CLICK = "Klik: vypsat vlastní odměnu"
 L.CHAT_AVENGED = "Pomsta za tebe: {killer}, od {name}."
 L.NAMES_PLUS = "{name} +{count}"
@@ -868,7 +868,6 @@ L.EMPTY_HIDDEN_SUB = "Enter nebo řádek dole je ukáže."
 L.EMPTY_SEARCHHAS_HEAD = "Už je ve tvé knize."
 L.EMPTY_SEARCHHAS_SUB = "Jen ne na této stránce. Enter ho otevře."
 L.FILTER_TWO = "Filtry: {count}"
-L.CHAT_NEWS_140 = "Novinka v 1.4.0: po útoku se malá zpráva zeptá, zda útočníka zapsat do knihy (Zášť; zap./vyp.: /dn grudge nebo {rules}, list {sheet}); „{takeall}“: záložka {guild}; filtr a hledání: záložka {wanted}."
 L.GRUDGE_TIP_OFF = "Vypnutí: /dn grudge nebo {rules}, list {sheet}."
 -- 1.5.0 grip
 L.GRUDGE_TIP_PROBABLE = "Nejisté: málo stop. Zaškrtni, jen když jsi ho viděl."
@@ -986,4 +985,7 @@ L.CHRON_AVENGED = "{names} skolili {name} za ostatní."
 L.CHRON_PARDONED = "Omilostnil jsi: {name}."
 L.CHRON_END = "Teď: {score} · {state}"
 L.CHRON_END_NONE = "Zatím: zabil tě {times}."
+-- 1.5.0 name
+L.HELP_ALIASES = "/rb, /revengebook  totéž co /dn"
+L.CHAT_NEWS_150 = "DeathNote se teď jmenuje Revenge Book. Tvoje kniha i /dn zůstávají. Novinky v 1.5.0: ukázat plakát v chatu, místa činu na mapě světa, klávesové zkratky, značka na jmenovkách tvých vrahů."
 end)

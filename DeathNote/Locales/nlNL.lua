@@ -5,7 +5,7 @@
 -- affiche, stempel, premie, notitie, waarneming, schrappen, begenadigen, wraak, verdachte, dodenlijst, jacht openen,
 -- oproep, jacht afblazen, geveld, Boek bewaren, Boek inlezen.
 --
--- TOC-Notes: Dodenlijst voor open-world-PvP: onthoudt wie je heeft gedood en waarschuwt je als die in de buurt is.
+-- TOC-Notes: Wraakboek voor world-PvP: onthoudt wie je heeft gedood en waarschuwt je als die in de buurt is.
 
 local _, ns = ...
 local Locale = ns and ns.Locale
@@ -93,7 +93,7 @@ L.MONEY_SILVER = "{count}z"
 L.MONEY_COPPER = "{count}k"
 
 -- Guild and friends status (House Rules, /dn guild, /dn friends) ----------------------------------
-L.GUILD_HEARD    = "{count} {count|guildgenoot|guildgenoten} met DeathNote gehoord."
+L.GUILD_HEARD    = "{count} {count|guildgenoot|guildgenoten} met Revenge Book gehoord."
 L.HEALTH_NOGUILD = "Je zit in geen guild, er wordt niets gedeeld."
 L.HEALTH_OFF     = "Delen staat uit."
 L.HEALTH_SHORT_NOGUILD = "Geen guild"     -- [max 18]
@@ -131,8 +131,8 @@ L.HELP_ADD      = "/dn add <Naam [Achternaam]>  een dader met de hand in het boe
 L.HELP_DEL      = "/dn del <Naam [Achternaam]>  een dader uit het boek schrappen"
 L.HELP_QUIET    = "/dn quiet  alarm uit/aan"
 L.HELP_TEST     = "/dn test  testalarm tonen"
-L.HELP_GUILD    = "/dn guild  guildboek: status en welke guildgenoten DeathNote hebben"
-L.HELP_FRIENDS  = "/dn friends  vriendenboek: status en welke vrienden DeathNote hebben"
+L.HELP_GUILD    = "/dn guild  guildboek: status en welke guildgenoten Revenge Book hebben"
+L.HELP_FRIENDS  = "/dn friends  vriendenboek: status en welke vrienden Revenge Book hebben"
 L.HELP_SYNC     = "/dn sync  guildboek en vriendenboek nu synchroniseren"
 L.HELP_HUNT     = "/dn hunt <Naam [Achternaam]>  op de dodenlijst zetten (zonder naam: dodenlijst tonen)"
 L.HELP_CALLOFF  = "/dn calloff <Naam [Achternaam]>  je eigen jacht afblazen"
@@ -162,16 +162,16 @@ L.CHAT_GUILD_STATE = "Guild {guild}: delen {share}, ontvangen {receive}."
 L.CHAT_GUILD_BOOK = "Guildboek: {enemies} daders ({listed} alleen met de hand), {deeds} {deeds|daad|daden}, {foreign} daarvan doodden andere guildgenoten. Handmatige namen delen: {manual}."
 L.CHAT_STATE_OK   = "Status: {text}"
 L.CHAT_STATE_WARN = "Let op: {text}"
-L.CHAT_NO_MATES   = "Nog geen guildgenoot met DeathNote gehoord."
-L.CHAT_HAVE_DN      = "Met DeathNote: {names}"
-L.CHAT_HAVE_DN_MORE = "Met DeathNote: {names} en nog {count}"
+L.CHAT_NO_MATES   = "Nog geen guildgenoot met Revenge Book gehoord."
+L.CHAT_HAVE_DN      = "Met Revenge Book: {names}"
+L.CHAT_HAVE_DN_MORE = "Met Revenge Book: {names} en nog {count}"
 L.CHAT_SYNC_ASKED = "Sync aangevraagd. Antwoorden komen binnen een paar seconden."
 L.CHAT_SYNC_FAIL  = "Sync werkt niet: {reason}"
 L.CHAT_SYNC_FAIL_DEFAULT = "geen guild, of delen staat uit."
 L.CHAT_FRIENDS_NOT_LOADED = "Het vriendenboek is niet geladen."
 L.CHAT_FRIENDS_STATE = "Vrienden: delen {share}, {online} van {total} online."
 L.CHAT_FRIENDS_BOOK  = "Vriendenboek: {enemies} daders ({listed} alleen met de hand), {deeds} {deeds|daad|daden}."
-L.CHAT_NO_FRIENDS    = "Nog geen vriend met DeathNote gehoord."
+L.CHAT_NO_FRIENDS    = "Nog geen vriend met Revenge Book gehoord."
 L.CHAT_HUNT_NOT_LOADED = "De dodenlijst is niet geladen."
 L.CHAT_HUNT_UNKNOWN = "Onbekend: {name}. Gebruik ook de achternaam, zoals de naam in het spel staat."
 L.CHAT_HUNT_CAP     = "Kan niet op de dodenlijst: hoogstens {own} eigen oproepen en {targets} doelwitten per lijst."
@@ -199,7 +199,7 @@ L.THEME_TRADE = "De werkplaats"
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Het boek ligt klaar. Wie je in de open wereld doodt, staat er daarna in. Open het met /dn of de minimapknop."
 L.WELCOME_PLATES = "Naamplaatjes van vijanden staan uit. Zonder die ziet het alarm alleen je doelwit."
-L.WELCOME_SHARE = "Guild en vrienden die DeathNote hebben, lezen mee. Notities en verdenkingen blijven bij jou."
+L.WELCOME_SHARE = "Guild en vrienden die Revenge Book hebben, lezen mee. Notities en verdenkingen blijven bij jou."
 
 -- Unit tooltip (one line under the player's tooltip) ---------------------------------------------
 L.TIP_IN_BOOK   = "IN HET BOEK:"
@@ -249,10 +249,10 @@ L.SYNC_HOLD_AGAIN    = "tot het weer werkt"
 L.SYNC_HOLD_SHORT_INSTANCE = "Wacht: instance"    -- [max 18]
 L.SYNC_HOLD_SHORT_COMBAT   = "Wacht: gevecht"     -- [max 18]
 L.SYNC_HOLD_SHORT_LOCKDOWN = "Wacht: chat"        -- [max 18]
-L.SYNC_QUIET       = "Verzonden, maar nog geen guildgenoot met DeathNote gehoord."
-L.SYNC_READY       = "Klaar. Nog geen guildgenoot met DeathNote gehoord."
-L.SYNC_RUNNING     = "Actief: {count} {count|guildgenoot|guildgenoten} met DeathNote."
-L.SYNC_RUNNING_ALL = "Actief: {count} met DeathNote bij guild en vrienden."
+L.SYNC_QUIET       = "Verzonden, maar nog geen guildgenoot met Revenge Book gehoord."
+L.SYNC_READY       = "Klaar. Nog geen guildgenoot met Revenge Book gehoord."
+L.SYNC_RUNNING     = "Actief: {count} {count|guildgenoot|guildgenoten} met Revenge Book."
+L.SYNC_RUNNING_ALL = "Actief: {count} met Revenge Book bij guild en vrienden."
 L.FRIENDS_OFF      = "Delen met vrienden staat uit (Huisregels, blad Guild)."
 L.FRIENDS_BLOCKED  = "De realm blokkeert whispers. Vrienden krijgen niets."
 L.FRIENDS_SHORT_BLOCKED = "Whispers geblokkeerd" -- [max 22]
@@ -261,10 +261,10 @@ L.FRIENDS_SHORT_FAILING = "Whispers haperen"     -- [max 18]
 L.FRIENDS_NONE_LISTED = "Geen vrienden op de vriendenlijst."
 L.FRIENDS_NONE_ONLINE = "Er is nu geen vriend online."
 L.FRIENDS_SHORT_NONE_ONLINE = "Geen vriend online" -- [max 18]
-L.FRIENDS_QUIET    = "Gevraagd, maar nog geen vriend met DeathNote gehoord."
-L.FRIENDS_READY    = "Klaar. Nog geen vriend met DeathNote gehoord."
+L.FRIENDS_QUIET    = "Gevraagd, maar nog geen vriend met Revenge Book gehoord."
+L.FRIENDS_READY    = "Klaar. Nog geen vriend met Revenge Book gehoord."
 L.FRIENDS_HOLD     = "Verzenden naar vrienden wacht tot het weer werkt."
-L.FRIENDS_RUNNING  = "Actief: {count} {count|vriend|vrienden} met DeathNote."
+L.FRIENDS_RUNNING  = "Actief: {count} {count|vriend|vrienden} met Revenge Book."
 -- A killer taken over from the guild book into your own book gets this note (your note from then on)
 L.NOTE_FROM_GUILD  = "Overgenomen uit het guildboek (heeft guildgenoten {kills}× gedood)."
 
@@ -272,7 +272,7 @@ L.NOTE_FROM_GUILD  = "Overgenomen uit het guildboek (heeft guildgenoten {kills}�
 L.IMPORT_NO_DB      = "Database niet geladen."
 L.IMPORT_NO_TEXT    = "Geen tekst."
 L.IMPORT_NO_HEADER  = "De eerste regel ontbreekt (die begint met {header}). Kopieer de hele tekst."
-L.IMPORT_NOT_EXPORT = "Geen DeathNote-export (kopregel ontbreekt of verkeerde versie)."
+L.IMPORT_NOT_EXPORT = "Geen Revenge Book-export (kopregel ontbreekt of verkeerde versie)."
 L.IMPORT_TOO_LONG   = "Te veel regels (hoogstens {count})."
 L.IMPORT_BAD_KEY    = "Regel {line}: ongeldige sleutel."
 L.IMPORT_BAD_TIME   = "Regel {line}: ongeldige tijd."
@@ -316,20 +316,20 @@ L.EMPTY_NOGUILD_SUB = "Alleen doodgaan kan ook."
 L.EMPTY_GUILDOFF_HEAD = "Het guildboek is dicht."
 L.EMPTY_GUILDOFF_SUB = "Delen staat uit. De Huisregels weten waar."
 L.EMPTY_GUILDNIL_HEAD = "Nog niets van de guild gehoord."
-L.EMPTY_GUILDNIL_SUB = "Je boek gaat de deur uit zodra een guildgenoot DeathNote heeft."
+L.EMPTY_GUILDNIL_SUB = "Je boek gaat de deur uit zodra een guildgenoot Revenge Book heeft."
 L.EMPTY_GUILDQUIET_HEAD = "Nog niets in het guildboek."
 L.EMPTY_GUILDQUIET_SUB = "Je guildgenoten hadden tot nu toe rust."
 L.EMPTY_FRIENDSOFF_HEAD = "Het vriendenboek is dicht."
 L.EMPTY_FRIENDSOFF_SUB = "Delen met vrienden staat uit. De Huisregels weten waar."
-L.EMPTY_FRIENDSNIL_HEAD = "Nog geen vriend met DeathNote gehoord."
-L.EMPTY_FRIENDSNIL_SUB = "Je boek gaat de deur uit zodra een vriend DeathNote heeft."
+L.EMPTY_FRIENDSNIL_HEAD = "Nog geen vriend met Revenge Book gehoord."
+L.EMPTY_FRIENDSNIL_SUB = "Je boek gaat de deur uit zodra een vriend Revenge Book heeft."
 L.EMPTY_FRIENDSQUIET_HEAD = "Nog niets van je vrienden."
 L.EMPTY_FRIENDSQUIET_SUB = "Je vrienden hadden tot nu toe rust."
 L.EMPTY_NOBODY_HEAD = "Geen guild, geen vrienden."
 L.EMPTY_NOBODY_SUB = "Alleen doodgaan kan ook."
-L.EMPTY_NOBODY_HINT = "Zodra guildgenoten of vrienden van je vriendenlijst DeathNote hebben, laat deze pagina zien wat hun overkomt."
-L.EMPTY_SHAREDNIL_HEAD = "Nog niemand met DeathNote gehoord."
-L.EMPTY_SHAREDNIL_SUB = "Je boek gaat de deur uit zodra guildgenoten of vrienden DeathNote hebben."
+L.EMPTY_NOBODY_HINT = "Zodra guildgenoten of vrienden van je vriendenlijst Revenge Book hebben, laat deze pagina zien wat hun overkomt."
+L.EMPTY_SHAREDNIL_HEAD = "Nog niemand met Revenge Book gehoord."
+L.EMPTY_SHAREDNIL_SUB = "Je boek gaat de deur uit zodra guildgenoten of vrienden Revenge Book hebben."
 L.EMPTY_SHAREDQUIET_HEAD = "Hier staat nog niets."
 L.EMPTY_SHAREDQUIET_SUB = "Guild en vrienden hadden tot nu toe rust."
 L.EMPTY_HUNT_HEAD = "De dodenlijst is leeg."
@@ -351,9 +351,9 @@ L.MANUAL_ALERT = "Duikt een dader op als naamplaatje, doelwit of onder de muis, 
 L.MANUAL_ADD_HEAD = "TOEVOEGEN"  -- [max 12]
 L.MANUAL_ADD = "Typ een naam in het zoekveld, Enter. Rechtsklik op een regel: wraak noteren, begenadigen, schrappen."
 L.MANUAL_GUILD_HEAD = "GUILD"  -- [max 12]
-L.MANUAL_GUILD = "Guildgenoten en vrienden met DeathNote zien je bevestigde sterfgevallen en handmatige namen. Affiche of /dn hunt Naam: op de dodenlijst zetten. Klik op de premie: loof je eigen uit, een belofte die je onderling regelt."
+L.MANUAL_GUILD = "Guildgenoten en vrienden met Revenge Book zien je bevestigde sterfgevallen en handmatige namen. Affiche of /dn hunt Naam: op de dodenlijst zetten. Klik op de premie: loof je eigen uit, een belofte die je onderling regelt."
 L.MANUAL_SHARE_HEAD = "DOORGEVEN"  -- [max 12]
-L.MANUAL_SHARE = "Huisregels, Boek bewaren: een tekst om te kopiëren, voor iedereen zonder DeathNote."
+L.MANUAL_SHARE = "Huisregels, Boek bewaren: een tekst om te kopiëren, voor iedereen zonder Revenge Book."
 L.MANUAL_QUIET_HEAD = "STILTE"  -- [max 12]
 L.MANUAL_QUIET = "In dungeons en battlegrounds zwijgt het alarm. Anders: middelklik op de minimapknop of /dn quiet."
 -- Questions before something is destroyed (game dialog) -------------------------------------------
@@ -406,7 +406,7 @@ L.MARK_BOTH = "GUILDGENOOT, VRIEND"  -- [max 20]
 L.MARK_TAKEN_DOWN = "GEVELD {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "DOOD OF LEVEND"  -- [max 24]
-L.BOOK_TITLE = "DeathNote"
+L.BOOK_TITLE = "Revenge Book"
 L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "DADEN"  -- [max 14]
 L.POSTER_NOTE = "NOTITIE"  -- [max 8]
@@ -523,16 +523,16 @@ L.SET_SEC_WARN = "ALARM"
 L.SET_MORE = "Meer"
 L.SET_GUILD_CLEAR = "Guildboek leegmaken"  -- [max 26]
 L.SET_HINT_GUILD = "Alleen je eigen guild krijgt iets. Wat daarvandaan komt, blijft los van je boek tot je het zelf overneemt."
-L.SET_HINT_FRIENDS = "Alleen guild en vrienden met DeathNote krijgen iets."
+L.SET_HINT_FRIENDS = "Alleen guild en vrienden met Revenge Book krijgen iets."
 L.BTN_BACK = "Terug"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Sync"  -- [max 14]
 L.SYNC_AGAIN_IN = "weer over {seconds} s"  -- [max 16]
 L.TIP_FRIENDS = "Vrienden"
 L.TIP_GUILD_NAME = "Guild {guild}"
-L.TIP_MATES_WITH = "Guildgenoten met DeathNote:"
-L.TIP_NO_MATE = "Nog geen guildgenoot met DeathNote gehoord."
-L.TIP_FRIENDS_WITH = "Vrienden met DeathNote:"
+L.TIP_MATES_WITH = "Guildgenoten met Revenge Book:"
+L.TIP_NO_MATE = "Nog geen guildgenoot met Revenge Book gehoord."
+L.TIP_FRIENDS_WITH = "Vrienden met Revenge Book:"
 L.TIP_SHARED = "Gedeeld: je bevestigde sterfgevallen, handmatige namen en je jachtoproepen."
 L.TIP_NOT_SHARED = "Niet gedeeld: notities, verdenkingen, begenadigden, ingelezen namen."
 -- Back up / import page ---------------------------------------------------------------------------
@@ -547,9 +547,9 @@ L.IO_MSG_BIG = "Groot boek ({size}): selecteren en kopiëren duren even."
 L.IO_HELP_EXPORT = "De tekst is geselecteerd: Ctrl+C kopieert hem. Bewaar hem of geef hem aan vrienden."
 L.IO_HELP_IMPORT = "Plak een bewaarde tekst met Ctrl+V, dan Inlezen. Er wordt niets overschreven."
 -- Sheet Put on the hit list (right page) ----------------------------------------------------------
-L.REL_HINT_ALL = "Iedereen in je guild en je vrienden met DeathNote zien de reden."
-L.REL_HINT_GUILD = "Iedereen in je guild met DeathNote ziet de reden."
-L.REL_HINT_FRIENDS = "Je vrienden met DeathNote zien de reden."
+L.REL_HINT_ALL = "Iedereen in je guild en je vrienden met Revenge Book zien de reden."
+L.REL_HINT_GUILD = "Iedereen in je guild met Revenge Book ziet de reden."
+L.REL_HINT_FRIENDS = "Je vrienden met Revenge Book zien de reden."
 L.REL_HEAD = "Op de dodenlijst zetten"  -- [max 24]
 L.REL_FOR = "VOOR"  -- [max 6]
 L.REL_REASON = "REDEN"  -- [max 8]
@@ -617,7 +617,7 @@ L.HUNT_ROW_HIDDEN = "verborgen voor jou"
 L.HUNT_ROW_CALLS = "{count} {count|oproep|oproepen}: {names}"
 L.POSTER_ON_HUNTLIST = "Op de dodenlijst ({names})"
 L.REL_SELF = "Jezelf kun je niet op de dodenlijst zetten."
-L.REL_MATE = "Dat is een van jullie (guild of vrienden met DeathNote)."
+L.REL_MATE = "Dat is een van jullie (guild of vrienden met Revenge Book)."
 -- Friends listed without surname: which full name is behind the entry (1.2.0) ------------------------
 L.FRIENDS_CONFLICT = "Wie is je vriend {friend}: {a} of {b}? Kies zelf."
 L.FRIENDS_SHORT_CONFLICT = "Vriend onzeker"  -- [max 22]
@@ -630,12 +630,12 @@ L.CHAT_FRIENDS_TIES = "Gekoppelde volledige namen (* = eerste contact, nog niet 
 -- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
 L.HELP_BOUNTY = "/dn bounty <Naam [Achternaam]> <goud>  eigen premie uitloven (zonder goud: intrekken)"
 L.CHAT_WHO_BOUNTY = "Op wie? /dn bounty <Naam> <goud>"
-L.CHAT_BOUNTY_SET = "{name}: je hebt {gold} goud premie uitgeloofd. Guild en vrienden met DeathNote zien het."
+L.CHAT_BOUNTY_SET = "{name}: je hebt {gold} goud premie uitgeloofd. Guild en vrienden met Revenge Book zien het."
 L.CHAT_BOUNTY_OFF = "{name}: je premie is ingetrokken."
 L.CHAT_BOUNTY_NONE = "Je hebt geen eigen premie op {name}."
 L.CHAT_BOUNTY_BAD = "Premie: een heel getal goud, 1 tot 99999 (0 trekt hem in)."
 L.CHAT_BOUNTY_CAP = "Geen premie: hoogstens {count} eigen."
-L.CHAT_BOUNTY_OURS = "Geen premie op jezelf of je eigen mensen (guild of vrienden met DeathNote)."
+L.CHAT_BOUNTY_OURS = "Geen premie op jezelf of je eigen mensen (guild of vrienden met Revenge Book)."
 L.ACT_BOUNTY = "Premie uitloven"  -- [max 24]
 L.ACT_UNDO = "Ongedaan maken"  -- [max 19]
 L.ACT_REVENGE_TAKE = "Eén wraak aftrekken"  -- [max 24]
@@ -646,7 +646,7 @@ L.POSTER_AVENGED = "Gewroken door {names}"
 L.ROW_AVENGED = "gewroken {times}"
 L.BOUNTY_TIP_HEAD = "Je eigen premie in goud"
 L.BOUNTY_TIP_RULES = "Een heel getal, 1 tot 99999. Leeg of 0: terug naar de waarde van het boek. Enter zet, Esc breekt af."
-L.BOUNTY_TIP_PROMISE = "Guild en vrienden met DeathNote zien het. Alleen een belofte: jullie regelen het onderling."
+L.BOUNTY_TIP_PROMISE = "Guild en vrienden met Revenge Book zien het. Alleen een belofte: jullie regelen het onderling."
 L.BOUNTY_TIP_CLICK = "Klik: eigen premie uitloven"
 L.CHAT_AVENGED = "{name} heeft {killer} voor je geveld."
 L.NAMES_PLUS = "{name} +{count}"
@@ -861,7 +861,6 @@ L.EMPTY_HIDDEN_SUB = "Enter of de regel onderaan toont ze."
 L.EMPTY_SEARCHHAS_HEAD = "Staat al in je boek."
 L.EMPTY_SEARCHHAS_SUB = "Alleen niet op deze pagina. Enter opent het."
 L.FILTER_TWO = "{count} filters"
-L.CHAT_NEWS_140 = "Nieuw in 1.4.0: na een aanval vraagt een kleine melding of de aanvaller in je boek komt (Wrok; aan/uit: /dn grudge of {rules}, blad {sheet}); \"{takeall}\" staat onder {guild}, filter en zoeken onder {wanted}."
 L.GRUDGE_TIP_OFF = "Uitzetten: /dn grudge of {rules}, blad {sheet}."
 -- 1.5.0 grip
 L.GRUDGE_TIP_PROBABLE = "Onzeker: weinig wijst op hem. Vink alleen aan als je hem zag."
@@ -979,4 +978,7 @@ L.CHRON_AVENGED = "{names} velden {name} voor de anderen."
 L.CHRON_PARDONED = "Je hebt {name} gratie verleend."
 L.CHRON_END = "Nu: {score} · {state}"
 L.CHRON_END_NONE = "Tot nu toe: je {times} gedood."
+-- 1.5.0 name
+L.HELP_ALIASES = "/rb, /revengebook  hetzelfde als /dn"
+L.CHAT_NEWS_150 = "DeathNote heet nu Revenge Book. Je boek en /dn blijven. Nieuw in 1.5.0: een poster in de chat tonen, plaatsen delict op de wereldkaart, sneltoetsen, een merkteken op de naamplaatjes van je moordenaars."
 end)

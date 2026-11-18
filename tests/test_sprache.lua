@@ -146,10 +146,10 @@ test("Export auf Deutsch, Einlesen auf Englisch: gleiche Daten, Kopfzeile sprach
   eq(ns2.Store.Get("Grimm-Bart").status, ns.Store.Get("Grimm-Bart").status)
   -- error messages in the active language
   local bad, msg = ns2.Store.Import("Quatsch")
-  eq(bad, false); ok(msg:find("Not a DeathNote export", 1, true), msg)
+  eq(bad, false); ok(msg:find("Not a Revenge Book export", 1, true), msg)
   local ns3 = M.Load({ lang = "deDE" })
   bad, msg = ns3.Store.Import("Quatsch")
-  ok(msg:find("Kein DeathNote-Export", 1, true), msg)
+  ok(msg:find("Kein Revenge-Book-Export", 1, true), msg)
   -- and back: an English export reads in German
   local okB = ns3.Store.Import(ns2.Store.Export())
   ok(okB)

@@ -82,8 +82,8 @@ end)
 ---------------------------------------------------------------------------
 -- Greeting: the delay starts at PLAYER_ENTERING_WORLD
 ---------------------------------------------------------------------------
-local WELCOME = "DeathNote: Das Buch liegt bereit."
-local PLATES = "DeathNote: Feindliche Namensplaketten sind aus."
+local WELCOME = "Revenge Book: Das Buch liegt bereit."
+local PLATES = "Revenge Book: Feindliche Namensplaketten sind aus."
 local function count(s) local n = 0 for _, l in ipairs(M.chat) do if plain(l):find(s, 1, true) == 1 then n = n + 1 end end return n end
 
 test("Greeting: 5 s after the first PLAYER_ENTERING_WORLD, not after PLAYER_LOGIN", function()

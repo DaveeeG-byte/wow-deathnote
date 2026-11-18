@@ -5,7 +5,7 @@
 -- affisch, stämpel, belöning, notering, observation, stryka, benåda, hämnd, misstänkt, jaktlistan, utlysa jakt,
 -- utlysning, blåsa av jakten, fälld, Spara boken, Läs in boken.
 --
--- TOC-Notes: Dödslista för PvP i öppna världen: minns vem som dödade dig och varnar när hen är nära.
+-- TOC-Notes: Hämndbok för PvP i världen: minns vem som dödade dig och varnar när hen är nära.
 
 local _, ns = ...
 local Locale = ns and ns.Locale
@@ -93,7 +93,7 @@ L.MONEY_SILVER = "{count}s"
 L.MONEY_COPPER = "{count}k"
 
 -- Guild and friends status (House Rules, /dn guild, /dn friends) ----------------------------------
-L.GUILD_HEARD    = "Hört från {count} {count|guildkompis|guildkompisar} med DeathNote."
+L.GUILD_HEARD    = "Hört från {count} {count|guildkompis|guildkompisar} med Revenge Book."
 L.HEALTH_NOGUILD = "Du är inte med i någon guild, inget delas."
 L.HEALTH_OFF     = "Delning är avstängd."
 L.HEALTH_SHORT_NOGUILD = "Ingen guild"    -- [max 18]
@@ -131,8 +131,8 @@ L.HELP_ADD      = "/dn add <Namn [Efternamn]>  skriv in en mördare för hand"
 L.HELP_DEL      = "/dn del <Namn [Efternamn]>  stryk en mördare ur boken"
 L.HELP_QUIET    = "/dn quiet  larm av/på"
 L.HELP_TEST     = "/dn test  visa ett testlarm"
-L.HELP_GUILD    = "/dn guild  guildboken: status och vilka guildkompisar som har DeathNote"
-L.HELP_FRIENDS  = "/dn friends  vänboken: status och vilka vänner som har DeathNote"
+L.HELP_GUILD    = "/dn guild  guildboken: status och vilka guildkompisar som har Revenge Book"
+L.HELP_FRIENDS  = "/dn friends  vänboken: status och vilka vänner som har Revenge Book"
 L.HELP_SYNC     = "/dn sync  synka guildboken och vänboken nu"
 L.HELP_HUNT     = "/dn hunt <Namn [Efternamn]>  utlys jakt (utan namn: visa jaktlistan)"
 L.HELP_CALLOFF  = "/dn calloff <Namn [Efternamn]>  blås av din egen jakt"
@@ -162,16 +162,16 @@ L.CHAT_GUILD_STATE = "Guild {guild}: dela {share}, ta emot {receive}."
 L.CHAT_GUILD_BOOK = "Guildboken: {enemies} mördare ({listed} bara inskrivna för hand), {deeds} {deeds|dåd|dåd}, {foreign} av dem har dödat andra guildkompisar. Dela handinskrivna: {manual}."
 L.CHAT_STATE_OK   = "Status: {text}"
 L.CHAT_STATE_WARN = "Obs: {text}"
-L.CHAT_NO_MATES   = "Inget svar från någon guildkompis med DeathNote än."
-L.CHAT_HAVE_DN      = "Har DeathNote: {names}"
-L.CHAT_HAVE_DN_MORE = "Har DeathNote: {names} och {count} till"
+L.CHAT_NO_MATES   = "Inget svar från någon guildkompis med Revenge Book än."
+L.CHAT_HAVE_DN      = "Har Revenge Book: {names}"
+L.CHAT_HAVE_DN_MORE = "Har Revenge Book: {names} och {count} till"
 L.CHAT_SYNC_ASKED = "Synk begärd. Svaren kommer inom några sekunder."
 L.CHAT_SYNC_FAIL  = "Synken fungerar inte: {reason}"
 L.CHAT_SYNC_FAIL_DEFAULT = "ingen guild, eller så är delning av."
 L.CHAT_FRIENDS_NOT_LOADED = "Vänboken är inte laddad."
 L.CHAT_FRIENDS_STATE = "Vänner: dela {share}, {online} av {total} online."
 L.CHAT_FRIENDS_BOOK  = "Vänboken: {enemies} mördare ({listed} bara inskrivna för hand), {deeds} {deeds|dåd|dåd}."
-L.CHAT_NO_FRIENDS    = "Inget svar från någon vän med DeathNote än."
+L.CHAT_NO_FRIENDS    = "Inget svar från någon vän med Revenge Book än."
 L.CHAT_HUNT_NOT_LOADED = "Jaktlistan är inte laddad."
 L.CHAT_HUNT_UNKNOWN = "Okänd: {name}. Ta med efternamnet också, så som namnet står i spelet."
 L.CHAT_HUNT_CAP     = "Kan inte utlysa jakt: högst {own} egna utlysningar och {targets} mål per lista."
@@ -199,7 +199,7 @@ L.THEME_TRADE = "Verkstaden"
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Boken är redo. Den som dödar dig i öppna världen hamnar i den. Öppna den med /dn eller minimap-knappen."
 L.WELCOME_PLATES = "Fiendens namnskyltar är avstängda. Utan dem ser larmet bara ditt mål."
-L.WELCOME_SHARE = "Guild och vänner som har DeathNote läser med. Noteringar och misstankar stannar hos dig."
+L.WELCOME_SHARE = "Guild och vänner som har Revenge Book läser med. Noteringar och misstankar stannar hos dig."
 
 -- Unit tooltip (one line under the player's tooltip) ---------------------------------------------
 L.TIP_IN_BOOK   = "I BOKEN:"
@@ -249,10 +249,10 @@ L.SYNC_HOLD_AGAIN    = "tills det fungerar igen"
 L.SYNC_HOLD_SHORT_INSTANCE = "Väntar: instans"    -- [max 18]
 L.SYNC_HOLD_SHORT_COMBAT   = "Väntar: strid"      -- [max 18]
 L.SYNC_HOLD_SHORT_LOCKDOWN = "Väntar: chatt"      -- [max 18]
-L.SYNC_QUIET       = "Skickat, men ännu inget svar från någon guildkompis med DeathNote."
-L.SYNC_READY       = "Redo. Ännu inget svar från någon guildkompis med DeathNote."
-L.SYNC_RUNNING     = "Igång: {count} {count|guildkompis|guildkompisar} med DeathNote."
-L.SYNC_RUNNING_ALL = "Igång: {count} med DeathNote i guild och bland vänner."
+L.SYNC_QUIET       = "Skickat, men ännu inget svar från någon guildkompis med Revenge Book."
+L.SYNC_READY       = "Redo. Ännu inget svar från någon guildkompis med Revenge Book."
+L.SYNC_RUNNING     = "Igång: {count} {count|guildkompis|guildkompisar} med Revenge Book."
+L.SYNC_RUNNING_ALL = "Igång: {count} med Revenge Book i guild och bland vänner."
 L.FRIENDS_OFF      = "Delning med vänner är av (Husregler, fliken Guild)."
 L.FRIENDS_BLOCKED  = "Realmen spärrar viskningar. Vänner får inget."
 L.FRIENDS_SHORT_BLOCKED = "Viskningar spärrade"  -- [max 22]
@@ -261,10 +261,10 @@ L.FRIENDS_SHORT_FAILING = "Viskningar hackar"    -- [max 18]
 L.FRIENDS_NONE_LISTED = "Inga vänner på vänlistan."
 L.FRIENDS_NONE_ONLINE = "Ingen vän online just nu."
 L.FRIENDS_SHORT_NONE_ONLINE = "Ingen vän online"  -- [max 18]
-L.FRIENDS_QUIET    = "Frågat, men ännu inget svar från någon vän med DeathNote."
-L.FRIENDS_READY    = "Redo. Ännu inget svar från någon vän med DeathNote."
+L.FRIENDS_QUIET    = "Frågat, men ännu inget svar från någon vän med Revenge Book."
+L.FRIENDS_READY    = "Redo. Ännu inget svar från någon vän med Revenge Book."
 L.FRIENDS_HOLD     = "Sändning till vänner väntar tills det fungerar igen."
-L.FRIENDS_RUNNING  = "Igång: {count} {count|vän|vänner} med DeathNote."
+L.FRIENDS_RUNNING  = "Igång: {count} {count|vän|vänner} med Revenge Book."
 -- A killer taken over from the guild book into your own book gets this note (your note from then on)
 L.NOTE_FROM_GUILD  = "Hämtad från guildboken (har dödat guildkompisar {kills}×)."
 
@@ -272,7 +272,7 @@ L.NOTE_FROM_GUILD  = "Hämtad från guildboken (har dödat guildkompisar {kills}
 L.IMPORT_NO_DB      = "Databasen är inte laddad."
 L.IMPORT_NO_TEXT    = "Ingen text."
 L.IMPORT_NO_HEADER  = "Första raden saknas (den börjar med {header}). Kopiera hela texten."
-L.IMPORT_NOT_EXPORT = "Ingen DeathNote-export (rubrikraden saknas eller fel version)."
+L.IMPORT_NOT_EXPORT = "Ingen Revenge Book-export (rubrikraden saknas eller fel version)."
 L.IMPORT_TOO_LONG   = "För många rader (högst {count})."
 L.IMPORT_BAD_KEY    = "Rad {line}: ogiltig nyckel."
 L.IMPORT_BAD_TIME   = "Rad {line}: ogiltig tid."
@@ -316,20 +316,20 @@ L.EMPTY_NOGUILD_SUB = "Man kan dö ensam också."
 L.EMPTY_GUILDOFF_HEAD = "Guildboken är stängd."
 L.EMPTY_GUILDOFF_SUB = "Delning är av. Husreglerna vet var."
 L.EMPTY_GUILDNIL_HEAD = "Inget har hörts från guilden än."
-L.EMPTY_GUILDNIL_SUB = "Din bok skickas ut så fort en guildkompis har DeathNote."
+L.EMPTY_GUILDNIL_SUB = "Din bok skickas ut så fort en guildkompis har Revenge Book."
 L.EMPTY_GUILDQUIET_HEAD = "Inget i guildboken än."
 L.EMPTY_GUILDQUIET_SUB = "Dina guildkompisar har haft lugnt hittills."
 L.EMPTY_FRIENDSOFF_HEAD = "Vänboken är stängd."
 L.EMPTY_FRIENDSOFF_SUB = "Delning med vänner är av. Husreglerna vet var."
-L.EMPTY_FRIENDSNIL_HEAD = "Inget svar från någon vän med DeathNote än."
-L.EMPTY_FRIENDSNIL_SUB = "Din bok skickas ut så fort en vän har DeathNote."
+L.EMPTY_FRIENDSNIL_HEAD = "Inget svar från någon vän med Revenge Book än."
+L.EMPTY_FRIENDSNIL_SUB = "Din bok skickas ut så fort en vän har Revenge Book."
 L.EMPTY_FRIENDSQUIET_HEAD = "Inget från dina vänner än."
 L.EMPTY_FRIENDSQUIET_SUB = "Dina vänner har haft lugnt hittills."
 L.EMPTY_NOBODY_HEAD = "Ingen guild, inga vänner."
 L.EMPTY_NOBODY_SUB = "Man kan dö ensam också."
-L.EMPTY_NOBODY_HINT = "När guildkompisar eller vänner från din vänlista har DeathNote visar den här sidan vad som händer dem."
-L.EMPTY_SHAREDNIL_HEAD = "Inget svar från någon med DeathNote än."
-L.EMPTY_SHAREDNIL_SUB = "Din bok skickas ut så fort guildkompisar eller vänner har DeathNote."
+L.EMPTY_NOBODY_HINT = "När guildkompisar eller vänner från din vänlista har Revenge Book visar den här sidan vad som händer dem."
+L.EMPTY_SHAREDNIL_HEAD = "Inget svar från någon med Revenge Book än."
+L.EMPTY_SHAREDNIL_SUB = "Din bok skickas ut så fort guildkompisar eller vänner har Revenge Book."
 L.EMPTY_SHAREDQUIET_HEAD = "Inget här än."
 L.EMPTY_SHAREDQUIET_SUB = "Guild och vänner har haft lugnt hittills."
 L.EMPTY_HUNT_HEAD = "Jaktlistan är tom."
@@ -351,9 +351,9 @@ L.MANUAL_ALERT = "När en mördare dyker upp som namnskylt, mål eller under mus
 L.MANUAL_ADD_HEAD = "SKRIVA IN"  -- [max 12]
 L.MANUAL_ADD = "Skriv ett namn i sökfältet, Enter. Högerklicka på en rad: notera hämnd, benåda, stryk."
 L.MANUAL_GUILD_HEAD = "GUILD"  -- [max 12]
-L.MANUAL_GUILD = "Guildkompisar och vänner med DeathNote ser dina bekräftade dödsfall och handinskrivna namn. Affischen eller /dn hunt Namn: utlys jakt. Klicka på belöningen: utlys din egen, ett löfte ni gör upp sinsemellan."
+L.MANUAL_GUILD = "Guildkompisar och vänner med Revenge Book ser dina bekräftade dödsfall och handinskrivna namn. Affischen eller /dn hunt Namn: utlys jakt. Klicka på belöningen: utlys din egen, ett löfte ni gör upp sinsemellan."
 L.MANUAL_SHARE_HEAD = "DELA VIDARE"  -- [max 12]
-L.MANUAL_SHARE = "Husregler, Spara boken: en text att kopiera, för alla utan DeathNote."
+L.MANUAL_SHARE = "Husregler, Spara boken: en text att kopiera, för alla utan Revenge Book."
 L.MANUAL_QUIET_HEAD = "TYST"  -- [max 12]
 L.MANUAL_QUIET = "I dungeons och battlegrounds håller larmet tyst. Annars: mittenklicka på minimap-knappen eller /dn quiet."
 -- Questions before something is destroyed (game dialog) -------------------------------------------
@@ -406,7 +406,7 @@ L.MARK_BOTH = "GUILDKOMPIS, VÄN"  -- [max 20]
 L.MARK_TAKEN_DOWN = "FÄLLD {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "DÖD ELLER LEVANDE"  -- [max 24]
-L.BOOK_TITLE = "DeathNote"
+L.BOOK_TITLE = "Revenge Book"
 L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "DÅD"  -- [max 14]
 L.POSTER_NOTE = "NOTERING"  -- [max 8]
@@ -523,16 +523,16 @@ L.SET_SEC_WARN = "LARM"
 L.SET_MORE = "Mer"
 L.SET_GUILD_CLEAR = "Töm guildboken"  -- [max 26]
 L.SET_HINT_GUILD = "Bara din egen guild får något. Det som kommer därifrån hålls skilt från din bok tills du själv tar över det."
-L.SET_HINT_FRIENDS = "Bara guild och vänner med DeathNote får något."
+L.SET_HINT_FRIENDS = "Bara guild och vänner med Revenge Book får något."
 L.BTN_BACK = "Tillbaka"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Synka"  -- [max 14]
 L.SYNC_AGAIN_IN = "igen om {seconds} s"  -- [max 16]
 L.TIP_FRIENDS = "Vänner"
 L.TIP_GUILD_NAME = "Guild {guild}"
-L.TIP_MATES_WITH = "Guildkompisar med DeathNote:"
-L.TIP_NO_MATE = "Inget svar från någon guildkompis med DeathNote än."
-L.TIP_FRIENDS_WITH = "Vänner med DeathNote:"
+L.TIP_MATES_WITH = "Guildkompisar med Revenge Book:"
+L.TIP_NO_MATE = "Inget svar från någon guildkompis med Revenge Book än."
+L.TIP_FRIENDS_WITH = "Vänner med Revenge Book:"
 L.TIP_SHARED = "Delas: dina bekräftade dödsfall, handinskrivna namn och dina jaktutlysningar."
 L.TIP_NOT_SHARED = "Delas inte: noteringar, misstankar, benådade, inlästa namn."
 -- Back up / import page ---------------------------------------------------------------------------
@@ -547,9 +547,9 @@ L.IO_MSG_BIG = "Stor bok ({size}): att markera och kopiera tar en stund."
 L.IO_HELP_EXPORT = "Texten är markerad: Ctrl+C kopierar den. Spara den eller ge den till vänner."
 L.IO_HELP_IMPORT = "Klistra in en sparad text med Ctrl+V, sedan Läs in. Inget skrivs över."
 -- Sheet Put on the hit list (right page) ----------------------------------------------------------
-L.REL_HINT_ALL = "Alla i din guild och dina vänner med DeathNote ser skälet."
-L.REL_HINT_GUILD = "Alla i din guild med DeathNote ser skälet."
-L.REL_HINT_FRIENDS = "Dina vänner med DeathNote ser skälet."
+L.REL_HINT_ALL = "Alla i din guild och dina vänner med Revenge Book ser skälet."
+L.REL_HINT_GUILD = "Alla i din guild med Revenge Book ser skälet."
+L.REL_HINT_FRIENDS = "Dina vänner med Revenge Book ser skälet."
 L.REL_HEAD = "Utlys jakt"  -- [max 24]
 L.REL_FOR = "FÖR"  -- [max 6]
 L.REL_REASON = "SKÄL"  -- [max 8]
@@ -617,7 +617,7 @@ L.HUNT_ROW_HIDDEN = "dold för dig"
 L.HUNT_ROW_CALLS = "{count} {count|utlysning|utlysningar}: {names}"
 L.POSTER_ON_HUNTLIST = "På jaktlistan ({names})"
 L.REL_SELF = "Du kan inte utlysa jakt på dig själv."
-L.REL_MATE = "Det där är en av dina egna (guild eller vänner med DeathNote)."
+L.REL_MATE = "Det där är en av dina egna (guild eller vänner med Revenge Book)."
 -- Friends listed without surname: which full name is behind the entry (1.2.0) ------------------------
 L.FRIENDS_CONFLICT = "Vem är din vän {friend}: {a} eller {b}? Välj."
 L.FRIENDS_SHORT_CONFLICT = "Oklar vän"  -- [max 22]
@@ -630,12 +630,12 @@ L.CHAT_FRIENDS_TIES = "Kopplade fullständiga namn (* = första kontakt, ännu i
 -- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
 L.HELP_BOUNTY = "/dn bounty <Namn [Efternamn]> <guld>  utlys en egen belöning (utan guld: ta tillbaka)"
 L.CHAT_WHO_BOUNTY = "På vem? /dn bounty <Namn> <guld>"
-L.CHAT_BOUNTY_SET = "{name}: du har utlyst {gold} guld i belöning. Guild och vänner med DeathNote ser det."
+L.CHAT_BOUNTY_SET = "{name}: du har utlyst {gold} guld i belöning. Guild och vänner med Revenge Book ser det."
 L.CHAT_BOUNTY_OFF = "{name}: din belöning är tillbakatagen."
 L.CHAT_BOUNTY_NONE = "Du har ingen egen belöning på {name}."
 L.CHAT_BOUNTY_BAD = "Belöning: ett heltal guld, 1 till 99999 (0 tar tillbaka den)."
 L.CHAT_BOUNTY_CAP = "Ingen belöning: högst {count} egna."
-L.CHAT_BOUNTY_OURS = "Ingen belöning på dig själv eller dina egna (guild eller vänner med DeathNote)."
+L.CHAT_BOUNTY_OURS = "Ingen belöning på dig själv eller dina egna (guild eller vänner med Revenge Book)."
 L.ACT_BOUNTY = "Utlys belöning"  -- [max 24]
 L.ACT_UNDO = "Ångra"  -- [max 19]
 L.ACT_REVENGE_TAKE = "Dra av en hämnd"  -- [max 24]
@@ -646,7 +646,7 @@ L.POSTER_AVENGED = "Hämnad av {names}"
 L.ROW_AVENGED = "hämnad {times}"
 L.BOUNTY_TIP_HEAD = "Din egen belöning i guld"
 L.BOUNTY_TIP_RULES = "Ett heltal, 1 till 99999. Tomt eller 0: tillbaka till bokens värde. Enter sätter, Esc avbryter."
-L.BOUNTY_TIP_PROMISE = "Guild och vänner med DeathNote ser den. Bara ett löfte: ni gör upp sinsemellan."
+L.BOUNTY_TIP_PROMISE = "Guild och vänner med Revenge Book ser den. Bara ett löfte: ni gör upp sinsemellan."
 L.BOUNTY_TIP_CLICK = "Klick: utlys en egen belöning"
 L.CHAT_AVENGED = "{name} fällde {killer} åt dig."
 L.NAMES_PLUS = "{name} +{count}"
@@ -861,7 +861,6 @@ L.EMPTY_HIDDEN_SUB = "Enter eller raden längst ner visar dem."
 L.EMPTY_SEARCHHAS_HEAD = "Står redan i boken."
 L.EMPTY_SEARCHHAS_SUB = "Bara inte på den här sidan. Enter öppnar den."
 L.FILTER_TWO = "{count} filter"
-L.CHAT_NEWS_140 = "Nytt i 1.4.0: efter ett anfall frågar ett litet meddelande om anfallaren ska in i boken (Agg; på/av: /dn grudge eller {rules}, fliken {sheet}); \"{takeall}\" finns under {guild}, filter och sökning under {wanted}."
 L.GRUDGE_TIP_OFF = "Stäng av: /dn grudge eller {rules}, fliken {sheet}."
 -- 1.5.0 grip
 L.GRUDGE_TIP_PROBABLE = "Osäkert: lite talar för honom. Bocka bara om du såg honom."
@@ -979,4 +978,7 @@ L.CHRON_AVENGED = "{names} fällde {name} åt de andra."
 L.CHRON_PARDONED = "Du benådade {name}."
 L.CHRON_END = "Nu: {score} · {state}"
 L.CHRON_END_NONE = "Hittills: dödat dig {times}."
+-- 1.5.0 name
+L.HELP_ALIASES = "/rb, /revengebook  samma som /dn"
+L.CHAT_NEWS_150 = "DeathNote heter nu Revenge Book. Din bok och /dn finns kvar. Nytt i 1.5.0: visa en affisch i chatten, brottsplatser på världskartan, kortkommandon, ett märke på dina mördares namnskyltar."
 end)

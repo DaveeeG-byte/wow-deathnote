@@ -295,7 +295,7 @@ GG.list[2].victims, GG.list[3].victims = { Davee = 1 }, { Davee = 2 }
 GG.Count = function() return 3, 6, 0, 0 end
 W.step("f nur eigene Eintraege", function() ns:Fire("GUILD_UPDATED"); W.settle() end)
 check("G1 Leerzustand: Noch niemand aus der Gilde gehoert", W.text("Noch niemand aus der Gilde gehört.", true)
-      and W.text("Dein Buch geht raus, sobald ein Kollege DeathNote hat.", true) and F.tabs[4].text._text == "Gilde")
+      and W.text("Dein Buch geht raus, sobald ein Kollege Revenge Book hat.", true) and F.tabs[4].text._text == "Gilde")
 GG.health = { ok = false, reason = "off", text = "Teilen ist ausgeschaltet.", short = "Teilen ist aus" }
 W.step("f Teilen aus: rot", function() ns:Fire("GUILD_UPDATED"); W.settle() end)
 local st = W.text("Teilen ist ausgeschaltet.", true)
@@ -385,7 +385,7 @@ O.step("alte Logik: alle Reiter", function()
 end)
 check("alte Logik: offene Faelle selbst gezaehlt", O.G.DeathNoteFrame.tabs[2].text._text:find("1|r$") ~= nil, O.G.DeathNoteFrame.tabs[2].text._text)
 check("alte Logik: Rolle aus sure (Verdacht)", oldTag)
-check("alte Logik: Gildenstand ohne Health", O.text("Kollegen mit DeathNote gehört.") ~= nil)
+check("alte Logik: Gildenstand ohne Health", O.text("Kollegen mit Revenge Book gehört.") ~= nil)
 check("alte Logik: Zeit ohne Util.When", O.text(os.date("%d.%m. %H:%M", NOW)) ~= nil)
 
 ------------------------------------------------------------------------

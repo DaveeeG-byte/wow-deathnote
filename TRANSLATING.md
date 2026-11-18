@@ -1,12 +1,12 @@
-# Translating DeathNote
+# Translating Revenge Book (folder DeathNote)
 
 1. You only write your own file `DeathNote/Locales/xxXX.lua`, never code. Start from `enUS.lua`: same keys, same order
    and sections, keep the `[max N]` comments. The head of your file (the `Locale.Wants` check, `Locale.Register`) stays
    exactly as it is.
 2. Tone: dry, a little grim, a notebook full of enemies. Address the player informally (the "du", "tu", "ты" form).
    Write natural gamer language, not a word-for-word copy of the English.
-3. Never changes: `DeathNote`, `WANTED`, all `/dn` commands and their English subcommands (`/dn hunt`, `/dn lang` ...),
-   `DEATHNOTE:1`, class, race and zone names (the game supplies those). The reason for a hit list call is the player's
+3. Never changes: `Revenge Book` (the name, English in every language; endings of your grammar may follow it),
+   `WANTED`, all `/dn` commands and their English subcommands (`/dn hunt`, `/dn lang` ...), `/rb`, `DEATHNOTE:1`, class, race and zone names (the game supplies those). The reason for a hit list call is the player's
    free text and is never translated.
 4. Placeholders in curly braces (`{name}`, `{count}`, `{time}`, `{text}` ...) are copied unchanged; their order in the
    sentence is up to you. Do not add any, do not drop any. `{text}` is an already finished part of a sentence that you

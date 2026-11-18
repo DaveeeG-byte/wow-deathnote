@@ -6,7 +6,7 @@
 -- Hit List av listesi, call (av) çağrı(sı). No suffix is attached to {name}/{zone}: colon forms instead.
 -- Capitals: i -> İ, ı -> I (İNTİKAM, AFFEDİLDİ, KAYIT).
 --
--- TOC-Notes: Açık dünya PvP için ölüm listesi: seni kimin öldürdüğünü hatırlar ve yakındaysa uyarır.
+-- TOC-Notes: Dünya PvP için intikam defteri: seni kimin öldürdüğünü hatırlar ve yakındaysa uyarır.
 
 local _, ns = ...
 local Locale = ns and ns.Locale
@@ -96,7 +96,7 @@ L.MONEY_SILVER = "{count} gümüş"
 L.MONEY_COPPER = "{count} bakır"
 
 -- Guild and friends status (House Rules, /dn guild, /dn friends) ----------------------------------
-L.GUILD_HEARD = "DeathNote kullanan lonca üyesi: {count}."
+L.GUILD_HEARD = "Revenge Book kullanan lonca üyesi: {count}."
 L.HEALTH_NOGUILD = "Bir loncada değilsin, hiçbir şey paylaşılmıyor."
 L.HEALTH_OFF = "Paylaşım kapalı."
 L.HEALTH_SHORT_NOGUILD = "Lonca yok"  -- [max 18]
@@ -136,8 +136,8 @@ L.HELP_ADD = "/dn add <İsim [Soyad]>  bir katili deftere elle yaz"
 L.HELP_DEL = "/dn del <İsim [Soyad]>  bir katili defterden sil"
 L.HELP_QUIET = "/dn quiet  alarmı kapat/aç"
 L.HELP_TEST = "/dn test  deneme alarmı göster"
-L.HELP_GUILD = "/dn guild  lonca defteri: durum ve hangi lonca üyelerinde DeathNote var"
-L.HELP_FRIENDS = "/dn friends  arkadaş defteri: durum ve hangi arkadaşlarda DeathNote var"
+L.HELP_GUILD = "/dn guild  lonca defteri: durum ve hangi lonca üyelerinde Revenge Book var"
+L.HELP_FRIENDS = "/dn friends  arkadaş defteri: durum ve hangi arkadaşlarda Revenge Book var"
 L.HELP_SYNC = "/dn sync  lonca defterini ve arkadaş defterini şimdi eşitle"
 L.HELP_HUNT = "/dn hunt <İsim [Soyad]>  av listesine koy (isimsiz: av listesini göster)"
 L.HELP_CALLOFF = "/dn calloff <İsim [Soyad]>  kendi av çağrını iptal et"
@@ -167,16 +167,16 @@ L.CHAT_GUILD_STATE = "Lonca: {guild} · paylaşım {share}, alım {receive}."
 L.CHAT_GUILD_BOOK = "Lonca defteri: {enemies} katil ({listed} tanesi sadece elle eklendi), {deeds} suç, {foreign} tanesi lonca üyelerini de ilgilendiriyor. Elle eklenenleri paylaş: {manual}."
 L.CHAT_STATE_OK = "Durum: {text}"
 L.CHAT_STATE_WARN = "Dikkat: {text}"
-L.CHAT_NO_MATES = "Henüz DeathNote kullanan lonca üyesi yok."
-L.CHAT_HAVE_DN = "DeathNote kullananlar: {names}"
-L.CHAT_HAVE_DN_MORE = "DeathNote kullananlar: {names} ve {count} kişi daha"
+L.CHAT_NO_MATES = "Henüz Revenge Book kullanan lonca üyesi yok."
+L.CHAT_HAVE_DN = "Revenge Book kullananlar: {names}"
+L.CHAT_HAVE_DN_MORE = "Revenge Book kullananlar: {names} ve {count} kişi daha"
 L.CHAT_SYNC_ASKED = "Eşitleme istendi. Yanıtlar birkaç saniye içinde gelir."
 L.CHAT_SYNC_FAIL = "Eşitleme çalışmıyor: {reason}"
 L.CHAT_SYNC_FAIL_DEFAULT = "lonca yok ya da paylaşım kapalı."
 L.CHAT_FRIENDS_NOT_LOADED = "Arkadaş defteri yüklenmedi."
 L.CHAT_FRIENDS_STATE = "Arkadaşlar: paylaşım {share}, çevrim içi {online}/{total}."
 L.CHAT_FRIENDS_BOOK = "Arkadaş defteri: {enemies} katil ({listed} tanesi sadece elle eklendi), {deeds} suç."
-L.CHAT_NO_FRIENDS = "Henüz DeathNote kullanan arkadaş yok."
+L.CHAT_NO_FRIENDS = "Henüz Revenge Book kullanan arkadaş yok."
 L.CHAT_HUNT_NOT_LOADED = "Av listesi yüklenmedi."
 L.CHAT_HUNT_UNKNOWN = "Bilinmiyor: {name}. Soyadını da yaz, isim oyunda nasıl görünüyorsa öyle."
 L.CHAT_HUNT_CAP = "Av listesine konamıyor: liste başına en fazla {own} kendi çağrın ve {targets} hedef olabilir."
@@ -204,7 +204,7 @@ L.THEME_TRADE = "Atölye"
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Defter hazır. Açık dünyada seni öldüren herkes sonra burada yazılı olur. /dn ya da mini harita düğmesiyle aç."
 L.WELCOME_PLATES = "Düşman isim plakaları kapalı. Onlar olmadan alarm sadece hedefini görür."
-L.WELCOME_SHARE = "DeathNote kullanan lonca üyeleri ve arkadaşlar da okur. Notlar ve şüpheler sende kalır."
+L.WELCOME_SHARE = "Revenge Book kullanan lonca üyeleri ve arkadaşlar da okur. Notlar ve şüpheler sende kalır."
 
 -- Unit tooltip (one line under the player's tooltip) ---------------------------------------------
 -- The labels stand in red before the line, with their colon: "IN THE BOOK: killed you 2× · rank 1"
@@ -258,10 +258,10 @@ L.SYNC_HOLD_AGAIN = "yeniden çalışana kadar"
 L.SYNC_HOLD_SHORT_INSTANCE = "Bekliyor: instance"  -- [max 18]
 L.SYNC_HOLD_SHORT_COMBAT = "Bekliyor: savaş"  -- [max 18]
 L.SYNC_HOLD_SHORT_LOCKDOWN = "Bekliyor: sohbet"  -- [max 18]
-L.SYNC_QUIET = "Gönderildi, ama henüz DeathNote kullanan lonca üyesi yok."
-L.SYNC_READY = "Hazır. Henüz DeathNote kullanan lonca üyesi yok."
-L.SYNC_RUNNING = "Çalışıyor: {count} lonca üyesinde DeathNote var."
-L.SYNC_RUNNING_ALL = "Çalışıyor: lonca ve arkadaşlarda {count} kişide DeathNote var."
+L.SYNC_QUIET = "Gönderildi, ama henüz Revenge Book kullanan lonca üyesi yok."
+L.SYNC_READY = "Hazır. Henüz Revenge Book kullanan lonca üyesi yok."
+L.SYNC_RUNNING = "Çalışıyor: {count} lonca üyesinde Revenge Book var."
+L.SYNC_RUNNING_ALL = "Çalışıyor: lonca ve arkadaşlarda {count} kişide Revenge Book var."
 L.FRIENDS_OFF = "Arkadaşlarla paylaşım kapalı (Ev Kuralları, Lonca sayfası)."
 L.FRIENDS_BLOCKED = "Sunucu fısıltıları engelliyor. Arkadaşlar hiçbir şey almıyor."
 L.FRIENDS_SHORT_BLOCKED = "Fısıltı engelli"  -- [max 22]
@@ -270,10 +270,10 @@ L.FRIENDS_SHORT_FAILING = "Fısıltı aksıyor"  -- [max 18]
 L.FRIENDS_NONE_LISTED = "Arkadaş listesinde kimse yok."
 L.FRIENDS_NONE_ONLINE = "Şu an çevrim içi arkadaş yok."
 L.FRIENDS_SHORT_NONE_ONLINE = "Çevrim içi yok"  -- [max 18]
-L.FRIENDS_QUIET = "Soruldu, ama henüz DeathNote kullanan arkadaş yok."
-L.FRIENDS_READY = "Hazır. Henüz DeathNote kullanan arkadaş yok."
+L.FRIENDS_QUIET = "Soruldu, ama henüz Revenge Book kullanan arkadaş yok."
+L.FRIENDS_READY = "Hazır. Henüz Revenge Book kullanan arkadaş yok."
 L.FRIENDS_HOLD = "Arkadaşlara gönderim, yeniden çalışana kadar bekliyor."
-L.FRIENDS_RUNNING = "Çalışıyor: {count} arkadaşta DeathNote var."
+L.FRIENDS_RUNNING = "Çalışıyor: {count} arkadaşta Revenge Book var."
 -- A killer taken over from the guild book into your own book gets this note (your note from then on)
 L.NOTE_FROM_GUILD = "Lonca defterinden alındı (lonca üyelerini {kills}× öldürdü)."
 
@@ -282,7 +282,7 @@ L.NOTE_FROM_GUILD = "Lonca defterinden alındı (lonca üyelerini {kills}× öld
 L.IMPORT_NO_DB = "Veritabanı yüklenmedi."
 L.IMPORT_NO_TEXT = "Metin yok."
 L.IMPORT_NO_HEADER = "İlk satır eksik ({header} ile başlar). Lütfen metnin tamamını kopyala."
-L.IMPORT_NOT_EXPORT = "Bu bir DeathNote dışa aktarımı değil (başlık satırı eksik ya da sürüm yanlış)."
+L.IMPORT_NOT_EXPORT = "Bu bir Revenge Book dışa aktarımı değil (başlık satırı eksik ya da sürüm yanlış)."
 L.IMPORT_TOO_LONG = "Çok fazla satır (en fazla {count})."
 L.IMPORT_BAD_KEY = "Satır {line}: geçersiz anahtar."
 L.IMPORT_BAD_TIME = "Satır {line}: geçersiz zaman."
@@ -326,20 +326,20 @@ L.EMPTY_NOGUILD_SUB = "Yalnız ölmek de olur."
 L.EMPTY_GUILDOFF_HEAD = "Lonca defteri kapalı."
 L.EMPTY_GUILDOFF_SUB = "Paylaşım kapalı. Nerede açılacağını Ev Kuralları bilir."
 L.EMPTY_GUILDNIL_HEAD = "Loncadan henüz ses yok."
-L.EMPTY_GUILDNIL_SUB = "Bir lonca üyesinde DeathNote olur olmaz defterin gönderilir."
+L.EMPTY_GUILDNIL_SUB = "Bir lonca üyesinde Revenge Book olur olmaz defterin gönderilir."
 L.EMPTY_GUILDQUIET_HEAD = "Lonca defterinde henüz bir şey yok."
 L.EMPTY_GUILDQUIET_SUB = "Lonca üyelerin şimdiye kadar rahattı."
 L.EMPTY_FRIENDSOFF_HEAD = "Arkadaş defteri kapalı."
 L.EMPTY_FRIENDSOFF_SUB = "Arkadaşlarla paylaşım kapalı. Nerede açılacağını Ev Kuralları bilir."
-L.EMPTY_FRIENDSNIL_HEAD = "Henüz DeathNote kullanan arkadaş yok."
-L.EMPTY_FRIENDSNIL_SUB = "Bir arkadaşında DeathNote olur olmaz defterin gönderilir."
+L.EMPTY_FRIENDSNIL_HEAD = "Henüz Revenge Book kullanan arkadaş yok."
+L.EMPTY_FRIENDSNIL_SUB = "Bir arkadaşında Revenge Book olur olmaz defterin gönderilir."
 L.EMPTY_FRIENDSQUIET_HEAD = "Arkadaşlarından henüz bir şey yok."
 L.EMPTY_FRIENDSQUIET_SUB = "Arkadaşların şimdiye kadar rahattı."
 L.EMPTY_NOBODY_HEAD = "Lonca yok, arkadaş yok."
 L.EMPTY_NOBODY_SUB = "Yalnız ölmek de olur."
-L.EMPTY_NOBODY_HINT = "Lonca üyelerinde ya da arkadaş listendeki arkadaşlarda DeathNote olunca, başlarına geleni burada görürsün."
-L.EMPTY_SHAREDNIL_HEAD = "Henüz DeathNote kullanan kimse yok."
-L.EMPTY_SHAREDNIL_SUB = "Lonca üyelerinde ya da arkadaşlarında DeathNote olur olmaz defterin gönderilir."
+L.EMPTY_NOBODY_HINT = "Lonca üyelerinde ya da arkadaş listendeki arkadaşlarda Revenge Book olunca, başlarına geleni burada görürsün."
+L.EMPTY_SHAREDNIL_HEAD = "Henüz Revenge Book kullanan kimse yok."
+L.EMPTY_SHAREDNIL_SUB = "Lonca üyelerinde ya da arkadaşlarında Revenge Book olur olmaz defterin gönderilir."
 L.EMPTY_SHAREDQUIET_HEAD = "Burada henüz bir şey yok."
 L.EMPTY_SHAREDQUIET_SUB = "Lonca ve arkadaşlar şimdiye kadar rahattı."
 L.EMPTY_HUNT_HEAD = "Av listesi boş."
@@ -361,9 +361,9 @@ L.MANUAL_ALERT = "Bir katil isim plakası, hedef ya da fare altında belirince d
 L.MANUAL_ADD_HEAD = "EKLEME"  -- [max 12]
 L.MANUAL_ADD = "Arama kutusuna bir isim yaz, Enter. Bir satıra sağ tık: intikamı not et, affet, sil."
 L.MANUAL_GUILD_HEAD = "LONCA"  -- [max 12]
-L.MANUAL_GUILD = "DeathNote kullanan lonca üyeleri ve arkadaşlar katili belli ölümlerini ve elle eklenenleri görür. Afiş ya da /dn hunt İsim: av listesine koy. Kelle parasına tıkla: kendininkini koy, sadece bir söz."
+L.MANUAL_GUILD = "Revenge Book kullanan lonca üyeleri ve arkadaşlar katili belli ölümlerini ve elle eklenenleri görür. Afiş ya da /dn hunt İsim: av listesine koy. Kelle parasına tıkla: kendininkini koy, sadece bir söz."
 L.MANUAL_SHARE_HEAD = "AKTARMA"  -- [max 12]
-L.MANUAL_SHARE = "Ev Kuralları, Defteri yedekle: DeathNote kullanmayan herkes için kopyalanacak bir metin."
+L.MANUAL_SHARE = "Ev Kuralları, Defteri yedekle: Revenge Book kullanmayan herkes için kopyalanacak bir metin."
 L.MANUAL_QUIET_HEAD = "SESSİZLİK"  -- [max 12]
 L.MANUAL_QUIET = "Zindanlarda ve savaş alanlarında alarm susar. Başka yerlerde: mini harita düğmesine orta tık ya da /dn quiet."
 -- Questions before something is destroyed (game dialog) -------------------------------------------
@@ -416,7 +416,7 @@ L.MARK_BOTH = "LONCA ÜYESİ, ARKADAŞ"  -- [max 20]
 L.MARK_TAKEN_DOWN = "AVLANDI {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ÖLÜ YA DA DİRİ"  -- [max 24]
-L.BOOK_TITLE = "DeathNote"
+L.BOOK_TITLE = "Revenge Book"
 L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "SUÇLAR"  -- [max 14]
 L.POSTER_NOTE = "NOT"  -- [max 8]
@@ -533,16 +533,16 @@ L.SET_SEC_WARN = "ALARM"
 L.SET_MORE = "Daha fazla"
 L.SET_GUILD_CLEAR = "Lonca defterini boşalt"  -- [max 26]
 L.SET_HINT_GUILD = "Sadece kendi loncan bir şey alır. Oradan gelen, sen kendin alana kadar defterinden ayrı kalır."
-L.SET_HINT_FRIENDS = "Sadece DeathNote kullanan lonca üyeleri ve arkadaşlar bir şey alır."
+L.SET_HINT_FRIENDS = "Sadece Revenge Book kullanan lonca üyeleri ve arkadaşlar bir şey alır."
 L.BTN_BACK = "Geri"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Eşitle"  -- [max 14]
 L.SYNC_AGAIN_IN = "{seconds} sn sonra"  -- [max 16]
 L.TIP_FRIENDS = "Arkadaşlar"
 L.TIP_GUILD_NAME = "Lonca: {guild}"
-L.TIP_MATES_WITH = "DeathNote kullanan lonca üyeleri:"
-L.TIP_NO_MATE = "Henüz DeathNote kullanan lonca üyesi yok."
-L.TIP_FRIENDS_WITH = "DeathNote kullanan arkadaşlar:"
+L.TIP_MATES_WITH = "Revenge Book kullanan lonca üyeleri:"
+L.TIP_NO_MATE = "Henüz Revenge Book kullanan lonca üyesi yok."
+L.TIP_FRIENDS_WITH = "Revenge Book kullanan arkadaşlar:"
 L.TIP_SHARED = "Paylaşılan: katili belli ölümlerin, elle eklenenler ve av çağrıların."
 L.TIP_NOT_SHARED = "Paylaşılmayan: notlar, şüpheler, affedilenler, içe aktarılanlar."
 -- Back up / import page ---------------------------------------------------------------------------
@@ -557,9 +557,9 @@ L.IO_MSG_BIG = "Büyük defter ({size}): seçmek ve kopyalamak biraz sürer."
 L.IO_HELP_EXPORT = "Metin seçili: Ctrl+C ile kopyala. Sakla ya da arkadaşlarına aktar."
 L.IO_HELP_IMPORT = "Yedeklenmiş metni Ctrl+V ile yapıştır, sonra İçe aktar. Hiçbir şeyin üzerine yazılmaz."
 -- Sheet Put on the hit list (right page) ----------------------------------------------------------
-L.REL_HINT_ALL = "Sebebi, loncanda ve arkadaşlarında DeathNote kullanan herkes görür."
-L.REL_HINT_GUILD = "Sebebi, loncanda DeathNote kullanan herkes görür."
-L.REL_HINT_FRIENDS = "Sebebi, DeathNote kullanan arkadaşların görür."
+L.REL_HINT_ALL = "Sebebi, loncanda ve arkadaşlarında Revenge Book kullanan herkes görür."
+L.REL_HINT_GUILD = "Sebebi, loncanda Revenge Book kullanan herkes görür."
+L.REL_HINT_FRIENDS = "Sebebi, Revenge Book kullanan arkadaşların görür."
 L.REL_HEAD = "Av listesine koy"  -- [max 24]
 L.REL_FOR = "KİME"  -- [max 6]
 L.REL_REASON = "SEBEP"  -- [max 8]
@@ -627,7 +627,7 @@ L.HUNT_ROW_HIDDEN = "senin için gizli"
 L.HUNT_ROW_CALLS = "{count} çağrı: {names}"
 L.POSTER_ON_HUNTLIST = "Av listesinde ({names})"
 L.REL_SELF = "Kendini av listesine koyamazsın."
-L.REL_MATE = "Bu sizden biri (DeathNote kullanan lonca üyesi ya da arkadaş)."
+L.REL_MATE = "Bu sizden biri (Revenge Book kullanan lonca üyesi ya da arkadaş)."
 -- Friends listed without surname: which full name is behind the entry (1.2.0) ------------------------
 L.FRIENDS_CONFLICT = "Arkadaşın {friend} hangisi: {a} mı, {b} mi? Seç."
 L.FRIENDS_SHORT_CONFLICT = "Arkadaş belirsiz"  -- [max 22]
@@ -640,12 +640,12 @@ L.CHAT_FRIENDS_TIES = "Bağlı tam isimler (* = ilk temas, henüz doğrulanmadı
 -- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
 L.HELP_BOUNTY = "/dn bounty <İsim [Soyad]> <altın>  kendi kelle paranı koy (tutar yok: geri al)"
 L.CHAT_WHO_BOUNTY = "Kime? /dn bounty <İsim> <altın>"
-L.CHAT_BOUNTY_SET = "{name}: {gold} altın kelle parası koydun. DeathNote kullanan lonca ve arkadaşlar görür."
+L.CHAT_BOUNTY_SET = "{name}: {gold} altın kelle parası koydun. Revenge Book kullanan lonca ve arkadaşlar görür."
 L.CHAT_BOUNTY_OFF = "{name}: kelle paran geri alındı."
 L.CHAT_BOUNTY_NONE = "Kendi kelle paran yok: {name}"
 L.CHAT_BOUNTY_BAD = "Kelle parası: 1 ile 99999 arası tam sayı altın (0 geri alır)."
 L.CHAT_BOUNTY_CAP = "Kelle parası yok: en fazla {count} tane senin olabilir."
-L.CHAT_BOUNTY_OURS = "Kendine ya da kendi adamlarına (DeathNote kullanan lonca üyesi ya da arkadaş) kelle parası konmaz."
+L.CHAT_BOUNTY_OURS = "Kendine ya da kendi adamlarına (Revenge Book kullanan lonca üyesi ya da arkadaş) kelle parası konmaz."
 L.ACT_BOUNTY = "Kelle parası koy"  -- [max 24]
 L.ACT_UNDO = "Geri al"  -- [max 19]
 L.ACT_REVENGE_TAKE = "Bir intikamı düş"  -- [max 24]
@@ -656,7 +656,7 @@ L.POSTER_AVENGED = "İntikamını alan: {names}"
 L.ROW_AVENGED = "intikam {times}"
 L.BOUNTY_TIP_HEAD = "Kendi kelle paran, altın olarak"
 L.BOUNTY_TIP_RULES = "1 ile 99999 arası tam sayı. Boş ya da 0: defterin değerine döner. Enter koyar, Esc vazgeçer."
-L.BOUNTY_TIP_PROMISE = "DeathNote kullanan lonca ve arkadaşlar görür. Sadece bir söz: hesap aranızda görülür."
+L.BOUNTY_TIP_PROMISE = "Revenge Book kullanan lonca ve arkadaşlar görür. Sadece bir söz: hesap aranızda görülür."
 L.BOUNTY_TIP_CLICK = "Tıkla: kendi kelle paranı koy"
 L.CHAT_AVENGED = "{name} senin yerine avladı: {killer}."
 L.NAMES_PLUS = "{name} +{count}"
@@ -871,7 +871,6 @@ L.EMPTY_HIDDEN_SUB = "Enter ya da alttaki satır onları gösterir."
 L.EMPTY_SEARCHHAS_HEAD = "Zaten defterinde."
 L.EMPTY_SEARCHHAS_SUB = "Yalnızca bu sayfada değil. Enter açar."
 L.FILTER_TWO = "{count} filtre"
-L.CHAT_NEWS_140 = "1.4.0'da yeni: bir saldırıdan sonra küçük bir bildirim saldırganın deftere yazılıp yazılmayacağını sorar (Kin; aç/kapat: /dn grudge ya da {rules}, {sheet} sayfası); \"{takeall}\": {guild} sekmesi; filtre ve arama: {wanted} sekmesi."
 L.GRUDGE_TIP_OFF = "Kapatmak için: /dn grudge ya da {rules}, {sheet} sayfası."
 -- 1.5.0 grip
 L.GRUDGE_TIP_PROBABLE = "Emin değil: az iz var. Yalnızca onu gördüysen işaretle."
@@ -989,4 +988,7 @@ L.CHRON_AVENGED = "Diğerleri için alt eden: {names}. Hedef: {name}."
 L.CHRON_PARDONED = "Affettin: {name}."
 L.CHRON_END = "Şimdi: {score} · {state}"
 L.CHRON_END_NONE = "Şimdiye dek: seni {times} öldürdü."
+-- 1.5.0 name
+L.HELP_ALIASES = "/rb, /revengebook  /dn ile aynı"
+L.CHAT_NEWS_150 = "DeathNote artık Revenge Book. Defterin ve /dn kalıyor. 1.5.0'da yeni: sohbette afiş göster, dünya haritasında olay yerleri, kısayol tuşları, katillerinin isim plakasında bir işaret."
 end)

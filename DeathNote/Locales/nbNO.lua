@@ -5,7 +5,7 @@
 -- plakat, stempel, dusør, notat, observasjon, stryke, benåde, hevn, mistenkt, jaktlisten, lyse ut jakt,
 -- utlysning, blåse av jakten, felt, Lagre boken, Les inn boken.
 --
--- TOC-Notes: Dødsliste for PvP i den åpne verdenen: husker hvem som drepte deg og varsler når de er i nærheten.
+-- TOC-Notes: Hevnbok for PvP i verden: husker hvem som drepte deg og varsler når de er i nærheten.
 
 local _, ns = ...
 local Locale = ns and ns.Locale
@@ -93,7 +93,7 @@ L.MONEY_SILVER = "{count}s"
 L.MONEY_COPPER = "{count}k"
 
 -- Guild and friends status (House Rules, /dn guild, /dn friends) ----------------------------------
-L.GUILD_HEARD    = "Hørt fra {count} {count|guildmedlem|guildmedlemmer} med DeathNote."
+L.GUILD_HEARD    = "Hørt fra {count} {count|guildmedlem|guildmedlemmer} med Revenge Book."
 L.HEALTH_NOGUILD = "Du er ikke med i noen guild, ingenting deles."
 L.HEALTH_OFF     = "Deling er slått av."
 L.HEALTH_SHORT_NOGUILD = "Ingen guild"    -- [max 18]
@@ -131,8 +131,8 @@ L.HELP_ADD      = "/dn add <Navn [Etternavn]>  skriv inn en morder for hånd"
 L.HELP_DEL      = "/dn del <Navn [Etternavn]>  stryk en morder fra boken"
 L.HELP_QUIET    = "/dn quiet  alarm av/på"
 L.HELP_TEST     = "/dn test  vis en testalarm"
-L.HELP_GUILD    = "/dn guild  guildboken: status og hvilke guildmedlemmer som har DeathNote"
-L.HELP_FRIENDS  = "/dn friends  venneboken: status og hvilke venner som har DeathNote"
+L.HELP_GUILD    = "/dn guild  guildboken: status og hvilke guildmedlemmer som har Revenge Book"
+L.HELP_FRIENDS  = "/dn friends  venneboken: status og hvilke venner som har Revenge Book"
 L.HELP_SYNC     = "/dn sync  synkroniser guildboken og venneboken nå"
 L.HELP_HUNT     = "/dn hunt <Navn [Etternavn]>  lys ut jakt (uten navn: vis jaktlisten)"
 L.HELP_CALLOFF  = "/dn calloff <Navn [Etternavn]>  blås av din egen jakt"
@@ -162,16 +162,16 @@ L.CHAT_GUILD_STATE = "Guild {guild}: deling {share}, mottak {receive}."
 L.CHAT_GUILD_BOOK = "Guildboken: {enemies} mordere ({listed} bare skrevet inn for hånd), {deeds} {deeds|udåd|udåder}, {foreign} av dem har drept andre guildmedlemmer. Del innføringer for hånd: {manual}."
 L.CHAT_STATE_OK   = "Status: {text}"
 L.CHAT_STATE_WARN = "Obs: {text}"
-L.CHAT_NO_MATES   = "Ikke hørt fra noe guildmedlem med DeathNote ennå."
-L.CHAT_HAVE_DN      = "Har DeathNote: {names}"
-L.CHAT_HAVE_DN_MORE = "Har DeathNote: {names} og {count} til"
+L.CHAT_NO_MATES   = "Ikke hørt fra noe guildmedlem med Revenge Book ennå."
+L.CHAT_HAVE_DN      = "Har Revenge Book: {names}"
+L.CHAT_HAVE_DN_MORE = "Har Revenge Book: {names} og {count} til"
 L.CHAT_SYNC_ASKED = "Synkronisering etterspurt. Svarene kommer i løpet av noen sekunder."
 L.CHAT_SYNC_FAIL  = "Synkronisering virker ikke: {reason}"
 L.CHAT_SYNC_FAIL_DEFAULT = "ingen guild, eller deling er av."
 L.CHAT_FRIENDS_NOT_LOADED = "Venneboken er ikke lastet."
 L.CHAT_FRIENDS_STATE = "Venner: deling {share}, {online} av {total} pålogget."
 L.CHAT_FRIENDS_BOOK  = "Venneboken: {enemies} mordere ({listed} bare skrevet inn for hånd), {deeds} {deeds|udåd|udåder}."
-L.CHAT_NO_FRIENDS    = "Ikke hørt fra noen venn med DeathNote ennå."
+L.CHAT_NO_FRIENDS    = "Ikke hørt fra noen venn med Revenge Book ennå."
 L.CHAT_HUNT_NOT_LOADED = "Jaktlisten er ikke lastet."
 L.CHAT_HUNT_UNKNOWN = "Ukjent: {name}. Ta med etternavnet også, slik navnet står i spillet."
 L.CHAT_HUNT_CAP     = "Kan ikke lyse ut jakt: maks {own} egne utlysninger og {targets} mål per liste."
@@ -199,7 +199,7 @@ L.THEME_TRADE = "Verkstedet"
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Boken ligger klar. Den som dreper deg i den åpne verdenen, havner i den. Åpne den med /dn eller minimap-knappen."
 L.WELCOME_PLATES = "Fiendtlige navneskilt er slått av. Uten dem ser alarmen bare målet ditt."
-L.WELCOME_SHARE = "Guild og venner som har DeathNote, leser med. Notater og mistanker blir hos deg."
+L.WELCOME_SHARE = "Guild og venner som har Revenge Book, leser med. Notater og mistanker blir hos deg."
 
 -- Unit tooltip (one line under the player's tooltip) ---------------------------------------------
 L.TIP_IN_BOOK   = "I BOKEN:"
@@ -249,10 +249,10 @@ L.SYNC_HOLD_AGAIN    = "til det virker igjen"
 L.SYNC_HOLD_SHORT_INSTANCE = "Venter: instans"    -- [max 18]
 L.SYNC_HOLD_SHORT_COMBAT   = "Venter: kamp"       -- [max 18]
 L.SYNC_HOLD_SHORT_LOCKDOWN = "Venter: chat"       -- [max 18]
-L.SYNC_QUIET       = "Sendt, men ikke hørt fra noe guildmedlem med DeathNote ennå."
-L.SYNC_READY       = "Klar. Ikke hørt fra noe guildmedlem med DeathNote ennå."
-L.SYNC_RUNNING     = "I gang: {count} {count|guildmedlem|guildmedlemmer} med DeathNote."
-L.SYNC_RUNNING_ALL = "I gang: {count} med DeathNote i guild og blant venner."
+L.SYNC_QUIET       = "Sendt, men ikke hørt fra noe guildmedlem med Revenge Book ennå."
+L.SYNC_READY       = "Klar. Ikke hørt fra noe guildmedlem med Revenge Book ennå."
+L.SYNC_RUNNING     = "I gang: {count} {count|guildmedlem|guildmedlemmer} med Revenge Book."
+L.SYNC_RUNNING_ALL = "I gang: {count} med Revenge Book i guild og blant venner."
 L.FRIENDS_OFF      = "Deling med venner er av (Husregler, arket Guild)."
 L.FRIENDS_BLOCKED  = "Realmen sperrer hvisking. Venner får ingenting."
 L.FRIENDS_SHORT_BLOCKED = "Hvisking sperret"     -- [max 22]
@@ -261,10 +261,10 @@ L.FRIENDS_SHORT_FAILING = "Hvisking hakker"      -- [max 18]
 L.FRIENDS_NONE_LISTED = "Ingen venner på vennelisten."
 L.FRIENDS_NONE_ONLINE = "Ingen venner pålogget akkurat nå."
 L.FRIENDS_SHORT_NONE_ONLINE = "Ingen pålogget"    -- [max 18]
-L.FRIENDS_QUIET    = "Spurt, men ikke hørt fra noen venn med DeathNote ennå."
-L.FRIENDS_READY    = "Klar. Ikke hørt fra noen venn med DeathNote ennå."
+L.FRIENDS_QUIET    = "Spurt, men ikke hørt fra noen venn med Revenge Book ennå."
+L.FRIENDS_READY    = "Klar. Ikke hørt fra noen venn med Revenge Book ennå."
 L.FRIENDS_HOLD     = "Sending til venner venter til det virker igjen."
-L.FRIENDS_RUNNING  = "I gang: {count} {count|venn|venner} med DeathNote."
+L.FRIENDS_RUNNING  = "I gang: {count} {count|venn|venner} med Revenge Book."
 -- A killer taken over from the guild book into your own book gets this note (your note from then on)
 L.NOTE_FROM_GUILD  = "Hentet fra guildboken (har drept guildmedlemmer {kills}×)."
 
@@ -272,7 +272,7 @@ L.NOTE_FROM_GUILD  = "Hentet fra guildboken (har drept guildmedlemmer {kills}×)
 L.IMPORT_NO_DB      = "Databasen er ikke lastet."
 L.IMPORT_NO_TEXT    = "Ingen tekst."
 L.IMPORT_NO_HEADER  = "Første linje mangler (den begynner med {header}). Kopier hele teksten."
-L.IMPORT_NOT_EXPORT = "Ikke en DeathNote-eksport (overskriftslinjen mangler eller feil versjon)."
+L.IMPORT_NOT_EXPORT = "Ikke en Revenge Book-eksport (overskriftslinjen mangler eller feil versjon)."
 L.IMPORT_TOO_LONG   = "For mange linjer (maks {count})."
 L.IMPORT_BAD_KEY    = "Linje {line}: ugyldig nøkkel."
 L.IMPORT_BAD_TIME   = "Linje {line}: ugyldig tid."
@@ -316,20 +316,20 @@ L.EMPTY_NOGUILD_SUB = "Man kan dø alene også."
 L.EMPTY_GUILDOFF_HEAD = "Guildboken er lukket."
 L.EMPTY_GUILDOFF_SUB = "Deling er av. Husreglene vet hvor."
 L.EMPTY_GUILDNIL_HEAD = "Ikke hørt noe fra guilden ennå."
-L.EMPTY_GUILDNIL_SUB = "Boken din sendes ut så snart et guildmedlem har DeathNote."
+L.EMPTY_GUILDNIL_SUB = "Boken din sendes ut så snart et guildmedlem har Revenge Book."
 L.EMPTY_GUILDQUIET_HEAD = "Ingenting i guildboken ennå."
 L.EMPTY_GUILDQUIET_SUB = "Guildmedlemmene dine har hatt fred så langt."
 L.EMPTY_FRIENDSOFF_HEAD = "Venneboken er lukket."
 L.EMPTY_FRIENDSOFF_SUB = "Deling med venner er av. Husreglene vet hvor."
-L.EMPTY_FRIENDSNIL_HEAD = "Ikke hørt fra noen venn med DeathNote ennå."
-L.EMPTY_FRIENDSNIL_SUB = "Boken din sendes ut så snart en venn har DeathNote."
+L.EMPTY_FRIENDSNIL_HEAD = "Ikke hørt fra noen venn med Revenge Book ennå."
+L.EMPTY_FRIENDSNIL_SUB = "Boken din sendes ut så snart en venn har Revenge Book."
 L.EMPTY_FRIENDSQUIET_HEAD = "Ingenting fra vennene dine ennå."
 L.EMPTY_FRIENDSQUIET_SUB = "Vennene dine har hatt fred så langt."
 L.EMPTY_NOBODY_HEAD = "Ingen guild, ingen venner."
 L.EMPTY_NOBODY_SUB = "Man kan dø alene også."
-L.EMPTY_NOBODY_HINT = "Når guildmedlemmer eller venner fra vennelisten din har DeathNote, viser denne siden hva som skjer med dem."
-L.EMPTY_SHAREDNIL_HEAD = "Ikke hørt fra noen med DeathNote ennå."
-L.EMPTY_SHAREDNIL_SUB = "Boken din sendes ut så snart guildmedlemmer eller venner har DeathNote."
+L.EMPTY_NOBODY_HINT = "Når guildmedlemmer eller venner fra vennelisten din har Revenge Book, viser denne siden hva som skjer med dem."
+L.EMPTY_SHAREDNIL_HEAD = "Ikke hørt fra noen med Revenge Book ennå."
+L.EMPTY_SHAREDNIL_SUB = "Boken din sendes ut så snart guildmedlemmer eller venner har Revenge Book."
 L.EMPTY_SHAREDQUIET_HEAD = "Ingenting her ennå."
 L.EMPTY_SHAREDQUIET_SUB = "Guild og venner har hatt fred så langt."
 L.EMPTY_HUNT_HEAD = "Jaktlisten er tom."
@@ -351,9 +351,9 @@ L.MANUAL_ALERT = "Når en morder dukker opp som navneskilt, mål eller under mus
 L.MANUAL_ADD_HEAD = "SKRIVE INN"  -- [max 12]
 L.MANUAL_ADD = "Skriv et navn i søkefeltet, Enter. Høyreklikk på en linje: noter hevn, benåd, stryk."
 L.MANUAL_GUILD_HEAD = "GUILD"  -- [max 12]
-L.MANUAL_GUILD = "Guildmedlemmer og venner med DeathNote ser dine bekreftede dødsfall og innføringer for hånd. Plakaten eller /dn hunt Navn: lys ut jakt. Klikk på dusøren: lys ut din egen, et løfte dere gjør opp seg imellom."
+L.MANUAL_GUILD = "Guildmedlemmer og venner med Revenge Book ser dine bekreftede dødsfall og innføringer for hånd. Plakaten eller /dn hunt Navn: lys ut jakt. Klikk på dusøren: lys ut din egen, et løfte dere gjør opp seg imellom."
 L.MANUAL_SHARE_HEAD = "DEL VIDERE"  -- [max 12]
-L.MANUAL_SHARE = "Husregler, Lagre boken: en tekst å kopiere, for alle uten DeathNote."
+L.MANUAL_SHARE = "Husregler, Lagre boken: en tekst å kopiere, for alle uten Revenge Book."
 L.MANUAL_QUIET_HEAD = "STILLE"  -- [max 12]
 L.MANUAL_QUIET = "I dungeons og battlegrounds holder alarmen seg stille. Ellers: midtklikk på minimap-knappen eller /dn quiet."
 -- Questions before something is destroyed (game dialog) -------------------------------------------
@@ -406,7 +406,7 @@ L.MARK_BOTH = "GUILDMEDLEM, VENN"  -- [max 20]
 L.MARK_TAKEN_DOWN = "FELT {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "DØD ELLER LEVENDE"  -- [max 24]
-L.BOOK_TITLE = "DeathNote"
+L.BOOK_TITLE = "Revenge Book"
 L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "UDÅDER"  -- [max 14]
 L.POSTER_NOTE = "NOTAT"  -- [max 8]
@@ -523,16 +523,16 @@ L.SET_SEC_WARN = "ALARM"
 L.SET_MORE = "Mer"
 L.SET_GUILD_CLEAR = "Tøm guildboken"  -- [max 26]
 L.SET_HINT_GUILD = "Bare din egen guild får noe. Det som kommer derfra, holdes atskilt fra boken din til du selv tar det over."
-L.SET_HINT_FRIENDS = "Bare guild og venner med DeathNote får noe."
+L.SET_HINT_FRIENDS = "Bare guild og venner med Revenge Book får noe."
 L.BTN_BACK = "Tilbake"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Synkroniser"  -- [max 14]
 L.SYNC_AGAIN_IN = "igjen om {seconds} s"  -- [max 16]
 L.TIP_FRIENDS = "Venner"
 L.TIP_GUILD_NAME = "Guild {guild}"
-L.TIP_MATES_WITH = "Guildmedlemmer med DeathNote:"
-L.TIP_NO_MATE = "Ikke hørt fra noe guildmedlem med DeathNote ennå."
-L.TIP_FRIENDS_WITH = "Venner med DeathNote:"
+L.TIP_MATES_WITH = "Guildmedlemmer med Revenge Book:"
+L.TIP_NO_MATE = "Ikke hørt fra noe guildmedlem med Revenge Book ennå."
+L.TIP_FRIENDS_WITH = "Venner med Revenge Book:"
 L.TIP_SHARED = "Deles: dine bekreftede dødsfall, innføringer for hånd og jaktutlysningene dine."
 L.TIP_NOT_SHARED = "Deles ikke: notater, mistanker, benådede, innleste navn."
 -- Back up / import page ---------------------------------------------------------------------------
@@ -547,9 +547,9 @@ L.IO_MSG_BIG = "Stor bok ({size}): merking og kopiering tar litt tid."
 L.IO_HELP_EXPORT = "Teksten er merket: Ctrl+C kopierer den. Ta vare på den eller gi den til venner."
 L.IO_HELP_IMPORT = "Lim inn en lagret tekst med Ctrl+V, deretter Les inn. Ingenting blir overskrevet."
 -- Sheet Put on the hit list (right page) ----------------------------------------------------------
-L.REL_HINT_ALL = "Alle i guilden din og vennene dine med DeathNote ser grunnen."
-L.REL_HINT_GUILD = "Alle i guilden din med DeathNote ser grunnen."
-L.REL_HINT_FRIENDS = "Vennene dine med DeathNote ser grunnen."
+L.REL_HINT_ALL = "Alle i guilden din og vennene dine med Revenge Book ser grunnen."
+L.REL_HINT_GUILD = "Alle i guilden din med Revenge Book ser grunnen."
+L.REL_HINT_FRIENDS = "Vennene dine med Revenge Book ser grunnen."
 L.REL_HEAD = "Lys ut jakt"  -- [max 24]
 L.REL_FOR = "FOR"  -- [max 6]
 L.REL_REASON = "GRUNN"  -- [max 8]
@@ -617,7 +617,7 @@ L.HUNT_ROW_HIDDEN = "skjult for deg"
 L.HUNT_ROW_CALLS = "{count} {count|utlysning|utlysninger}: {names}"
 L.POSTER_ON_HUNTLIST = "På jaktlisten ({names})"
 L.REL_SELF = "Du kan ikke lyse ut jakt på deg selv."
-L.REL_MATE = "Det er en av dine egne (guild eller venner med DeathNote)."
+L.REL_MATE = "Det er en av dine egne (guild eller venner med Revenge Book)."
 -- Friends listed without surname: which full name is behind the entry (1.2.0) ------------------------
 L.FRIENDS_CONFLICT = "Hvem er vennen din {friend}: {a} eller {b}? Velg."
 L.FRIENDS_SHORT_CONFLICT = "Uklar venn"  -- [max 22]
@@ -630,12 +630,12 @@ L.CHAT_FRIENDS_TIES = "Koblede fulle navn (* = første kontakt, ikke bekreftet e
 -- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
 L.HELP_BOUNTY = "/dn bounty <Navn [Etternavn]> <gull>  lys ut en egen dusør (uten gull: trekk den tilbake)"
 L.CHAT_WHO_BOUNTY = "På hvem? /dn bounty <Navn> <gull>"
-L.CHAT_BOUNTY_SET = "{name}: du har lyst ut {gold} gull i dusør. Guild og venner med DeathNote ser det."
+L.CHAT_BOUNTY_SET = "{name}: du har lyst ut {gold} gull i dusør. Guild og venner med Revenge Book ser det."
 L.CHAT_BOUNTY_OFF = "{name}: dusøren din er trukket tilbake."
 L.CHAT_BOUNTY_NONE = "Du har ingen egen dusør på {name}."
 L.CHAT_BOUNTY_BAD = "Dusør: et helt antall gull, 1 til 99999 (0 trekker den tilbake)."
 L.CHAT_BOUNTY_CAP = "Ingen dusør: maks {count} egne."
-L.CHAT_BOUNTY_OURS = "Ingen dusør på deg selv eller dine egne (guild eller venner med DeathNote)."
+L.CHAT_BOUNTY_OURS = "Ingen dusør på deg selv eller dine egne (guild eller venner med Revenge Book)."
 L.ACT_BOUNTY = "Lys ut dusør"  -- [max 24]
 L.ACT_UNDO = "Angre"  -- [max 19]
 L.ACT_REVENGE_TAKE = "Trekk fra én hevn"  -- [max 24]
@@ -646,7 +646,7 @@ L.POSTER_AVENGED = "Hevnet av {names}"
 L.ROW_AVENGED = "hevnet {times}"
 L.BOUNTY_TIP_HEAD = "Din egen dusør i gull"
 L.BOUNTY_TIP_RULES = "Et helt tall, 1 til 99999. Tomt eller 0: tilbake til bokens verdi. Enter setter, Esc avbryter."
-L.BOUNTY_TIP_PROMISE = "Guild og venner med DeathNote ser den. Bare et løfte: dere gjør opp seg imellom."
+L.BOUNTY_TIP_PROMISE = "Guild og venner med Revenge Book ser den. Bare et løfte: dere gjør opp seg imellom."
 L.BOUNTY_TIP_CLICK = "Klikk: lys ut en egen dusør"
 L.CHAT_AVENGED = "{name} felte {killer} for deg."
 L.NAMES_PLUS = "{name} +{count}"
@@ -861,7 +861,6 @@ L.EMPTY_HIDDEN_SUB = "Enter eller linjen nederst viser dem."
 L.EMPTY_SEARCHHAS_HEAD = "Står allerede i boka."
 L.EMPTY_SEARCHHAS_SUB = "Bare ikke på denne siden. Enter åpner den."
 L.FILTER_TWO = "{count} filtre"
-L.CHAT_NEWS_140 = "Nytt i 1.4.0: etter et angrep spør en liten melding om angriperen skal inn i boka (Nag; på/av: /dn grudge eller {rules}, arket {sheet}); «{takeall}» står under {guild}, filter og søk under {wanted}."
 L.GRUDGE_TIP_OFF = "Slå av: /dn grudge eller {rules}, arket {sheet}."
 -- 1.5.0 grip
 L.GRUDGE_TIP_PROBABLE = "Usikkert: lite taler for ham. Huk av bare hvis du så ham."
@@ -979,4 +978,7 @@ L.CHRON_AVENGED = "{names} felte {name} for de andre."
 L.CHRON_PARDONED = "Du benådet {name}."
 L.CHRON_END = "Nå: {score} · {state}"
 L.CHRON_END_NONE = "Hittil: drept deg {times}."
+-- 1.5.0 name
+L.HELP_ALIASES = "/rb, /revengebook  det samme som /dn"
+L.CHAT_NEWS_150 = "DeathNote heter nå Revenge Book. Boka di og /dn blir værende. Nytt i 1.5.0: vis en plakat i chatten, åsteder på verdenskartet, hurtigtaster, et merke på navneskiltet til drapsmennene dine."
 end)

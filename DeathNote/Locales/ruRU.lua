@@ -2,7 +2,7 @@
 -- Plural: 3 forms {count|one|few|many} (1, 21, 31 .. not 11 | 2-4, 22-24 .. not 12-14 | 0, 5-20, 25 ..). Rule in Locale.lua (PLURAL_OF.ruRU), not here.
 -- Fonts: cyrillic (Skurri/Morpheus/Friz _CYR cuts) (Locale.lua, FONTS). Copy the keys of enUS.lua, keep the order and the [max N].
 --
--- TOC-Notes: Список смертей для PvP в открытом мире: запоминает, кто тебя убил, и предупреждает, когда убийца рядом.
+-- TOC-Notes: Книга мести для мирового PvP: запоминает, кто тебя убил, и предупреждает, когда убийца рядом.
 
 local _, ns = ...
 local Locale = ns and ns.Locale
@@ -92,7 +92,7 @@ L.MONEY_SILVER = "{count}с"
 L.MONEY_COPPER = "{count}м"
 
 -- Guild and friends status (House Rules, /dn guild, /dn friends) ----------------------------------
-L.GUILD_HEARD = "Согильдийцев с DeathNote на связи: {count}."
+L.GUILD_HEARD = "Согильдийцев с Revenge Book на связи: {count}."
 L.HEALTH_NOGUILD = "Ты не в гильдии, обмена нет."
 L.HEALTH_OFF = "Обмен выключен."
 L.HEALTH_SHORT_NOGUILD = "Нет гильдии"  -- [max 18]
@@ -132,8 +132,8 @@ L.HELP_ADD = "/dn add <Имя [Фамилия]>  вписать убийцу в 
 L.HELP_DEL = "/dn del <Имя [Фамилия]>  вычеркнуть убийцу из книги"
 L.HELP_QUIET = "/dn quiet  тревога выкл./вкл."
 L.HELP_TEST = "/dn test  показать пробную тревогу"
-L.HELP_GUILD = "/dn guild  книга гильдии: состояние и у кого из согильдийцев есть DeathNote"
-L.HELP_FRIENDS = "/dn friends  книга друзей: состояние и у кого из друзей есть DeathNote"
+L.HELP_GUILD = "/dn guild  книга гильдии: состояние и у кого из согильдийцев есть Revenge Book"
+L.HELP_FRIENDS = "/dn friends  книга друзей: состояние и у кого из друзей есть Revenge Book"
 L.HELP_SYNC = "/dn sync  синхронизировать книгу гильдии и книгу друзей сейчас"
 L.HELP_HUNT = "/dn hunt <Имя [Фамилия]>  объявить охоту (без имени: показать список на отстрел)"
 L.HELP_CALLOFF = "/dn calloff <Имя [Фамилия]>  отменить свою заявку на охоту"
@@ -163,16 +163,16 @@ L.CHAT_GUILD_STATE = "Гильдия {guild}: отправка {share}, приё
 L.CHAT_GUILD_BOOK = "Книга гильдии. Убийц: {enemies} (только вручную: {listed}), злодеяний: {deeds}, с жертвами среди согильдийцев: {foreign}. Делиться ручными записями: {manual}"
 L.CHAT_STATE_OK = "Состояние: {text}"
 L.CHAT_STATE_WARN = "Внимание: {text}"
-L.CHAT_NO_MATES = "Согильдийцев с DeathNote пока не слышно."
-L.CHAT_HAVE_DN = "С DeathNote: {names}"
-L.CHAT_HAVE_DN_MORE = "С DeathNote: {names} и ещё {count}"
+L.CHAT_NO_MATES = "Согильдийцев с Revenge Book пока не слышно."
+L.CHAT_HAVE_DN = "С Revenge Book: {names}"
+L.CHAT_HAVE_DN_MORE = "С Revenge Book: {names} и ещё {count}"
 L.CHAT_SYNC_ASKED = "Запрос отправлен. Ответы придут в ближайшие секунды."
 L.CHAT_SYNC_FAIL = "Синхронизация не работает: {reason}"
 L.CHAT_SYNC_FAIL_DEFAULT = "нет гильдии или обмен выключен."
 L.CHAT_FRIENDS_NOT_LOADED = "Книга друзей не загружена."
 L.CHAT_FRIENDS_STATE = "Друзья: обмен {share}, в сети {online} из {total}."
 L.CHAT_FRIENDS_BOOK = "Книга друзей. Убийц: {enemies} (только вручную: {listed}), злодеяний: {deeds}."
-L.CHAT_NO_FRIENDS = "Друзей с DeathNote пока не слышно."
+L.CHAT_NO_FRIENDS = "Друзей с Revenge Book пока не слышно."
 L.CHAT_HUNT_NOT_LOADED = "Список на отстрел не загружен."
 L.CHAT_HUNT_UNKNOWN = "Неизвестно: {name}. Укажи и фамилию, как имя написано в игре."
 L.CHAT_HUNT_CAP = "Охоту объявить нельзя: не больше {own} своих заявок и {targets} целей в списке."
@@ -200,7 +200,7 @@ L.THEME_TRADE = "Мастерская"
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Книга готова. Кто убьёт тебя в открытом мире, окажется в ней. Открыть: /dn или кнопка у миникарты."
 L.WELCOME_PLATES = "Индикаторы здоровья противников выключены. Без них тревога видит только твою цель."
-L.WELCOME_SHARE = "Гильдия и друзья, у которых есть DeathNote, читают её вместе с тобой. Заметки и подозрения остаются у тебя."
+L.WELCOME_SHARE = "Гильдия и друзья, у которых есть Revenge Book, читают её вместе с тобой. Заметки и подозрения остаются у тебя."
 
 -- Unit tooltip (one line under the player's tooltip) ---------------------------------------------
 -- The labels stand in red before the line, with their colon: "IN THE BOOK: killed you 2× · rank 1"
@@ -254,10 +254,10 @@ L.SYNC_HOLD_AGAIN = "пока снова не заработает"
 L.SYNC_HOLD_SHORT_INSTANCE = "Ждёт: подземелье"  -- [max 18]
 L.SYNC_HOLD_SHORT_COMBAT = "Ждёт: бой"  -- [max 18]
 L.SYNC_HOLD_SHORT_LOCKDOWN = "Ждёт: чат"  -- [max 18]
-L.SYNC_QUIET = "Отправлено, но согильдийцев с DeathNote пока не слышно."
-L.SYNC_READY = "Готово. Согильдийцев с DeathNote пока не слышно."
-L.SYNC_RUNNING = "Работает: {count} {count|согильдиец|согильдийца|согильдийцев} с DeathNote."
-L.SYNC_RUNNING_ALL = "Работает. С DeathNote в гильдии и среди друзей: {count}."
+L.SYNC_QUIET = "Отправлено, но согильдийцев с Revenge Book пока не слышно."
+L.SYNC_READY = "Готово. Согильдийцев с Revenge Book пока не слышно."
+L.SYNC_RUNNING = "Работает: {count} {count|согильдиец|согильдийца|согильдийцев} с Revenge Book."
+L.SYNC_RUNNING_ALL = "Работает. С Revenge Book в гильдии и среди друзей: {count}."
 L.FRIENDS_OFF = "Обмен с друзьями выключен (Распорядок, лист «Гильдия»)."
 L.FRIENDS_BLOCKED = "Сервер блокирует шёпот. Друзья ничего не получат."
 L.FRIENDS_SHORT_BLOCKED = "Шёпот заблокирован"  -- [max 22]
@@ -266,10 +266,10 @@ L.FRIENDS_SHORT_FAILING = "Шёпот буксует"  -- [max 18]
 L.FRIENDS_NONE_LISTED = "В списке друзей никого нет."
 L.FRIENDS_NONE_ONLINE = "Сейчас никого из друзей нет в сети."
 L.FRIENDS_SHORT_NONE_ONLINE = "Друзей нет в сети"  -- [max 18]
-L.FRIENDS_QUIET = "Запрос отправлен, но друзей с DeathNote пока не слышно."
-L.FRIENDS_READY = "Готово. Друзей с DeathNote пока не слышно."
+L.FRIENDS_QUIET = "Запрос отправлен, но друзей с Revenge Book пока не слышно."
+L.FRIENDS_READY = "Готово. Друзей с Revenge Book пока не слышно."
 L.FRIENDS_HOLD = "Отправка друзьям ждёт, пока снова не заработает."
-L.FRIENDS_RUNNING = "Работает: {count} {count|друг|друга|друзей} с DeathNote."
+L.FRIENDS_RUNNING = "Работает: {count} {count|друг|друга|друзей} с Revenge Book."
 -- A killer taken over from the guild book into your own book gets this note (your note from then on)
 L.NOTE_FROM_GUILD = "Взято из книги гильдии (убийств согильдийцев: {kills}×)."
 
@@ -278,7 +278,7 @@ L.NOTE_FROM_GUILD = "Взято из книги гильдии (убийств �
 L.IMPORT_NO_DB = "База данных не загружена."
 L.IMPORT_NO_TEXT = "Нет текста."
 L.IMPORT_NO_HEADER = "Нет первой строки (она начинается с {header}). Скопируй текст целиком."
-L.IMPORT_NOT_EXPORT = "Это не экспорт DeathNote (нет строки заголовка или не та версия)."
+L.IMPORT_NOT_EXPORT = "Это не экспорт Revenge Book (нет строки заголовка или не та версия)."
 L.IMPORT_TOO_LONG = "Слишком много строк (не больше {count})."
 L.IMPORT_BAD_KEY = "Строка {line}: неверный ключ."
 L.IMPORT_BAD_TIME = "Строка {line}: неверное время."
@@ -322,20 +322,20 @@ L.EMPTY_NOGUILD_SUB = "Умирать можно и в одиночку."
 L.EMPTY_GUILDOFF_HEAD = "Книга гильдии закрыта."
 L.EMPTY_GUILDOFF_SUB = "Обмен выключен. Где включить, знает Распорядок."
 L.EMPTY_GUILDNIL_HEAD = "Из гильдии пока ни слова."
-L.EMPTY_GUILDNIL_SUB = "Твоя книга отправится, как только у кого-то из согильдийцев будет DeathNote."
+L.EMPTY_GUILDNIL_SUB = "Твоя книга отправится, как только у кого-то из согильдийцев будет Revenge Book."
 L.EMPTY_GUILDQUIET_HEAD = "В книге гильдии пока пусто."
 L.EMPTY_GUILDQUIET_SUB = "Твоих согильдийцев пока не трогали."
 L.EMPTY_FRIENDSOFF_HEAD = "Книга друзей закрыта."
 L.EMPTY_FRIENDSOFF_SUB = "Обмен с друзьями выключен. Где включить, знает Распорядок."
-L.EMPTY_FRIENDSNIL_HEAD = "Друзей с DeathNote пока не слышно."
-L.EMPTY_FRIENDSNIL_SUB = "Твоя книга отправится, как только у кого-то из друзей будет DeathNote."
+L.EMPTY_FRIENDSNIL_HEAD = "Друзей с Revenge Book пока не слышно."
+L.EMPTY_FRIENDSNIL_SUB = "Твоя книга отправится, как только у кого-то из друзей будет Revenge Book."
 L.EMPTY_FRIENDSQUIET_HEAD = "От друзей пока ничего."
 L.EMPTY_FRIENDSQUIET_SUB = "Твоих друзей пока не трогали."
 L.EMPTY_NOBODY_HEAD = "Ни гильдии, ни друзей."
 L.EMPTY_NOBODY_SUB = "Умирать можно и в одиночку."
-L.EMPTY_NOBODY_HINT = "Когда у согильдийцев или друзей из списка друзей появится DeathNote, здесь будет видно, что с ними происходит."
-L.EMPTY_SHAREDNIL_HEAD = "Пока никого с DeathNote не слышно."
-L.EMPTY_SHAREDNIL_SUB = "Твоя книга отправится, как только у согильдийцев или друзей будет DeathNote."
+L.EMPTY_NOBODY_HINT = "Когда у согильдийцев или друзей из списка друзей появится Revenge Book, здесь будет видно, что с ними происходит."
+L.EMPTY_SHAREDNIL_HEAD = "Пока никого с Revenge Book не слышно."
+L.EMPTY_SHAREDNIL_SUB = "Твоя книга отправится, как только у согильдийцев или друзей будет Revenge Book."
 L.EMPTY_SHAREDQUIET_HEAD = "Здесь пока пусто."
 L.EMPTY_SHAREDQUIET_SUB = "Гильдию и друзей пока не трогали."
 L.EMPTY_HUNT_HEAD = "Список на отстрел пуст."
@@ -357,9 +357,9 @@ L.MANUAL_ALERT = "Когда появляется индикатор здоро�
 L.MANUAL_ADD_HEAD = "ЗАПИСЬ"  -- [max 12]
 L.MANUAL_ADD = "Впиши имя в поле поиска, Enter. Правый клик по строке: отметить месть, помиловать, вычеркнуть."
 L.MANUAL_GUILD_HEAD = "ГИЛЬДИЯ"  -- [max 12]
-L.MANUAL_GUILD = "Согильдийцы и друзья с DeathNote видят твои подтверждённые смерти и ручные записи. Плакат или /dn hunt Имя: объявить охоту. Щелчок по награде: назначить свою, лишь обещание, расчёт между собой."
+L.MANUAL_GUILD = "Согильдийцы и друзья с Revenge Book видят твои подтверждённые смерти и ручные записи. Плакат или /dn hunt Имя: объявить охоту. Щелчок по награде: назначить свою, лишь обещание, расчёт между собой."
 L.MANUAL_SHARE_HEAD = "ПЕРЕДАЧА"  -- [max 12]
-L.MANUAL_SHARE = "Распорядок, «Сохранить книгу»: текст для копирования, для всех без DeathNote."
+L.MANUAL_SHARE = "Распорядок, «Сохранить книгу»: текст для копирования, для всех без Revenge Book."
 L.MANUAL_QUIET_HEAD = "ТИШИНА"  -- [max 12]
 L.MANUAL_QUIET = "В подземельях и на полях боя тревога молчит. В остальном: средний клик по кнопке у миникарты или /dn quiet."
 -- Questions before something is destroyed (game dialog) -------------------------------------------
@@ -412,7 +412,7 @@ L.MARK_BOTH = "СОГИЛЬДИЕЦ, ДРУГ"  -- [max 20]
 L.MARK_TAKEN_DOWN = "ЦЕЛЬ УБИТА {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "ЖИВЫМ ИЛИ МЁРТВЫМ"  -- [max 24]
-L.BOOK_TITLE = "DeathNote"
+L.BOOK_TITLE = "Revenge Book"
 L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "ЗЛОДЕЯНИЯ"  -- [max 14]
 L.POSTER_NOTE = "ЗАМЕТКА"  -- [max 8]
@@ -529,16 +529,16 @@ L.SET_SEC_WARN = "ТРЕВОГА"
 L.SET_MORE = "Ещё"
 L.SET_GUILD_CLEAR = "Очистить книгу гильдии"  -- [max 26]
 L.SET_HINT_GUILD = "Получает только твоя гильдия. Что приходит оттуда, хранится отдельно от твоей книги, пока ты не перенесёшь это к себе."
-L.SET_HINT_FRIENDS = "Получают только гильдия и друзья с DeathNote."
+L.SET_HINT_FRIENDS = "Получают только гильдия и друзья с Revenge Book."
 L.BTN_BACK = "Назад"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Синхронизация"  -- [max 14]
 L.SYNC_AGAIN_IN = "через {seconds} с"  -- [max 16]
 L.TIP_FRIENDS = "Друзья"
 L.TIP_GUILD_NAME = "Гильдия {guild}"
-L.TIP_MATES_WITH = "Согильдийцы с DeathNote:"
-L.TIP_NO_MATE = "Согильдийцев с DeathNote пока не слышно."
-L.TIP_FRIENDS_WITH = "Друзья с DeathNote:"
+L.TIP_MATES_WITH = "Согильдийцы с Revenge Book:"
+L.TIP_NO_MATE = "Согильдийцев с Revenge Book пока не слышно."
+L.TIP_FRIENDS_WITH = "Друзья с Revenge Book:"
 L.TIP_SHARED = "Передаётся: твои подтверждённые смерти, ручные записи и твои заявки на охоту."
 L.TIP_NOT_SHARED = "Не передаётся: заметки, подозрения, помилованные, загруженные записи."
 -- Back up / import page ---------------------------------------------------------------------------
@@ -553,9 +553,9 @@ L.IO_MSG_BIG = "Большая книга ({size}): выделение и коп
 L.IO_HELP_EXPORT = "Текст выделен: Ctrl+C копирует его. Сохрани его или передай друзьям."
 L.IO_HELP_IMPORT = "Вставь сохранённый текст через Ctrl+V, затем «Загрузить». Ничего не перезапишется."
 -- Sheet Put on the hit list (right page) ----------------------------------------------------------
-L.REL_HINT_ALL = "Причину увидят все в твоей гильдии и твои друзья с DeathNote."
-L.REL_HINT_GUILD = "Причину увидят все в твоей гильдии с DeathNote."
-L.REL_HINT_FRIENDS = "Причину увидят твои друзья с DeathNote."
+L.REL_HINT_ALL = "Причину увидят все в твоей гильдии и твои друзья с Revenge Book."
+L.REL_HINT_GUILD = "Причину увидят все в твоей гильдии с Revenge Book."
+L.REL_HINT_FRIENDS = "Причину увидят твои друзья с Revenge Book."
 L.REL_HEAD = "Объявить охоту"  -- [max 24]
 L.REL_FOR = "ДЛЯ"  -- [max 6]
 L.REL_REASON = "ПРИЧИНА"  -- [max 8]
@@ -623,7 +623,7 @@ L.HUNT_ROW_HIDDEN = "скрыто для тебя"
 L.HUNT_ROW_CALLS = "{count} {count|заявка|заявки|заявок}: {names}"
 L.POSTER_ON_HUNTLIST = "В списке на отстрел ({names})"
 L.REL_SELF = "На себя охоту не объявить."
-L.REL_MATE = "Это кто-то из своих (гильдия или друзья с DeathNote)."
+L.REL_MATE = "Это кто-то из своих (гильдия или друзья с Revenge Book)."
 -- Friends listed without surname: which full name is behind the entry (1.2.0) ------------------------
 L.FRIENDS_CONFLICT = "Кто твой друг {friend}: {a} или {b}? Выбери."
 L.FRIENDS_SHORT_CONFLICT = "Друг под вопросом"  -- [max 22]
@@ -636,12 +636,12 @@ L.CHAT_FRIENDS_TIES = "Привязанные полные имена (* = пе�
 -- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
 L.HELP_BOUNTY = "/dn bounty <Имя [Фамилия]> <золото>  назначить свою награду (без суммы: отозвать)"
 L.CHAT_WHO_BOUNTY = "За кого? /dn bounty <Имя> <золото>"
-L.CHAT_BOUNTY_SET = "{name}: назначена твоя награда {gold} з. Гильдия и друзья с DeathNote её видят."
+L.CHAT_BOUNTY_SET = "{name}: назначена твоя награда {gold} з. Гильдия и друзья с Revenge Book её видят."
 L.CHAT_BOUNTY_OFF = "{name}: твоя награда отозвана."
 L.CHAT_BOUNTY_NONE = "{name}: твоей награды нет."
 L.CHAT_BOUNTY_BAD = "Награда: целое число золотых, от 1 до 99999 (0 отзывает)."
 L.CHAT_BOUNTY_CAP = "Награду не назначить: своих не больше {count}."
-L.CHAT_BOUNTY_OURS = "Нельзя назначить награду за себя и своих (гильдия или друзья с DeathNote)."
+L.CHAT_BOUNTY_OURS = "Нельзя назначить награду за себя и своих (гильдия или друзья с Revenge Book)."
 L.ACT_BOUNTY = "Назначить награду"  -- [max 24]
 L.ACT_UNDO = "Отменить"  -- [max 19]
 L.ACT_REVENGE_TAKE = "Снять одну месть"  -- [max 24]
@@ -652,7 +652,7 @@ L.POSTER_AVENGED = "Отомстили: {names}"
 L.ROW_AVENGED = "отомщено {times}"
 L.BOUNTY_TIP_HEAD = "Твоя награда в золоте"
 L.BOUNTY_TIP_RULES = "Целое число от 1 до 99999. Пусто или 0: снова значение книги. Enter назначает, Esc отменяет."
-L.BOUNTY_TIP_PROMISE = "Гильдия и друзья с DeathNote её видят. Это лишь обещание: расчёт между собой."
+L.BOUNTY_TIP_PROMISE = "Гильдия и друзья с Revenge Book её видят. Это лишь обещание: расчёт между собой."
 L.BOUNTY_TIP_CLICK = "Щелчок: назначить свою награду"
 L.CHAT_AVENGED = "Месть за тебя: {killer}, от {name}."
 L.NAMES_PLUS = "{name} +{count}"
@@ -867,7 +867,6 @@ L.EMPTY_HIDDEN_SUB = "Enter или строка внизу покажет их."
 L.EMPTY_SEARCHHAS_HEAD = "Уже есть в книге."
 L.EMPTY_SEARCHHAS_SUB = "Просто не на этой странице. Enter откроет."
 L.FILTER_TWO = "Фильтров: {count}"
-L.CHAT_NEWS_140 = "Новое в 1.4.0: после нападения маленькое окно спрашивает, записать ли нападавшего в книгу (Злопамятство; вкл./выкл.: /dn grudge или {rules}, лист «{sheet}»); «{takeall}»: вкладка «{guild}»; фильтр и поиск: вкладка «{wanted}»."
 L.GRUDGE_TIP_OFF = "Отключить: /dn grudge или {rules}, лист «{sheet}»."
 -- 1.5.0 grip
 L.GRUDGE_TIP_PROBABLE = "Не точно: улик мало. Ставь галочку, только если видел его."
@@ -985,4 +984,7 @@ L.CHRON_AVENGED = "{names} убили {name} за остальных."
 L.CHRON_PARDONED = "Ты помиловал {name}."
 L.CHRON_END = "Сейчас: {score} · {state}"
 L.CHRON_END_NONE = "Пока что: убивал тебя {times}."
+-- 1.5.0 name
+L.HELP_ALIASES = "/rb, /revengebook  то же, что /dn"
+L.CHAT_NEWS_150 = "DeathNote теперь называется Revenge Book. Твоя книга и /dn остаются. Новое в 1.5.0: показать плакат в чате, места преступлений на карте мира, горячие клавиши, метка над табличкой имени твоих убийц."
 end)

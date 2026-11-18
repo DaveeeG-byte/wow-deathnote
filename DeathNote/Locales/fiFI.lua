@@ -6,7 +6,7 @@
 -- julistus, perua jahti, kaadettu, Varmuuskopioi, Tuo kirja.
 -- Placeholders never carry a case ending: names stand after a colon or as plain subjects.
 --
--- TOC-Notes: Kuolinlista avoimen maailman PvP:hen: muistaa, kuka sinut tappoi, ja varoittaa, kun hän on lähellä.
+-- TOC-Notes: Kostokirja maailman PvP:hen: muistaa, kuka sinut tappoi, ja varoittaa, kun hän on lähellä.
 
 local _, ns = ...
 local Locale = ns and ns.Locale
@@ -94,7 +94,7 @@ L.MONEY_SILVER = "{count}s"
 L.MONEY_COPPER = "{count}c"
 
 -- Guild and friends status (House Rules, /dn guild, /dn friends) ----------------------------------
-L.GUILD_HEARD    = "Kiltalaisia, joilla on DeathNote: {count}."
+L.GUILD_HEARD    = "Kiltalaisia, joilla on Revenge Book: {count}."
 L.HEALTH_NOGUILD = "Et ole missään killassa, mitään ei jaeta."
 L.HEALTH_OFF     = "Jakaminen on pois päältä."
 L.HEALTH_SHORT_NOGUILD = "Ei kiltaa"      -- [max 18]
@@ -132,8 +132,8 @@ L.HELP_ADD      = "/dn add <Nimi [Sukunimi]>  kirjaa tappaja käsin kirjaan"
 L.HELP_DEL      = "/dn del <Nimi [Sukunimi]>  poista tappaja kirjasta"
 L.HELP_QUIET    = "/dn quiet  hälytys pois/päälle"
 L.HELP_TEST     = "/dn test  näytä testihälytys"
-L.HELP_GUILD    = "/dn guild  kiltakirja: tila ja kenellä kiltalaisista on DeathNote"
-L.HELP_FRIENDS  = "/dn friends  kaverikirja: tila ja kenellä kavereista on DeathNote"
+L.HELP_GUILD    = "/dn guild  kiltakirja: tila ja kenellä kiltalaisista on Revenge Book"
+L.HELP_FRIENDS  = "/dn friends  kaverikirja: tila ja kenellä kavereista on Revenge Book"
 L.HELP_SYNC     = "/dn sync  synkronoi kiltakirja ja kaverikirja nyt"
 L.HELP_HUNT     = "/dn hunt <Nimi [Sukunimi]>  julista jahti (ilman nimeä: näytä tappolista)"
 L.HELP_CALLOFF  = "/dn calloff <Nimi [Sukunimi]>  peru oma jahtisi"
@@ -163,16 +163,16 @@ L.CHAT_GUILD_STATE = "Kilta {guild}: jakaminen {share}, vastaanotto {receive}."
 L.CHAT_GUILD_BOOK = "Kiltakirja: tappajia {enemies} (vain käsin kirjattuja {listed}), tekoja {deeds}, muita kiltalaisia tappaneita {foreign}. Käsin kirjattujen jakaminen: {manual}."
 L.CHAT_STATE_OK   = "Tila: {text}"
 L.CHAT_STATE_WARN = "Huomio: {text}"
-L.CHAT_NO_MATES   = "Ei vielä yhteyttä yhteenkään kiltalaiseen, jolla on DeathNote."
-L.CHAT_HAVE_DN      = "DeathNote käytössä: {names}"
-L.CHAT_HAVE_DN_MORE = "DeathNote käytössä: {names} ja {count} muuta"
+L.CHAT_NO_MATES   = "Ei vielä yhteyttä yhteenkään kiltalaiseen, jolla on Revenge Book."
+L.CHAT_HAVE_DN      = "Revenge Book käytössä: {names}"
+L.CHAT_HAVE_DN_MORE = "Revenge Book käytössä: {names} ja {count} muuta"
 L.CHAT_SYNC_ASKED = "Synkronointia pyydetty. Vastaukset tulevat muutamassa sekunnissa."
 L.CHAT_SYNC_FAIL  = "Synkronointi ei toimi: {reason}"
 L.CHAT_SYNC_FAIL_DEFAULT = "ei kiltaa, tai jakaminen on pois päältä."
 L.CHAT_FRIENDS_NOT_LOADED = "Kaverikirjaa ei ole ladattu."
 L.CHAT_FRIENDS_STATE = "Kaverit: jakaminen {share}, paikalla {online}/{total}."
 L.CHAT_FRIENDS_BOOK  = "Kaverikirja: tappajia {enemies} (vain käsin kirjattuja {listed}), tekoja {deeds}."
-L.CHAT_NO_FRIENDS    = "Ei vielä yhteyttä yhteenkään kaveriin, jolla on DeathNote."
+L.CHAT_NO_FRIENDS    = "Ei vielä yhteyttä yhteenkään kaveriin, jolla on Revenge Book."
 L.CHAT_HUNT_NOT_LOADED = "Tappolistaa ei ole ladattu."
 L.CHAT_HUNT_UNKNOWN = "Tuntematon: {name}. Lisää myös sukunimi, niin kuin nimi näkyy pelissä."
 L.CHAT_HUNT_CAP     = "Jahtia ei voi julistaa: enintään {own} omaa julistusta ja {targets} kohdetta listaa kohden."
@@ -200,7 +200,7 @@ L.THEME_TRADE = "Verstas"
 -- First contact: three chat lines, once per account, 5 s after the first login --------------------
 L.WELCOME = "Kirja on valmiina. Jokainen, joka tappaa sinut avoimessa maailmassa, päätyy siihen. Avaa se komennolla /dn tai minikartan napista."
 L.WELCOME_PLATES = "Vihollisten nimikyltit ovat pois päältä. Ilman niitä hälytys näkee vain kohteesi."
-L.WELCOME_SHARE = "Kilta ja kaverit, joilla on DeathNote, lukevat mukana. Muistiinpanot ja epäilyt jäävät sinulle."
+L.WELCOME_SHARE = "Kilta ja kaverit, joilla on Revenge Book, lukevat mukana. Muistiinpanot ja epäilyt jäävät sinulle."
 
 -- Unit tooltip (one line under the player's tooltip) ---------------------------------------------
 L.TIP_IN_BOOK   = "KIRJASSA:"
@@ -250,10 +250,10 @@ L.SYNC_HOLD_AGAIN    = "kunnes se taas toimii"
 L.SYNC_HOLD_SHORT_INSTANCE = "Odottaa: instanssi" -- [max 18]
 L.SYNC_HOLD_SHORT_COMBAT   = "Odottaa: taistelu"  -- [max 18]
 L.SYNC_HOLD_SHORT_LOCKDOWN = "Odottaa: chat"      -- [max 18]
-L.SYNC_QUIET       = "Lähetetty, mutta ei vielä yhteyttä yhteenkään kiltalaiseen, jolla on DeathNote."
-L.SYNC_READY       = "Valmis. Ei vielä yhteyttä yhteenkään kiltalaiseen, jolla on DeathNote."
-L.SYNC_RUNNING     = "Käynnissä. Kiltalaisia, joilla on DeathNote: {count}."
-L.SYNC_RUNNING_ALL = "Käynnissä. DeathNote-käyttäjiä killassa ja kaverilistalla: {count}."
+L.SYNC_QUIET       = "Lähetetty, mutta ei vielä yhteyttä yhteenkään kiltalaiseen, jolla on Revenge Book."
+L.SYNC_READY       = "Valmis. Ei vielä yhteyttä yhteenkään kiltalaiseen, jolla on Revenge Book."
+L.SYNC_RUNNING     = "Käynnissä. Kiltalaisia, joilla on Revenge Book: {count}."
+L.SYNC_RUNNING_ALL = "Käynnissä. Revenge Book -käyttäjiä killassa ja kaverilistalla: {count}."
 L.FRIENDS_OFF      = "Jakaminen kavereille on pois päältä (Talon tavat, välilehti Kilta)."
 L.FRIENDS_BLOCKED  = "Realm estää kuiskaukset. Kaverit eivät saa mitään."
 L.FRIENDS_SHORT_BLOCKED = "Kuiskaukset estetty" -- [max 22]
@@ -262,10 +262,10 @@ L.FRIENDS_SHORT_FAILING = "Kuiskaus takkuaa"    -- [max 18]
 L.FRIENDS_NONE_LISTED = "Kaverilistalla ei ole ketään."
 L.FRIENDS_NONE_ONLINE = "Yksikään kaveri ei ole juuri nyt paikalla."
 L.FRIENDS_SHORT_NONE_ONLINE = "Kaverit offline"   -- [max 18]
-L.FRIENDS_QUIET    = "Kysytty, mutta ei vielä yhteyttä yhteenkään kaveriin, jolla on DeathNote."
-L.FRIENDS_READY    = "Valmis. Ei vielä yhteyttä yhteenkään kaveriin, jolla on DeathNote."
+L.FRIENDS_QUIET    = "Kysytty, mutta ei vielä yhteyttä yhteenkään kaveriin, jolla on Revenge Book."
+L.FRIENDS_READY    = "Valmis. Ei vielä yhteyttä yhteenkään kaveriin, jolla on Revenge Book."
 L.FRIENDS_HOLD     = "Lähetys kavereille odottaa, kunnes se taas toimii."
-L.FRIENDS_RUNNING  = "Käynnissä. Kavereita, joilla on DeathNote: {count}."
+L.FRIENDS_RUNNING  = "Käynnissä. Kavereita, joilla on Revenge Book: {count}."
 -- A killer taken over from the guild book into your own book gets this note (your note from then on)
 L.NOTE_FROM_GUILD  = "Otettu kiltakirjasta (tappanut kiltalaisia {kills}×)."
 
@@ -273,7 +273,7 @@ L.NOTE_FROM_GUILD  = "Otettu kiltakirjasta (tappanut kiltalaisia {kills}×)."
 L.IMPORT_NO_DB      = "Tietokantaa ei ole ladattu."
 L.IMPORT_NO_TEXT    = "Ei tekstiä."
 L.IMPORT_NO_HEADER  = "Ensimmäinen rivi puuttuu (sen alku: {header}). Kopioi koko teksti."
-L.IMPORT_NOT_EXPORT = "Ei DeathNote-vienti (otsikkorivi puuttuu tai versio on väärä)."
+L.IMPORT_NOT_EXPORT = "Ei Revenge Book -vienti (otsikkorivi puuttuu tai versio on väärä)."
 L.IMPORT_TOO_LONG   = "Liian monta riviä (enintään {count})."
 L.IMPORT_BAD_KEY    = "Rivi {line}: virheellinen avain."
 L.IMPORT_BAD_TIME   = "Rivi {line}: virheellinen aika."
@@ -317,20 +317,20 @@ L.EMPTY_NOGUILD_SUB = "Yksinkin voi kuolla."
 L.EMPTY_GUILDOFF_HEAD = "Kiltakirja on kiinni."
 L.EMPTY_GUILDOFF_SUB = "Jakaminen on pois päältä. Talon tavat kertovat, mistä."
 L.EMPTY_GUILDNIL_HEAD = "Killasta ei ole vielä kuulunut mitään."
-L.EMPTY_GUILDNIL_SUB = "Kirjasi lähtee liikkeelle heti, kun jollakin kiltalaisella on DeathNote."
+L.EMPTY_GUILDNIL_SUB = "Kirjasi lähtee liikkeelle heti, kun jollakin kiltalaisella on Revenge Book."
 L.EMPTY_GUILDQUIET_HEAD = "Kiltakirjassa ei ole vielä mitään."
 L.EMPTY_GUILDQUIET_SUB = "Kiltalaisillasi on ollut tähän asti rauhallista."
 L.EMPTY_FRIENDSOFF_HEAD = "Kaverikirja on kiinni."
 L.EMPTY_FRIENDSOFF_SUB = "Jakaminen kavereille on pois päältä. Talon tavat kertovat, mistä."
-L.EMPTY_FRIENDSNIL_HEAD = "Ei vielä yhteyttä yhteenkään kaveriin, jolla on DeathNote."
-L.EMPTY_FRIENDSNIL_SUB = "Kirjasi lähtee liikkeelle heti, kun jollakin kaverilla on DeathNote."
+L.EMPTY_FRIENDSNIL_HEAD = "Ei vielä yhteyttä yhteenkään kaveriin, jolla on Revenge Book."
+L.EMPTY_FRIENDSNIL_SUB = "Kirjasi lähtee liikkeelle heti, kun jollakin kaverilla on Revenge Book."
 L.EMPTY_FRIENDSQUIET_HEAD = "Kavereiltasi ei ole vielä mitään."
 L.EMPTY_FRIENDSQUIET_SUB = "Kavereillasi on ollut tähän asti rauhallista."
 L.EMPTY_NOBODY_HEAD = "Ei kiltaa, ei kavereita."
 L.EMPTY_NOBODY_SUB = "Yksinkin voi kuolla."
-L.EMPTY_NOBODY_HINT = "Kun kiltalaisilla tai kaverilistasi kavereilla on DeathNote, tällä sivulla näkyy, mitä heille tapahtuu."
-L.EMPTY_SHAREDNIL_HEAD = "Ei vielä yhteyttä kehenkään, jolla on DeathNote."
-L.EMPTY_SHAREDNIL_SUB = "Kirjasi lähtee liikkeelle heti, kun kiltalaisilla tai kavereilla on DeathNote."
+L.EMPTY_NOBODY_HINT = "Kun kiltalaisilla tai kaverilistasi kavereilla on Revenge Book, tällä sivulla näkyy, mitä heille tapahtuu."
+L.EMPTY_SHAREDNIL_HEAD = "Ei vielä yhteyttä kehenkään, jolla on Revenge Book."
+L.EMPTY_SHAREDNIL_SUB = "Kirjasi lähtee liikkeelle heti, kun kiltalaisilla tai kavereilla on Revenge Book."
 L.EMPTY_SHAREDQUIET_HEAD = "Täällä ei ole vielä mitään."
 L.EMPTY_SHAREDQUIET_SUB = "Killalla ja kavereilla on ollut tähän asti rauhallista."
 L.EMPTY_HUNT_HEAD = "Tappolista on tyhjä."
@@ -352,9 +352,9 @@ L.MANUAL_ALERT = "Kun tappaja ilmestyy nimikylttinä, kohteena tai hiiren alle, 
 L.MANUAL_ADD_HEAD = "KIRJAAMINEN"  -- [max 12]
 L.MANUAL_ADD = "Kirjoita nimi hakukenttään, Enter. Oikea klikkaus riviin: merkitse kosto, armahda, poista."
 L.MANUAL_GUILD_HEAD = "KILTA"  -- [max 12]
-L.MANUAL_GUILD = "Kiltalaiset ja kaverit, joilla on DeathNote, näkevät varmistetut kuolemasi ja käsin kirjatut nimet. Juliste tai /dn hunt Nimi: julista jahti. Napsauta palkkiota: aseta oma, se on vain lupaus."
+L.MANUAL_GUILD = "Kiltalaiset ja kaverit, joilla on Revenge Book, näkevät varmistetut kuolemasi ja käsin kirjatut nimet. Juliste tai /dn hunt Nimi: julista jahti. Napsauta palkkiota: aseta oma, se on vain lupaus."
 L.MANUAL_SHARE_HEAD = "ETEENPÄIN"  -- [max 12]
-L.MANUAL_SHARE = "Talon tavat, Varmuuskopioi: kopioitava teksti kaikille, joilta DeathNote puuttuu."
+L.MANUAL_SHARE = "Talon tavat, Varmuuskopioi: kopioitava teksti kaikille, joilta Revenge Book puuttuu."
 L.MANUAL_QUIET_HEAD = "HILJAA"  -- [max 12]
 L.MANUAL_QUIET = "Luolastoissa ja taistelukentillä hälytys on hiljaa. Muuten: keskiklikkaus minikartan nappiin tai /dn quiet."
 -- Questions before something is destroyed (game dialog) -------------------------------------------
@@ -407,7 +407,7 @@ L.MARK_BOTH = "KILTALAINEN, KAVERI"  -- [max 20]
 L.MARK_TAKEN_DOWN = "KAADETTU {times}"  -- [max 18]
 -- Wanted poster (right page): labels in letter-spaced capitals, fact lines, bounty ----------------
 L.POSTER_DOA = "KUOLLEENA TAI ELÄVÄNÄ"  -- [max 24]
-L.BOOK_TITLE = "DeathNote"
+L.BOOK_TITLE = "Revenge Book"
 L.POSTER_HEAD = "WANTED"
 L.POSTER_DEEDS = "TEOT"  -- [max 14]
 L.POSTER_NOTE = "MUISTIO"  -- [max 8]
@@ -524,16 +524,16 @@ L.SET_SEC_WARN = "HÄLYTYS"
 L.SET_MORE = "Lisää"
 L.SET_GUILD_CLEAR = "Tyhjennä kiltakirja"  -- [max 26]
 L.SET_HINT_GUILD = "Vain oma kilta saa mitään. Sieltä tuleva pysyy erillään kirjastasi, kunnes otat sen itse."
-L.SET_HINT_FRIENDS = "Vain kilta ja kaverit, joilla on DeathNote, saavat mitään."
+L.SET_HINT_FRIENDS = "Vain kilta ja kaverit, joilla on Revenge Book, saavat mitään."
 L.BTN_BACK = "Takaisin"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Synkronoi"  -- [max 14]
 L.SYNC_AGAIN_IN = "{seconds} s päästä"  -- [max 16]
 L.TIP_FRIENDS = "Kaverit"
 L.TIP_GUILD_NAME = "Kilta: {guild}"
-L.TIP_MATES_WITH = "Kiltalaiset, joilla on DeathNote:"
-L.TIP_NO_MATE = "Ei vielä yhteyttä yhteenkään kiltalaiseen, jolla on DeathNote."
-L.TIP_FRIENDS_WITH = "Kaverit, joilla on DeathNote:"
+L.TIP_MATES_WITH = "Kiltalaiset, joilla on Revenge Book:"
+L.TIP_NO_MATE = "Ei vielä yhteyttä yhteenkään kiltalaiseen, jolla on Revenge Book."
+L.TIP_FRIENDS_WITH = "Kaverit, joilla on Revenge Book:"
 L.TIP_SHARED = "Jaetaan: varmistetut kuolemasi, käsin kirjatut nimet ja jahtijulistuksesi."
 L.TIP_NOT_SHARED = "Ei jaeta: muistiinpanot, epäilyt, armahdetut, tuodut nimet."
 -- Back up / import page ---------------------------------------------------------------------------
@@ -548,9 +548,9 @@ L.IO_MSG_BIG = "Iso kirja ({size}): valinta ja kopiointi vievät hetken."
 L.IO_HELP_EXPORT = "Teksti on valittu: Ctrl+C kopioi sen. Pidä tallessa tai anna kavereille."
 L.IO_HELP_IMPORT = "Liitä varmuuskopioitu teksti näppäimillä Ctrl+V, sitten Tuo. Mitään ei korvata."
 -- Sheet Put on the hit list (right page) ----------------------------------------------------------
-L.REL_HINT_ALL = "Kaikki killassasi ja kaverisi, joilla on DeathNote, näkevät syyn."
-L.REL_HINT_GUILD = "Kaikki killassasi, joilla on DeathNote, näkevät syyn."
-L.REL_HINT_FRIENDS = "Kaverisi, joilla on DeathNote, näkevät syyn."
+L.REL_HINT_ALL = "Kaikki killassasi ja kaverisi, joilla on Revenge Book, näkevät syyn."
+L.REL_HINT_GUILD = "Kaikki killassasi, joilla on Revenge Book, näkevät syyn."
+L.REL_HINT_FRIENDS = "Kaverisi, joilla on Revenge Book, näkevät syyn."
 L.REL_HEAD = "Julista jahti"  -- [max 24]
 L.REL_FOR = "JAKO"  -- [max 6]
 L.REL_REASON = "SYY"  -- [max 8]
@@ -618,7 +618,7 @@ L.HUNT_ROW_HIDDEN = "piilotettu sinulta"
 L.HUNT_ROW_CALLS = "{count} {count|julistus|julistusta}: {names}"
 L.POSTER_ON_HUNTLIST = "Tappolistalla ({names})"
 L.REL_SELF = "Et voi julistaa jahtia itseäsi vastaan."
-L.REL_MATE = "Tämä on omiasi (kiltalainen tai kaveri, jolla on DeathNote)."
+L.REL_MATE = "Tämä on omiasi (kiltalainen tai kaveri, jolla on Revenge Book)."
 -- Friends listed without surname: which full name is behind the entry (1.2.0) ------------------------
 L.FRIENDS_CONFLICT = "Kuka on kaverisi {friend}: {a} vai {b}? Valitse."
 L.FRIENDS_SHORT_CONFLICT = "Kaveri epäselvä"  -- [max 22]
@@ -631,12 +631,12 @@ L.CHAT_FRIENDS_TIES = "Yhdistetyt koko nimet (* = ensimmäinen yhteys, ei vielä
 -- Bounty, revenge taken back, avenged for you (1.2.1) ---------------------------------------------
 L.HELP_BOUNTY = "/dn bounty <Nimi [Sukunimi]> <kulta>  aseta oma palkkio (ilman summaa: peru se)"
 L.CHAT_WHO_BOUNTY = "Kenestä? /dn bounty <Nimi> <kulta>"
-L.CHAT_BOUNTY_SET = "{name}: asetit {gold} kullan palkkion. Kiltalaiset ja kaverit, joilla on DeathNote, näkevät sen."
+L.CHAT_BOUNTY_SET = "{name}: asetit {gold} kullan palkkion. Kiltalaiset ja kaverit, joilla on Revenge Book, näkevät sen."
 L.CHAT_BOUNTY_OFF = "{name}: palkkiosi on peruttu."
 L.CHAT_BOUNTY_NONE = "Sinulla ei ole omaa palkkiota: {name}."
 L.CHAT_BOUNTY_BAD = "Palkkio: kokonaisluku kultaa 1:stä 99999:ään (0 peruu sen)."
 L.CHAT_BOUNTY_CAP = "Ei palkkiota: enintään {count} omaa."
-L.CHAT_BOUNTY_OURS = "Ei palkkiota itsestäsi eikä omistasi (kiltalaiset tai kaverit, joilla on DeathNote)."
+L.CHAT_BOUNTY_OURS = "Ei palkkiota itsestäsi eikä omistasi (kiltalaiset tai kaverit, joilla on Revenge Book)."
 L.ACT_BOUNTY = "Aseta palkkio"  -- [max 24]
 L.ACT_UNDO = "Kumoa"  -- [max 19]
 L.ACT_REVENGE_TAKE = "Vähennä yksi kosto"  -- [max 24]
@@ -647,7 +647,7 @@ L.POSTER_AVENGED = "Kostajat: {names}"
 L.ROW_AVENGED = "kostettu {times}"
 L.BOUNTY_TIP_HEAD = "Oma palkkiosi kultana"
 L.BOUNTY_TIP_RULES = "Kokonaisluku 1:stä 99999:ään. Tyhjä tai 0: takaisin kirjan arvoon. Enter asettaa, Esc peruu."
-L.BOUNTY_TIP_PROMISE = "Kiltalaiset ja kaverit, joilla on DeathNote, näkevät sen. Vain lupaus: sovitte keskenänne."
+L.BOUNTY_TIP_PROMISE = "Kiltalaiset ja kaverit, joilla on Revenge Book, näkevät sen. Vain lupaus: sovitte keskenänne."
 L.BOUNTY_TIP_CLICK = "Napsautus: aseta oma palkkio"
 L.CHAT_AVENGED = "{name} kaatoi puolestasi: {killer}."
 L.NAMES_PLUS = "{name} +{count}"
@@ -862,7 +862,6 @@ L.EMPTY_HIDDEN_SUB = "Enter tai alarivi näyttää ne."
 L.EMPTY_SEARCHHAS_HEAD = "On jo kirjassasi."
 L.EMPTY_SEARCHHAS_SUB = "Ei vain tällä sivulla. Enter avaa sen."
 L.FILTER_TWO = "Suodattimia: {count}"
-L.CHAT_NEWS_140 = "Uutta 1.4.0:ssa: hyökkäyksen jälkeen pieni ilmoitus kysyy, kirjataanko hyökkääjä kirjaan (Kauna; päälle/pois: /dn grudge tai {rules}, välilehti {sheet}); ”{takeall}”: välilehti {guild}; suodatin ja haku: välilehti {wanted}."
 L.GRUDGE_TIP_OFF = "Pois päältä: /dn grudge tai {rules}, välilehti {sheet}."
 -- 1.5.0 grip
 L.GRUDGE_TIP_PROBABLE = "Epävarma: vähän näyttöä. Merkitse vain, jos näit hänet."
@@ -980,4 +979,7 @@ L.CHRON_AVENGED = "{names} kaatoivat muiden puolesta: {name}."
 L.CHRON_PARDONED = "Armahdit: {name}."
 L.CHRON_END = "Nyt: {score} · {state}"
 L.CHRON_END_NONE = "Tähän asti: tappanut sinut {times}."
+-- 1.5.0 name
+L.HELP_ALIASES = "/rb, /revengebook  sama kuin /dn"
+L.CHAT_NEWS_150 = "DeathNote on nyt Revenge Book. Kirjasi ja /dn pysyvät. Uutta versiossa 1.5.0: näytä juliste chatissa, rikospaikat maailmankartalla, pikanäppäimet, merkki tappajiesi nimikilvissä."
 end)
