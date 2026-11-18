@@ -166,6 +166,19 @@ no longer in the book") and takes the standing from the counters. Places in it a
 `/dn probe` writes `probe.scene`: map API, pins, bundles, clicks from the book, in combat, without a spot, places sent,
 received and dropped (with the reason), errors.
 
+## Guild chronicle (1.6.0)
+In the guild tab a red ribbon on the book's fold opens two pages over the book (the ribbon or "Back to the book"
+closes them; another tab, the manual, the house rules or another selection close them too). Left: the chronicle,
+newest first and by day, built from what guild and friends already share (deaths K/R with their spot L, revenge V,
+hit list J and E, bounties B); a line opens the killer's poster (own, guild or friends', else a guest poster), the pin
+in the margin the map. Right, three views: who has the book (every guildmate heard on GUILD, version, last heard, the
+online count from the guild roster where the client has it; "Recommend to the guild" sends one plain line into the
+guild chat, at most every 30 minutes), the avengers and the most wanted of the last 7 days (your row with your rank),
+the week's card with "Post" (guild chat) and "Copy for Discord". A dot on the guild tab says that something happened
+since you last looked. Own deaths only while they are shared. Data: `DeathNoteDB.glog` (holders: 500, 30 days; a ring of
+200 events the books do not keep, e.g. a hit list target taken down after the call-off). Other parts add events with
+`ns.GuildLog.Add(kind, data)`.
+
 ## Friends' book (1.2.0)
 The same silent messages as in the guild (protocol version 1), but as whispers to character friends on the friend
 list who are online. First a hello to the friends online (at login after 22 to 34 s; a friend who comes online later
