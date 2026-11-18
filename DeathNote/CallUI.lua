@@ -27,7 +27,9 @@ CU.FIT_NAME = { sizes = { 19, 16, 13 } }
 CU.FIT_LINE = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
 CU.FIT_HINT = { sizes = { 9 } }
 CU.HINT_ALPHA = 0.6
-CU.BTN_W, CU.BTN_H = 54, 15
+-- design fix 1.6.0: the button on the grudge notice is a target for a click in a fight: 72 x 18, the word at 11 pt
+CU.BTN_W, CU.BTN_H = 72, 18
+CU.FIT_BTN = { sizes = { 11, 10, 9 } }
 
 local slip
 local function C(c, a) return c[1], c[2], c[3], a or c[4] or 1 end
@@ -213,7 +215,8 @@ function CU.OnCard(card, e, n)
     b:HookScript("OnLeave", function() local tip = G("GameTooltip"); if tip then tip:Hide() end end)
     card.dnCall = b
   end
-  b:SetLabel(L.CALL_BUTTON)
+  b.text:SetWidth(CU.BTN_W - 6)
+  Look.FitText(b.text, L.CALL_BUTTON, CU.FIT_BTN)
   b:Show()
   return CU.BTN_W + 6
 end
