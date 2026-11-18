@@ -1161,7 +1161,7 @@ L.OPT_FATES = "Also record deaths by creatures and the world"  -- check box in t
 L.SHARE_WEEK_OTHERS = "other deaths: {count}"  -- week line: deaths by creatures and the world this week
 L.SHARE_WEEK_BEAST = "deadliest creature: {name} {times}"  -- week line: the creature that killed you most this week; {name} = its name, {times} = '3x'
 -- 1.6.0 feud
-L.FEUD_EXPIRED_CHAT = "{count} old suspicions filed away (Unsolved, Filed)."  -- chat, once after login: entries with only suspicions or only attacks and no news for 30 play days were filed away; {count} = how many; where to find them (tab Unsolved, view Filed)
+L.FEUD_EXPIRED_CHAT = "{count} old suspicions filed away (Unsolved, Filed away)."  -- chat, once after login: entries with only suspicions or only attacks and no news for 30 play days were filed away; {count} = how many; where to find them (tab Unsolved, view Filed away = VIEW_FILED)
 L.VIEW_PLAYERS = "Players"  -- word switch at the bottom left of Wanted: the list of players (as before)
 L.VIEW_GUILDS = "Guilds"  -- word switch at the bottom left of Wanted: the page 'Which guilds kill you'
 L.VIEW_OPEN = "Cases"  -- word switch at the bottom left of Unsolved: open cases and suspects (as before)
