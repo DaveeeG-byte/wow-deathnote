@@ -18,7 +18,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          "$adir"/Grudge.lua "$adir"/GrudgeCard.lua tests/ui/grudge_card.lua \
          "$adir"/Grip.lua "$adir"/Plate.lua tests/ui/grip.lua \
          "$adir"/Share.lua "$adir"/ShareUI.lua tests/ui/share.lua \
-         "$adir"/SceneMap.lua tests/ui/scene_map.lua tests/ui/scene.lua tests/ui/_ju.lua tests/ui/_jukarte.lua tests/ui/fix150_*.lua tests/ui/fix160_*.lua tests/ui/to160_*.lua \
+         "$adir"/SceneMap.lua tests/ui/scene_map.lua tests/ui/scene.lua tests/ui/_ju.lua tests/ui/_ju160.lua tests/ui/_jukarte.lua tests/ui/fix150_*.lua tests/ui/fix160_*.lua tests/ui/to160_*.lua \
          "$adir"/GuildLog.lua "$adir"/GuildLogUI.lua tests/ui/gc160_*.lua \
          "$adir"/CallUI.lua tests/ui/ca160_*.lua \
          "$adir"/FeudUI.lua tests/ui/_fe160.lua tests/ui/fe160_*.lua tests/ui/dr160_*.lua \

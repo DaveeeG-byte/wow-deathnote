@@ -75,7 +75,8 @@ local function inCombat() return True(Call_(_G.InCombatLockdown)) end
 -- Probe (DeathNoteDB.probe.call): counters, result codes per way, the net test, the guild chat echo
 ---------------------------------------------------------------------------
 local COUNTS = { "sent", "sendRefused", "received", "dropped", "dup", "flood", "stranger", "sightSent", "sightQuiet",
-  "sightNoPlace", "sightReceived", "sightUnknown", "sightLine", "shardSeen", "secret" }
+  "sightNoPlace", "sightReceived", "sightUnknown", "sightLine", "shardSeen", "secret",
+  "quiet" }
 Call.COUNTS = COUNTS
 local COUNT_OK = {}
 for _, k in ipairs(COUNTS) do COUNT_OK[k] = true end
@@ -569,6 +570,8 @@ function Call.Receive(text, short, full, from)
     key = m.key, display = m.display, zone = Call.MapName(m.mapID) }
   if rec.zone and (#rec.zone > 80 or rec.zone:find("[%c|]")) then rec.zone = nil end
   rec.same = Call.SameZone(m.mapID)
+  -- 1.6.0 fix: in a dungeon, raid or battleground only the quiet chat line (no sound, no slip; the pin still comes)
+  if not Util.IsOpenWorld() then rec.quiet = true; Call.Count("quiet") end
   remember(rec)
   Call.Count("received")
   Util.Print(Call.InLine(rec) .. " " .. Call.Link("map", rec, L.CALL_MAP))

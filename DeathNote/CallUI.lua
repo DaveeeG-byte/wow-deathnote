@@ -97,8 +97,10 @@ function CU.Show(rec)
 end
 function CU.Slip() return slip end
 
--- a received call: loud (the alarm's sound and the slip) unless the alarm is off
+-- a received call: loud (the alarm's sound and the slip) unless the alarm is off or the player stands in an
+-- instance (rec.quiet: only the chat line there)
 function CU.OnCall(rec)
+  if type(rec) == "table" and rec.quiet == true then return end
   if Look.Setting("alert.enabled", true) == false then return end
   pcall(Look.Alarm, "alert")
   CU.Show(rec)
