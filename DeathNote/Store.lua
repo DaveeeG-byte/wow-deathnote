@@ -830,7 +830,11 @@ end
 local function applyInfo(e, info)
   if type(info) ~= "table" then return end
   -- 1.6.0 feud: a name or a sighting may change the sorts "name" and "seen" (the rank cache stays)
-  if next(rankedCache) then rankedCache = {} end
+  -- fixer 2 1.6.0 (je04): only those two go; "rank", "recent" and "debt" read neither identity nor lastSeen
+  for ck in pairs(rankedCache) do
+    local sort = ck:match("%z(.*)$")
+    if sort == "name" or sort == "seen" then rankedCache[ck] = nil end
+  end
   local hasSurname = false
   local sn = info.surname
   if not Util.IsSecret(sn) and type(sn) == "string" and sn ~= "" then hasSurname = true end

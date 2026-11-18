@@ -154,10 +154,26 @@ end
 local cache, dirty = nil, true
 Feud.builds = 0              -- tests: how often the evaluation really ran
 local function touch() dirty = true end
-for _, ev in ipairs({ "ENEMY_UPDATED", "ENEMY_REMOVED", "ENEMY_REKEYED", "REVENGE", "REVENGE_UNDONE", "FEUDS_CHANGED",
+for _, ev in ipairs({ "ENEMY_REMOVED", "ENEMY_REKEYED", "REVENGE", "REVENGE_UNDONE", "FEUDS_CHANGED",
   "DEATH_RECORDED" }) do
   ns:On(ev, touch)
 end
+-- fixer 2 1.6.0 (je04): a sighting (Store.Seen, "seen") of an entry whose guild stayed the same changes only that
+-- guild's "last seen" (no order depends on it): that one value is made again, the evaluation stays
+local memberOf = setmetatable({}, { __mode = "k" })   -- entry -> the guild it was counted in at the last build
+local seenOf                                           -- (below)
+ns:On("ENEMY_UPDATED", function(key, why)
+  if why ~= "seen" or dirty or not cache then dirty = true; return end
+  local S = ns.Store
+  local e = S and S.Get and type(key) == "string" and S.Get(key)
+  local eg = type(e) == "table" and plainName(e.guild) and e.guild or nil
+  if not e or memberOf[e] ~= eg then dirty = true; return end
+  if not eg then return end
+  for i = 1, #cache do
+    if cache[i].name == eg then seenOf(cache[i]); Feud.seenOnly = (Feud.seenOnly or 0) + 1; return end
+  end
+  dirty = true
+end)
 function Feud.Touched() dirty = true end
 
 local function memberLess(a, b)
@@ -192,8 +208,10 @@ function Feud.Guilds()
     end
     return g
   end
+  for k in pairs(memberOf) do memberOf[k] = nil end
   for _, e in pairs(all) do
     local eg = plainName(e.guild) and e.guild or nil
+    memberOf[e] = eg
     if eg then
       local g = G(eg)
       g.n = g.n + 1
@@ -245,6 +263,20 @@ function Feud.Guilds()
   table.sort(list, guildLess)
   cache = list
   return list
+end
+
+-- a guild's "last seen": its members' and the feud's (as in the build)
+seenOf = function(g)
+  local s
+  for _, e in ipairs(g.members) do
+    local ls = type(e.lastSeen) == "table" and tonumber(e.lastSeen.t) or nil
+    if ls and ls > (s or 0) then s = ls end
+  end
+  local d = db()
+  local f = d and type(d.feuds) == "table" and d.feuds[g.name]
+  local fs = type(f) == "table" and tonumber(f.seen) or nil
+  if fs and fs > (s or 0) then s = fs end
+  g.seen = s
 end
 
 -- the evaluation of one guild, or nil

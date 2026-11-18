@@ -530,13 +530,25 @@ local function OpenLess(a, b)
 end
 
 -- Unsolved: open cases and real suspects, newest first (reused table)
-local openData = {}
+-- fixer 2 1.6.0 (je04): the same items with the same times and keys as last time keep the last order (no sort)
+local openData, openIn, openT, openK = {}, {}, {}, {}
 function UX.OpenData()
-  for i = #openData, 1, -1 do openData[i] = nil end
   local cases = OpenCases()
-  for i = 1, #cases do openData[#openData + 1] = cases[i] end
   local sus = Store().Ranked("suspect", "recent") or {}
-  for i = 1, #sus do openData[#openData + 1] = sus[i] end
+  local n = #cases + #sus
+  local same, i = #openIn == n and #openData == n, 0
+  local function take(x)
+    i = i + 1
+    local t, k = OpenTime(x), tostring(x.key or x.t)
+    if same and (openIn[i] ~= x or openT[i] ~= t or openK[i] ~= k) then same = false end
+    openIn[i], openT[i], openK[i] = x, t, k
+  end
+  for j = 1, #cases do take(cases[j]) end
+  for j = 1, #sus do take(sus[j]) end
+  for j = #openIn, n + 1, -1 do openIn[j], openT[j], openK[j] = nil, nil, nil end
+  if same then return openData end
+  for j = #openData, 1, -1 do openData[j] = nil end
+  for j = 1, n do openData[j] = openIn[j] end
   table.sort(openData, OpenLess)
   return openData
 end
