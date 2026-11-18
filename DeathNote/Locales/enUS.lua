@@ -936,4 +936,62 @@ L.SHARE_GUEST_SAYS = "The line says"  -- small letter-spaced label above the par
 L.SHARE_GUEST_HINT = "Only what the line says. Not in any of your books."  -- guest poster, above the buttons
 L.SET_SEC_SHOW = "SHOW"  -- section head on the House Rules sheet Guild, capitals like the others
 L.OPT_SHARE_REVENGE = "Button \"Show\" on the payback notice"  -- switch (off by default): a small button 'Show' on the payback notice
+-- 1.5.0 scene
+L.SET_SEC_MAP = "MAP"  -- [max 24] section label on the House Rules, sheet Book: the crime scenes on the world map
+L.OPT_SCENE = "Crime scenes on the world map"  -- [max 44] check box (House Rules, sheet Book, and the map's own switch): pins of the book on the world map
+L.OPT_SCENE_OPEN = "Only open debts"  -- [max 32] the map's switch: only scenes of enemies who still lead against you
+L.SCENE_DAYS_ALL = "all"  -- [max 10] the period in the map's switch: every scene, however old
+L.SCENE_DAYS_LINE = "Period: {days}"  -- [max 32] the map's switch: the period; a click steps 7 days, 30 days, all; {days} = "30 days" or SCENE_DAYS_ALL
+L.SCENE_KIND_OWN = "My deaths and kills"  -- [max 32] the map's switch: your own deaths and kills
+L.OPT_G_SENDPLACE = "Send the spot of my death"  -- [max 44] check box (House Rules, sheet Guild, More): the exact spot of your death goes to guild and friends with it
+L.SCENE_MAP_TIP = "Crime scenes of your book"  -- tooltip head of the small button at the world map's corner
+L.SCENE_MAP_CLICK = "Click: what the map shows"  -- tooltip line of that button: what a click does
+L.SCENE_SOMEONE = "someone"  -- name for a killer nobody knows (map tooltip)
+L.SCENE_TIP_DEATH = "Here {killer} killed you"  -- map pin tooltip, your death; {killer} = full name in class colour
+L.SCENE_TIP_DEATH_UNCLEAR = "Here you were killed; the killer is unclear"  -- map pin tooltip, your death without a known killer
+L.SCENE_TIP_KILL = "Here you took {name} down"  -- map pin tooltip, your kill; {name} = full name in class colour
+L.SCENE_TIP_MATE = "Here {victim} was killed by {killer}"  -- map pin tooltip, a guildmate's or friend's death; {victim} = their name, {killer} = full name in class colour
+L.SCENE_REVENGE = "Revenge taken"  -- map pin tooltip: this kill was revenge
+L.SCENE_SRC_GUILD = "Guildmate"  -- map pin tooltip: the dead one is in your guild
+L.SCENE_SRC_FRIEND = "Friend"  -- map pin tooltip: the dead one is your friend
+L.SCENE_FRESH = "{ago}: still close, go and help"  -- map pin tooltip of a death younger than 10 minutes; {ago} = "3 min ago"
+L.SCENE_BUNDLE = "Crime scenes here: {count}"  -- map pin tooltip head when several scenes lie on one spot; {count} = how many
+L.SCENE_TIP_CLICK = "Click: open the book there"  -- last line of a map pin tooltip
+L.SCENE_SHOW = "Click: show on the map"  -- tooltip line over a place in the book (deed line, death file, chronicle): the click opens the world map there
+L.SCENE_NO_SPOT = "Exact spot unknown: this is the zone."  -- hint on the map after a click in the book when the entry has no coordinates
+L.SCENE_NO_MAP = "No map known for this place."  -- chat line after a click in the book when the place has no map
+L.SCENE_COMBAT = "In combat the map stays shut. Click again afterwards."  -- chat line after a click in the book during combat
+L.CHRON_OPEN = "Chronicle"  -- [max 14] word below the photo on the poster: opens the chronicle of the feud
+L.CHRON_HEAD = "Chronicle"  -- [max 20] head of the chronicle card (big handwriting, 26 pt)
+L.CHRON_BACK = "Back to poster"  -- [max 19] word at the bottom right of the chronicle: back to the poster
+L.CHRON_EMPTY = "Nothing written yet."  -- chronicle without any event
+L.CHRON_AT = "{date}, {place}:"  -- chronicle: in front of each sentence; {date} = day (11/10), {place} = subzone or zone
+L.CHRON_AT_DAY = "{date}:"  -- chronicle: the same without a known place
+L.CHRON_FIRST = "First encounter: {date}, {place}."  -- chronicle, first line; {date} = day, {place} = place
+L.CHRON_FIRST_DAY = "First encounter: {date}."  -- chronicle, first line without a place
+L.CHRON_KILL_SPELL = "{name} gets you with {spell}."  -- chronicle sentence: he killed you; {name} = his first name, {spell} = spell name from the game
+L.CHRON_KILL = "{name} kills you."  -- chronicle sentence: he killed you (no spell known)
+L.CHRON_KILL_AGAIN = "{name} strikes again. Of course."  -- chronicle sentence: he killed you, second wording (never the same sentence twice in a row)
+L.CHRON_ASSIST = "{name} helps kill you."  -- chronicle sentence: he took part in killing you (not the killing blow)
+L.CHRON_ASSIST_AGAIN = "{name} is in on it again."  -- chronicle sentence: the same, second wording
+L.CHRON_SUSPECT = "Suspicion: {name} had you targeted when you died."  -- chronicle sentence: a suspicion only (he had you targeted)
+L.CHRON_SUSPECT_AGAIN = "Suspicion on {name} again."  -- chronicle sentence: the same, second wording
+L.CHRON_ATTACK = "Attack: {name} goes for you, you get away."  -- chronicle sentence: he attacked you and you survived (Grudge)
+L.CHRON_ATTACK_AGAIN = "{name} attacks you again. You live."  -- chronicle sentence: the same, second wording
+L.CHRON_MINE_FIRST = "You get {name} for the first time."  -- chronicle sentence: your first kill on him
+L.CHRON_MINE = "You take {name} down."  -- chronicle sentence: you killed him
+L.CHRON_MINE_AGAIN = "{name} falls to you again."  -- chronicle sentence: the same, second wording
+L.CHRON_HAND = "You note revenge on {name}."  -- chronicle sentence: revenge noted by hand
+L.CHRON_HAND_AGAIN = "Revenge on {name} noted once more."  -- chronicle sentence: the same, second wording
+L.CHRON_LISTED = "You write {name} into the book by hand."  -- chronicle sentence: entered by hand
+L.CHRON_COPIED = "Copied from {from}."  -- chronicle sentence: copied from someone's book; {from} = that character
+L.CHRON_COPIED_ANON = "Copied from someone else's book."  -- chronicle sentence: copied, nobody named
+L.CHRON_BOUNTY = "{by} puts {gold} on {name}."  -- chronicle sentence: a bounty; {by} = first name of the poster, {gold} = "500 g"
+L.CHRON_BOUNTY_MINE = "You put {gold} on {name}."  -- chronicle sentence: your own bounty
+L.CHRON_EVEN = "Even now: {score}."  -- chronicle line: turning point, the score is even; {score} = '2 : 2' (you : them)
+L.CHRON_AHEAD = "You lead now: {score}."  -- chronicle line: turning point, you lead; {score} = '3 : 2'
+L.CHRON_AVENGED = "{names} took {name} down for the others."  -- chronicle line: guildmates or friends killed him for the others; {names} = first names
+L.CHRON_PARDONED = "You pardoned {name}."  -- chronicle line: you pardoned him
+L.CHRON_END = "Now: {score} · {state}"  -- chronicle, last line; {score} = '1 : 2', {state} = STATE_OPEN / STATE_EVEN / STATE_AHEAD
+L.CHRON_END_NONE = "So far: killed you {times}."  -- chronicle, last line while the rap sheet is off; {times} = '3×'
 end)

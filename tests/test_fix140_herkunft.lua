@@ -52,7 +52,12 @@ test("Ein echter 1.3.1-Client (ce84dd4) liest den Text mit Feld 22 fehlerfrei, s
   c.ns.Store.ApplyKill({ name = "Fies", surname = "Ling", guid = "Player-93-Fies" }, { t = time() - 50, zone = "Z", source = "recap" }, true)
   local text = c.ns.Store.Export()
   local oldFiles = {}
-  for _, f in ipairs(M.FILES) do if f ~= "Grudge.lua" then oldFiles[#oldFiles + 1] = f end end
+  -- (1.5.0: newer files than the tag are left out too: Scene.lua, Chronicle.lua)
+  for _, f in ipairs(M.FILES) do
+    local h = io.open(dir .. f, "r")
+    if h then h:close() end
+    if f ~= "Grudge.lua" and h then oldFiles[#oldFiles + 1] = f end
+  end
   local o = W.client("Otto", "Alt", nil, { dir = dir, files = oldFiles, version = "1.3.1" })
   o.login(); W.run(2)
   local okI, a = o.ns.Store.Import(text)

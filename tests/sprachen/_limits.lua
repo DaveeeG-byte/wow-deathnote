@@ -342,4 +342,15 @@ return {
   SET_SEC_PLATE = { max = 24, field = "section label" },
   SET_PLATE = { max = 34, field = "stepper label (value: off or a size word, 96 px)" },
   GRIP_HUNT_WHY = { max = 40, field = "hit list reason (shared, at most 60 characters)" },
+  -- 1.5.0 scene
+  SET_SEC_MAP = { max = 24, field = "section label, House Rules sheet Book" },
+  OPT_SCENE = { max = 44, field = "check box label, 280 px, Friz 11, one line (also the map's switch, 190 px, tooltip)" },
+  OPT_SCENE_OPEN = { max = 32, field = "map switch row, 190 px, Nimrod 11, tooltip when cut" },
+  SCENE_DAYS_ALL = { max = 10, field = "value in SCENE_DAYS_LINE" },
+  SCENE_DAYS_LINE = { max = 32, field = "map switch row, 190 px, Nimrod 11, tooltip when cut" },
+  SCENE_KIND_OWN = { max = 32, field = "map switch row, 190 px, Nimrod 11, tooltip when cut" },
+  OPT_G_SENDPLACE = { max = 44, field = "check box label, 280 px, Friz 11, one line" },
+  CHRON_OPEN = { max = 14, field = "word below the photo, 112 px, hand 13, tooltip when cut" },
+  CHRON_HEAD = { max = 20, field = "head of the chronicle card (big handwriting, 26 pt)" },
+  CHRON_BACK = { max = 19, field = "word at the bottom right of the chronicle: back to the poster" },
 }

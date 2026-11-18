@@ -104,6 +104,29 @@ versions read such a text without error). What the client really delivers is unm
 open questions on their own: `UNIT_COMBAT` on you arrived, your health, "in combat" and "has you targeted" readable or
 secret, a secret name; with `/dn debug` the last five episodes).
 
+## Crime scenes and chronicle (1.5.0)
+Crime scenes on the world map: own pins on the map's canvas (no embedded library). A red pin with a skull is a place
+where you died, a black pin with crossed blades a place where you took one of your book down (revenge says so in the
+tooltip), a light pin in a quiet colour (guild green, friends blue) a place where a guildmate or friend died. Close
+places are one pin with a count; at most 40 pins per map (the newest). A pin's tooltip says who killed whom ("Here
+Grimwald Ashbrand killed you", "Here Liora Stormwell was killed by Velka Thornheart"), when, where, the spell and who
+helped; a click closes the map and opens the book there. A death of a guildmate or friend younger than 10 minutes
+pulses: maybe you can still help. A pin needs the map ID and x/y the book stores at every death (since 1.1.0); an older
+entry without them stays text, one with a map ID only opens the zone's map ("exact spot unknown").
+From the book to the map: every place with a small pin in the margin is a link (deed lines on the poster, the place in
+a death file, the rap sheet's kill lines and victim sheet, the chronicle, guild and friends' deed lines, the notice of a
+guildmate's death). The map opens on that map and the pin pulses three times; a place without a pin of its own (an
+attack) gets the red ring alone. In combat nothing on the map is touched: a click only says so in the chat, pins asked
+for in combat come after it.
+The switch at the map's bottom left corner: crime scenes on/off, period (7 days, 30 days, all; default 30), only open
+debts, own scenes, guild, friends. House Rules, sheet Book, section MAP: crime scenes on/off.
+Chronicle: the word "Chronicle" next to DEEDS on a poster opens one page of the file that tells the feud in sentences:
+first encounter, every deed in order (kills, assists, suspicions and attacks each by their own name), your kills and
+revenge noted by hand, entered by hand or copied, bounties, the turning points (even, ahead), who took him down for the
+others, pardoned, and the standing now; long feuds are cut in the middle ("… and 9 more"). Places in it are links too.
+`/dn probe` writes `probe.scene`: map API, pins, bundles, clicks from the book, in combat, without a spot, places sent,
+received and dropped (with the reason), errors.
+
 ## Friends' book (1.2.0)
 The same silent messages as in the guild (protocol version 1), but as whispers to character friends on the friend
 list who are online. First a hello to the friends online (at login after 22 to 34 s; a friend who comes online later
@@ -125,8 +148,8 @@ picks one in the "Guild & Friends" tab, view "By guildmate", by right-click ("My
 (it deletes what the name brought in); removing and re-adding the friend also undoes the link (once they are missing
 from three scans in a row); `/dn friends` lists the linked full names.
 
-Shared are the same things as in the guild: your own confirmed deaths, your own entries added by hand, your own hit
-list calls. Never: notes, suspicions, assists, pardoned players, imported entries, copied entries. Everything is stored
+Shared are the same things as in the guild: your own confirmed deaths (since 1.5.0 with the spot on the map, switch
+"Send the spot of my death"), your own entries added by hand, your own hit list calls. Never: notes, suspicions, assists, pardoned players, imported entries, copied entries. Everything is stored
 account-wide in `DeathNoteDB.friends` (same caps as the guild).
 
 Time limits count your own play days (days on which a character of the account was logged in), never calendar days of
@@ -364,7 +387,7 @@ Sheets Book, Alert, Guild, Rap Sheet (1.3.0). Sheet Book: language and, under it
 one hint line and one reload button). Sheet Alert: sound (No sound, Raid warning, Bell, Gong, Heartbeat, Quill, Siren; the
 addon's own sounds are in `Media/Sounds/`), volume 1 to 5, channel (Master, Effects, Dialog), cooldown per killer,
 threshold "Alarm at this many deaths by them" (counts kills plus assists), alarm size, test alarm.
-Sheet Guild: two groups, SHARING (with the guild, with friends, sightings) and ALERTS (killers from guild and friends,
+Sheet Guild: two groups, SHARING (with the guild, with friends, sightings, the spot of your death) and ALERTS (killers from guild and friends,
 hit list targets); everything rarely used sits behind "More" at the bottom right (sharing entries added by hand,
 receiving the guild book, "Calls last", warning about entries added by hand, messages, threshold, status, emptying the
 books). The state of "More" is remembered. Sheet Rap Sheet: keep a rap sheet, report own kills in the chat, the
@@ -395,6 +418,9 @@ Settings added in 1.3.0 (`DeathNoteDB.settings`): `ledger.enabled` (true), `ledg
 | `Alert.lua` | alarm popup with a target button, victim alarm, shared styling helpers |
 | `UI.lua` | the book: Wanted, Unsolved, Death Log, Guild, Rap Sheet, House Rules, How it works |
 | `Extras.lua` | tooltip line, messages after a death, revenge and guild deaths, new hit list targets |
+| `Scene.lua` | crime scenes: which places go on the map, filter, bundles, tooltip words, `probe.scene` (1.5.0) |
+| `Chronicle.lua` | the feud's chronicle in sentences (1.5.0) |
+| `SceneMap.lua` | pins on the world map, the map's switch, the way from the book to the map (1.5.0) |
 | `Humor.lua` | dry remarks, milestones, hidden commands, names of the awards (German and English only) |
 | `Libs/` | embedded LibStub, CallbackHandler, LibDataBroker and LibDBIcon for the minimap button (1.2.2) |
 
@@ -489,6 +515,13 @@ Details: `DeathNote/Libs/README.txt`. The release zip contains the folder with i
     up to 103 messages (queue 140).
 21. (1.3.0) No new message and no new field. Nothing of the rap sheet goes over the wire or into "Back up book": no own
     kill, score, rank, award or cover. The opponent of a duel to the death gives no `E` and no `V`.
+22. (1.5.0) `L` = the spot of your own death, right after its `K` (and after `R` in an answer, only for deaths of the
+    last 7 days, at most 10): killer key, time, victim, map ID, x and y in tenths of a percent (0 to 1000). Whole
+    numbers only, map ID 1 to 100000; the receiver puts it on the deed of the same killer, time and victim (the
+    victim must be the sender) and drops anything else. Same for guild and friends. Only deaths that go out as `K` or
+    `R` get a spot: never an attack, a suspicion, a note or anything copied. `K` and `R` keep their nine fields (1.4.0
+    and older drop a `K` with a tenth field whole); 1.4.0, 1.2.0 and 1.1.0 drop `L` as an unknown kind. Switch: House
+    Rules, sheet Guild, "Send the spot of my death" (on by default).
 
 ## Client limits
 No combat log for addons, no detection of stealthed players, no distance or direction. Only players visible as a

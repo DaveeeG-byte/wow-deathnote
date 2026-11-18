@@ -245,11 +245,13 @@ end
 local checks = visibleChecks()
 local names1 = {}
 for i, c in ipairs(checks) do names1[i] = c.opt.guild end
-check("Blatt Gilde: fuenf Haken", #checks == 5, #checks)
-check("Die fuenf, die man braucht", table.concat(names1, ",") == "share,friends,sightings,alert,alertHunt", table.concat(names1, ","))
+-- 1.5.0 scene: sixth check "Send the spot of my death" at the end of SHARE
+check("Blatt Gilde: sechs Haken", #checks == 6, #checks)
+check("Die sechs, die man braucht", table.concat(names1, ",") == "share,friends,sightings,sendPlace,alert,alertHunt", table.concat(names1, ","))
 check("Ueberschriften TEILEN und WARNEN", vis("T E I L E N") ~= nil and vis("W A R N E N") ~= nil)
 check("Raster 24 px in jeder Gruppe", checks[1]._points[1][3] - checks[2]._points[1][3] == 24
-      and checks[2]._points[1][3] - checks[3]._points[1][3] == 24 and checks[4]._points[1][3] - checks[5]._points[1][3] == 24)
+      and checks[2]._points[1][3] - checks[3]._points[1][3] == 24 and checks[3]._points[1][3] - checks[4]._points[1][3] == 24
+      and checks[5]._points[1][3] - checks[6]._points[1][3] == 24)
 check("Zugeklappt: kein Stand, kein Leeren, keine Stufen-Reihe", word("Gildenbuch leeren") == nil and vis("S T A N D") == nil
       and vis("Freigaben gelten") == nil)
 local more = word("Mehr")
@@ -274,7 +276,7 @@ local all = {}
 for _, f in ipairs(BM.frames) do if f._kind == "CheckButton" and f.opt and f.opt.guild then all[f.opt.guild] = true end end
 local n = 0
 for _ in pairs(all) do n = n + 1 end
-check("Keine Einstellung verloren: zehn Haken auf beiden Seiten", n == 10, n)
+check("Keine Einstellung verloren: elf Haken auf beiden Seiten (1.5.0: sendPlace)", n == 11, n)
 check("Stand der Freunde", vis("Freund") ~= nil)
 check("Stand sagt aus", vis("Teilen mit Freunden ist aus (Hausordnung, Blatt Gilde).") ~= nil)
 toggle(fcb)

@@ -334,14 +334,52 @@ grip_media() {
   tga "$TMP/cx_out.png" "$OUT/crosshair.tga"
 }
 
+# 1.5.0 scene: crime scene pins on the world map (64x64, the tip of the needle at the bottom centre is the spot), the
+# highlight ring and the count badge of a bundle. Side view of a pin: shadow, steel needle, head with a sign.
+scene_media() {
+  pinhead() {   # $1 head colour, $2 dark rim, $3 glyph, $4 glyph colour, $5 out
+    magick -size 64x64 xc:none \
+      -fill 'rgba(0,0,0,0.40)' -draw 'ellipse 36,61 7,2 0,360' -blur 0x1.2 \
+      \( -size 64x64 xc:none -stroke '#5b5f63' -strokewidth 3 -draw 'line 32,40 32,61' \
+         -stroke '#c9ced2' -strokewidth 1 -draw 'line 31,40 31,59' \) -compose over -composite \
+      \( -size 64x64 xc:none -fill 'rgba(0,0,0,0.35)' -draw 'circle 33,24 33,45' -blur 0x1.5 \) -compose over -composite \
+      \( -size 64x64 xc:none -fill "$2" -draw 'circle 32,22 32,43' -fill "$1" -draw 'circle 32,22 32,40' \
+         -fill 'rgba(255,255,255,0.22)' -draw 'ellipse 22,9 6,3 0,360' \) -compose over -composite \
+      \( -size 64x64 xc:none -font "$SYMFONT" -pointsize 27 -gravity center \
+         -fill "$4" -stroke none -annotate +0-9 "$3" \) -compose over -composite \
+      "$TMP/$5.png"
+    tga "$TMP/$5.png" "$OUT/$5.tga"
+  }
+  # my death: red wax head with a bone skull; my kill: black ink head with crossed blades; a mate's death: a light head
+  # (tinted in the game: guild and friends get their own quiet colour) with a dark skull
+  pinhead '#b51f1f' '#5e0b0b' $'☠' '#f3e8cc' scene_death
+  pinhead '#2b2119' '#0c0805' ' ' '#efe4c8' scene_kill
+  # crossed blades drawn by hand (the font's glyph reads as scissors at this size)
+  magick "$TMP/scene_kill.png" -fill none -stroke '#efe4c8' -strokewidth 3.4 \
+    -draw 'line 22,11 40,29' -draw 'line 42,11 24,29' -strokewidth 2.4 \
+    -draw 'line 35,32 43,24' -draw 'line 21,24 29,32' -strokewidth 3.2 \
+    -draw 'line 40,29 45,34' -draw 'line 24,29 19,34' "$TMP/scene_kill.png"
+  tga "$TMP/scene_kill.png" "$OUT/scene_kill.tga"
+  pinhead '#e4e1da' '#6c6a64' $'☠' '#3a3631' scene_mate
+  # ring for the highlight: red ink, slightly uneven
+  magick -size 64x64 xc:none -fill none -stroke '#c01818' -strokewidth 4 -draw 'ellipse 32,32 27,26 0,360' \
+    -stroke 'rgba(192,24,24,0.5)' -strokewidth 2 -draw 'ellipse 33,31 29,28 20,330' -blur 0x0.5 "$TMP/scene_ring.png"
+  tga "$TMP/scene_ring.png" "$OUT/scene_ring.tga"
+  # count badge of a bundle: bone disc with an ink rim
+  magick -size 32x32 xc:none -fill '#1b130c' -draw 'circle 16,16 16,2' -fill '#efe4c8' -draw 'circle 16,16 16,4' \
+    "$TMP/scene_badge.png"
+  tga "$TMP/scene_badge.png" "$OUT/scene_badge.tga"
+}
+
 case "$WHAT" in
-  all) base_media; kit_media; theme_harbor; theme_trade; grip_media ;;
+  all) base_media; kit_media; theme_harbor; theme_trade; grip_media; scene_media ;;
   grip) grip_media ;;
+  scene) scene_media ;;
   base) base_media ;;
   kit) kit_media ;;
   harbor) kit_media; theme_harbor ;;
   trade) kit_media; theme_trade ;;
-  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip)" >&2; exit 2 ;;
+  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip, scene)" >&2; exit 2 ;;
 esac
 
 # Check the headers: type 2 (uncompressed), 32 bpp, descriptor 0x08, edges a power of two

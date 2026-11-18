@@ -250,7 +250,7 @@ local function BuildBanner()
     local c = Look.RED
     self.kicker:SetTextColor(c[1], c[2], c[3], 1)
     GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-    GameTooltip:SetText(L.BANNER_TIP)
+    GameTooltip:SetText(self.tip and self.tip() or L.BANNER_TIP)   -- 1.5.0 scene: a guildmate's death may say "map"
     GameTooltip:Show()
   end)
   banner:SetScript("OnLeave", function(self)
@@ -417,6 +417,7 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   banner.key = key
   banner.kind = stamp
   banner.open = open
+  banner.tip = nil
   banner:EnableMouse(open ~= nil)
   -- 1.5.0 share: the button "Show" of a payback notice goes with it, the line takes its place again
   if banner.dnShare then
@@ -543,8 +544,20 @@ local function ShowGuild(tat, key, src)
   local killer = g and Look.Name(g) or (type(key) == "string" and (key:match("^([^%-]+)") or key)) or "?"
   local by = Fmt(L.BANNER_KILLED_BY, { name = killer })
   local line = { Look.Join(by, type(tat.zone) == "string" and tat.zone or nil), by }
+  -- 1.5.0 scene: a click shows the spot on the map once it came (message L, right after the kill), else the killer
+  -- in Guild & Friends; the tooltip says which
+  local open
+  if ns.SceneMap and ns.Scene then
+    open = function()
+      if ns.Scene.ValidSpot(tat.mapID, tat.x, tat.y) then ns.SceneMap.Show(tat, tat)
+      elseif ns.UI and ns.UI.ShowGuildEnemy then ns.UI.ShowGuildEnemy(key, src) end
+    end
+  end
   Banner(src == "friends" and L.BANNER_FRIENDS or L.BANNER_GUILD, Look.First(tat.victim), Look.BONE, line, nil, true,
-         type(key) == "string" and key or nil)
+         type(key) == "string" and key or nil, open)
+  if banner and open then
+    banner.tip = function() return ns.Scene.ValidSpot(tat.mapID, tat.x, tat.y) and L.SCENE_SHOW or L.BANNER_TIP end
+  end
 end
 
 -- A hit list target was taken down (1.2.0): name large, below it who and when, stamp

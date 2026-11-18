@@ -18,6 +18,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          "$adir"/Grudge.lua "$adir"/GrudgeCard.lua tests/ui/grudge_card.lua \
          "$adir"/Grip.lua "$adir"/Plate.lua tests/ui/grip.lua \
          "$adir"/Share.lua "$adir"/ShareUI.lua tests/ui/share.lua \
+         "$adir"/SceneMap.lua tests/ui/scene_map.lua tests/ui/scene.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
 done
@@ -101,6 +102,8 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     luajit tests/ui/grip.lua . || status=1
     # 1.5.0 share: the window "Show", the word on the poster, the guest poster, the button on the payback notice
     if [ -f "$adir/ShareUI.lua" ]; then luajit tests/ui/share.lua . || status=1; fi
+    # 1.5.0 scene: crime scenes on the (stand-in) world map, the book's places as links, the chronicle
+    luajit tests/ui/scene.lua . || status=1
   fi
 fi
 
