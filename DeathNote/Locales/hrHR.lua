@@ -503,7 +503,7 @@ L.OPT_F_ALERTHUNT = "Upozori na mete s popisa za odstrel"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Javi kad pogine netko iz ceha ili prijatelj"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Dijeli viđenja s cehom i prijateljima"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Ceh"
+L.SHEET_GUILD = "Ceh"  -- [max 14]
 L.SET_BOOK_SIZE = "Veličina knjige"  -- [max 34]
 L.SET_LANGUAGE = "Jezik"  -- [max 16]
 L.SET_LANG_AUTO = "Automatski"  -- [max 16]
@@ -1214,4 +1214,5 @@ L.SHEET_CLAIM = "Zahtjev"
 L.CLAIM_HEAD = "{gold} za {name}"
 L.CLAIM_FOR = "za {target}"
 L.CLAIM_NOTE = "Knjiga sama ne plaća: trgovinom ili poštom."
+L.FEUD_SHEET_HEAD = "Ceh"
 end)

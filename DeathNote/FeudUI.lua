@@ -385,7 +385,7 @@ function FD.ShowRight()
     if killed then lines[#lines + 1] = killed end
     lines[#lines + 1] = stand
     lines[#lines + 1] = Fmt(L.FEUD_MEMBERS, { count = g.n })
-    Page(L.SHEET_GUILD, g.seen and Look.Ago(g.seen) or "", g.name, table.concat(lines, "\n"),
+    Page(L.FEUD_SHEET_HEAD, g.seen and Look.Ago(g.seen) or "", g.name, table.concat(lines, "\n"),
       g.feud and L.FEUD_TIP_ON or nil, g.feud and L.FEUD_END or L.FEUD_DECLARE, function() ToggleFeud(g.name) end)
     return true
   end

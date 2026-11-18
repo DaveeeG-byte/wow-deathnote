@@ -511,7 +511,7 @@ L.OPT_F_ALERTHUNT = "Warn about hit list targets"  -- [max 44] check box on the 
 L.OPT_F_ANNOUNCE = "Report when guildmates or friends die"  -- [max 44] check box on the House Rules
 L.OPT_F_SIGHTINGS = "Share sightings with guild and friends"  -- [max 44] check box on the House Rules
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Guild"  -- head of the sheet on the right page for an enemy guild (tab Wanted, view Guilds), big like CASE_HEAD
+L.SHEET_GUILD = "Guild"  -- [max 14] word tab: sheet with the guild and friends settings
 L.SET_BOOK_SIZE = "Book size"  -- [max 34] stepper label (value: "100 %")
 L.SET_LANGUAGE = "Language"  -- [max 16] stepper label; the values are the languages in their own names
 L.SET_LANG_AUTO = "Automatic"  -- [max 16] first value of the language stepper and /dn lang auto: no own choice, the game's language (English when DeathNote lacks it)
@@ -1222,4 +1222,5 @@ L.SHEET_CLAIM = "Claim"  -- head of the sheet on the right page for one claim on
 L.CLAIM_HEAD = "{gold} to {name}"  -- big line of a claim's sheet: what you owe to whom; {gold} = '250g' (the book's money word), {name} = the hunter's first name
 L.CLAIM_FOR = "for {target}"  -- under it: for which of your targets; {target} = the target's name
 L.CLAIM_NOTE = "The book pays nothing itself: by trade or mail."  -- small line on an open claim's sheet: the book moves no money
+L.FEUD_SHEET_HEAD = "Guild"  -- head of the sheet on the right page for an enemy guild (tab Wanted, view Guilds), big like CASE_HEAD
 end)

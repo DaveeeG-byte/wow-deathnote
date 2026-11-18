@@ -490,7 +490,7 @@ L.OPT_F_ALERTHUNT = "Avvisa per i bersagli della lista nera"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Segnala quando muoiono compagni o amici"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Condividi avvistamenti con gilda e amici"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Gilda"
+L.SHEET_GUILD = "Gilda"  -- [max 14]
 L.SET_BOOK_SIZE = "Dimensione del libro"  -- [max 34]
 L.SET_LANGUAGE = "Lingua"  -- [max 16]
 L.SET_LANG_AUTO = "Automatico"  -- [max 16]
@@ -1201,4 +1201,5 @@ L.SHEET_CLAIM = "Richiesta"
 L.CLAIM_HEAD = "{gold} a {name}"
 L.CLAIM_FOR = "per {target}"
 L.CLAIM_NOTE = "Il libro non paga: con scambio o posta."
+L.FEUD_SHEET_HEAD = "Gilda"
 end)

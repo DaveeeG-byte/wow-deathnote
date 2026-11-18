@@ -491,7 +491,7 @@ L.OPT_F_ALERTHUNT = "Bei Zielen der Abschussliste warnen"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Melden, wenn Kollegen oder Freunde sterben"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Sichtungen mit Gilde und Freunden teilen"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Gilde"
+L.SHEET_GUILD = "Gilde"  -- [max 14]
 L.SET_BOOK_SIZE = "Größe des Buchs"  -- [max 34]
 L.SET_LANGUAGE = "Sprache"  -- [max 16]
 L.SET_LANG_AUTO = "Automatisch"  -- [max 16]
@@ -1202,4 +1202,5 @@ L.SHEET_CLAIM = "Anspruch"
 L.CLAIM_HEAD = "{gold} an {name}"
 L.CLAIM_FOR = "für {target}"
 L.CLAIM_NOTE = "Das Buch zahlt nicht selbst: per Handel oder Post."
+L.FEUD_SHEET_HEAD = "Gilde"
 end)

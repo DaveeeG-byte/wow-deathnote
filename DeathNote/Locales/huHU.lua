@@ -505,7 +505,7 @@ L.OPT_F_ALERTHUNT = "Figyelmeztetés a halállista célpontjainál"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Jelzés, ha céhtárs vagy barát meghal"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Észlelések megosztása céhhel és barátokkal"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Céh"
+L.SHEET_GUILD = "Céh"  -- [max 14]
 L.SET_BOOK_SIZE = "A könyv mérete"  -- [max 34]
 L.SET_LANGUAGE = "Nyelv"  -- [max 16]
 L.SET_LANG_AUTO = "Automatikus"  -- [max 16]
@@ -1216,4 +1216,5 @@ L.SHEET_CLAIM = "Igény"
 L.CLAIM_HEAD = "{gold}: {name}"
 L.CLAIM_FOR = "ezért: {target}"
 L.CLAIM_NOTE = "A könyv nem fizet: kereskedéssel vagy postán."
+L.FEUD_SHEET_HEAD = "Céh"
 end)

@@ -503,7 +503,7 @@ L.OPT_F_ALERTHUNT = "Varovat před cíli ze seznamu na odstřel"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Hlásit smrti v guildě a mezi přáteli"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Sdílet spatření s guildou a přáteli"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Guilda"
+L.SHEET_GUILD = "Guilda"  -- [max 14]
 L.SET_BOOK_SIZE = "Velikost knihy"  -- [max 34]
 L.SET_LANGUAGE = "Jazyk"  -- [max 16]
 L.SET_LANG_AUTO = "Automaticky"  -- [max 16]
@@ -1214,4 +1214,5 @@ L.SHEET_CLAIM = "Nárok"
 L.CLAIM_HEAD = "{gold} pro {name}"
 L.CLAIM_FOR = "za {target}"
 L.CLAIM_NOTE = "Kniha sama neplatí: obchodem nebo poštou."
+L.FEUD_SHEET_HEAD = "Guilda"
 end)

@@ -497,7 +497,7 @@ L.OPT_F_ALERTHUNT = "Varoita tappolistan kohteista"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Ilmoita, kun kiltalainen tai kaveri kuolee"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Jaa havainnot killalle ja kavereille"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Kilta"
+L.SHEET_GUILD = "Kilta"  -- [max 14]
 L.SET_BOOK_SIZE = "Kirjan koko"  -- [max 34]
 L.SET_LANGUAGE = "Kieli"  -- [max 16]
 L.SET_LANG_AUTO = "Automaattinen"  -- [max 16]
@@ -1208,4 +1208,5 @@ L.SHEET_CLAIM = "Vaatimus"
 L.CLAIM_HEAD = "{gold}: {name}"
 L.CLAIM_FOR = "kohteesta {target}"
 L.CLAIM_NOTE = "Kirja ei maksa itse: kaupalla tai postilla."
+L.FEUD_SHEET_HEAD = "Kilta"
 end)

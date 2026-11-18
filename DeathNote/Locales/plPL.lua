@@ -503,7 +503,7 @@ L.OPT_F_ALERTHUNT = "Ostrzegaj przed celami z listy do odstrzału"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Zgłaszaj zgony w gildii i wśród znajomych"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Udostępniaj obserwacje gildii i znajomym"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Gildia"
+L.SHEET_GUILD = "Gildia"  -- [max 14]
 L.SET_BOOK_SIZE = "Rozmiar księgi"  -- [max 34]
 L.SET_LANGUAGE = "Język"  -- [max 16]
 L.SET_LANG_AUTO = "Automatycznie"  -- [max 16]
@@ -1214,4 +1214,5 @@ L.SHEET_CLAIM = "Roszczenie"
 L.CLAIM_HEAD = "{gold} dla {name}"
 L.CLAIM_FOR = "za {target}"
 L.CLAIM_NOTE = "Księga nie płaci sama: przez handel lub pocztę."
+L.FEUD_SHEET_HEAD = "Gildia"
 end)

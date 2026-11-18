@@ -490,7 +490,7 @@ L.OPT_F_ALERTHUNT = "Alerter pour les cibles à abattre"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Signaler la mort de membres ou d'amis"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Partager les repérages avec guilde et amis"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Guilde"
+L.SHEET_GUILD = "Guilde"  -- [max 14]
 L.SET_BOOK_SIZE = "Taille du carnet"  -- [max 34]
 L.SET_LANGUAGE = "Langue"  -- [max 16]
 L.SET_LANG_AUTO = "Automatique"  -- [max 16]
@@ -1201,4 +1201,5 @@ L.SHEET_CLAIM = "Réclamation"
 L.CLAIM_HEAD = "{gold} à {name}"
 L.CLAIM_FOR = "pour {target}"
 L.CLAIM_NOTE = "Le livre ne paie rien : par échange ou courrier."
+L.FEUD_SHEET_HEAD = "Guilde"
 end)

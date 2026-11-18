@@ -506,7 +506,7 @@ L.OPT_F_ALERTHUNT = "Av listesindeki hedeflerde uyar"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Lonca üyeleri ya da arkadaşlar ölünce bildir"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Görülmeleri lonca ve arkadaşlarla paylaş"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Lonca"
+L.SHEET_GUILD = "Lonca"  -- [max 14]
 L.SET_BOOK_SIZE = "Defter boyutu"  -- [max 34]
 L.SET_LANGUAGE = "Dil"  -- [max 16]
 L.SET_LANG_AUTO = "Otomatik"  -- [max 16]
@@ -1217,4 +1217,5 @@ L.SHEET_CLAIM = "Talep"
 L.CLAIM_HEAD = "{name}: {gold}"
 L.CLAIM_FOR = "{target} için"
 L.CLAIM_NOTE = "Kitap kendisi ödemez: takas ya da posta ile."
+L.FEUD_SHEET_HEAD = "Lonca"
 end)
