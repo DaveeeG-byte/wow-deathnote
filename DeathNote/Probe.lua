@@ -66,6 +66,8 @@ Probe.APIS = {
   "GetQuestDifficultyColor", "UnitIsDeadOrGhost", "GetDuelerInfo", "StartDuel",
   -- 1.4.0 grudge (Grudge.lua): who is in combat, my health, group membership
   "UnitAffectingCombat", "UnitHealth", "UnitInParty", "UnitInRaid", "IsShiftKeyDown",
+  -- 1.5.0 grip: the creature cross-check (Grudge.lua), the nameplate mark (Plate.lua)
+  "UnitThreatSituation", "C_NamePlate.GetNamePlates",
 }
 
 -- COMBAT_LOG_EVENT_UNFILTERED is not in this list: the client closes it to addons and an
@@ -286,6 +288,12 @@ function Probe.Run(verbose, opts)
         tostring(out.grudge.meter), c.meterOk or 0, c.meterSecret or 0, c.meterOnly or 0, c.combatUnknown or 0,
         c.unitCombat or 0, c.healthOk or 0, c.healthSecret or 0, c.combatOk or 0, c.combatSecret or 0, c.targetMe or 0,
         c.targetSecret or 0, c.nameSecret or 0))
+      -- 1.5.0 grip: the second signals and the creature cross-check
+      Util.Print(("grudge signals s %d j %d r %d (cast alone %d) · mob %d (target secret %d, threat ok %d secret %d)"
+        .. " · held %d promoted %d held at end %d · sure %d probable %d · cases %d")
+        :format(c.s or 0, c.j or 0, c.r or 0, c.castAlone or 0, c.mob or 0, c.mobSecret or 0, c.threatOk or 0,
+        c.threatSecret or 0, c.held or 0, c.promoted or 0, c.heldEnd or 0, c.sure or 0, c.probable or 0,
+        #(out.grudge.cases or {})))
     end
     if out.target then
       Util.Print(Fmt(L.PROBE_TARGET, { name = tostring(out.target.name), guid = tostring(out.target.guid),

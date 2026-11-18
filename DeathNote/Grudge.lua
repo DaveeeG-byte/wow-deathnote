@@ -4,10 +4,16 @@
 --
 -- There is no combat log on Forever. An enemy player counts as an attacker of the running episode when
 --   a) he has me targeted, is in combat, and I take a hit (UNIT_COMBAT / UNIT_HEALTH on me) within HIT_WINDOW
---      seconds, or he casts a spell while he has me targeted;
+--      seconds (1.5.0 grip: a cast alone is no proof any more, see the second signals below);
 --   b) my death names him (death recap through Attribution.lua: the killing blow is marked, the others took part);
 --   c) the damage meter names him after the fight (only while it is readable, never secret; it only adds to an
 --      episode that a) or b) opened: an older session must not start one).
+-- 1.5.0 grip: second signals beside a (each its own letter): s = he cast while I was hit (within HIT_WINDOW),
+-- j = he went into combat with a hit on me (out of combat at most JOIN_WINDOW seconds from it), r = he had me
+-- targeted at two hits at least REPEAT_GAP seconds apart while no creature had me targeted. The cross-check: a hostile
+-- creature that had me targeted (or me on its threat table) within HIT_WINDOW lowers the certainty by one step.
+-- Certainty of a row (Grudge.Grade): b or c = "sure"; else a plus a second signal "sure", a alone "probable"; with
+-- the creature one step lower ("held" = kept in the episode, not shown and not asked, until a second signal comes).
 -- Enemy = a player, attackable, not me, not in my group, not my duel partner, not the opponent of a duel to the death.
 -- An episode starts with the first attacker, gathers the others (groups: all of them) and ends with the end of the
 -- fight or my death. Who was answered (or let go) in the last ASKED_WINDOW seconds is not asked again.
@@ -30,7 +36,10 @@ Grudge.ASKED_WINDOW = 300    -- seconds: answered (or let go) is not asked again
 Grudge.MAX_ROWS = 40         -- attackers kept per episode (the notice shows 8 and "+n")
 Grudge.DEATH_WAIT = 6        -- seconds to wait for the evaluation of my death (Attribution reads at 0.5, 2 and 4 s)
 Grudge.SECONDS = { 10, 20, 30, 60 }
-Grudge.CASES = 5             -- episodes kept in probe.grudge.cases while /dn debug is on
+Grudge.CASES = 20            -- 1.5.0 grip: episodes kept in probe.grudge.cases (always, no names; before: 5 with /dn debug)
+Grudge.CASE_ROWS = 12        -- rows per case
+Grudge.JOIN_WINDOW = 1.5     -- seconds between "he was out of combat" and the hit on me (signal j)
+Grudge.REPEAT_GAP = 1        -- seconds between two hits without a creature on me (signal r)
 
 local ep                     -- the episode of the notice, or nil
 local nextId = 0
@@ -43,13 +52,21 @@ local dueling                -- GetTime of a duel request or start, nil after th
 local inCombat = false
 local allowed = false        -- the place and the switches allow the notice right now
 local unitFrame              -- own frame for the unit events of the player and the casts
+local castAt = {}             -- 1.5.0 grip: unit token -> GetTime of his last cast
+local outAt = {}              -- 1.5.0 grip: key -> GetTime he was last seen out of combat
+local mobAt                   -- 1.5.0 grip: GetTime a hostile creature last had me targeted (or me on its threat table)
 local counts = { episodes = 0, rows = 0, a = 0, b = 0, c = 0, cast = 0, hits = 0, hitsCombat = 0, hitsHealth = 0,
   shown = 0, yes = 0, no = 0, expired = 0, meterOk = 0, meterSecret = 0, meterNone = 0, meterOnly = 0,
   combatUnknown = 0, dropped = 0,
   -- open questions of the build, measured: UNIT_COMBAT on me arrived, my health readable or secret, "in combat" of an
   -- enemy readable or secret, "has me targeted" plain yes or secret, the enemy's name secret
   unitCombat = 0, healthOk = 0, healthSecret = 0, combatOk = 0, combatSecret = 0, targetMe = 0, targetSecret = 0,
-  nameSecret = 0 }
+  nameSecret = 0,
+  -- 1.5.0 grip: the second signals, the creature cross-check (scans with a creature on me, its target secret, the
+  -- threat readable or secret), casts without a hit (no proof), rows held back / shown later / left held at the end,
+  -- certainty of the rows at the end of their episode
+  s = 0, j = 0, r = 0, castAlone = 0, mob = 0, mobSecret = 0, threatOk = 0, threatSecret = 0, held = 0, promoted = 0,
+  heldEnd = 0, sure = 0, probable = 0 }
 local meterLast              -- why the last meter read gave nothing ("secret", "keine Daten", ...) or "ok"
 local events = {}            -- event -> registered (true/false), for the probe
 
@@ -188,6 +205,27 @@ local function newEpisode()
   return ep
 end
 
+-- 1.5.0 grip: the certainty of a row: "sure", "probable" or "held" (see the head of the file)
+local SECOND = { "s", "j", "r" }
+function Grudge.Grade(row)
+  if type(row) ~= "table" then return "probable" end
+  local p = type(row.proofs) == "table" and row.proofs or {}
+  if p.b or p.c then return "sure" end
+  local n = 0
+  for i = 1, #SECOND do if p[SECOND[i]] then n = n + 1 end end
+  if row.mob then n = n - 1 end
+  if n >= 1 then return "sure" end
+  if n == 0 then return "probable" end
+  return "held"
+end
+
+local function grade(row)
+  local was = row.conf
+  row.conf = Grudge.Grade(row)
+  if row.conf == "held" and was ~= "held" then counts.held = counts.held + 1 end
+  if was == "held" and row.conf ~= "held" then counts.promoted = counts.promoted + 1 end
+end
+
 local function askedLately(key)
   local t = asked[key]
   return t ~= nil and now() - t < Grudge.ASKED_WINDOW
@@ -226,24 +264,41 @@ local function addRow(key, info, proof, opts)
   end
   if opts.kb then row.kb = true end
   if opts.inBook then row.inBook = true end
+  grade(row)
   return row
 end
 
--- the attackers in the order of the notice: the killing blow first, then in the order they came
+-- 1.5.0 grip: a second signal (s, j, r) on a row of the running episode
+local function mark(row, letter)
+  if not row or row.proofs[letter] then return end
+  row.proofs[letter] = true
+  counts[letter] = counts[letter] + 1
+  if ep and not ep.test then ep.proofs[letter] = true end
+end
+
+-- the attackers in the order of the notice: the killing blow first, then the sure ones, then in the order they came;
+-- 1.5.0 grip: held rows are not on the notice
 function Grudge.Rows(e)
   e = e or ep
   if not e then return {} end
   local out = {}
-  for i = 1, #e.order do out[#out + 1] = e.rows[e.order[i]] end
+  for i = 1, #e.order do
+    local r = e.rows[e.order[i]]
+    if r and r.conf ~= "held" then out[#out + 1] = r end
+  end
   table.sort(out, function(a, b)
     if (a.kb or false) ~= (b.kb or false) then return a.kb == true end
+    local sa, sb = a.conf ~= "probable", b.conf ~= "probable"
+    if sa ~= sb then return sa end
     return (a.n or 0) < (b.n or 0)
   end)
   return out
 end
 
--- a row that waits for an answer (not in the book by my death, not answered yet)
-function Grudge.Open(row) return type(row) == "table" and not row.inBook and row.state == nil end
+-- a row that waits for an answer (not in the book by my death, not answered yet, not held back)
+function Grudge.Open(row)
+  return type(row) == "table" and not row.inBook and row.state == nil and row.conf ~= "held"
+end
 
 -- does the episode ask anything? (only then the notice shows)
 function Grudge.Asks(e)
@@ -298,7 +353,8 @@ function Grudge.Close(why)
     end
   end
   e.closed, e.closedBy = true, why or "time"
-  if not e.test and setting("debug") and ns.Store and ns.Store.DB() then
+  -- 1.5.0 grip: the case is kept always (no names): the proofs of each row, its certainty, the creature cross-check
+  if not e.test and ns.Store and ns.Store.DB() then
     local db = ns.Store.DB()
     if type(db.probe) ~= "table" then db.probe = {} end
     if type(db.probe.grudge) ~= "table" then db.probe.grudge = {} end
@@ -308,9 +364,21 @@ function Grudge.Close(why)
     for k in pairs(e.proofs) do c.proofs[#c.proofs + 1] = k end
     table.sort(c.proofs)
     c.proofs = table.concat(c.proofs, "")
+    c.mob = e.mob or false
+    c.list = {}
     for _, key in ipairs(e.order) do
-      local st = e.rows[key].state
+      local row = e.rows[key]
+      local st = row.state
       if st == "yes" then c.yes = c.yes + 1 elseif st == "no" then c.no = c.no + 1 elseif st == "gone" then c.gone = c.gone + 1 end
+      if row.conf == "held" then counts.heldEnd = counts.heldEnd + 1
+      elseif row.conf == "sure" then counts.sure = counts.sure + 1 else counts.probable = counts.probable + 1 end
+      if #c.list < Grudge.CASE_ROWS then
+        local p = {}
+        for k in pairs(row.proofs) do p[#p + 1] = k end
+        table.sort(p)
+        c.list[#c.list + 1] = { p = table.concat(p, ""), c = row.conf or "probable", m = row.mob or false,
+          st = row.inBook and "book" or st or "held", kb = row.kb or false }
+      end
     end
     table.insert(g.cases, 1, c)
     while #g.cases > Grudge.CASES do table.remove(g.cases) end
@@ -398,14 +466,33 @@ end
 ---------------------------------------------------------------------------
 local FIXED = { "target", "focus", "mouseover", "party1target", "party2target", "party3target", "party4target" }
 
-local function consider(unit, proof)
+local function mobRecent() return mobAt ~= nil and now() - mobAt <= Grudge.HIT_WINDOW end
+
+-- fromScan: the look right after a hit on me (signals r and s count there)
+local function consider(unit, proof, fromScan)
   local key, info = enemyOf(unit, true)
   if not key then return nil end
   local c = unitInCombat(unit)
-  if c == false then return nil end
+  if c == false then outAt[key] = now(); return nil end
   if c == nil then counts.combatUnknown = counts.combatUnknown + 1 end
   local row = addRow(key, info, proof or "a")
   if row then
+    local t = now()
+    local mob = mobRecent()
+    if mob then row.mob = true; if ep then ep.mob = true end end
+    -- j: out of combat right around a hit on me, in combat now
+    if c == true and outAt[key] and lastHit and math.abs(outAt[key] - lastHit) <= Grudge.JOIN_WINDOW then mark(row, "j") end
+    if fromScan then
+      -- r: a second hit without a creature on me, at least REPEAT_GAP after the first
+      if not mob then
+        if row.cleanHit and t - row.cleanHit >= Grudge.REPEAT_GAP then mark(row, "r") end
+        row.cleanHit = row.cleanHit or t
+      end
+      -- s: he cast within HIT_WINDOW of the hit
+      local ct = castAt[unit]
+      if ct and math.abs(t - ct) <= Grudge.HIT_WINDOW then mark(row, "s") end
+    end
+    grade(row)
     -- a new attacker after the end of the fight: the episode runs again (the notice waits for its end)
     if ep.endGT and not ep.running then ep.running = true; ep.endGT = nil; Grudge.Watch() end
     fire()
@@ -414,12 +501,25 @@ local function consider(unit, proof)
 end
 Grudge.Consider = consider
 
-local function scan()
-  scanQueued = false
-  if not allowed then return end
-  lastScan = now()
-  for i = 1, #FIXED do consider(FIXED[i]) end
-  -- the plates in their order (nameplate1, nameplate2, ...): the notice lists attackers as they came, the same each time
+-- 1.5.0 grip: the creature cross-check. A hostile non-player that has me targeted, or has me on its threat table
+local function mobOnMe(unit)
+  if not True(Call(_G.UnitExists, unit)) then return false end
+  local isP = Call(_G.UnitIsPlayer, unit)
+  if IsSecret(isP) or isP == true then return false end
+  if not True(Call(_G.UnitCanAttack, "player", unit)) then return false end
+  local me = Call(_G.UnitIsUnit, unit .. "target", "player")
+  if IsSecret(me) then counts.mobSecret = counts.mobSecret + 1
+  elseif me == true then return true end
+  local fn = _G.UnitThreatSituation
+  if type(fn) == "function" then
+    local st = Call(fn, "player", unit)
+    if IsSecret(st) then counts.threatSecret = counts.threatSecret + 1
+    elseif type(st) == "number" then counts.threatOk = counts.threatOk + 1; return true end
+  end
+  return false
+end
+
+local function plateList()
   local list = {}
   for unit in pairs(plates) do list[#list + 1] = unit end
   table.sort(list, function(a, b)
@@ -427,7 +527,22 @@ local function scan()
     if na and nb and na ~= nb then return na < nb end
     return a < b
   end)
-  for i = 1, #list do consider(list[i]) end
+  return list
+end
+
+local function scan()
+  scanQueued = false
+  if not allowed then return end
+  lastScan = now()
+  -- the plates in their order (nameplate1, nameplate2, ...): the notice lists attackers as they came, the same each time
+  local list = plateList()
+  -- 1.5.0 grip: first the creatures (the cross-check holds for this very hit), then the players
+  local mob = false
+  for i = 1, #FIXED do if not mob and mobOnMe(FIXED[i]) then mob = true end end
+  for i = 1, #list do if not mob and mobOnMe(list[i]) then mob = true end end
+  if mob then mobAt = now(); counts.mob = counts.mob + 1 end
+  for i = 1, #FIXED do consider(FIXED[i], "a", true) end
+  for i = 1, #list do consider(list[i], "a", true) end
 end
 
 local function scanSoon()
@@ -476,11 +591,20 @@ local function onUnitHealth(unit)
   if before and hp < before then Grudge.OnHit("health") end
 end
 
+-- 1.5.0 grip: a cast is no proof of its own. Within HIT_WINDOW after a hit on me it is signal s beside a; before the
+-- hit it is remembered, and the look after the hit adds s (a self-buff while he has me targeted opens nothing)
 local function onCast(unit)
   if not allowed or IsSecret(unit) or type(unit) ~= "string" then return end
   if not (plates[unit] or unit == "target" or unit == "focus" or unit == "mouseover") then return end
-  local row = consider(unit)
-  if row and not row.cast then row.cast = true; counts.cast = counts.cast + 1 end
+  castAt[unit] = now()
+  if not (lastHit and now() - lastHit <= Grudge.HIT_WINDOW) then counts.castAlone = counts.castAlone + 1; return end
+  local row = consider(unit, "a")
+  if row then
+    mark(row, "s")
+    grade(row)
+    fire()
+    if not row.cast then row.cast = true; counts.cast = counts.cast + 1 end
+  end
 end
 
 local CAST_EVENTS = { "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_SUCCEEDED" }
@@ -655,9 +779,10 @@ end
 -- Test (/dn rachsucht test): a notice with made-up names that writes nothing
 ---------------------------------------------------------------------------
 Grudge.SAMPLE = {
-  { name = "Grimmzahn", surname = "Probe", class = "ROGUE", level = 38, kb = true, inBook = true },
-  { name = "Dornfels", surname = "Probe", class = "WARRIOR", level = 40 },
-  { name = "Rabenruf", surname = "Probe", class = "MAGE", level = 39 },
+  { name = "Grimmzahn", surname = "Probe", class = "ROGUE", level = 38, kb = true, inBook = true, proofs = "b" },
+  { name = "Dornfels", surname = "Probe", class = "WARRIOR", level = 40, proofs = "aj" },
+  -- 1.5.0 grip: the third shows how a "probable" row looks (seen targeting me at one hit only)
+  { name = "Rabenruf", surname = "Probe", class = "MAGE", level = 39, proofs = "a" },
 }
 function Grudge.Test(n)
   if ep and not ep.test then Grudge.Close("test") end
@@ -671,9 +796,11 @@ function Grudge.Test(n)
     local info = { name = s.name, surname = i > #Grudge.SAMPLE and (s.surname .. i) or s.surname, class = s.class,
       level = s.level }
     local key = Util.KeyFor(info.name, info.surname)
-    local row = { key = key, at = now(), n = i, proofs = { a = true }, kb = s.kb and i == 1 or nil,
+    local row = { key = key, at = now(), n = i, proofs = {}, kb = s.kb and i == 1 or nil,
       inBook = s.inBook and i == 1 or nil }
+    for letter in (i == 1 and s.proofs or (s.proofs:gsub("b", "a"))):gmatch(".") do row.proofs[letter] = true end
     for k, v in pairs(info) do row[k] = v end
+    row.conf = Grudge.Grade(row)
     ep.rows[key] = row
     ep.order[#ep.order + 1] = key
   end
@@ -719,6 +846,7 @@ end
 -- tests: back to the state after loading
 function Grudge.Reset()
   ep, asked, lastHit, lastHP, lastScan, scanQueued, plates, dueling = nil, {}, nil, nil, -1, false, {}, nil
+  castAt, outAt, mobAt = {}, {}, nil
   inCombat = false
   Grudge.pendingDeath = nil
   expireToken = expireToken + 1
@@ -756,11 +884,24 @@ ns:RegisterEvent("NAME_PLATE_UNIT_ADDED", function(_, unit)
   onUnitSeen(unit)
 end)
 ns:RegisterEvent("NAME_PLATE_UNIT_REMOVED", function(_, unit)
-  if not IsSecret(unit) and type(unit) == "string" then plates[unit] = nil end
+  if not IsSecret(unit) and type(unit) == "string" then plates[unit] = nil; castAt[unit] = nil end
 end)
+-- 1.5.0 grip: an enemy that takes me as his target out of combat: noted for signal j (he goes into combat with my hit)
+local function noteOut(unit)
+  if not allowed then return end
+  local key = enemyOf(unit, true)
+  if not key then return end
+  local fn = _G.UnitAffectingCombat
+  if type(fn) ~= "function" then return end
+  local v = Call(fn, unit)
+  if not IsSecret(v) and v == false then outAt[key] = now() end
+end
 ns:RegisterEvent("UNIT_TARGET", function(_, unit)
   if IsSecret(unit) or type(unit) ~= "string" then return end
-  if plates[unit] or unit == "target" or unit == "focus" or unit == "mouseover" then onUnitSeen(unit) end
+  if plates[unit] or unit == "target" or unit == "focus" or unit == "mouseover" then
+    noteOut(unit)
+    onUnitSeen(unit)
+  end
 end)
 ns:RegisterEvent("PLAYER_TARGET_CHANGED", function() onUnitSeen("target") end)
 ns:RegisterEvent("UPDATE_MOUSEOVER_UNIT", function() onUnitSeen("mouseover") end)
