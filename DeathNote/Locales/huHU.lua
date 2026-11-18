@@ -1205,4 +1205,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Ha olyan játékost látsz, aki az elmúlt 30 napban m
 L.EMPTY_WANTED_FATES = "A lények és a környezet okozta halálok a(z) „{log}” lapon vannak."
 L.EMPTY_JPLAYERS_HEAD = "Még nem ölt meg játékos."
 L.EMPTY_JPLAYERS_SUB = "A többi halál: {all} nézet."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Segélykérés"
+L.CALL_SLIP_BY = "{zone} · támadó {attacker}"
 end)

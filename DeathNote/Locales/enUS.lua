@@ -1211,4 +1211,7 @@ L.OPT_G_LAYERSIGHT_TIP = "When you see a player who killed you, a guildmate or a
 L.EMPTY_WANTED_FATES = "Deaths by creatures and the world are in the {log}."  -- tab Wanted, empty, once the Death Log holds deaths by creatures or the world: where they are; {log} = the tab's name
 L.EMPTY_JPLAYERS_HEAD = "No death by a player yet."  -- Death Log, view Players, empty while other deaths (creatures, the world) are there: big line
 L.EMPTY_JPLAYERS_SUB = "So far creatures and the world see to that (view {all})."  -- under it, dry joke; {all} = the view word All (FATE_VIEW_ALL), where the other deaths are
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Call for help"  -- kicker of the help call's slip (letter-spaced, red, like the bounty notice's kicker): a guildmate or friend calls for help
+L.CALL_SLIP_BY = "{zone} · attacker {attacker}"  -- third line of the help call's slip (under the caller's name): the place and the attacker; {zone} = 'Ashenvale (same zone)', {attacker} = his name
 end)

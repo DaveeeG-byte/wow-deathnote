@@ -1197,4 +1197,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Kun näet pelaajan, joka on 30 päivän sisällä tapp
 L.EMPTY_WANTED_FATES = "Olentojen ja ympäristön aiheuttamat kuolemat ovat välilehdellä ”{log}”."
 L.EMPTY_JPLAYERS_HEAD = "Ei vielä kuolemaa pelaajan kädestä."
 L.EMPTY_JPLAYERS_SUB = "Muut kuolemat: näkymä {all}."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Avunpyyntö"
+L.CALL_SLIP_BY = "{zone} · hyökkääjä {attacker}"
 end)

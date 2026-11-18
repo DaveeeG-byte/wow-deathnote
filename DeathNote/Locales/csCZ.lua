@@ -1203,4 +1203,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Když uvidíš hráče, který za posledních 30 dní 
 L.EMPTY_WANTED_FATES = "Smrti od stvoření a prostředí najdeš v záložce „{log}“."
 L.EMPTY_JPLAYERS_HEAD = "Zatím žádná smrt od hráče."
 L.EMPTY_JPLAYERS_SUB = "Ostatní smrti: pohled {all}."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Volání o pomoc"
+L.CALL_SLIP_BY = "{zone} · útočník {attacker}"
 end)

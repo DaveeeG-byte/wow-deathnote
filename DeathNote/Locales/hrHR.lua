@@ -1203,4 +1203,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Kad vidiš igrača koji je u zadnjih 30 dana ubio tebe
 L.EMPTY_WANTED_FATES = "Smrti od stvorenja i okoline su na kartici „{log}”."
 L.EMPTY_JPLAYERS_HEAD = "Još nema smrti od igrača."
 L.EMPTY_JPLAYERS_SUB = "Ostale smrti: prikaz {all}."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Poziv u pomoć"
+L.CALL_SLIP_BY = "{zone} · napadač {attacker}"
 end)

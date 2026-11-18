@@ -354,19 +354,26 @@ function Extras.PlaceBanner()
   if not banner then return end
   local W, H = UIParent:GetWidth(), UIParent:GetHeight()
   local y = BANNER_Y
-  local l, b, r, t = nil, nil, nil, nil
-  if ns.Alert and ns.Alert.Rect then l, b, r, t = ns.Alert.Rect() end
-  if type(W) == "number" and type(H) == "number" and not Look.Secret(W) and not Look.Secret(H) and l then
+  if type(W) == "number" and type(H) == "number" and not Look.Secret(W) and not Look.Secret(H) then
     local bl, br = W / 2 - BANNER_W / 2, W / 2 + BANNER_W / 2
     -- the strip of a dry remark hangs below the message
     local strip = (ns.Humor and ns.Humor.On and ns.Humor.On()) and (QUIP_GAP + QUIP_H) or 0
-    local bt = H + BANNER_Y + STAMP_TOP
-    local bb = H + BANNER_Y - BANNER_H - strip
-    if l < br and r > bl and b < bt and t > bb then
-      if b - GAP - STAMP_TOP - BANNER_H >= 0 then
-        y = (b - GAP - STAMP_TOP) - H              -- below the popup
-      else
-        y = (t + GAP + BANNER_H + strip) - H       -- above it
+    -- design fix 1.6.0: the alarm, then the slip of a help call (it hangs below the alarm): the notice goes below
+    -- each one it meets, above it only without room below
+    local CU = ns.CallUI
+    for _, rect in ipairs({ ns.Alert and ns.Alert.Rect or false, CU and CU.Rect or false }) do
+      local l, b, r, t = nil, nil, nil, nil
+      if rect then l, b, r, t = rect() end
+      if l then
+        local bt = H + y + STAMP_TOP
+        local bb = H + y - BANNER_H - strip
+        if l < br and r > bl and b < bt and t > bb then
+          if b - GAP - STAMP_TOP - BANNER_H >= 0 then
+            y = (b - GAP - STAMP_TOP) - H              -- below it
+          else
+            y = (t + GAP + BANNER_H + strip) - H       -- above it
+          end
+        end
       end
     end
   end

@@ -1190,4 +1190,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Quand tu vois un joueur qui t'a tué, toi, un membre d
 L.EMPTY_WANTED_FATES = "Les morts dues aux créatures et à l'environnement sont dans « {log} »."
 L.EMPTY_JPLAYERS_HEAD = "Encore aucune mort due à un joueur."
 L.EMPTY_JPLAYERS_SUB = "Autres morts : vue {all}."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "À l'aide"
+L.CALL_SLIP_BY = "{zone} · agresseur {attacker}"
 end)

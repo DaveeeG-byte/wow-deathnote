@@ -1191,4 +1191,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Siehst du einen Spieler, der in den letzten 30 Tagen d
 L.EMPTY_WANTED_FATES = "Tode durch Kreaturen und Umwelt stehen im {log}."
 L.EMPTY_JPLAYERS_HEAD = "Noch kein Tod durch Spieler."
 L.EMPTY_JPLAYERS_SUB = "Bisher erledigen das Kreaturen und die Welt (Ansicht {all})."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Hilferuf"
+L.CALL_SLIP_BY = "{zone} · Angreifer {attacker}"
 end)

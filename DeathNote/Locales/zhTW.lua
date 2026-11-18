@@ -1204,4 +1204,7 @@ L.OPT_G_LAYERSIGHT_TIP = "當你看到最近 30 天內殺過你、公會成員�
 L.EMPTY_WANTED_FATES = "被生物和環境殺死的記錄在「{log}」中。"
 L.EMPTY_JPLAYERS_HEAD = "還沒有被玩家殺死過。"
 L.EMPTY_JPLAYERS_SUB = "其他死亡：{all} 檢視。"
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "求援"
+L.CALL_SLIP_BY = "{zone} · 攻擊者 {attacker}"
 end)

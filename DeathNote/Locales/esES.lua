@@ -1191,4 +1191,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Si ves a un jugador que en los últimos 30 días te ma
 L.EMPTY_WANTED_FATES = "Las muertes por criaturas y el entorno están en «{log}»."
 L.EMPTY_JPLAYERS_HEAD = "Aún ninguna muerte a manos de un jugador."
 L.EMPTY_JPLAYERS_SUB = "Otras muertes: vista {all}."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Socorro"
+L.CALL_SLIP_BY = "{zone} · atacante {attacker}"
 end)

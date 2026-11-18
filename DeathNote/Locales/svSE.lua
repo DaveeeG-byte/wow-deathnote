@@ -1196,4 +1196,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Ser du en spelare som har dödat dig, en guildmedlem e
 L.EMPTY_WANTED_FATES = "Dödsfall från varelser och omgivningen står under ”{log}”."
 L.EMPTY_JPLAYERS_HEAD = "Ännu ingen död genom en spelare."
 L.EMPTY_JPLAYERS_SUB = "Andra dödsfall: vy {all}."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Nödrop"
+L.CALL_SLIP_BY = "{zone} · angripare {attacker}"
 end)

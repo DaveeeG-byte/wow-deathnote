@@ -1204,4 +1204,7 @@ L.OPT_G_LAYERSIGHT_TIP = "최근 30일 안에 나, 길드원 또는 친구를 �
 L.EMPTY_WANTED_FATES = "생물과 환경으로 인한 죽음은 '{log}'에 있습니다."
 L.EMPTY_JPLAYERS_HEAD = "아직 플레이어에게 죽은 적 없음."
 L.EMPTY_JPLAYERS_SUB = "다른 죽음: {all} 보기."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "도움 요청"
+L.CALL_SLIP_BY = "{zone} · 공격자 {attacker}"
 end)

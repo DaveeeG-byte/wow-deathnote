@@ -1202,4 +1202,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Если ты видишь игрока, которы�
 L.EMPTY_WANTED_FATES = "Смерти от существ и окружения во вкладке «{log}»."
 L.EMPTY_JPLAYERS_HEAD = "Пока ни одной смерти от игрока."
 L.EMPTY_JPLAYERS_SUB = "Остальные смерти: вид «{all}»."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Зов на помощь"
+L.CALL_SLIP_BY = "{zone} · нападает {attacker}"
 end)

@@ -1196,4 +1196,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Zie je een speler die jou, een guildgenoot of een vrie
 L.EMPTY_WANTED_FATES = "Doden door wezens en de omgeving staan onder ‘{log}’."
 L.EMPTY_JPLAYERS_HEAD = "Nog geen dood door een speler."
 L.EMPTY_JPLAYERS_SUB = "Andere doden: weergave {all}."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Noodroep"
+L.CALL_SLIP_BY = "{zone} · aanvaller {attacker}"
 end)

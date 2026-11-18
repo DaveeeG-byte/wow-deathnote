@@ -1206,4 +1206,7 @@ L.OPT_G_LAYERSIGHT_TIP = "Son 30 günde seni, bir lonca üyesini ya da bir arkad
 L.EMPTY_WANTED_FATES = "Yaratıkların ve çevrenin neden olduğu ölümler “{log}” sekmesinde."
 L.EMPTY_JPLAYERS_HEAD = "Henüz bir oyuncu tarafından ölmedin."
 L.EMPTY_JPLAYERS_SUB = "Diğer ölümler: {all} görünümü."
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Yardım çağrısı"
+L.CALL_SLIP_BY = "{zone} · saldıran {attacker}"
 end)
