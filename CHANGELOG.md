@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.0
+
+<!-- scene -->
+### Added
+- Crime scenes on the world map: a red pin with a skull where you died, a black pin with crossed blades where you took one of your book down, a light pin in a quiet colour where a guildmate (green) or friend (blue) died. Close places are one pin with a count (at most 40 pins per map). The tooltip says who killed whom ("Here Grimwald Ashbrand killed you", "Here Liora Stormwell was killed by Velka Thornheart"), when, where, the spell, who helped, revenge; a click opens the book there. A guildmate's or friend's death younger than 10 minutes pulses.
+- From the book to the map: every place with a small pin in the margin is a link (deed lines on the poster, the place of a death file, the rap sheet's kills and victim sheet, the chronicle, guild and friends' deed lines, the notice of a guildmate's death). The map opens there and the pin pulses; without coordinates the zone's map opens with "exact spot unknown"; in combat a chat line instead.
+- A small switch at the map's corner: crime scenes on/off, period (7 days, 30 days, all), only open debts, own, guild, friends. House Rules, sheet Book, section MAP: on/off.
+- Chronicle: next to DEEDS on the poster, one page of the file tells the feud in sentences: first encounter, every deed in order, your revenge, bounties, the turning points, the standing now; long feuds are cut in the middle. Places in it are links to the map.
+- The spot of your death goes to guild and friends with it (new message `L`, older versions drop it unseen). Switch: House Rules, sheet Guild, "Send the spot of my death" (on by default). Attacks, suspicions, notes and copied entries never go out, nor their places.
+- `/dn probe` writes `probe.scene` (map API, pins, clicks, combat, places sent, received and dropped with the reason).
+- New texts in all 21 languages.
+
 ## 1.4.0 (2026-11-17)
 
 ### Added
