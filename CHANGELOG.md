@@ -15,6 +15,16 @@
 
 ### Known open
 - Unmeasured in the game: the nameplate mark (whether `C_NamePlate.GetNamePlateForUnit` answers on Forever in the open world, how the mark sits on the client's plates and on plate addons), the creature cross-check (whether a creature's target and its threat are readable in a fight), and the new signals. `/dn probe` and `probe.grip` / `probe.grudge` count all of it.
+<!-- share -->
+### Added
+- Show in the chat: the word "Show" at the top right of a poster (own book, guild and friends' book, hit list) and in the row menu opens a small window with the line as it goes out and the channels that work right now (guild, party or raid or instance group, say). One click sends one plain line, e.g. `[Revenge Book: Grimwald Ashbrand] WANTED · Score 2 : 5 · 131g bounty · last seen Stranglethorn Vale`, in your language. Anybody can read it; at most one line every 10 seconds, never in combat or while the game locks the chat (the window says why and when).
+- With the addon the name in such a line is a link: a click opens his poster from your book, else from the guild or friends' book, else a guest poster that shows only what the line says, marked "shown by …", with "Copy to my book" (the entry is marked as copied from that player and never passed on). In dungeons and battlegrounds, where the game hides chat text from addons, the line stays plain text.
+- Copy for Discord: a tab of the window marks a few lines (name, level, class, guild, score, bounty, last deed with place and time, last seen) for Ctrl+C.
+- My week: a tab of the window makes one line of the week: who killed you most this week, payback taken, open debts.
+- Payback notice: with the switch "Button "Show" on the payback notice" (House Rules, sheet Guild, section SHOW, off by default) the notice after a kill on a wanted enemy carries a small "Show" button; it opens the window with "PAYBACK · now 3 : 5". Nothing is ever sent without your click.
+- Never shown: attacks, suspicion, notes, anything copied from someone else's book, names of guildmates or friends. An entry made only of such things offers no "Show".
+- `/dn probe` writes `probe.share`: lines sent per channel, refused with the reason, link hits in the chat, clicks, guest posters, cases with hidden chat text.
+- New texts in all 21 languages.
 
 ## 1.4.0 (2026-11-17)
 

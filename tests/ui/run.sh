@@ -17,6 +17,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          tests/ui/fix140_filter.lua tests/ui/fix140_news.lua tests/ui/fix140_klein.lua \
          "$adir"/Grudge.lua "$adir"/GrudgeCard.lua tests/ui/grudge_card.lua \
          "$adir"/Grip.lua "$adir"/Plate.lua tests/ui/grip.lua \
+         "$adir"/Share.lua "$adir"/ShareUI.lua tests/ui/share.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
 done
@@ -98,6 +99,8 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     luajit tests/ui/fix140_klein.lua . || status=1
     # 1.5.0 grip: the nameplate mark, the notice's probable rows and sizes, the House Rules rows in 21 languages
     luajit tests/ui/grip.lua . || status=1
+    # 1.5.0 share: the window "Show", the word on the poster, the guest poster, the button on the payback notice
+    if [ -f "$adir/ShareUI.lua" ]; then luajit tests/ui/share.lua . || status=1; fi
   fi
 fi
 

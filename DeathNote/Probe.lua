@@ -245,12 +245,19 @@ function Probe.Run(verbose, opts)
     local okp, pg = pcall(ns.Plate.ProbeSnapshot)
     if okp and type(pg) == "table" then out.grip = S(pg) end
   end
+  -- 1.5.0 share: lines shown per channel, refused with reason, filter hits, clicks, guest posters, secret cases
+  local keepShare = db and type(db.probe) == "table" and type(db.probe.share) == "table" and db.probe.share or nil
+  if ns.Share and ns.Share.ProbeSnapshot then
+    local oks, sh = pcall(ns.Share.ProbeSnapshot, keepShare)
+    if oks and type(sh) == "table" then out.share = sh end
+  end
   if db then
     local keep = db.probe and db.probe.deaths
     db.probe = out
     out.deaths = keep or {}
     if not out.kills and keepKills then out.kills = keepKills end
     if not out.grudge and keepGrudge then out.grudge = keepGrudge end
+    if not out.share and keepShare then out.share = keepShare end
   end
   if verbose then
     -- 1.2.0: framing words from the language table; the values (codes, numbers) stay technical

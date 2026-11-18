@@ -69,6 +69,8 @@ Friends.lua
 Bounty.lua
 # 1.4.0: attacked without dying: the episode and the book entry (role "attack"); the notice is GrudgeCard.lua
 Grudge.lua
+# 1.5.0 share: the shown chat line, the chat filter, the Discord block, the week (data only; the window is ShareUI.lua)
+Share.lua
 Alert.lua
 UI.lua
 # 1.3.0: the first-start window (language and cover), only on a new installation; /dn start
@@ -79,4 +81,6 @@ GrudgeCard.lua
 # 1.5.0 grip: key bindings (Bindings.xml is loaded by the game itself, not listed here) and the nameplate mark
 Grip.lua
 Plate.lua
+# 1.5.0 share: the window "Show", the guest poster, the click on the link, the button on the payback notice
+ShareUI.lua
 Humor.lua
