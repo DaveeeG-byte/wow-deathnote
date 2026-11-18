@@ -1209,4 +1209,5 @@ L.CALL_SLIP_BY = "{zone} · napadač {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Smrti od ovog uzroka"
 L.FATE_FIRST_LAST = "Prvi put {first}, zadnji {last}"
+L.GLOG_OLD_N = "Starija inačica: {count}"
 end)

@@ -1208,4 +1208,5 @@ L.CALL_SLIP_BY = "{zone} · нападает {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Смерти от этого"
 L.FATE_FIRST_LAST = "Впервые {first}, последний раз {last}"
+L.GLOG_OLD_N = "Старая версия: {count}"
 end)

@@ -1212,4 +1212,5 @@ L.CALL_SLIP_BY = "{zone} · saldıran {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Bu sebeple ölümler"
 L.FATE_FIRST_LAST = "İlk {first}, son {last}"
+L.GLOG_OLD_N = "Eski sürüm: {count}"
 end)

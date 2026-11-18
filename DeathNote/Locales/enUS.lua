@@ -1060,7 +1060,7 @@ L.GLOG_RECOMMEND_LINE = "I keep a Revenge Book: whoever kills one of us is writt
 L.GLOG_REC_WAIT = "Again in {minutes} min"  -- the button while it waits (once per 30 minutes)
 L.GLOG_REC_SENT = "Sent to the guild chat."
 L.GLOG_NO_GUILD_CHAT = "The guild chat is not available right now."
-L.GLOG_AV_HEAD = "AVENGERS OF THE WEEK"  -- head (red, letter-spaced): who took the most killers of the guild down in 7 days
+L.GLOG_AV_HEAD = "AVENGERS OF THE WEEK"  -- head (ink, letter-spaced): who took the most killers of the guild down in 7 days
 L.GLOG_AV_EMPTY = "Nobody has taken a killer of the guild down this week."
 L.GLOG_WANTED_HEAD = "MOST WANTED OF THE WEEK"  -- head: who killed the most guildmates in 7 days
 L.GLOG_WANTED_N = "{count} {count|death|deaths}"  -- right of a most wanted on the avengers' page: how many deaths of guildmates he caused this week (deaths, not people: one guildmate killed three times is 3)
@@ -1217,4 +1217,5 @@ L.CALL_SLIP_BY = "{zone} · attacker {attacker}"  -- third line of the help call
 L.GLOG_LINE_AT = "{text}, {place}"  -- guild chronicle line with the zone, without the time (the time stands apart at the right edge); {text} = the sentence, {place} = the zone
 L.FATE_LIST_HEAD = "Deaths by this cause"  -- section label on the file of a creature or the world (letter-spaced, like DEEDS on the poster): the list of your deaths by this same cause follows; the count stands on the right
 L.FATE_FIRST_LAST = "First {first}, last {last}"  -- under that list: the first and the latest death by this cause; {first}, {last} = date and time
+L.GLOG_OLD_N = "Older version: {count}"  -- guild chronicle, who has the book: one quiet line under the list, how many have an older version of the addon (the rows say it in faint ink); {count} = a number
 end)

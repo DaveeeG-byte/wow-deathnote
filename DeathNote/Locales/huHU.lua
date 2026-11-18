@@ -1211,4 +1211,5 @@ L.CALL_SLIP_BY = "{zone} · támadó {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Halálok ettől"
 L.FATE_FIRST_LAST = "Először {first}, utoljára {last}"
+L.GLOG_OLD_N = "Régebbi változat: {count}"
 end)

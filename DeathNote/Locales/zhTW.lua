@@ -1210,4 +1210,5 @@ L.CALL_SLIP_BY = "{zone} · 攻擊者 {attacker}"
 L.GLOG_LINE_AT = "{text}，{place}"
 L.FATE_LIST_HEAD = "同一死因"
 L.FATE_FIRST_LAST = "首次 {first}，最近 {last}"
+L.GLOG_OLD_N = "舊版本：{count}"
 end)

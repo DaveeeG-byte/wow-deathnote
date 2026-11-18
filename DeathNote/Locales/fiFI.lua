@@ -1203,4 +1203,5 @@ L.CALL_SLIP_BY = "{zone} · hyökkääjä {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Kuolemat tästä syystä"
 L.FATE_FIRST_LAST = "Ensin {first}, viimeksi {last}"
+L.GLOG_OLD_N = "Vanhempi versio: {count}"
 end)

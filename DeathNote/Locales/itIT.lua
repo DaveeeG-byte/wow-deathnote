@@ -1196,4 +1196,5 @@ L.CALL_SLIP_BY = "{zone} · aggressore {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Morti per questa causa"
 L.FATE_FIRST_LAST = "Prima volta {first}, ultima {last}"
+L.GLOG_OLD_N = "Versione precedente: {count}"
 end)

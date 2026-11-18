@@ -224,7 +224,7 @@ local function BuildLeft(LP)
     b.time:SetPoint("TOPRIGHT", 0, -1)
     b.time:SetJustifyH("RIGHT")
     b.time:SetWordWrap(false)
-    b.head = K().Label(b, "", true)
+    b.head = K().Label(b, "")
     b.head:SetPoint("TOPLEFT", 0, -2)
     b.head:SetWidth(GLUI.LINE_W)
     b.head:SetJustifyH("LEFT")
@@ -415,6 +415,11 @@ local function BuildHolders(p)
     local o = math.max(0, math.min(math.max(0, n - GLUI.HOLD_ROWS), state.hoff - delta * 2))
     if o ~= state.hoff then state.hoff = o; GLUI.FillHolders() end
   end)
+  -- design fix 1.6.0: one line under the list counts the older versions (the rows say it in faint ink)
+  v.old = Text(v, "body", 10, Look.TONE.sub)
+  v.old:SetWidth(GLUI.W - 48)
+  v.old:SetWordWrap(false)
+  v.old:Hide()
   v.hint = Text(v, "body", 10, Look.TONE.sub)
   v.hint:SetPoint("TOPLEFT", 24, -(96 + GLUI.HOLD_ROWS * GLUI.ROW_H + 6))
   v.hint:SetWidth(GLUI.W - 48)
@@ -440,15 +445,23 @@ function GLUI.FillHolders()
   Look.FitText(v.line, line, GLUI.FIT_BIG)
   if state.hoff > math.max(0, #list - GLUI.HOLD_ROWS) then state.hoff = math.max(0, #list - GLUI.HOLD_ROWS) end
   local Util = ns.Util
+  -- design fix 1.6.0: the list starts 16 below the head line (one or two lines), never lower than before
+  local top = math.min(96, 48 + math.ceil(Look.TextH(v.line, 2) or 20) + 16)
+  local old, lastY = 0, nil
+  for _, x in ipairs(list) do if x.old then old = old + 1 end end
   for i, r in ipairs(v.rows) do
     local x = list[state.hoff + i]
+    r:ClearAllPoints()
+    r:SetPoint("TOPLEFT", 24, -(top + (i - 1) * GLUI.ROW_H))
     if x then
+      lastY = top + i * GLUI.ROW_H
       Look.FitText(r.name, x.me and Fmt(L.GLOG_ME, { name = x.name }) or x.name, GLUI.FIT_ONE)
       r.name:SetTextColor(C(Look.INK, x.online and 1 or Look.TONE.sub))
       local vt = x.v or L.GLOG_VERSION_UNKNOWN
       if x.old then vt = Fmt(L.GLOG_VERSION_OLD, { version = x.v }) end
       Look.FitText(r.ver, vt, GLUI.FIT_ONE)
-      r.ver:SetTextColor(C(x.old and Look.RED_INK or Look.INK, x.old and 1 or Look.TONE.sub))
+      -- design fix 1.6.0: an older version is no error: ink, fainter (the count of them stands under the list)
+      r.ver:SetTextColor(C(Look.INK, x.old and Look.TONE.sub * 0.8 or Look.TONE.sub))
       Look.FitText(r.when, x.me and L.GLOG_NOW or (Util and Util.Ago and Util.Ago(x.t) or ""), GLUI.FIT_ONE)
       r.hit.tip = { x.full, vt, x.online and L.GLOG_ONLINE or Fmt(L.GLOG_HEARD, { time = Util and Util.Ago and Util.Ago(x.t) or "?" }) }
       r:Show()
@@ -456,6 +469,15 @@ function GLUI.FillHolders()
       r.hit.tip = nil
       r:Hide()
     end
+  end
+  local hintTop = 96 + GLUI.HOLD_ROWS * GLUI.ROW_H + 6
+  if old > 0 and lastY and lastY + 6 + 14 <= hintTop then
+    v.old:ClearAllPoints()
+    v.old:SetPoint("TOPLEFT", 24, -(lastY + 6))
+    Look.FitText(v.old, Fmt(L.GLOG_OLD_N, { count = old }), GLUI.FIT_ONE)
+    v.old:Show()
+  else
+    v.old:Hide()
   end
   Look.FitText(v.hint, L.GLOG_HOLDERS_HINT, GLUI.FIT_TWO)
   local w = GLd.RecommendWait()
@@ -493,7 +515,7 @@ end
 local function BuildAvengers(p)
   local v = CreateFrame("Frame", nil, p)
   v:SetAllPoints()
-  v.head = K().Label(v, "", true)
+  v.head = K().Label(v, "")
   v.head:SetPoint("TOPLEFT", 24, -50)
   v.head:SetWidth(GLUI.W - 48)
   v.head:SetJustifyH("LEFT")
@@ -520,7 +542,7 @@ local function BuildAvengers(p)
   v.empty = Text(v, "hand", 13, Look.TONE.sub)
   v.empty:SetPoint("TOPLEFT", 24, -90)
   v.empty:SetWidth(GLUI.W - 48)
-  v.whead = K().Label(v, "", true)
+  v.whead = K().Label(v, "")
   v.whead:SetPoint("TOPLEFT", 24, -256)
   v.whead:SetWidth(GLUI.W - 48)
   v.whead:SetJustifyH("LEFT")
@@ -560,7 +582,9 @@ function GLUI.FillAvengers()
   if not v then return end
   local GLd = D()
   local w = GLd.Week()
-  v.head:SetText(L.GLOG_AV_HEAD)
+  local JK = ns.UI and ns.UI.JK
+  local sp = JK and JK.Spaced or function(x) return x end
+  v.head:SetText(sp(L.GLOG_AV_HEAD))
   Look.FitText(v.week, GLd.CardTexts(w).week, GLUI.FIT_ONE)
   local rank = GLd.OwnRank()
   local rows, meIn = {}, false
@@ -584,7 +608,7 @@ function GLUI.FillAvengers()
         or nm
       local pos = x.own and "" or (i .. ".  ")
       Look.FitText(r.name, pos .. label, GLUI.FIT_ONE)
-      r.name:SetTextColor(C(x.me and Look.RED_INK or Look.INK))
+      r.name:SetTextColor(C(Look.INK, x.me and 1 or Look.TONE.ink))
       r.n:SetText(tostring(x.n))
       r:Show()
     else
@@ -601,7 +625,7 @@ function GLUI.FillAvengers()
     v.rows[1]:ClearAllPoints()
     v.rows[1]:SetPoint("TOPLEFT", 24, -86)
   end
-  v.whead:SetText(L.GLOG_WANTED_HEAD)
+  v.whead:SetText(sp(L.GLOG_WANTED_HEAD))
   for i, b in ipairs(v.wanted) do
     local x = w.wanted[i]
     if x then

@@ -1210,4 +1210,5 @@ L.CALL_SLIP_BY = "{zone} · 공격자 {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "같은 원인의 죽음"
 L.FATE_FIRST_LAST = "처음 {first}, 마지막 {last}"
+L.GLOG_OLD_N = "이전 버전: {count}"
 end)
