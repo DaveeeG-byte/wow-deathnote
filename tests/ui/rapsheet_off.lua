@@ -89,7 +89,9 @@ local function run(addon, code)
          and not newPart(f) then
         local l, b, r, t = BM.RectUI(f)
         local rect = l and ("%d,%d,%d,%d"):format(math.floor(l + 0.5), math.floor(b + 0.5), math.floor(r + 0.5), math.floor(t + 0.5)) or "-"
-        if f._kind == "FontString" and type(f._text) == "string" and f._text ~= "" then
+        -- 1.5.0 name: the book title is the new name now (Revenge Book), not a part of the rap sheet: left out
+        if f._kind == "FontString" and (f._text == "DeathNote" or f._text == "Revenge Book") then
+        elseif f._kind == "FontString" and type(f._text) == "string" and f._text ~= "" then
           local txt = f._text
           if txt:find(seenPrefix, 1, true) == 1 or (seenPrefix2 and txt:find(seenPrefix2, 1, true) == 1) then txt = "(last seen)"; rect = "-" end
           list[#list + 1] = ("T %s|%s|%s"):format(txt, rect, tostring(f._fontSize))

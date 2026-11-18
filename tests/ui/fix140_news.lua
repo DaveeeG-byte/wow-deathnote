@@ -91,10 +91,10 @@ local function test(name, fn)
 end
 
 
+-- 1.5.0 name: the line of 1.5.0 (CHAT_NEWS_150, marker news150) takes the place of the line of 1.4.0; the rules of
+-- this file (once, never in combat, never for a new installation) hold for it (more in tests/ui/name150.lua)
 local function news(ns)
-  local L = ns.L
-  return plain(ns.F(L.CHAT_NEWS_140, { rules = L.HEAD_RULES, sheet = L.SHEET_RECORD, guild = L.TAB_GUILD_FRIENDS,
-    wanted = L.TAB_WANTED, takeall = L.ACT_TAKE_ALL }))
+  return plain(ns.L.CHAT_NEWS_150)
 end
 
 test("existing installation: one line after the update, then never again", function()
@@ -106,10 +106,8 @@ test("existing installation: one line after the update, then never again", funct
   check("one line", said(news(ns)) == 1, AM.chat[#AM.chat])
   local line = news(ns)
   check("placeholders filled", not line:find("{", 1, true))
-  check("names the command, the House Rules, the button and both tabs", line:find("/dn rachsucht", 1, true)
-    and line:find(ns.L.HEAD_RULES, 1, true) and line:find(ns.L.ACT_TAKE_ALL, 1, true)
-    and line:find(ns.L.TAB_GUILD_FRIENDS, 1, true) and line:find(ns.L.TAB_WANTED, 1, true), line)
-  check("marker", db.settings.news140 == true)
+  check("names the new name and /dn", line:find("Revenge Book", 1, true) and line:find("/dn", 1, true), line)
+  check("marker", db.settings.news150 == true and db.settings.news140 == true)
   ns = world({ db = db }); tick(60)
   check("no second line after a reload", said(news(ns)) == 0)
   clean()
@@ -128,7 +126,7 @@ test("in combat: the line waits for the end of the fight", function()
   local db = { version = 5, settings = { welcomed = true, firstRun = "done" }, enemies = {}, deaths = {} }
   local ns = world({ db = db, combat = true })
   tick(30)
-  check("nothing in combat", said(news(ns)) == 0 and db.settings.news140 == nil)
+  check("nothing in combat", said(news(ns)) == 0 and db.settings.news150 == nil)
   AM.inCombat, BM.combat = false, false
   AM.FireEvent("PLAYER_REGEN_ENABLED"); tick()
   check("after the fight", said(news(ns)) == 1)
@@ -142,17 +140,18 @@ test("new installation: no news line, not even after a reload", function()
   tick(60)
   check("no line", said(news(ns)) == 0)
   local db = _G.DeathNoteDB
-  check("marker set at once", db.settings.news140 == true)
+  check("marker set at once", db.settings.news150 == true and db.settings.news140 == true)
   ns = world({ db = db }); tick(60)
   check("no line after a reload", said(news(ns)) == 0)
   clean()
 end)
 
-test("English: the line names /dn grudge", function()
+test("English: the line names the new name and /dn", function()
   local db = { version = 5, settings = { welcomed = true, firstRun = "done", lang = "enUS" }, enemies = {}, deaths = {} }
   local ns = world({ db = db, client = "enUS" })
   tick(60)
-  check("one line with /dn grudge", said(news(ns)) == 1 and news(ns):find("/dn grudge", 1, true))
+  check("one line with Revenge Book and /dn", said(news(ns)) == 1 and news(ns):find("Revenge Book", 1, true)
+    and news(ns):find("/dn", 1, true))
   clean()
 end)
 

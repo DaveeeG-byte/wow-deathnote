@@ -377,9 +377,11 @@ function methods.SetFontObject(self, o) self._fontObject = o end
 -- 1.2.2: factors at the wide end of the real fonts (calibrated against the client screenshot of round 1.2.2):
 -- em width per character for mixed case; text that is mostly capitals counts 0.70 per letter (stamps, labels),
 -- CJK and Hangul 1.07 em, spaces 0.30 em in capitals text. Line height 1.10 x size (plus SetSpacing).
+-- 1.5.0 name: Skurri 0.60 (was 0.70, never measured): the client screenshot of 1.2.2 shows the title "DeathNote" at
+-- Skurri 26 about 110 units wide, 0.47 em per character; 0.60 keeps a margin of a quarter like the other fonts.
 local WIDTH = { ["Fonts\\MORPHEUS.TTF"] = 0.56, ["Fonts\\MORPHEUS_CYR.TTF"] = 0.60, ["Fonts\\FRIZQT__.TTF"] = 0.56,
-  ["Fonts\\FRIZQT___CYR.TTF"] = 0.58, ["Fonts\\NIM_____.ttf"] = 0.60, ["Fonts\\SKURRI.TTF"] = 0.70,
-  ["Fonts\\SKURRI_CYR.TTF"] = 0.70, ["Fonts\\ARIALN.TTF"] = 0.45 }
+  ["Fonts\\FRIZQT___CYR.TTF"] = 0.58, ["Fonts\\NIM_____.ttf"] = 0.60, ["Fonts\\SKURRI.TTF"] = 0.60,
+  ["Fonts\\SKURRI_CYR.TTF"] = 0.60, ["Fonts\\ARIALN.TTF"] = 0.45 }
 M.WIDTH, M.CAPS, M.CJK, M.LINE = WIDTH, 0.70, 1.07, 1.10
 local function wideCp(cp)
   return (cp >= 0x1100 and cp <= 0x115F) or (cp >= 0x2E80 and cp <= 0xA4CF) or (cp >= 0xAC00 and cp <= 0xD7A3)

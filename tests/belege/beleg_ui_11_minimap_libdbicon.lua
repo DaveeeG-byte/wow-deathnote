@@ -101,7 +101,7 @@ do
   if obj and W.btn then   -- (red on 1.2.1: neither exists)
     local t = tip(W.btn)
     obj.OnTooltipShow(t)
-    K.check("1 tooltip title", t.lines[1] == "DeathNote", t.lines[1])
+    K.check("1 tooltip title (1.5.0: the new name; the object keeps the name DeathNote)", t.lines[1] == "Revenge Book", t.lines[1])
     K.check("1 tooltip click lines", has(t, L.MM_CLICK) and has(t, L.MM_MIDDLE))
     K.check("1 tooltip drag line on the minimap button", has(t, L.MM_DRAG))
     local t2 = tip(W.BM.G.UIParent)

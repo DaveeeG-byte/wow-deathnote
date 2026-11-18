@@ -601,6 +601,7 @@ local function gatherThemeNames(code, en, base)
       end
     elseif id == T.BASE then
       add(rawget(base, "BOOK_TITLE")); add(en.BOOK_TITLE)
+      add("DeathNote")   -- 1.5.0: the title before the rename still names the black book (/dn theme deathnote)
     end
     out[id] = list
   end

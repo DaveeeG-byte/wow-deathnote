@@ -5,6 +5,9 @@ local ADDON, ns = ...
 _G.DeathNote = ns
 
 ns.name = ADDON
+-- 1.5.0: the name players read (book title, chat prefix, minimap tooltip). Only the shown name changed: the folder,
+-- DeathNoteDB, the message prefix "DeathNote", frame names, the broker object and /dn stay for good.
+ns.TITLE = "Revenge Book"
 ns.Util = {}
 local Util = ns.Util
 -- Texts (1.2.0): ns.L is filled from ADDON_LOADED on (Locale.lua); read L.KEY inside functions only
@@ -418,7 +421,7 @@ function Util.LogPlateEvent(event, a1, a2)
   return e
 end
 
-local PREFIX = "|cffc41e3aDeathNote|r: "
+local PREFIX = "|cffc41e3a" .. ns.TITLE .. "|r: "
 -- Note of an own entry as shown (1.2.0): the stored free text; an entry taken over from the guild
 -- book keeps only a mark (fromGuild, fromGuildKills) and gets its sentence in the active language here.
 function Util.NoteOf(e)
@@ -457,7 +460,7 @@ end
 -- 1.4.0: HELP_GRUDGE after HELP_TEST
 local HELP_KEYS = { "HELP_TOGGLE", "HELP_ADD", "HELP_DEL", "HELP_QUIET", "HELP_TEST", "HELP_GRUDGE", "HELP_GUILD", "HELP_FRIENDS",
   "HELP_SYNC", "HELP_HUNT", "HELP_CALLOFF", "HELP_BOUNTY", "HELP_LANG", "HELP_THEME", "HELP_START", "HELP_PROBE", "HELP_PROBE_COMBATLOG", "HELP_DEBUG",
-  "HELP_HELP", "HELP_SILENT_ZONES" }
+  "HELP_HELP", "HELP_ALIASES", "HELP_SILENT_ZONES" }
 ns.HELP_KEYS = HELP_KEYS
 local HELP = {}
 ns.HELP = HELP
@@ -760,6 +763,9 @@ _G.SLASH_DEATHNOTE1 = "/dn"
 _G.SLASH_DEATHNOTE2 = "/deathnote"
 _G.SLASH_DEATHNOTE3 = "/todesliste"
 _G.SLASH_DEATHNOTE4 = "/deathlist"
+-- 1.5.0: the new name as commands too (/rb was free among the addons we know); the four above stay
+_G.SLASH_DEATHNOTE5 = "/rb"
+_G.SLASH_DEATHNOTE6 = "/revengebook"
 if _G.SlashCmdList then _G.SlashCmdList.DEATHNOTE = ns.HandleSlash end
 
 ---------------------------------------------------------------------------

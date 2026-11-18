@@ -6360,6 +6360,8 @@ end
 -- size of GF.FIT_TAB) needs and only the room above that is shared out. A three-digit number fits in every language
 -- and cover; only when even that is not enough do all get evenly narrower (a four-digit number in a long word).
 GF.TAB_X0, GF.TAB_X1, GF.TAB_GAP, GF.TAB_MAX, GF.TAB_ROOM = 184, 704, 4, 150, 34
+-- 1.5.0 name: the book title left of the tabs (Skurri 26, 22, 19 of Look.SIZE), from x 22 to 8 before the first tab
+UX.FIT_BOOK_TITLE = { width = GF.TAB_X0 - 22 - 8, sizes = { 26, 22, 19 }, kind = "title" }
 GF.TAB_PAD = 10          -- the least room around a tab text: 4 px of the text field, 1.5 of the fit margin, air
 GF.FIT_PH = { sizes = { 16, 13, 11 } }
 -- withCount (1.2.2): kept for the callers; the width always comes from the shown text with its number now
@@ -6475,7 +6477,10 @@ local function Build()
 
   local title = Look.Text(F, "title", 26, Look.BONE)
   title:SetPoint("TOPLEFT", 22, -9)
-  title:SetText(L.BOOK_TITLE)
+  -- 1.5.0 name: "Revenge Book" is longer than "DeathNote"; the title steps down a size before it would reach the
+  -- first tab (tabs start at GF.TAB_X0), measured by the client, so every cover and scale keeps its gap
+  Look.FitText(title, L.BOOK_TITLE, UX.FIT_BOOK_TITLE)
+  F.bookTitle = title
   title:SetShadowOffset(1, -1)
   title:SetShadowColor(C(Look.COLOR.titleShadow))
 
@@ -6726,7 +6731,7 @@ end
 
 -- tooltip lines (own button, compartment, LibDBIcon tooltip, LDB displays); drag = the line about dragging
 local function FillTip(tt, drag)
-  tt:SetText("DeathNote", Look.BONE[1], Look.BONE[2], Look.BONE[3])
+  tt:SetText(ns.TITLE or "DeathNote", Look.BONE[1], Look.BONE[2], Look.BONE[3])
   if ready then
     local w, s, _, o = Counts()
     tt:AddLine(Look.Join(Fmt(L.MM_WANTED, { count = w }), (s + o) > 0 and Fmt(L.MM_UNSOLVED, { count = s + o })), 1, 1, 1)
@@ -6776,7 +6781,7 @@ local function IconLib()
     local okN
     okN, obj = pcall(ldb.NewDataObject, ldb, LDB_NAME, {
       type = "launcher",
-      text = "DeathNote",
+      text = ns.TITLE or "DeathNote",   -- shown by broker displays; the object's name (LDB_NAME) stays
       icon = LDB_ICON,
       OnClick = function(_, mouse) Click(mouse) end,
       OnTooltipShow = function(tt)

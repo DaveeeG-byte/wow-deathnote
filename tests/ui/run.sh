@@ -14,7 +14,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          tests/ui/final_f15_sprachdatei_fehlt_kaputt.lua tests/ui/final_f17_kampf_neue_stellen.lua tests/ui/fix2.lua tests/ui/fix3.lua \
          tests/ui/layout_guard.lua tests/ui/layout_belege.lua tests/ui/layout_kit.lua tests/ui/layout_fixes.lua \
          tests/ui/layout_red_probes.lua tests/ui/tabs_five.lua tests/ui/theme_probe.lua tests/ui/theme_guard.lua tests/ui/notice_first.lua tests/ui/notice_queue.lua tests/ui/namesake_keys.lua tests/ui/humor_cover.lua tests/ui/theme_fallback.lua tests/ui/theme_noslip.lua tests/ui/rapsheet_pardoned.lua tests/ui/alarm_test_rank.lua tests/ui/first_start_hidden_ui.lua tests/ui/theme_sound.lua tests/ui/victim_alarm.lua tests/ui/first_start.lua "$adir"/Start.lua tests/ui/rapsheet.lua tests/ui/rapsheet_off.lua tests/ui/rapsheet_group.lua tests/ui/overview.lua tests/ui/jagd_ui_140.lua tests/ui/fix140_rueckgaengig.lua tests/ui/fix140_meldung.lua \
-         tests/ui/fix140_filter.lua tests/ui/fix140_news.lua tests/ui/fix140_klein.lua \
+         tests/ui/fix140_filter.lua tests/ui/fix140_news.lua tests/ui/fix140_klein.lua tests/ui/name150.lua \
          "$adir"/Grudge.lua "$adir"/GrudgeCard.lua tests/ui/grudge_card.lua \
          "$adir"/Grip.lua "$adir"/Plate.lua tests/ui/grip.lua \
          "$adir"/Share.lua "$adir"/ShareUI.lua tests/ui/share.lua \
@@ -98,6 +98,8 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     luajit tests/ui/fix140_filter.lua . || status=1
     luajit tests/ui/fix140_news.lua . || status=1
     luajit tests/ui/fix140_klein.lua . || status=1
+    # 1.5.0 name: Revenge Book in the book title, the covers, the first-start window, the line after the update
+    luajit tests/ui/name150.lua . || status=1
     # 1.5.0 grip: the nameplate mark, the notice's probable rows and sizes, the House Rules rows in 21 languages
     luajit tests/ui/grip.lua . || status=1
     # 1.5.0 share: the window "Show", the word on the poster, the guest poster, the button on the payback notice

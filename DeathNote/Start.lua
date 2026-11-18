@@ -138,9 +138,13 @@ local function Hint()
   Set(Start.SETTING, "done")
 end
 
--- 1.4.0 fixer: one chat line about what is new in 1.4.0 for those who had the book before (settings.news140, the
--- saved data are per account: once per account); a new installation never gets it. Never in combat.
-Start.NEWS = "news140"
+-- 1.4.0 fixer: one chat line about what is new for those who had the book before, once per account (the saved data
+-- are per account); a new installation never gets it. Never in combat.
+-- 1.5.0 name: the line of 1.5.0 (the new name, what stays, what is new) under settings.news150. It replaces the line of
+-- 1.4.0: whoever has not seen that one yet gets only this one. news140 is set with it, so a 1.4.0 client after a
+-- downgrade does not bring its old line afterwards.
+Start.NEWS = "news150"
+Start.NEWS_OLD = "news140"
 function Start.News()
   local st = Settings()
   if not st or st[Start.NEWS] ~= nil then return end
@@ -150,10 +154,9 @@ function Start.News()
     return
   end
   state.newsWait = false
-  local L2, F2 = ns.L, ns.F
-  Print(F2(L2.CHAT_NEWS_140, { rules = L2.HEAD_RULES, sheet = L2.SHEET_RECORD, guild = L2.TAB_GUILD_FRIENDS,
-    wanted = L2.TAB_WANTED, takeall = L2.ACT_TAKE_ALL }))
+  Print(ns.L.CHAT_NEWS_150)
   Set(Start.NEWS, true)
+  if st[Start.NEWS_OLD] == nil then Set(Start.NEWS_OLD, true) end
 end
 
 local function Try()
@@ -212,8 +215,9 @@ ns:On("READY", function()
   if Start.Fresh() then
     if st[Start.SETTING] ~= "new" then st[Start.SETTING] = "new" end
     state.armed = "dialog"
-    -- a new installation knows 1.4.0 from the start: no news line, now or later
+    -- a new installation knows 1.5.0 from the start: no news line, now or later (the first-start window greets)
     if st[Start.NEWS] == nil then st[Start.NEWS] = true end
+    if st[Start.NEWS_OLD] == nil then st[Start.NEWS_OLD] = true end
   elseif st[Start.SETTING] == nil then
     state.armed = "hint"
   end
