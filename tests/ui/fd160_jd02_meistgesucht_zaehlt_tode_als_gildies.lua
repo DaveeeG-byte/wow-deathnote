@@ -10,10 +10,13 @@ for _, code in ipairs({ "deDE", "enUS" }) do
     { "Liora", "Grimm", "Aschgrau", 9 } })
   W.open(); W.tab("guild"); W.settle()
   W.ns.GuildLogUI.Open("avengers"); W.settle()
-  local bad = W.ns.F(W.ns.L.GLOG_WANTED_N, { count = 3 })
+  -- fixer: the old words are fixed here (the key itself now counts deaths), the count of deaths must be visible
+  local bad = code == "deDE" and "3 Gildies" or "3 guildmates"
+  local good = code == "deDE" and "3 Tode" or "3 deaths"
   local wk = W.ns.GuildLog.Week()
   J.check(code .. ": Woche kennt 3 Tode durch einen Moerder", wk and wk.wanted and wk.wanted[1] and wk.wanted[1].n == 3,
     wk and wk.wanted and wk.wanted[1] and wk.wanted[1].n)
   J.check(code .. ": ein Opfer, drei Tode heisst nicht \"" .. bad .. "\"", not W.visible(bad), bad)
+  J.check(code .. ": rechts steht \"" .. good .. "\"", W.visible(good) ~= nil, good)
 end
 J.done()
