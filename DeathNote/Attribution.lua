@@ -44,6 +44,11 @@ function A.Classify(src, ctx)
   local name = Str(src.name)
   if guid and ctx.myGUID and guid == ctx.myGUID then return nil end
   local out = { amount = tonumber(src.amount) or 0, kb = src.kb and true or false, spell = src.spell }
+  -- 1.6.0 deaths: a row of the world (falling, drowning, fire, ...) is no player and no creature
+  if src.env then
+    out.isPlayer, out.env, out.name = false, src.env, name
+    return out
+  end
   local kind = guidKind(guid)
   local info
   if kind == "Player" then
@@ -71,6 +76,7 @@ function A.Classify(src, ctx)
       if owner then out.ownerKey = Util.KeyFor(owner.name, owner.surname or owner.realm); out.ownerInfo = owner end
     end
     out.name = name
+    out.guid, out.nameSecret = guid, src.nameSecret   -- 1.6.0 deaths: NPC id (Fates.lua), probe.pve
   else
     -- no usable GUID: the name alone is not enough, unless we saw the player
     if src.isPet then
@@ -130,12 +136,22 @@ local function keysExcept(list, skip)
   return out
 end
 
+-- 1.6.0 deaths: what dealt the killing blow when it was no player: { art = "creature"|"pet"|"env"|"unknown", env,
+-- name, guid, spell, nameSecret } (plain values only; Fates.lua keeps it)
+local function causeOf(kb)
+  if type(kb) ~= "table" or kb.isPlayer then return nil end
+  local art = (kb.env and "env") or (kb.isPet and "pet") or (kb.isPlayer == false and "creature") or "unknown"
+  return { art = art, env = kb.env, name = kb.name, guid = kb.guid, spell = kb.spell, nameSecret = kb.nameSecret }
+end
+A.CauseOf = causeOf
+
 -- stages: array of { stage = "recap"|"meter"|"combatlog", ok = bool, sources = { classified... } }
 -- suspects: { targeters = { {key, info}... } (window 6 s), recent = { ... } (window 20 s) }
 -- returns { kind, killerKey, killerInfo, sure, source, others = {keys}, othersInfo = {key->info},
 --           candidates = {keys}, spell }
 function A.Decide(stages, suspects, opts)
   opts = opts or {}
+  local petCause    -- 1.6.0 deaths: a pet without a known owner dealt the killing blow (kept for an unclear end)
   for i = 1, #(stages or {}) do
     local st = stages[i]
     if st.ok and type(st.sources) == "table" and #st.sources > 0 then
@@ -165,11 +181,13 @@ function A.Decide(stages, suspects, opts)
       elseif kb and kb.isPet then
         -- a pet without a known owner: "Pet-" GUIDs belong to players' pets, so this is no
         -- PvE death; this stage cannot name the owner -> next stage / suspects decide
+        petCause = petCause or causeOf(kb)
         res = nil
       elseif kb then
         -- killing blow by a creature / environment / someone we cannot identify
         res.kind = (kb.isPlayer == false) and "pve" or "unknown"
         res.spell = kb.spell
+        res.cause = causeOf(kb)
         res.candidates = keysExcept(players, nil)
         return res
       elseif #players > 0 then
@@ -195,7 +213,7 @@ function A.Decide(stages, suspects, opts)
     end
   end
   -- d) suspects
-  local res = { source = nil, kind = "unknown", others = {}, candidates = {}, othersInfo = {} }
+  local res = { source = nil, kind = "unknown", others = {}, candidates = {}, othersInfo = {}, cause = petCause }
   if opts.suspect == false or not suspects then return res end
   local t = suspects.targeters or {}
   if #t == 1 then
@@ -344,8 +362,13 @@ function A.ReadRecap()
       sig[#sig + 1] = tostring(guid or name or "?") .. ":" .. tostring(amount or "?") .. ":" .. tostring(ts or "?")
       if ts and (not newest or ts > newest) then newest = ts end
       if overkill and overkill > maxOverkill then maxOverkill, kbIdx = overkill, i end
+      -- 1.6.0 deaths: a row of the world (Blizzard's recap: event ENVIRONMENTAL_DAMAGE with environmentalType
+      -- "Falling", "Drowning", ...; unmeasured on Forever, probe.pve), and whether the name was secret
+      local envType = Str(e.environmentalType)
+      local env = (envType or Str(e.event) == "ENVIRONMENTAL_DAMAGE") and ((ns.Fates and ns.Fates.EnvOf(envType)) or "other") or nil
       ev.sources[#ev.sources + 1] = { guid = (not hide) and guid or nil, name = (not hide) and name or nil,
-        amount = amount, spell = spell or spellId, ts = ts, idx = i, hidden = hide }
+        amount = amount, spell = spell or spellId, ts = ts, idx = i, hidden = hide, env = env,
+        nameSecret = IsSecret(e.sourceName) or nil }
     else
       ev.raw[#ev.raw + 1] = "<secret>"
       sig[#sig + 1] = "secret"
@@ -782,6 +805,14 @@ local function finalize(p, result)
     sure = result.sure or false, source = result.source, candidates = result.candidates or {},
     spell = result.spell, counted = counted, candidateInfo = candidateInfo(result),
   }
+  -- 1.6.0 deaths: the cause of a death without a player (Fates.lua takes it from DEATH_RECORDED)
+  -- (an unclear death keeps it in the journal: only the kind, the name and the spell, no GUID)
+  if journal.kind == "pve" and type(result.cause) == "table" then
+    journal.cause = result.cause
+  elseif journal.kind == "unknown" and type(result.cause) == "table" then
+    local c = result.cause
+    journal.cause = { art = c.art, env = c.env, name = c.name, spell = c.spell }
+  end
   if not counted and journal.kind == "pvp" then journal.kind = "unknown" end
   local fired
   if counted then

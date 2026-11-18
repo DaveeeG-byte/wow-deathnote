@@ -357,4 +357,14 @@ return {
   SCENE_LEG_BUNDLE = { max = 32, field = "legend line in the map switch's tooltip (1.5.0 fixer)" },
   CHRON_HEAD = { max = 20, field = "head of the chronicle card (big handwriting, 26 pt)" },
   CHRON_BACK = { max = 19, field = "word at the bottom right of the chronicle: back to the poster" },
+  -- 1.6.0 deaths
+  FATE_VIEW_PLAYERS = { max = 12, field = "view word of the death log, top right, Friz 11, shrinks, tooltip when cut", grow = true },
+  FATE_VIEW_ALL = { max = 12, field = "view word of the death log, top right, Friz 11, shrinks, tooltip when cut", grow = true },
+  FATE_VIEW_CAUSES = { max = 12, field = "view word of the death log, top right, Friz 11, shrinks, tooltip when cut", grow = true },
+  FATE_HEAD = { max = 24, field = "page head of a cause's file, 304 px, Morpheus 26/22/19" },
+  FATE_STAMP = { max = 18, field = "stamp 140x70 px, text area 104 px, two lines, 16/13/11/9 pt as needed" },
+  FATE_ART_CREATURE = { max = 14, field = "row mark (Nimrod 10) and letter-spaced label above the name" },
+  FATE_ART_PET = { max = 14, field = "row mark (Nimrod 10) and letter-spaced label above the name" },
+  FATE_ART_ENV = { max = 14, field = "row mark (Nimrod 10) and letter-spaced label above the name" },
+  FATE_AWARDS = { max = 14, field = "letter-spaced label over the awards for dying, rap sheet" },
 }

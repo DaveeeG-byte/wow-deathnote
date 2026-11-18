@@ -256,6 +256,12 @@ function Probe.Run(verbose, opts)
     local oks, sc = pcall(ns.Scene.ProbeSnapshot)
     if oks and type(sc) == "table" then out.scene = sc end
   end
+  -- 1.6.0 deaths: deaths by creatures and the world (Fates.lua): per kind, name secret or empty, NPC id missing
+  local keepPve = db and type(db.probe) == "table" and type(db.probe.pve) == "table" and db.probe.pve or nil
+  if ns.Fates and ns.Fates.ProbeSnapshot then
+    local okf, fp = pcall(ns.Fates.ProbeSnapshot, keepPve)
+    if okf and type(fp) == "table" then out.pve = fp end
+  end
   if db then
     local keep = db.probe and db.probe.deaths
     db.probe = out
@@ -263,6 +269,7 @@ function Probe.Run(verbose, opts)
     if not out.kills and keepKills then out.kills = keepKills end
     if not out.grudge and keepGrudge then out.grudge = keepGrudge end
     if not out.share and keepShare then out.share = keepShare end
+    if not out.pve and keepPve then out.pve = keepPve end
   end
   if verbose then
     -- 1.2.0: framing words from the language table; the values (codes, numbers) stay technical

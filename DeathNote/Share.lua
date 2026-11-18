@@ -358,6 +358,17 @@ function Share.WeekLine(now)
   local segs = { L.SHARE_WEEK_HEAD,
     w.top and Fmt(L.SHARE_WEEK_TOP, { times = times(w.topN) }) or L.SHARE_WEEK_NONE,
     Fmt(L.SHARE_WEEK_REVENGE, { count = w.revenge }), Fmt(L.SHARE_WEEK_DEBTS, { count = w.debts }) }
+  -- 1.6.0 deaths: the other deaths of the week and the deadliest creature, when there were any (Fates.lua, own data)
+  local F = ns.Fates
+  if F and F.Week then
+    local ok, n, beast, beastN = pcall(F.Week, (now or time()) - Share.WEEK)
+    if ok and type(n) == "number" and n > 0 then
+      w.others, w.beast, w.beastN = n, beast, beastN
+      segs[#segs + 1] = Fmt(L.SHARE_WEEK_OTHERS, { count = n })
+      local name = Share.Clean(beast, Share.NAME_MAX)
+      if name then segs[#segs + 1] = Fmt(L.SHARE_WEEK_BEAST, { name = name, times = times(beastN) }) end
+    end
+  end
   return Share.Build(w.top and display(w.top) or nil, segs), w
 end
 
