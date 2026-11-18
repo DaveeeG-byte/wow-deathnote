@@ -387,11 +387,15 @@ function FU.FillDeath(D, d, nInfo)
     D.note:SetText("")
     -- the date on the right is the latest death by this cause
     if d.t then D.when:SetText(Fmt(L.FATE_LAST, { time = Look.When(d.t) })) end
-    local ww = Look.TextW(D.when)
-    if type(ww) == "number" and not Look.Secret(ww) then
-      h:SetWidth(math.max(140, math.min(FU.HEAD_W, 304 - math.ceil(ww) - 10)))
-      Look.FitText(h, L.FATE_HEAD, FU.FIT_HEAD)
+    local function fit()
+      local ww = Look.TextW(D.when)
+      if type(ww) == "number" and not Look.Secret(ww) then
+        h:SetWidth(math.max(140, math.min(FU.HEAD_W, 304 - math.ceil(ww) - 10)))
+      end
+      return Look.FitText(h, L.FATE_HEAD, FU.FIT_HEAD)
     end
+    -- the head is never cut for the word: without room the date stands alone, as on every other file
+    if not fit() and d.t then D.when:SetText(Look.When(d.t)); fit() end
   else
     D.note:SetText("")
   end
