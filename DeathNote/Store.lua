@@ -82,6 +82,21 @@ local placeholders = 0   -- entries without surname (only a hint; Promote re-che
 
 local function now() return time() end
 
+-- fixer 2 1.6.0 (jb03): the core calls the feud's code (Feud.lua) only through pcall: an error there is reported once per
+-- function and session and never costs a death, a deed, a sighting or the start of the book
+local feudErr = {}
+local function feud(name, ...)
+  local Fe = ns.Feud
+  local fn = Fe and Fe[name]
+  if type(fn) ~= "function" then return end
+  local ok, err = pcall(fn, ...)
+  if not ok and not feudErr[name] then
+    feudErr[name] = true
+    if ns.ReportError then ns.ReportError(err) end
+  end
+end
+Store.CallFeud = feud
+
 -- Missing defaults are filled, values of a broken type (e.g. a string where a number
 -- belongs) are reset to the default. Keys without a default stay untouched.
 local function fillDefaults(dst, src)
@@ -294,7 +309,7 @@ local function sanitizeEntry(key, e)
   if e.adoptSrc ~= nil and e.adoptSrc ~= "guild" and e.adoptSrc ~= "friends" and e.adoptSrc ~= "text" then e.adoptSrc = nil end
   if e.adoptAt ~= nil and type(e.adoptAt) ~= "number" then e.adoptAt = nil end
   -- 1.6.0 feud: the guild of each deed, the guilds of the revenge, the play day of the last deed or sighting, "keep"
-  if ns.Feud and ns.Feud.SanitizeEntry then ns.Feud.SanitizeEntry(e) end
+  feud("SanitizeEntry", e)
   -- 1.2.0: the note of an entry taken over from the guild book is a mark, not a sentence; the
   -- German sentence of 1.1.0 and the English one of the 1.2.0 test builds are recognised and replaced
   if e.fromGuildKills ~= nil and not (type(e.fromGuildKills) == "number" and e.fromGuildKills >= 0
@@ -773,7 +788,7 @@ local function newEntry(key, name, realm)
     kills = 0, assists = 0, suspected = 0, revenge = 0, status = "wanted", manual = false, note = "",
     sightings = 0, deaths = {},
   }
-  if ns.Feud and ns.Feud.Touch then ns.Feud.Touch(e) end
+  feud("Touch", e)
   enemies[key] = e
   indexAdd(key, e)
   return e
@@ -1059,7 +1074,7 @@ function Store.ApplyKill(info, death, sure)
   -- 1.6.0 feud: the guild he wore at this deed (a later change of guild never moves it)
   if rec.guild == nil then rec.guild = plainField(info.guild) end
   if type(rec.guild) ~= "string" then rec.guild = nil end
-  if ns.Feud and ns.Feud.Touch then ns.Feud.Touch(e) end
+  feud("Touch", e)
   local role = VALID_ROLE[death.role] and death.role or roleOf(sure and true or false, death.source)
   rec.role = role
   rec.sure = role == "kill"
@@ -1119,7 +1134,7 @@ function Store.AddAttack(info, rec)
   -- 1.6.0 feud: the guild of the attacker at this attack
   if d.guild == nil then d.guild = plainField(info.guild) end
   if type(d.guild) ~= "string" then d.guild = nil end
-  if ns.Feud and ns.Feud.Touch then ns.Feud.Touch(e) end
+  feud("Touch", e)
   -- the oldest attack deed gives way (never a kill, an assist or a suspicion: capDeeds)
   local pos = #e.deaths + 1
   for i = 1, #e.deaths do if (e.deaths[i].t or 0) <= d.t then pos = i; break end end
@@ -1153,7 +1168,7 @@ function Store.Seen(key, info, where, newEncounter)
   applyInfo(e, info)
   e.lastSeen = where
   if newEncounter then e.sightings = (e.sightings or 0) + 1 end
-  if ns.Feud and ns.Feud.Touch then ns.Feud.Touch(e) end
+  feud("Touch", e)
   -- the rank does not depend on sightings or identity fields: keep the rank cache
   -- 1.6.0 feud: "seen" lets the book bundle the rebuilds of a crowd of sightings (UI.lua)
   ns:Fire("ENEMY_UPDATED", key, "seen")
@@ -1255,7 +1270,7 @@ function Store.AddRevenge(key, byHand)
   e.revenge = e.revenge + 1
   e.lastRevenge = t
   -- 1.6.0 feud: the guild he wore at this revenge (Feud.lua counts the revenge per guild from it)
-  if ns.Feud and ns.Feud.RevengeGuild then ns.Feud.RevengeGuild(e, 1) end
+  feud("RevengeGuild", e, 1)
   changed(key)
   ns:Fire("REVENGE", key)
   return true
@@ -1271,7 +1286,7 @@ function Store.UndoRevenge(key, prevLast)
   if l then table.remove(l) end
   e.revenge = e.revenge - 1
   e.revengeHand = e.revengeHand - 1
-  if ns.Feud and ns.Feud.RevengeGuild then ns.Feud.RevengeGuild(e, -1) end
+  feud("RevengeGuild", e, -1)
   if e.revengeHand <= 0 then e.revengeHand, e.revengeHandAt, l = nil, nil, nil end
   if e.revenge <= (e.revengeHand or 0) then e.revengeAutoAt = nil end
   local last = l and l[#l] or nil

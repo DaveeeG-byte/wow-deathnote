@@ -168,7 +168,10 @@ local function readInfo(unit, r)
   local rawGuild = Call(GetGuildInfo, unit)
   -- 1.6.0 feud: how often the guild of an enemy was readable, empty or secret (probe.feud)
   local Fe = ns.Feud
-  if Fe and Fe.GuildRead then Fe.GuildRead(rawGuild) end
+  -- fixer 2 1.6.0 (jb03): through pcall (Store.CallFeud), an error there never costs the look at the unit
+  if Fe and Fe.GuildRead then
+    if ns.Store and ns.Store.CallFeud then ns.Store.CallFeud("GuildRead", rawGuild) else pcall(Fe.GuildRead, rawGuild) end
+  end
   local guild = Str(rawGuild)
   if guild then r.guild = guild end
   local faction = Str(Call(UnitFactionGroup, unit))

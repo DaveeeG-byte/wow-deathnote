@@ -417,7 +417,15 @@ function A.ReadRecap()
       -- 1.6.0 deaths: a row of the world (Blizzard's recap: event ENVIRONMENTAL_DAMAGE with environmentalType
       -- "Falling", "Drowning", ...; unmeasured on Forever, probe.pve), and whether the name was secret
       local envType = Str(e.environmentalType)
-      local env = (envType or Str(e.event) == "ENVIRONMENTAL_DAMAGE") and ((ns.Fates and ns.Fates.EnvOf(envType)) or "other") or nil
+      -- fixer 2 1.6.0 (jb03): Fates.EnvOf through pcall: an error there costs only the kind of the world, never the recap
+      local env
+      if envType or Str(e.event) == "ENVIRONMENTAL_DAMAGE" then
+        local F = ns.Fates
+        local okE, kind = true, nil
+        if F and type(F.EnvOf) == "function" then okE, kind = pcall(F.EnvOf, envType) end
+        if not okE and not state.envErr then state.envErr = true; if ns.ReportError then ns.ReportError(kind) end end
+        env = (okE and kind) or "other"
+      end
       ev.sources[#ev.sources + 1] = { guid = (not hide) and guid or nil, name = (not hide) and name or nil,
         amount = amount, spell = spell or spellId, ts = ts, idx = i, hidden = hide, env = env,
         nameSecret = IsSecret(e.sourceName) or nil }
@@ -900,6 +908,7 @@ local function finalize(p, result)
     end
   end
   Store.RecordDeath(journal)
+  p.recorded = true
   A.last = { p = p, journal = journal, evidence = p.evidence, suspects = p.suspects, result = result }
   if Store.Setting("debug") and ns.Probe and ns.Probe.RecordDeath then
     ns.Probe.RecordDeath(p, result, journal)
@@ -925,7 +934,8 @@ local function runAttempt(p)
   local ok, err = pcall(attempt, p)
   if ok then return end
   ns.ReportError(err)
-  if pending == p then
+  -- fixer 2 1.6.0 (jb03): also when the evaluation broke inside finalize (pending already let go) before the journal
+  if pending == p or (pending == nil and p.finalizing and not p.recorded) then
     pending = nil
     pcall(finalize, p, { kind = "unknown", candidates = {}, others = {}, othersInfo = {} })
   end
@@ -972,6 +982,7 @@ function attempt(p)
   end
   p.staleRecap = staleRecap
   pending = nil
+  p.finalizing = true
   finalize(p, result)
 end
 
