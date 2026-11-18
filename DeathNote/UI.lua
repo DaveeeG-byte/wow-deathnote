@@ -1383,7 +1383,17 @@ end
 ------------------------------------------------------------------------
 -- build the tooltip content only when shown (not on every rebuild of the list)
 local function DeedEnter(self)
-  if self.tipItem and self.tipFn then Tip(self, self.tipFn(self.tipItem)) end
+  if self.tipItem and self.tipFn then
+    local t = self.tipFn(self.tipItem)
+    -- 1.5.0 scene: a line with a place the map knows says what its click does
+    if self.place and type(t) == "table" then
+      local c = {}
+      for i = 1, #t do c[i] = t[i] end
+      c[#c + 1] = L.SCENE_SHOW
+      t = c
+    end
+    Tip(self, t)
+  end
 end
 
 local function CandEnter(self)
@@ -1768,6 +1778,17 @@ function UX.BuildPoster()
 
   E.fileLabel = Label(E, "")
   E.fileLabel:SetPoint("TOPLEFT", 20, -256)
+  -- 1.5.0 scene: the feud's chronicle, one page of the file: a word below the photo (under "Put on hit list"; the
+  -- right half belongs to the bounty and the stamps)
+  E.chron = WordButton(E, "", "hand", 13)
+  E.chron:SetPoint("TOPLEFT", 20, -214)
+  E.chron:SetSize(112, 18)
+  E.chron.text:SetWidth(112)
+  Look.FitText(E.chron.text, L.CHRON_OPEN, GF.FIT_WORD)
+  Look.TipIfCut(E.chron, E.chron.text)
+  E.chron:SetScript("OnClick", function(self) Look.Sound("click"); if self.key then GF.ShowChron(self.key) end end)
+  E.chron.scenePart = true   -- (tests: a part of 1.5.0)
+  E.chron:Hide()
   Rule(E, -267, 20, 20, 0.45)
   -- deeds as small frames: full text and accomplices in the tooltip. On the right the role ("involved",
   -- "suspect") as a column of its own so it is never cut; the place gets truncated instead.
@@ -1789,6 +1810,7 @@ function UX.BuildPoster()
     b:SetScript("OnEnter", DeedEnter)
     b:SetScript("OnLeave", GameTooltip_Hide)
     Look.TipShows(b, b.text)
+    GF.MakePin(b)   -- 1.5.0 scene
     E.lines[i] = b
   end
 
@@ -1953,6 +1975,14 @@ function UX.BuildPoster()
   D.info:SetWidth(304)
   D.info:SetJustifyH("LEFT")
   D.info:SetSpacing(3)
+  -- 1.5.0 scene: the place (first line of the details) shows on the map
+  D.placeHit = CreateFrame("Button", nil, Ds)
+  D.placeHit:SetPoint("TOPLEFT", D.info, "TOPLEFT", 0, 0)
+  D.placeHit:SetSize(304, 14)
+  D.placeHit:SetScript("OnEnter", function(self) if self.place then Tip(self, { self.placeText or "", L.SCENE_SHOW }) end end)
+  D.placeHit:SetScript("OnLeave", GameTooltip_Hide)
+  D.placeHit:Hide()
+  GF.MakePin(D.placeHit)
   D.killLabel = Look.Text(Ds, "body", 10, Look.RED_INK)
   D.killLabel:SetPoint("TOPLEFT", D.info, "BOTTOMLEFT", 0, -16)
   D.killer = CreateFrame("Button", nil, Ds)
@@ -2114,6 +2144,44 @@ function UX.GuildDeedTip(d)
   return t
 end
 
+-- 1.5.0 scene: a line of the book whose place the map knows (map ID; x/y for the exact spot) gets a small pin in the
+-- margin and shows the place on the map when clicked (SceneMap.Show; without SceneMap the line stays text).
+GF.SCENE_PIN = 12
+GF.SCENE_TEX = { death = "scene_death.tga", kill = "scene_kill.tga", mate = "scene_mate.tga" }
+function GF.PlaceOf(d)
+  if type(d) ~= "table" or not (ns.Scene and ns.Scene.ValidMap(d.mapID)) then return nil end
+  return d
+end
+function GF.ShowPlace(place, ref)
+  if not place then return end
+  Look.Sound("click")
+  if ns.SceneMap and ns.SceneMap.Show then ns.SceneMap.Show(place, ref)
+  elseif ns.Util and ns.Util.Print then ns.Util.Print(L.SCENE_NO_MAP) end
+end
+-- b: a button over the line; place: a table with mapID (or nil: no link); kind: "death", "kill" or "mate"; ref: the
+-- entry behind it (its pin is highlighted)
+-- made once with the button (no new objects while the book is used): the pin texture and the click
+function GF.MakePin(b)
+  b.mapPin = b:CreateTexture(nil, "ARTWORK")
+  b.mapPin:SetSize(GF.SCENE_PIN, GF.SCENE_PIN)
+  b.mapPin:SetPoint("RIGHT", b, "LEFT", -1, 0)
+  b.mapPin:Hide()
+  b.mapPin.scenePart = true   -- (tests: a part of 1.5.0)
+  b:HookScript("OnClick", function(self) if self.place then GF.ShowPlace(self.place, self.placeRef) end end)
+  return b
+end
+function GF.LinkPin(b, place, kind, ref)
+  b.place, b.placeRef = place, ref or place
+  if not b.mapPin then GF.MakePin(b) end
+  if place then
+    local file = Look.MEDIA .. (GF.SCENE_TEX[kind or "death"] or GF.SCENE_TEX.death)
+    if b.mapPin.file ~= file then b.mapPin.file = file; Look.Tex(b.mapPin, file) end
+  end
+  b.mapPin:SetShown(place ~= nil)
+end
+-- the pin of a deed: a guildmate's (victim set) or one of mine
+function GF.DeedKind(d) return type(d) == "table" and d.victim ~= nil and "mate" or "death" end
+
 local function FillLines(E, list, lineFn, tipFn, emptyText)
   local n = #list
   for i = 1, DEATH_LINES do
@@ -2130,6 +2198,7 @@ local function FillLines(E, list, lineFn, tipFn, emptyText)
     end
     b.text:SetText(text)
     b.tag:SetText(tag or "")
+    GF.LinkPin(b, GF.PlaceOf(b.tipItem), GF.DeedKind(b.tipItem))
     -- room for the role on the right by its width; the place before it gets truncated if needed
     local w = tag and math.floor(312 - TextWidth(b.tag, 60) - 10) or 312
     if b.tagged ~= w then
@@ -2315,6 +2384,8 @@ local function FillEnemy(e)
 
   FillLines(E, e.deaths or {}, UX.DeathLine, UX.DeathTip,
             e.status == "suspect" and L.POSTER_ONLY_SUSPECT or L.POSTER_NO_DEEDS)
+  E.chron.key = ns.Chronicle and e.key or nil
+  E.chron:SetShown(E.chron.key ~= nil)
   E.fileLabel:SetText(Spaced(L.POSTER_DEEDS))
 
   E.noteLabel:SetText(Spaced(L.POSTER_NOTE))
@@ -2403,6 +2474,8 @@ UX.scratchPairs = {}
 local function FillGuild(g)
   local E = P.enemy
   E.current = g
+  E.chron.key = nil
+  E.chron:Hide()
   local only = Look.ListedOnly(g)
   local rank = not only and GCall("Rank", g.key, GF.Src()) or nil
   -- 1.4.0 overview: an entry that only friends know is from the friends' book, not the guild book
@@ -2560,6 +2633,8 @@ function UX.HuntTip(x)
 end
 
 function GF.FillHunt(h)
+  P.enemy.chron.key = nil
+  P.enemy.chron:Hide()
   local E = P.enemy
   E.current = h
   E.listHit:Hide()
@@ -2659,6 +2734,9 @@ local function FillDeath(d, index)
     place = place .. (" (%d, %d)"):format(math.floor(d.x + 0.5), math.floor(d.y + 0.5))
   end
   local info = { place }
+  D.placeHit.placeText = place
+  GF.LinkPin(D.placeHit, GF.PlaceOf(d), "death", d)
+  D.placeHit:SetShown(D.placeHit.place ~= nil)
   if d.me then info[#info + 1] = GF.VictimLine(d.me, d.myLevel) end
   if d.spell and d.spell ~= "" then info[#info + 1] = Fmt(L.TIP_CAUSE, { spell = tostring(d.spell) }) end
   if d.counted == false then info[#info + 1] = L.CASE_NOT_COUNTED end
@@ -2961,6 +3039,7 @@ function RS.Line(parent, y)
   b:SetScript("OnEnter", DeedEnter)
   b:SetScript("OnLeave", GameTooltip_Hide)
   Look.TipShows(b, b.text)
+  GF.MakePin(b)   -- 1.5.0 scene
   b:Hide()
   return b
 end
@@ -2972,6 +3051,7 @@ function RS.SetLine(b, text, tag, row, tipFn)
   -- 13 pt, else 11 pt, else cut with the whole line (and more) in the tooltip
   Look.FitText(b.text, text or "", RS.FIT_KILL)
   b.tipItem, b.tipFn = row, tipFn
+  GF.LinkPin(b, GF.PlaceOf(row), "kill", row)   -- 1.5.0 scene
   b:Show()
 end
 function RS.LogTip(row)
@@ -2985,6 +3065,109 @@ function RS.LogTip(row)
   if type(row.zone) == "string" and row.zone ~= "" then t[#t + 1] = Fmt(L.VICTIM_SCENE, { zone = row.zone, time = Look.Ago(row.t) or "?" }) end
   if row.me and row.me ~= Look.Me() then t[#t + 1] = "(" .. Look.First(row.me) .. ")" end
   return t
+end
+
+-- 1.5.0 scene: the scene line of a victim sheet shows his newest kill with a spot on the map (else his zone's map)
+function GF.VictimScene(V, v)
+  local place
+  local log = ns.Ledger and ns.Ledger.Log and ns.Ledger.Log() or {}
+  for i = 1, #log do
+    local row = log[i]
+    if type(row) == "table" and row.key == v.key and ns.Scene and ns.Scene.ValidSpot(row.mapID, row.x, row.y) then place = row; break end
+  end
+  if not place and ns.Scene and ns.Scene.ValidMap(v.mapID) then place = { mapID = v.mapID, zone = v.zone } end
+  local hit = V.sceneHit
+  GF.LinkPin(hit, V.scene:IsShown() and place or nil, "kill", place)
+  hit.tipFn = function() return { V.scene.full or V.scene:GetText() or "", hit.place and L.SCENE_SHOW or nil } end
+end
+
+------------------------------------------------------------------------
+-- 1.5.0 scene: the feud's chronicle (Chronicle.lua), a card of the file in place of the poster; it stays open over
+-- refreshes while its poster is the selected one (state.chron), the foot word goes back to the poster
+------------------------------------------------------------------------
+GF.CHRON_LINES = 24     -- line buttons (Chronicle.lua cuts long feuds to 3 + 1 + 10 lines plus first, avenged, last)
+function GF.BuildChron()
+  local K = RS.Card(P)
+  GF.chron = K
+  Look.FitText(K.head, L.CHRON_HEAD, GF.FIT_NAME26)
+  K.name = Look.Text(K.sheet, "hand", 19, Look.INK)
+  K.name:SetPoint("TOPLEFT", 24, -60)
+  K.name:SetWidth(304)
+  K.name:SetJustifyH("LEFT")
+  K.name:SetWordWrap(false)
+  K.nameHit = CreateFrame("Button", nil, K.sheet)
+  K.nameHit:SetAllPoints(K.name)
+  Look.TipIfCut(K.nameHit, K.name)
+  K.lines = {}
+  for i = 1, GF.CHRON_LINES do
+    local b = CreateFrame("Button", nil, K.sheet)
+    b:SetSize(304, 16)
+    b.text = Look.Text(b, "hand", 13, Look.INK)
+    b.text:SetPoint("TOPLEFT", 0, 0)
+    b.text:SetWidth(304)
+    b.text:SetJustifyH("LEFT")
+    b.text:SetSpacing(1)
+    b:SetScript("OnEnter", function(self)
+      if self.place then self.text:SetTextColor(C(Look.RED)); Tip(self, { L.SCENE_SHOW }) end
+    end)
+    b:SetScript("OnLeave", function(self) self.text:SetTextColor(C(Look.INK, self.tone or TONE.ink)); GameTooltip:Hide() end)
+    GF.MakePin(b)
+    b:Hide()
+    K.lines[i] = b
+  end
+  K.word:SetScript("OnClick", function() Look.Sound("click"); state.chron = nil; ShowRight() end)
+  Look.FitText(K.word.text, L.CHRON_BACK, GF.FIT_STRIKE)
+end
+function GF.FillChron(key)
+  local K = GF.chron
+  local ch = ns.Chronicle and ns.Chronicle.Build(key)
+  if not ch then return false end
+  Look.FitText(K.name, ch.name or "", GF.FIT_NAME26)
+  K.right:SetText("")
+  local y = 92
+  local n = math.min(#ch.lines, GF.CHRON_LINES)
+  for i = 1, GF.CHRON_LINES do
+    local b, line = K.lines[i], ch.lines[i]
+    if i <= n and line then
+      b:ClearAllPoints()
+      b:SetPoint("TOPLEFT", 24, -y)
+      b.text:SetText(line.text or "")
+      -- the last line (standing now) and the cut stand apart in a paler ink
+      b.tone = (line.more or line.last) and TONE.sub or TONE.ink
+      b.text:SetTextColor(C(Look.INK, b.tone))
+      local h = math.max(16, math.ceil(Look.TextH(b.text, 2)))
+      b:SetHeight(h)
+      GF.LinkPin(b, GF.PlaceOf(line.place), "death", line.place)
+      b:Show()
+      y = y + h + (line.last and 0 or 4)
+      if i == 1 or (ch.lines[i + 1] and ch.lines[i + 1].last) then y = y + 6 end
+    else
+      b:Hide()
+    end
+  end
+  K.page:Layout(math.ceil(y + 6 - 54))
+  if K.ref ~= key then K.ref = key; K.page:Top() end
+  return true
+end
+function GF.ShowChron(key)
+  if not GF.chron then GF.BuildChron() end
+  state.chron = key
+  ShowRight()
+end
+-- after the right page was filled: the chronicle instead of the selected poster, else closed
+function GF.ChronAfter()
+  local K = GF.chron
+  if not K then return end
+  local E = P.enemy
+  local cur = E:IsShown() and type(E.current) == "table" and E.current.key or nil
+  if state.chron and cur == state.chron and E.chron:IsShown() and GF.FillChron(state.chron) then
+    E:Hide()
+    PosterMode(true)
+    K:Show()
+  else
+    state.chron = nil
+    K:Hide()
+  end
 end
 
 function RS.Build()
@@ -3103,6 +3286,7 @@ function RS.Build()
     local fs = V[k]
     V[k .. "Hit"] = RS.Hit(VS, fs, function() return { fs.full or fs:GetText() } end)
   end
+  GF.MakePin(V.sceneHit)   -- 1.5.0 scene
   V.label = Label(VS, L.VICTIM_KILLS_LABEL)
   V.rule = VS:CreateTexture(nil, "ARTWORK")
   V.rule:SetHeight(1)
@@ -3339,6 +3523,7 @@ function RS.FillVictim(v)
   y = y + 6
   y = RS.Put(V.sum, y, Look.Join(Fmt(L.VICTIM_KILLED, { times = Look.Times(v.n) }), Fmt(L.VICTIM_POINTS, { points = tonumber(v.pts) or 0 })))
   y = RS.Put(V.scene, y, (type(v.zone) == "string" and v.zone ~= "") and Fmt(L.VICTIM_SCENE, { zone = v.zone, time = Look.Ago(v.last) or "?" }) or nil)
+  GF.VictimScene(V, v)
   y = RS.Put(V.seen, y, e and (RS.LastSeen(e)) or nil)
   y = y + 12
   V.label:ClearAllPoints()
@@ -3505,6 +3690,9 @@ ShowRight = function()
     P.enemy:Show()
   end
 end
+-- 1.5.0 scene: the chronicle stays open over refreshes while its poster is the selected one
+GF.ShowRightBase = ShowRight
+ShowRight = function() GF.ShowRightBase(); GF.ChronAfter() end
 
 ------------------------------------------------------------------------
 -- Book size: never larger than the screen, never smaller than readable
@@ -3599,6 +3787,7 @@ GF.FRIEND_SHARE = {
   { "share",       "OPT_F_SHARE" },
   { "friends",     "OPT_F_FRIENDS" },
   { "sightings",   "OPT_F_SIGHTINGS" },
+  { "sendPlace",   "OPT_G_SENDPLACE" },   -- 1.5.0 scene: the spot of my death goes with it (message L)
 }
 GF.FRIEND_WARN = {
   { "alert",       "OPT_F_ALERT" },
@@ -3607,6 +3796,11 @@ GF.FRIEND_WARN = {
 GF.MORE_SHARE = {
   { "shareManual", "OPT_G_SHAREMANUAL" },
   { "receive",     "OPT_G_RECEIVE" },
+}
+-- 1.5.0 scene: section MAP on sheet Book (crime scenes on the world map; period as a row below; the rest of the
+-- filter, only open debts and which kinds, is in the map's own switch, SceneMap.lua)
+GF.SCENE_OPTIONS = {
+  { "scene.on", "OPT_SCENE", true },
 }
 GF.MORE_WARN = {
   { "alertListed", "OPT_G_ALERTLISTED" },
@@ -3911,6 +4105,13 @@ BuildSettings = function()
   imp:SetPoint("LEFT", exp, "RIGHT", 8, 0)
   S.ioButtons = { exp, imp }
   A.bottom = -(y - 4) + 22
+  -- 1.5.0 scene: section MAP
+  if ns.Scene then
+    y = section(A, y - 4 - 22 - 4, L.SET_SEC_MAP)
+    y = checks(A, GF.SCENE_OPTIONS, nil, y)
+    S.sdays = Stepper(A, y, L.SET_SCENE_DAYS, function(d) ns.Scene.StepDays(d) end, 110)
+    A.bottom = -(y - OPT_H) + 2
+  end
   hint(A, L.SET_HINT_BOOK)
 
   -- sheet 2: alarm with sound, volume and channel
@@ -4477,6 +4678,7 @@ function UI.FillSettings()
   S.mk:SetValue(tostring(Look.Setting("alert.minKills", 1) or 1))
   S.size:SetValue(Percent(ClampScale(tonumber(Look.Setting("ui.scale", 1)) or 1)))
   S.asize:SetValue(Percent(Look.Setting("alert.scale", 1)))
+  if S.sdays and ns.Scene then S.sdays:SetValue(ns.Scene.DaysWord(ns.Scene.Setting("days"))) end   -- 1.5.0 scene
   if S.gsec then S.gsec:SetValue(Fmt(L.SET_SECONDS, { seconds = tonumber(Look.Setting("grudge.seconds", 20)) or 20 })) end
   S.gmk:SetValue(tostring(Look.GuildSetting("minKills") or 1))
   local days = tonumber(Look.GuildSetting("huntExpire")) or 0
@@ -6347,6 +6549,25 @@ function UI.ShowCase(d)
   if state.panel then UI.ClosePanel(true) end
   Refresh()
   ScrollTo(function(x) return x == d end)
+end
+
+-- 1.5.0 scene: the poster of a killer in Guild & Friends (a pin of a mate's death on the map)
+function UI.ShowGuildEnemy(key, src)
+  if not ready or not HasGuild() or type(key) ~= "string" then return end
+  UI.Open()
+  UI.ClearSearch()
+  HideMenu()
+  state.filter, state.gview, state.gselected = "guild", "enemy", key
+  if GF.HasFriends() and not GCall("Get", key, GF.Src()) then
+    state.gsource = "all"
+    Set("ui.guildSource", "all")
+    mv.dirty = true
+    gpart.src = nil
+  end
+  state.offset = 0
+  if state.panel then UI.ClosePanel(true) end
+  Refresh()
+  ScrollTo(function(x) return x.key == key end)
 end
 
 -- open the hit list (/dn jagd without a name, after posting a call)
