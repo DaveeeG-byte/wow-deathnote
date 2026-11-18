@@ -127,6 +127,7 @@ function GL.Sanitize(g, t)
       if e.m == nil then e.x, e.y = nil, nil end
       if e.n ~= nil and not (num(e.n) and e.n >= 1) then e.n = nil end
       if e.t0 ~= nil and not num(e.t0) then e.t0 = nil end
+      if e.gn ~= nil and not plain(e.gn) then e.gn = nil end
       ring[#ring + 1] = e
     end
   end
@@ -145,6 +146,9 @@ end
 ---------------------------------------------------------------------------
 local function guildName()
   local Gd = ns.Guild
+  -- fixer 2 1.6.0 (jb04): only while this char is in a guild (the stored name may be another char's guild)
+  local Bg = Gd and Gd.Bridge
+  if Bg and Bg.inGuild and not Bg.inGuild() then return nil end
   local d = Gd and Gd.DB and Gd.DB()
   local name = type(d) == "table" and d.name or nil
   return plain(name) and name or nil
@@ -320,13 +324,16 @@ function GL.Add(kind, data)
   end
   if num(data.g) then e.g = math.floor(data.g) end
   if data.src == "friends" or data.src == "guild" then e.src = data.src end
+  -- fixer 2 1.6.0 (jb04): an event of the guild belongs to the guild of the char that heard it (gn); another char in
+  -- another guild or without one does not see it. Friends' events stay the account's (the friends' book is).
+  if e.src ~= "friends" then e.gn = guildName() end
   if num(data.mapID) and num(data.x) and num(data.y) then e.m, e.x, e.y = math.floor(data.mapID), data.x, data.y end
   local ring = g.ring
   if num(data.merge) and e.key then
     for i = 1, #ring do
       local x = ring[i]
       local first = num(x.t0) and x.t0 or x.t
-      if x.k == e.k and x.key == e.key and x.src == e.src and t >= first and t - first < data.merge then
+      if x.k == e.k and x.key == e.key and x.src == e.src and x.gn == e.gn and t >= first and t - first < data.merge then
         if t >= x.t then
           x.t, x.by, x.zone, x.m, x.x, x.y = t, e.by, e.zone, e.m, e.x, e.y
           if e.name then x.name = e.name end
@@ -343,7 +350,7 @@ function GL.Add(kind, data)
   end
   for i = 1, #ring do
     local x = ring[i]
-    if x.k == e.k and x.key == e.key and x.by == e.by and x.victim == e.victim and math.abs(x.t - t) < GL.SAME then
+    if x.k == e.k and x.key == e.key and x.by == e.by and x.victim == e.victim and x.gn == e.gn and math.abs(x.t - t) < GL.SAME then
       return false
     end
   end
@@ -391,6 +398,22 @@ end
 -- src, mine }. Built only when looked at, cached until something changes (bump).
 -- fixer 2 1.6.0 (je02): with `since`, a scan instead: only the events newer than since - SAME become rows (the rest is
 -- a comparison), no names, no victims, no sort; what the dot and the ribbon count is the same as in the full list.
+-- fixer 2 1.6.0 (jb04): an event of the ring is shown to a char of its guild (friends' events to every char)
+local function ringVisible(e, gn)
+  if e.src == "friends" then return true end
+  return gn ~= nil and e.gn == gn
+end
+-- events of the guild from before the stamp: the guild of the first char in a guild that loads them
+local function stampRing(g, gn)
+  if not (g and gn) then return false end
+  local n = 0
+  for _, e in ipairs(g.ring) do
+    if e.src ~= "friends" and e.gn == nil then e.gn = gn; n = n + 1 end
+  end
+  return n > 0
+end
+GL.StampRing = stampRing
+
 local function ringRow(e, names)
   return { k = e.k, t = e.t, key = e.key, name = e.name or (e.key and (names[e.key] or displayOf(nil, e.key))),
     by = e.by, victim = e.victim, zone = e.zone, g = e.g, src = e.src or "guild", ring = true,
@@ -502,10 +525,11 @@ local function build(src, since)
   end
   -- the ring: what the books no longer keep, and other packages' events
   local g = db()
+  local gn = guildName()
   for _, e in ipairs(g and g.ring or {}) do
     -- the ring is sorted newest first (GL.Sanitize, GL.Add): a scan stops at the first old one
     if lim and sortedRing == g.ring and not (num(e.t) and e.t > lim) then break end
-    if src == "all" or (e.src or "guild") == src then
+    if (src == "all" or (e.src or "guild") == src) and ringVisible(e, gn) then
       local x = ringRow(e, names)
       if x.k ~= "death" or not x.mine or (list[1] and list[1].share) then
         if add(x) then rowOf[e] = x end
@@ -592,7 +616,7 @@ patchRing = function(e, moved, gone)
           c.seen[id], c.rowOf[x] = nil, nil
         end
         local function into(x)
-          if not (src == "all" or (x.src or "guild") == src) then return end
+          if not (src == "all" or (x.src or "guild") == src) or not ringVisible(x, guildName()) then return end
           local row = ringRow(x, c.names)
           local id = rowId(row)
           if c.seen[id] or c.dup[id] then good = false; return end
@@ -614,8 +638,9 @@ patchRing = function(e, moved, gone)
     for w, m in pairs(marks) do
       if m.ver == old then
         local d = 0
-        for _, x in ipairs(gone or {}) do if counts(ringRow(x, {}), m.since) then d = d - 1 end end
-        if e and not moved and counts(ringRow(e, {}), m.since) then d = d + 1 end
+        local gn = guildName()
+        for _, x in ipairs(gone or {}) do if ringVisible(x, gn) and counts(ringRow(x, {}), m.since) then d = d - 1 end end
+        if e and not moved and ringVisible(e, gn) and counts(ringRow(e, {}), m.since) then d = d + 1 end
         m.n, m.ver = m.n + d, ver
       end
     end
@@ -972,13 +997,19 @@ ns:On("READY", function()
   local g = db()
   if not g then return end
   GL.Sanitize(g, now())
+  stampRing(g, guildName())
   -- a first start sees no dot for the whole past
   if not g.seenTab then g.seenTab = now() end
   if not g.seenFeed then g.seenFeed = now() end
   bump()
 end)
 -- 1.6.0 fix: a mere sighting (lastSeen, Sync.lua's reason "seen") is nothing the chronicle shows: the cache stays
-ns:On("GUILD_UPDATED", function(reason) if reason ~= "seen" then bump() end end)
+ns:On("GUILD_UPDATED", function(reason)
+  if reason ~= "seen" then
+    stampRing(db(), guildName())   -- the guild's name came later than READY
+    bump()
+  end
+end)
 ns:On("AVENGED", bump)
 -- a target of the hit list taken down: kept in the ring (the hit list forgets it with the call-off)
 ns:On("HUNT_BAGGED", function(key, char, t, src)

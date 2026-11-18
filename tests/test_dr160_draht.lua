@@ -48,7 +48,7 @@ H.lauf("Hilferuf der Gilde: eine Zeile in der Chronik mit eigenem Satz und Ort a
 end)
 
 H.lauf("Hilferuf mit Angreifer: Satz nennt ihn, Klick-Schlüssel ist der Angreifer", function()
-  local ns = M.Load()
+  local ns = M.Load({ before = function() M.units.player.guild = G end })   -- fixer 2 (jb04): guild events need a guild
   local GL = ns.GuildLog
   local t = time()
   ns:Fire("HELP_CALL", { t = t, at = t, by = "Liora", from = "guild", mapID = 1434, x = 10, y = 20, key = "Grimm-Bart",
@@ -66,7 +66,7 @@ H.lauf("Hilferuf mit Angreifer: Satz nennt ihn, Klick-Schlüssel ist der Angreif
 end)
 
 H.lauf("Hilferuf aus der Gruppe: nur von einem Gildenkollegen", function()
-  local ns = M.Load()
+  local ns = M.Load({ before = function() M.units.player.guild = G end })
   local GL = ns.GuildLog
   local t = time()
   ns.Guild.IsGuildmate = function(n) return n == "Kollege Eins" end
@@ -95,7 +95,7 @@ H.lauf("Sichtung: eigene Zeile mit Ort, leise (kein Punkt am Reiter)", function(
 end)
 
 H.lauf("Sichtungen desselben Feindes binnen 10 Minuten: eine Zeile mit Zahl, danach eine neue", function()
-  local ns = M.Load()
+  local ns = M.Load({ before = function() M.units.player.guild = G end })
   local GL = ns.GuildLog
   local t = time()
   local function sight(dt, by, key)
@@ -129,7 +129,7 @@ H.lauf("Sichtungen desselben Feindes binnen 10 Minuten: eine Zeile mit Zahl, dan
 end)
 
 H.lauf("Ring: Deckel 200 auch bei vielen Sichtungen, kaputte Felder repariert", function()
-  local ns = M.Load()
+  local ns = M.Load({ before = function() M.units.player.guild = G end })
   local GL = ns.GuildLog
   local t = time()
   for i = 1, 260 do
