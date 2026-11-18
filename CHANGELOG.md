@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.0
+
+<!-- guildlog -->
+### Added
+- **Guild chronicle:** in the guild tab a red ribbon on the book's fold opens two pages over the book. The left page tells what happened to the guild, newest first and by day: "Liora was killed by Grimwald Ashbrand, Stranglethorn Vale, 3 min ago", "Bertram took Grimwald Ashbrand down and avenged Liora", bounties, releases for the hit list, targets taken off it. A click on a line opens the killer's poster (your book, else the guild's or friends', else a guest poster), the pin in the margin opens the place on the map. Built only from what the guild and friends already share; nothing new goes over the wire.
+- **Who has the book:** guildmates heard with Revenge Book, their version (an older one is marked) and when they were last heard, and "12 of 48 online have the book" (without the game's guild roster just the number). Only who sent something himself is listed; there is no list of those without it. Remembered for 30 days, at most 500. "Recommend to the guild" writes one plain line into the guild chat on your click, at most once in 30 minutes (the button shows the wait).
+- **Avengers of the week:** who took the most killers of the guild down in the last 7 days (revenge and hit list), your own row with your rank; the most wanted of the week (who killed the most guildmates).
+- **Week card:** a sheet to show ("The Rusty Nails, week of …: 9 deaths, 2 avenged, most wanted, avenger of the week") with "Post" (one line into the guild chat, on your click) and "Copy for Discord".
+- A small red dot on the guild tab when something happened in the guild since you last looked there (no sound, no window); the ribbon counts what is new since the chronicle was last open.
+- Your own deaths appear only while "Share deaths with the guild" is on.
+- `/dn probe` writes `probe.glog`: book holders heard, chronicle events per kind, whether the guild roster was readable.
+
 ## 1.5.0 (2026-11-18)
 
 ### Changed
