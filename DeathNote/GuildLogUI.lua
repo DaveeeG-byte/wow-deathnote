@@ -31,7 +31,7 @@ GLUI.FIT_TAB = { sizes = { 11, 10 } }
 GLUI.FIT_ONE = { sizes = { 11, 10 } }
 GLUI.FIT_TWO = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
 -- design fix 1.6.0: the sentence in the running font (Nimrod, like the files), 8 between two entries, the time apart
-GLUI.FIT_LINE = { sizes = { 12, 11 }, lines = 2, wrapFirst = true }
+GLUI.FIT_LINE = { sizes = { 13, 11 }, lines = 2, wrapFirst = true }
 GLUI.GAP = 8
 GLUI.TIME_ALPHA = 0.7
 GLUI.FIT_BIG = { sizes = { 16, 14, 13 }, lines = 2, wrapFirst = true }
@@ -216,7 +216,7 @@ local function BuildLeft(LP)
   for i = 1, GLUI.LINES do
     local b = CreateFrame("Button", nil, p)
     b:SetSize(GLUI.LINE_W, 16)
-    b.text = Text(b, "type", 12)
+    b.text = Text(b, "type", 13)
     b.text:SetPoint("TOPLEFT", 0, 0)
     b.text:SetWidth(GLUI.LINE_W)
     b.text:SetSpacing(1)

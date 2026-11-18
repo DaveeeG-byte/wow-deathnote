@@ -268,7 +268,7 @@ end
 FD.SHEET_W, FD.BTN_W = 352, 150
 FD.FIT_HEAD = { sizes = { 26, 22, 19, 16 } }
 FD.FIT_BIG = { sizes = { 22, 19, 16 }, lines = 2, wrapFirst = true }
-FD.FIT_SMALL = { sizes = { 12, 11 }, lines = 3, wrapFirst = true }
+FD.FIT_SMALL = { sizes = { 13, 11 }, lines = 3, wrapFirst = true }
 FD.FIT_TINY = { sizes = { 11, 10 }, lines = 4, wrapFirst = true }
 local function SheetOf()
   local k = kit()
@@ -297,7 +297,7 @@ local function SheetOf()
   S.big:SetPoint("TOPLEFT", 24, -66)
   S.big:SetWidth(304)
   S.big:SetJustifyH("LEFT")
-  S.small = Look.Text(S, "type", 12, Look.INK)
+  S.small = Look.Text(S, "type", 13, Look.INK)
   S.small:SetPoint("TOPLEFT", S.big, "BOTTOMLEFT", 0, -8)
   S.small:SetWidth(304)
   S.small:SetJustifyH("LEFT")
