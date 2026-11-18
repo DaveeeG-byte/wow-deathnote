@@ -351,7 +351,7 @@ test("Zwei Clients tauschen H/R/K aus und haben danach dieselbe Gildenliste", fu
   eq(select(1, a.ns.Guild.Count()), 2)
   -- members with the addon
   local mem = a.ns.Guild.Members()
-  eq(#mem, 1); eq(mem[1].name, "Berta"); eq(mem[1].version, "1.0.0")
+  eq(#mem, 1); eq(mem[1].name, "Berta"); eq(mem[1].version, M.TocVersion())  -- 1.6.0 wiring: the mock answers with the TOC version
   -- no GUILD_KILL for history
   for _, ev in ipairs(a.events) do no(ev[1] == "GUILD_KILL", "kein GUILD_KILL beim Nachladen") end
   -- a live kill: Berta dies now, Anton sees it at once

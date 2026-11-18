@@ -9,6 +9,18 @@
 
 local M = {}
 local ADDON_DIR = (arg and arg[0] and arg[0]:match("^(.*)/tests/") or ".") .. "/DeathNote/"
+
+-- "## Version:" of DeathNote.toc (what the game's GetAddOnMetadata returns), read once
+local tocVersion
+function M.TocVersion()
+  if tocVersion == nil then
+    local h = io.open(ADDON_DIR .. "DeathNote.toc", "rb")
+    local src = h and h:read("*a") or ""
+    if h then h:close() end
+    tocVersion = src:match("\n##%s*Version:%s*([%w%.%-]+)") or src:match("^##%s*Version:%s*([%w%.%-]+)") or false
+  end
+  return tocVersion or nil
+end
 M.ADDON_DIR = ADDON_DIR
 -- 1.2.0: the language scaffold loads first (Locale.lua, English, German). Without a choice the addon
 -- runs in the client's language (English when DeathNote lacks it); the tests choose explicitly: M.locale
@@ -229,7 +241,10 @@ function M.InstallGlobals()
     if type(name) ~= "string" then return name end
     return (name:gsub("%-Forever$", ""))
   end
-  G.C_AddOns = { GetAddOnMetadata = function(_, field) if field == "Version" then return "1.0.0" end end }
+  -- 1.6.0 wiring: the version comes from the TOC like in the game (only for the addon's own folder name)
+  G.C_AddOns = { GetAddOnMetadata = function(addon, field)
+    if addon == "DeathNote" and field == "Version" then return M.TocVersion() end
+  end }
   G.C_ChatInfo = {
     RegisterAddonMessagePrefix = function(p)
       if type(p) ~= "string" or #p > 16 then return 2 end

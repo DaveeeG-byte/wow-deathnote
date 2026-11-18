@@ -1185,4 +1185,10 @@ L.OPT_BOOK_EXPIRE = "Arkistoi vanhat epäilyt"
 L.SET_SEC_ORDER = "JÄRJESTYS"
 L.OPTIONS_LINE = "Muistaa, kuka tappoi sinut, ja varoittaa, kun hän on lähellä. Kaikki asetukset ovat kirjan Talon säännöissä."
 L.OPTIONS_OPEN = "Avaa Talon säännöt"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} pyysi apua: {zone}"
+L.GLOG_EV_CALL_BY = "{by} pyysi apua: {zone}, hyökkääjä {name}"
+L.GLOG_EV_SIGHT = "{by} näki pelaajan {name}: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} nähty {count}×, viimeksi näki {by}: {zone}"
+L.CHAT_NEWS_160 = "Uutta 1.6.0:ssa: {log}-välilehti tallentaa nyt kaikki kuolemasi, myös olentojen ja ympäristön aiheuttamat. Killan kronikka on punaisen nauhan takana {guild}-välilehdellä; avunpyyntö kutsuu killan ja ystävät luoksesi (näppäin: Esc > Options > Key Bindings > Revenge Book). Havainnot tappajistasi menevät nyt killalle ja ystäville ({rules}, {sheet}: {switch})."
 end)

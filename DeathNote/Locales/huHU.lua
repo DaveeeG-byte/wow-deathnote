@@ -1193,4 +1193,10 @@ L.OPT_BOOK_EXPIRE = "Régi gyanúk archiválása"
 L.SET_SEC_ORDER = "REND"
 L.OPTIONS_LINE = "Megjegyzi, ki ölt meg, és figyelmeztet, ha a közelben van. Minden beállítás a könyv Házirendjében van."
 L.OPTIONS_OPEN = "Házirend megnyitása"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} segítséget kért: {zone}"
+L.GLOG_EV_CALL_BY = "{by} segítséget kért: {zone}, támadó {name}"
+L.GLOG_EV_SIGHT = "{by} látta {name} játékost: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} {count}× látták, utoljára {by}: {zone}"
+L.CHAT_NEWS_160 = "Új az 1.6.0-ban: a(z) {log} fül most minden halálodat megőrzi, a lények és a környezet okozta halált is. A céhkrónika a(z) {guild} fül piros szalagja mögött van; a segélykérés hozzád hívja a céhet és a barátokat (billentyű: Esc > Options > Key Bindings > Revenge Book). Gyilkosaid észlelése most a céhhez és a barátokhoz megy ({rules}, {sheet}: {switch})."
 end)

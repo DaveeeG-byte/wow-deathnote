@@ -1179,4 +1179,10 @@ L.OPT_BOOK_EXPIRE = "Alte Verdachtsfälle ablegen"
 L.SET_SEC_ORDER = "ORDNUNG"
 L.OPTIONS_LINE = "Merkt sich, wer dich getötet hat, und warnt, wenn er in der Nähe ist. Alle Einstellungen stehen in der Hausordnung des Buchs."
 L.OPTIONS_OPEN = "Hausordnung öffnen"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} rief um Hilfe: {zone}"
+L.GLOG_EV_CALL_BY = "{by} rief um Hilfe: {zone}, Angreifer {name}"
+L.GLOG_EV_SIGHT = "{by} hat {name} gesehen: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} {count}× gesehen, zuletzt von {by}: {zone}"
+L.CHAT_NEWS_160 = "Neu in 1.6.0: Im Reiter {log} stehen jetzt alle Tode, auch durch Kreaturen und Umwelt. Die Gildenchronik liegt hinter dem roten Bändchen im Reiter {guild}; der Hilferuf holt Gilde und Freunde zu dir (Taste belegen: Esc > Optionen > Tastaturbelegung > Revenge Book). Sichtungen deiner Mörder gehen jetzt an Gilde und Freunde ({rules}, {sheet}: {switch})."
 end)

@@ -1192,4 +1192,10 @@ L.OPT_BOOK_EXPIRE = "오래된 의심 보관하기"
 L.SET_SEC_ORDER = "정리"
 L.OPTIONS_LINE = "너를 죽인 자를 기억하고 가까이 오면 알려 준다. 모든 설정은 수첩의 규칙에 있다."
 L.OPTIONS_OPEN = "규칙 열기"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by}님의 도움 요청: {zone}"
+L.GLOG_EV_CALL_BY = "{by}님의 도움 요청: {zone}, 공격자 {name}"
+L.GLOG_EV_SIGHT = "{by}님이 {name} 목격: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} {count}회 목격, 마지막 {by}: {zone}"
+L.CHAT_NEWS_160 = "1.6.0 새 기능: {log} 탭에 이제 생물과 환경에 의한 죽음까지 모두 기록된다. 길드 연대기는 {guild} 탭의 빨간 리본 뒤에 있다. 도움 요청은 길드와 친구를 부른다 (단축키: Esc > 설정 > 단축키 > Revenge Book). 너를 죽인 자의 목격 정보가 이제 길드와 친구에게 간다 ({rules}, {sheet}: {switch})."
 end)

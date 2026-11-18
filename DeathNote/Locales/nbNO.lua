@@ -1184,4 +1184,10 @@ L.OPT_BOOK_EXPIRE = "Arkiver gamle mistanker"
 L.SET_SEC_ORDER = "ORDEN"
 L.OPTIONS_LINE = "Husker hvem som drepte deg og varsler når de er i nærheten. Alle innstillinger står i bokas Husregler."
 L.OPTIONS_OPEN = "Åpne Husreglene"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} ropte om hjelp: {zone}"
+L.GLOG_EV_CALL_BY = "{by} ropte om hjelp: {zone}, angriper {name}"
+L.GLOG_EV_SIGHT = "{by} så {name}: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} sett {count}×, sist av {by}: {zone}"
+L.CHAT_NEWS_160 = "Nytt i 1.6.0: fanen {log} tar nå vare på alle dødsfall, også fra skapninger og omgivelser. Laugets krønike ligger bak det røde båndet i fanen {guild}; et rop om hjelp kaller laug og venner til deg (tast: Esc > Options > Key Bindings > Revenge Book). Observasjoner av drapsmennene dine går nå til laug og venner ({rules}, {sheet}: {switch})."
 end)

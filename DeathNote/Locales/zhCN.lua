@@ -1192,4 +1192,10 @@ L.OPT_BOOK_EXPIRE = "归档旧嫌疑"
 L.SET_SEC_ORDER = "整理"
 L.OPTIONS_LINE = "记住谁杀了你，并在他们靠近时提醒你。所有设置都在记仇本的规矩里。"
 L.OPTIONS_OPEN = "打开规矩"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} 求援：{zone}"
+L.GLOG_EV_CALL_BY = "{by} 求援：{zone}，攻击者 {name}"
+L.GLOG_EV_SIGHT = "{by} 看到了 {name}：{zone}"
+L.GLOG_EV_SIGHT_N = "{name} 被看到 {count} 次，最后是 {by}：{zone}"
+L.CHAT_NEWS_160 = "1.6.0 新功能：{log} 现在记录你的所有死亡，包括生物和环境造成的。公会编年史在 {guild} 标签的红色书签后面；求援会召唤公会和好友（按键：Esc > 选项 > 按键设置 > Revenge Book）。你的仇人被看到时，现在会通知公会和好友（{rules}，{sheet}：{switch}）。"
 end)

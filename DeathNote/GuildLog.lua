@@ -39,6 +39,8 @@ GL.ROSTER_MAX = 1000
 GL.FIELD_MAX = 64
 GL.SAME = 120               -- one kill reported as V and as E counts once (Sync's BAG_DEDUPE)
 GL.VICTIMS_SHOWN = 1        -- names of avenged victims in a sentence, the rest is "and n more"
+GL.SIGHT_MERGE = 600        -- sightings of the same enemy within this many seconds of the line's first are one line
+GL.SIGHT_COUNT_MAX = 999
 
 local function G(n) return _G[n] end   -- (the client's globals; a test client's environment reads through)
 local function num(v) return type(v) == "number" and not IsSecret(v) and v == v and v > -math.huge and v < math.huge end
@@ -112,7 +114,14 @@ function GL.Sanitize(g, t)
   if type(g.ring) ~= "table" then g.ring = {} end
   local ring = {}
   for _, e in ipairs(g.ring) do
-    if type(e) == "table" and plain(e.k, 16) and num(e.t) and e.t <= t + 300 then ring[#ring + 1] = e end
+    if type(e) == "table" and plain(e.k, 16) and num(e.t) and e.t <= t + 300 then
+      -- the place and the count of a merged line (1.6.0 call, sightings): broken fields out
+      if e.m ~= nil and not (num(e.m) and num(e.x) and num(e.y)) then e.m, e.x, e.y = nil, nil, nil end
+      if e.m == nil then e.x, e.y = nil, nil end
+      if e.n ~= nil and not (num(e.n) and e.n >= 1) then e.n = nil end
+      if e.t0 ~= nil and not num(e.t0) then e.t0 = nil end
+      ring[#ring + 1] = e
+    end
   end
   table.sort(ring, function(a, b) return a.t > b.t end)
   while #ring > GL.RING_MAX do table.remove(ring) end
@@ -269,7 +278,9 @@ end
 -- Events
 ---------------------------------------------------------------------------
 -- An event of another package (1.6.0 call: sightings, calls for help) or of this one: kind is a short word, data
--- { t, key, name, by, victim, zone, src }. Kept in the ring (RING_MAX, the oldest go). true when taken.
+-- { t, key, name, by, victim, zone, src, mapID, x, y, merge }. Kept in the ring (RING_MAX, the oldest go). true when
+-- taken. mapID, x, y (percent) make the place a link to the map. merge = seconds: an event of the same kind and key
+-- within that many seconds of the first of an earlier line makes that line newer and counts it (n) instead.
 function GL.Add(kind, data)
   if not plain(kind, 16) or type(data) ~= "table" then return false end
   local g = db()
@@ -281,7 +292,26 @@ function GL.Add(kind, data)
   end
   if num(data.g) then e.g = math.floor(data.g) end
   if data.src == "friends" or data.src == "guild" then e.src = data.src end
+  if num(data.mapID) and num(data.x) and num(data.y) then e.m, e.x, e.y = math.floor(data.mapID), data.x, data.y end
   local ring = g.ring
+  if num(data.merge) and e.key then
+    for i = 1, #ring do
+      local x = ring[i]
+      local first = num(x.t0) and x.t0 or x.t
+      if x.k == e.k and x.key == e.key and x.src == e.src and t >= first and t - first < data.merge then
+        if t >= x.t then
+          x.t, x.by, x.zone, x.m, x.x, x.y = t, e.by, e.zone, e.m, e.x, e.y
+          if e.name then x.name = e.name end
+        end
+        x.t0 = first
+        x.n = math.min(GL.SIGHT_COUNT_MAX, (num(x.n) and x.n or 1) + 1)
+        table.sort(ring, function(a, b) return a.t > b.t end)
+        bump()
+        ns:Fire("GUILDLOG_UPDATED", kind)
+        return true
+      end
+    end
+  end
   for i = 1, #ring do
     local x = ring[i]
     if x.k == e.k and x.key == e.key and x.by == e.by and x.victim == e.victim and math.abs(x.t - t) < GL.SAME then
@@ -414,7 +444,8 @@ local function build(src)
     if src == "all" or (e.src or "guild") == src then
       local x = { k = e.k, t = e.t, key = e.key, name = e.name or (e.key and (names[e.key] or displayOf(nil, e.key))),
         by = e.by, victim = e.victim, zone = e.zone, g = e.g, src = e.src or "guild", ring = true,
-        mine = isMine(e.by or e.victim) }
+        mine = isMine(e.by or e.victim), n = e.n, quiet = GL.QUIET[e.k],
+        place = num(e.m) and { mapID = e.m, x = e.x, y = e.y } or nil }
       if x.k ~= "death" or not x.mine or (list[1] and list[1].share) then add(x) end
     end
   end
@@ -489,7 +520,7 @@ function GL.NewSince(since, src)
   local n = 0
   for _, e in ipairs(GL.All(src)) do
     if e.t <= since then break end
-    if not e.mine then n = n + 1 end
+    if not e.mine and not e.quiet then n = n + 1 end
   end
   return n
 end
@@ -516,6 +547,10 @@ local function victimsText(vs)
   return Fmt(L.GLOG_VICTIMS_MORE, { name = nm(vs[1]), count = #vs - 1 })
 end
 
+-- 1.6.0 call: kinds whose sentence names the zone itself, and kinds that light no dot on the tab (quiet)
+GL.ZONE_IN_SENTENCE = { call = true, sight = true }
+GL.QUIET = { sight = true }
+
 -- the sentence of one event (without time and place)
 function GL.Sentence(e)
   if type(e) ~= "table" then return "" end
@@ -540,6 +575,16 @@ function GL.Sentence(e)
       or Fmt(L.GLOG_EV_BOUNTY, { by = by, name = name, gold = gold })
   elseif e.k == "release" then
     return me and Fmt(L.GLOG_EV_RELEASE_ME, { name = name }) or Fmt(L.GLOG_EV_RELEASE, { by = by, name = name })
+  elseif e.k == "call" then
+    -- 1.6.0: a call for help (the zone stands in the sentence, the attacker when the caller had one)
+    local zone = e.zone or L.CALL_SOMEWHERE
+    if e.name then return Fmt(L.GLOG_EV_CALL_BY, { by = by, zone = zone, name = name }) end
+    return Fmt(L.GLOG_EV_CALL, { by = by, zone = zone })
+  elseif e.k == "sight" then
+    -- 1.6.0: a sighting of a killer; sightings of him within SIGHT_MERGE are one line with the count
+    local zone = e.zone or L.CALL_SOMEWHERE
+    if num(e.n) and e.n > 1 then return Fmt(L.GLOG_EV_SIGHT_N, { by = by, name = name, zone = zone, count = e.n }) end
+    return Fmt(L.GLOG_EV_SIGHT, { by = by, name = name, zone = zone })
   end
   -- a kind of another package without words of its own here
   return Fmt(L.GLOG_EV_OTHER, { by = e.by and by or "?", name = name })
@@ -549,7 +594,7 @@ end
 function GL.Line(e)
   local s = GL.Sentence(e)
   local ago = Util.Ago and Util.Ago(e.t) or ""
-  if e.zone then return Fmt(L.GLOG_LINE_PLACE, { text = s, place = e.zone, time = ago }) end
+  if e.zone and not GL.ZONE_IN_SENTENCE[e.k] then return Fmt(L.GLOG_LINE_PLACE, { text = s, place = e.zone, time = ago }) end
   return Fmt(L.GLOG_LINE, { text = s, time = ago })
 end
 
@@ -765,6 +810,30 @@ ns:On("HUNT_BAGGED", function(key, char, t, src)
   GL.Add("bag", { key = key, by = char, t = t, src = src == "friends" and "friends" or "guild",
     name = h and displayOf(h, key) or nil })
 end)
+-- 1.6.0 call: a call for help and a sighting of a killer go into the chronicle (only from guild and friends; a call of
+-- the group only when the caller is a guildmate). Sightings of the same enemy within SIGHT_MERGE are one line.
+function GL.OnHelpCall(rec)
+  if type(rec) ~= "table" then return false end
+  local src = rec.from == "guild" and "guild" or rec.from == "friend" and "friends" or nil
+  if rec.from == "group" then
+    local Gd = ns.Guild
+    local ok, mate = pcall(function() return Gd and Gd.IsGuildmate and Gd.IsGuildmate(rec.by) end)
+    if ok and mate == true then src = "guild" end
+  end
+  if not src then return false end
+  return GL.Add("call", { t = rec.t, key = rec.key, name = rec.display, by = rec.by, zone = rec.zone, src = src,
+    mapID = rec.mapID, x = rec.x, y = rec.y })
+end
+function GL.OnSighting(rec)
+  if type(rec) ~= "table" or type(rec.key) ~= "string" then return false end
+  local src = rec.src == "friends" and "friends" or rec.src == "guild" and "guild" or nil
+  if not src then return false end
+  return GL.Add("sight", { t = rec.t, key = rec.key, name = rec.name, by = rec.by, zone = rec.zone, src = src,
+    mapID = rec.mapID, x = rec.x, y = rec.y, merge = GL.SIGHT_MERGE })
+end
+ns:On("HELP_CALL", function(rec) GL.OnHelpCall(rec) end)
+ns:On("SIGHTING", function(rec) GL.OnSighting(rec) end)
+
 ns:On("SETTINGS_CHANGED", function(path)
   if type(path) == "string" and (path:find("^guild%.") or path == "ledger.enabled") then bump() end
 end)

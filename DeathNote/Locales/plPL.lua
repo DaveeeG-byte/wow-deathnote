@@ -1191,4 +1191,10 @@ L.OPT_BOOK_EXPIRE = "Archiwizuj stare podejrzenia"
 L.SET_SEC_ORDER = "PORZĄDEK"
 L.OPTIONS_LINE = "Pamięta, kto cię zabił, i ostrzega, gdy jest w pobliżu. Wszystkie ustawienia są w Regulaminie księgi."
 L.OPTIONS_OPEN = "Otwórz Regulamin"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} wzywał(a) pomocy: {zone}"
+L.GLOG_EV_CALL_BY = "{by} wzywał(a) pomocy: {zone}, napastnik {name}"
+L.GLOG_EV_SIGHT = "{by} widział(a) {name}: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} widziany {count}×, ostatnio przez {by}: {zone}"
+L.CHAT_NEWS_160 = "Nowość w 1.6.0: karta {log} zapisuje teraz wszystkie twoje zgony, także przez stwory i otoczenie. Kronika gildii jest za czerwoną wstążką w karcie {guild}; wezwanie pomocy ściąga gildię i znajomych (klawisz: Esc > Options > Key Bindings > Revenge Book). Zauważenia twoich zabójców trafiają teraz do gildii i znajomych ({rules}, {sheet}: {switch})."
 end)

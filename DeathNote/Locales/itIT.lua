@@ -1178,4 +1178,10 @@ L.OPT_BOOK_EXPIRE = "Archivia i vecchi sospetti"
 L.SET_SEC_ORDER = "ORDINE"
 L.OPTIONS_LINE = "Ricorda chi ti ha ucciso e ti avvisa quando è nei paraggi. Tutte le impostazioni sono nel Regolamento del libro."
 L.OPTIONS_OPEN = "Apri il Regolamento"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} ha chiesto aiuto: {zone}"
+L.GLOG_EV_CALL_BY = "{by} ha chiesto aiuto: {zone}, aggressore {name}"
+L.GLOG_EV_SIGHT = "{by} ha visto {name}: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} visto {count}×, l'ultima da {by}: {zone}"
+L.CHAT_NEWS_160 = "Novità 1.6.0: la scheda {log} tiene ora tutte le tue morti, anche per creature e ambiente. La cronaca della gilda è dietro il nastro rosso nella scheda {guild}; la richiesta d'aiuto chiama gilda e amici (tasto: Esc > Opzioni > Assegnazione tasti > Revenge Book). Gli avvistamenti dei tuoi assassini vanno ora a gilda e amici ({rules}, {sheet}: {switch})."
 end)

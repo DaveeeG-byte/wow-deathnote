@@ -1191,4 +1191,10 @@ L.OPT_BOOK_EXPIRE = "Arhiviraj stare sumnje"
 L.SET_SEC_ORDER = "RED"
 L.OPTIONS_LINE = "Pamti tko te ubio i upozorava kad je blizu. Sve postavke su u Kućnom redu knjige."
 L.OPTIONS_OPEN = "Otvori Kućni red"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} je zvao/la u pomoć: {zone}"
+L.GLOG_EV_CALL_BY = "{by} je zvao/la u pomoć: {zone}, napadač {name}"
+L.GLOG_EV_SIGHT = "{by} je vidio/la {name}: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} viđen {count}×, zadnji ga je vidio/la {by}: {zone}"
+L.CHAT_NEWS_160 = "Novo u 1.6.0: kartica {log} sada bilježi sve tvoje smrti, i od stvorenja i okoline. Kronika ceha je iza crvene vrpce na kartici {guild}; poziv u pomoć zove ceh i prijatelje k tebi (tipka: Esc > Options > Key Bindings > Revenge Book). Viđenja tvojih ubojica sada idu cehu i prijateljima ({rules}, {sheet}: {switch})."
 end)

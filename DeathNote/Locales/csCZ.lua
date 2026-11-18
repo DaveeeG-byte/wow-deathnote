@@ -1191,4 +1191,10 @@ L.OPT_BOOK_EXPIRE = "Archivovat stará podezření"
 L.SET_SEC_ORDER = "POŘÁDEK"
 L.OPTIONS_LINE = "Pamatuje si, kdo tě zabil, a varuje, když je nablízku. Všechna nastavení jsou v Řádu knihy."
 L.OPTIONS_OPEN = "Otevřít Řád"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} volal(a) o pomoc: {zone}"
+L.GLOG_EV_CALL_BY = "{by} volal(a) o pomoc: {zone}, útočník {name}"
+L.GLOG_EV_SIGHT = "{by} viděl(a) {name}: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} viděn {count}×, naposledy hráčem {by}: {zone}"
+L.CHAT_NEWS_160 = "Novinka 1.6.0: karta {log} teď zapisuje všechny tvé smrti, i od tvorů a prostředí. Kronika guildy je za červenou stužkou v kartě {guild}; volání o pomoc přivolá guildu a přátele (klávesa: Esc > Options > Key Bindings > Revenge Book). Spatření tvých vrahů teď jdou guildě a přátelům ({rules}, {sheet}: {switch})."
 end)

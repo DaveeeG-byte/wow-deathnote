@@ -1179,4 +1179,10 @@ L.OPT_BOOK_EXPIRE = "Arquivar suspeitas antigas"
 L.SET_SEC_ORDER = "ORDEM"
 L.OPTIONS_LINE = "Lembra quem matou você e avisa quando essa pessoa está por perto. Todos os ajustes estão nas Regras do livro."
 L.OPTIONS_OPEN = "Abrir as Regras"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} pediu ajuda: {zone}"
+L.GLOG_EV_CALL_BY = "{by} pediu ajuda: {zone}, agressor {name}"
+L.GLOG_EV_SIGHT = "{by} viu {name}: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} visto {count}×, por último por {by}: {zone}"
+L.CHAT_NEWS_160 = "Novo na 1.6.0: a aba {log} guarda agora todas as suas mortes, também por criaturas e ambiente. A crônica da guilda fica atrás da fita vermelha na aba {guild}; o pedido de ajuda chama guilda e amigos (tecla: Esc > Opções > Atalhos > Revenge Book). Avistamentos dos seus assassinos vão agora para guilda e amigos ({rules}, {sheet}: {switch})."
 end)

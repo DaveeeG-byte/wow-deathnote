@@ -1184,4 +1184,10 @@ L.OPT_BOOK_EXPIRE = "Oude verdenkingen archiveren"
 L.SET_SEC_ORDER = "ORDE"
 L.OPTIONS_LINE = "Onthoudt wie je doodde en waarschuwt als die in de buurt is. Alle instellingen staan in de Huisregels van het boek."
 L.OPTIONS_OPEN = "Huisregels openen"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} riep om hulp: {zone}"
+L.GLOG_EV_CALL_BY = "{by} riep om hulp: {zone}, aanvaller {name}"
+L.GLOG_EV_SIGHT = "{by} zag {name}: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} {count}× gezien, laatst door {by}: {zone}"
+L.CHAT_NEWS_160 = "Nieuw in 1.6.0: het tabblad {log} houdt nu al je doden bij, ook door wezens en omgeving. De gildekroniek zit achter het rode lint in het tabblad {guild}; een hulproep haalt gilde en vrienden naar je toe (toets: Esc > Options > Key Bindings > Revenge Book). Waarnemingen van je moordenaars gaan nu naar gilde en vrienden ({rules}, {sheet}: {switch})."
 end)

@@ -1184,4 +1184,10 @@ L.OPT_BOOK_EXPIRE = "Arkivera gamla misstankar"
 L.SET_SEC_ORDER = "ORDNING"
 L.OPTIONS_LINE = "Minns vem som dödade dig och varnar när de är nära. Alla inställningar finns i bokens Husregler."
 L.OPTIONS_OPEN = "Öppna Husreglerna"
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} ropade på hjälp: {zone}"
+L.GLOG_EV_CALL_BY = "{by} ropade på hjälp: {zone}, angripare {name}"
+L.GLOG_EV_SIGHT = "{by} såg {name}: {zone}"
+L.GLOG_EV_SIGHT_N = "{name} sedd {count}×, senast av {by}: {zone}"
+L.CHAT_NEWS_160 = "Nytt i 1.6.0: fliken {log} sparar nu alla dina dödsfall, även genom varelser och omgivning. Gillets krönika ligger bakom det röda bandet i fliken {guild}; ett rop på hjälp kallar gille och vänner till dig (tangent: Esc > Options > Key Bindings > Revenge Book). Iakttagelser av dina mördare går nu till gille och vänner ({rules}, {sheet}: {switch})."
 end)

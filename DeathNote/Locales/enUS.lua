@@ -1199,4 +1199,10 @@ L.OPT_BOOK_EXPIRE = "File away old suspicions"  -- check box, House Rules, sheet
 L.SET_SEC_ORDER = "ORDER"  -- section label on the House Rules, sheet Book (capitals like the other sections)
 L.OPTIONS_LINE = "Remembers who killed you and warns you when they come near. All settings are in the book's House Rules."  -- the addon's page in the game's options (Esc > Options > AddOns): one line
 L.OPTIONS_OPEN = "Open House Rules"  -- button on that page: opens the book on the House Rules
+-- 1.6.0 wiring
+L.GLOG_EV_CALL = "{by} called for help: {zone}"  -- guild chronicle line: a guildmate or friend called for help; {by} = who called, {zone} = the zone (a link to the map in the margin)
+L.GLOG_EV_CALL_BY = "{by} called for help: {zone}, attacker {name}"  -- as GLOG_EV_CALL with the attacker the caller named; {name} = the attacker
+L.GLOG_EV_SIGHT = "{by} saw {name}: {zone}"  -- guild chronicle line: a guildmate or friend saw one of the killers; {by} = who saw him, {name} = the killer, {zone} = the zone
+L.GLOG_EV_SIGHT_N = "{name} seen {count}×, last by {by}: {zone}"  -- sightings of the same killer within 10 minutes are one line: {count} = how often, {by} = who saw him last
+L.CHAT_NEWS_160 = "New in 1.6.0: the {log} tab keeps every death now, also by creatures and the world. The guild chronicle is behind the red ribbon in the {guild} tab; a call for help brings guild and friends to you (set a key: Esc > Options > Key Bindings > Revenge Book). Sightings of your killers now go to guild and friends ({rules}, {sheet}: {switch})."  -- chat, once per account after the update to 1.6.0 for players who had the book before: every death in the Death Log, the guild chronicle behind the red ribbon, the call for help (key bindings menu, the client's own words), sightings of your killers go to guild and friends now and where the switch is; {log}, {guild} = tab words, {rules} = House Rules, {sheet} = the sheet Guild, {switch} = the check box
 end)
