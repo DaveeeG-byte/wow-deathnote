@@ -973,7 +973,7 @@ L.CHRON_END = "Stand: {score} · {state}"
 L.CHRON_END_NONE = "Bisher: {name} hat dich {times} getötet."
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  dasselbe wie /dn"
-L.CHAT_NEWS_150 = "DeathNote heißt jetzt Revenge Book. Dein Buch und /dn bleiben. Neu in 1.5.0: Plakat im Chat aushängen, Tatorte auf der Weltkarte, Tastenkürzel, Marke an der Namensplakette deiner Täter."
+L.CHAT_NEWS_150 = "DeathNote heißt jetzt Revenge Book. Dein Buch und /dn bleiben. Neu in 1.5.0: Aushängen (oben rechts am Plakat) bringt es in den Chat; ein Klick auf einen Ort im Buch zeigt den Tatort auf der Weltkarte; Chronik neben TATEN; Tasten unter Esc > Optionen > Tastaturbelegung; Marke an der Namensplakette deiner Täter (Hausordnung, Register)."
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Hier bist du gestorben; Verdacht: {name}"
 L.CHRON_EARLIER = "Frühere Taten stehen nicht mehr im Buch."
@@ -985,4 +985,11 @@ L.SCENE_LEG_KILL = "dein Kill"  -- [max 32]
 L.SCENE_LEG_BUNDLE = "mehrere Tatorte"  -- [max 32]
 L.SET_HINT_FRIENDS_POST = "Teilen und Warnen nur mit Gilde und Freunden mit Revenge Book. Ein Aushang ist für alle im Chat."
 L.SET_HINT_GUILD_POST = "Teilen und Warnen nur mit der eigenen Gilde. Was von dort kommt, bleibt getrennt von deinem Buch, bis du es selbst übernimmst. Ein Aushang ist für alle im Chat."
+L.PLATE_TIP_WANTED = "Rote Nadel mit Stand „du : er“: gesucht"
+L.PLATE_TIP_GRUDGE = "Graue Nadel: hat dich nur angegriffen"
+L.PLATE_TIP_HUNT = "Fadenkreuz: auf der Abschussliste"
+L.CHRON_OPEN_TIP = "Klick: die Fehde als Geschichte lesen"
+L.GRIP_KEYS_WHERE = "Tasten: Esc > Optionen > Tastaturbelegung > {title}"
+L.GRIP_KEY_HINT = "Tipp: Für dein Ziel geht das mit einer Taste. Belegen: Esc > Optionen > Tastaturbelegung > {title}."
+L.GRIP_KEY_HAVE = "Tipp: Für dein Ziel geht das auch mit deiner Taste {key}."
 end)

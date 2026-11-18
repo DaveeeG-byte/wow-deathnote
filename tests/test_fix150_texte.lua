@@ -2,7 +2,7 @@
 -- U10: the word that puts a line into the chat is not the word that shows a place on the map (deDE "Aushängen",
 -- enUS "Post"; the switch, the section, the status and the guest card use the same verb; the window's head stays).
 -- U11: one word for one thing. U14: the translators' notes say where a word stands.
--- U15: the foot of the sheet Guild.
+-- U15: the foot of the sheet Guild. U9 (a) README, (b) the line after the update names the places.
 local ROOT = (arg and arg[0] and arg[0]:match("^(.*)/tests/")) or "."
 local DIR = ROOT .. "/DeathNote/"
 local pass, fail = 0, 0
@@ -42,7 +42,7 @@ for _, c in ipairs(order) do
   check(c .. " Schalter nennt das Wort", T.OPT_SHARE_REVENGE:find(T.ACT_SHARE, 1, true) ~= nil, T.OPT_SHARE_REVENGE)
 end
 -- the line after the update names the same thing with the same word
-check("deDE Neuigkeit: aushängen", de.CHAT_NEWS_150:find("aushängen", 1, true) ~= nil, de.CHAT_NEWS_150)
+check("deDE Neuigkeit: aushängen", lower(de.CHAT_NEWS_150):find("aushängen", 1, true) ~= nil, de.CHAT_NEWS_150)
 check("enUS Neuigkeit: post", en.CHAT_NEWS_150:find("post a poster", 1, true) ~= nil or en.CHAT_NEWS_150:find("Post", 1, true) ~= nil,
   en.CHAT_NEWS_150)
 
@@ -74,6 +74,28 @@ for _, c in ipairs(order) do
   check(c .. " beide Fusszeilen", type(T.SET_HINT_FRIENDS_POST) == "string" and type(T.SET_HINT_GUILD_POST) == "string"
     and T.SET_HINT_FRIENDS_POST ~= T.SET_HINT_GUILD_POST and T.SET_HINT_FRIENDS_POST:find("Revenge Book", 1, true) ~= nil)
   check(c .. " alte Fusszeilen weg", T.SET_HINT_FRIENDS == nil and T.SET_HINT_GUILD == nil)
+end
+
+-- U9 (a) README: sections for posting, the map, the chronicle, the keys and the nameplate mark
+local README = read(ROOT .. "/README.md")
+for _, h in ipairs({ "## Post in the chat (1.5.0)", "## Keys and the nameplate mark (1.5.0)", "## Crime scenes and chronicle (1.5.0)" }) do
+  check("README Abschnitt " .. h, README:find("\n" .. h .. "\n", 1, true) ~= nil)
+end
+for _, w in ipairs({ "Esc > Options > Key Bindings", "grey thumbtack with a light", "Chronicle\" next to DEEDS", "legend of the" }) do
+  check("README nennt: " .. w, README:find(w, 1, true) ~= nil)
+end
+-- U9 (b) the line after the update says where the things are, with the words the book shows (21 languages)
+for _, c in ipairs(order) do
+  local T = Raw(c)
+  local s = T.CHAT_NEWS_150 or ""
+  for _, k in ipairs({ "ACT_SHARE", "POSTER_DEEDS", "CHRON_HEAD", "HEAD_RULES", "SHEET_RECORD" }) do
+    check(c .. " Neuigkeit nennt " .. k, s:find(T[k], 1, true) ~= nil, T[k])
+  end
+  check(c .. " Neuigkeit nennt die Tasten", s:find("Esc > ", 1, true) ~= nil or s:find("Échap > ", 1, true) ~= nil)
+  -- (c) and (e): the tooltip lines and the hint exist with their placeholders
+  check(c .. " Tasten-Ort mit {title}", (T.GRIP_KEYS_WHERE or ""):find("{title}", 1, true) and (T.GRIP_KEY_HINT or ""):find("{title}", 1, true))
+  check(c .. " Taste mit {key}", (T.GRIP_KEY_HAVE or ""):find("{key}", 1, true) ~= nil)
+  check(c .. " drei Marken, Chronik-Tooltip", T.PLATE_TIP_WANTED and T.PLATE_TIP_GRUDGE and T.PLATE_TIP_HUNT and T.CHRON_OPEN_TIP)
 end
 
 print(("fix150 texte        %d ok, %d rot"):format(pass, fail))

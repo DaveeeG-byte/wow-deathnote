@@ -406,6 +406,25 @@ local function Tip(owner, lines, anchor)
   GameTooltip:Show()
 end
 
+-- 1.5.0 fixer: the chronicle's word on the poster as a link (red ink, underline under the word, tooltip)
+function GF.ChronLink(b)
+  b.text:SetTextColor(C(Look.RED_INK))
+  b.ul = b.ul or b:CreateTexture(nil, "ARTWORK")
+  b.ul:SetColorTexture(C(Look.RED_INK, 0.6))
+  b.ul:SetHeight(1)
+  b.ul:ClearAllPoints()
+  b.ul:SetPoint("TOPLEFT", b.text, "BOTTOMLEFT", 0, -1)
+  b.ul:SetWidth(math.max(8, math.min(b:GetWidth(), math.ceil(Look.TextW(b.text) or 40))))
+  b:SetScript("OnEnter", function(self)
+    self.text:SetTextColor(C(Look.RED))
+    Tip(self, { L.CHRON_HEAD, L.CHRON_OPEN_TIP })
+  end)
+  b:SetScript("OnLeave", function(self)
+    self.text:SetTextColor(C(Look.RED_INK))
+    if GameTooltip then GameTooltip:Hide() end
+  end)
+end
+
 -- 1.5.0 share: the building blocks for the window "Show" and the guest poster (ShareUI.lua)
 UI.Kit = { InkButton = InkButton, WordButton = WordButton, WordTab = WordTab, Label = Label, Rule = Rule,
            Shadow = UX.Shadow, Tip = Tip }
@@ -1808,7 +1827,8 @@ function UX.BuildPoster()
   E.chron:SetSize(cw, 18)
   E.chron.text:SetWidth(cw)
   Look.FitText(E.chron.text, L.CHRON_OPEN, GF.FIT_WORD)
-  Look.TipIfCut(E.chron, E.chron.text)
+  -- 1.5.0 fixer: a link, plainly: red ink, underlined, a tooltip says what the click does
+  GF.ChronLink(E.chron)
   E.chron:SetScript("OnClick", function(self) Look.Sound("click"); if self.key then GF.ShowChron(self.key) end end)
   E.chron.scenePart = true   -- (tests: a part of 1.5.0)
   E.chron:Hide()

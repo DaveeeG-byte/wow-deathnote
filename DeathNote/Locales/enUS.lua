@@ -993,7 +993,7 @@ L.CHRON_END = "Now: {score} · {state}"  -- chronicle, last line; {score} = '1 :
 L.CHRON_END_NONE = "So far: {name} killed you {times}."  -- chronicle, last line while the rap sheet is off; {name} = his first name, {times} = '3×'
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  the same as /dn"  -- /dn help line: the two new commands of 1.5.0
-L.CHAT_NEWS_150 = "DeathNote is now Revenge Book. Your book and /dn stay. New in 1.5.0: post a poster in the chat, crime scenes on the world map, key bindings, a mark on your killers' nameplates."  -- chat, once per account after the update to 1.5.0 for players who had the book before: the new name, what stays and what is new (show in chat, crime scenes on the map, key bindings, the nameplate mark); the old name DeathNote and Revenge Book stay in English
+L.CHAT_NEWS_150 = "DeathNote is now Revenge Book. Your book and /dn stay. New in 1.5.0: Post (top right of a poster) puts it in the chat; a click on a place in the book shows the crime scene on the world map; Chronicle next to DEEDS; keys under Esc > Options > Key Bindings; a mark on your killers' nameplates (House Rules, Rap Sheet)."  -- chat, once per account after the update to 1.5.0 for players who had the book before: the new name, what stays, what is new and where it is (Post at the top right of the poster, a place in the book shows the map, the chronicle next to DEEDS, the key bindings menu, the nameplate mark on the House Rules sheet Rap Sheet); the old name DeathNote and Revenge Book stay in English; words as the book shows them
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Here you died; suspicion: {name}"  -- map pin tooltip, your death without a sure killing blow (the book holds a suspicion); {name} = full name in class colour; never say he killed you
 L.CHRON_EARLIER = "Earlier deeds are no longer in the book."  -- chronicle, second line of a long feud whose oldest deeds the book no longer keeps (it keeps 30 per enemy); the last line still gives the full standing
@@ -1005,4 +1005,11 @@ L.SCENE_LEG_KILL = "your kill"  -- [max 32] legend in the tooltip of the map's s
 L.SCENE_LEG_BUNDLE = "several crime scenes"  -- [max 32] legend in the tooltip of the map's switch: the number badge on a pin = several crime scenes close together
 L.SET_HINT_FRIENDS_POST = "Sharing and alerts go only to guild and friends with Revenge Book. A post is for everyone in the chat."  -- hint at the bottom of the sheet Guild with friends: sharing and alerts go only to addon users; a post (ACT_SHARE) is read by everyone in the chat
 L.SET_HINT_GUILD_POST = "Sharing and alerts go only to your own guild. What comes from there stays apart from your book until you take it over yourself. A post is for everyone in the chat."  -- hint at the bottom of the sheet Guild without friends, wraps; same rule as SET_HINT_FRIENDS_POST
+L.PLATE_TIP_WANTED = "Red pin with the score 'you : them': wanted"  -- nameplate stepper tooltip (House Rules, Rap Sheet): the red thumbtack with the standing 'you : them' (your kills on him : his on you) = wanted
+L.PLATE_TIP_GRUDGE = "Grey pin: only attacked you"  -- same tooltip: the grey thumbtack = he only attacked you (grudge, no kill)
+L.PLATE_TIP_HUNT = "Crosshair: on the hit list"  -- same tooltip: the crosshair stamp = on the hit list
+L.CHRON_OPEN_TIP = "Click: the feud told as a story"  -- tooltip of the word CHRON_OPEN on the poster (head: CHRON_HEAD): what its click opens
+L.GRIP_KEYS_WHERE = "Keys: Esc > Options > Key Bindings > {title}"  -- last line of the nameplate stepper tooltip: where the key bindings are set; the client's own menu words ({title} = the addon's title); languages without a client of their own keep the English menu words
+L.GRIP_KEY_HINT = "Tip: a key does this with your target. Set it: Esc > Options > Key Bindings > {title}."  -- chat, once per account after a typed '/dn add <name>' while no key is set for BIND_ADD: such a key exists and where to set it
+L.GRIP_KEY_HAVE = "Tip: your key {key} does this with your target."  -- chat, once per account after a typed '/dn add <name>' when a key is set for BIND_ADD; {key} = that key as the game writes it
 end)

@@ -112,11 +112,38 @@ versions read such a text without error). What the client really delivers is unm
 open questions on their own: `UNIT_COMBAT` on you arrived, your health, "in combat" and "has you targeted" readable or
 secret, a secret name; with `/dn debug` the last five episodes).
 
+## Post in the chat (1.5.0)
+The word "Post" at the top right of a poster (own book, guild and friends' book, hit list) and in the row menu opens a
+small window "Show in the chat": the line as it goes out and the channels that work right now (guild, party or raid or
+instance group, say). One click sends one plain line in the plain words of your language, never the words of your
+cover, e.g. `[Revenge Book: Grimwald Ashbrand] WANTED · Score 2 : 5 · 131g bounty · last seen Stranglethorn Vale`.
+Anybody can read it; at most one line every 10 seconds, never in combat or while the game locks the chat. With the
+addon the name in such a line is a link: your own poster of him, else the guild's or friends' one, else a guest poster
+that shows only what the line says ("posted by Bertram"); its head follows the kind of the line (wanted, pardoned,
+payback), "Copy to my book" only for a line about somebody wanted. A week line opens a plain card "Bertram's week". Tabs of the
+window: the line, "My week" (who killed you most this week, payback taken, open debts) and "Discord" (a few lines
+marked for Ctrl+C). The payback notice carries a "Post" button when the switch on the House Rules, sheet Guild,
+section POST is on (off by default). Never posted: attacks, suspicion, notes, anything read in or copied from someone
+else's book, names of guildmates or friends.
+
+## Keys and the nameplate mark (1.5.0)
+Key bindings: Esc > Options > Key Bindings, section Revenge Book (no keys set by default): open or close the book,
+target into the book (like `/dn add`, with class, level and guild of the target), target onto the hit list, alarm off
+and on. After the first `/dn add` typed by hand the chat says once that a key does this for the target (and which one,
+when it is set).
+The mark over a nameplate (House Rules, sheet Rap Sheet, section NAMEPLATES: off, small, medium, large; the label's
+tooltip explains the marks): a red thumbtack with the score "you : them" for the wanted, a grey thumbtack with a light
+rim for those who only attacked you, a crosshair stamp for the hit list. Open world only.
+
 ## Crime scenes and chronicle (1.5.0)
 Crime scenes on the world map: own pins on the map's canvas (no embedded library). A red pin with a skull is a place
 where you died, a black pin with crossed blades a place where you took one of your book down (revenge says so in the
-tooltip), a light pin in a quiet colour (guild green, friends blue) a place where a guildmate or friend died. Close
-places are one pin with a count; at most 40 pins per map (the newest). A pin's tooltip says who killed whom ("Here
+tooltip), a light pin in a quiet colour (guild green, friends blue) a place where a guildmate or friend died. Guildmates'
+pins carry a small shield, friends' pins a small heart, so they differ in shape and not only in colour. Places closer
+than a pin's width on the map as it is shown are one pin with a count (bundled anew when the map's scale changes); its
+picture is the scene that comes first in its list, a click opens the list to pick one. At most 40 pins per map (the
+newest). A death without a sure killing blow says suspicion ("Here you died; suspicion: Grimwald Ashbrand"), never
+"killed you". A pin's tooltip says who killed whom ("Here
 Grimwald Ashbrand killed you", "Here Liora Stormwell was killed by Velka Thornheart"), when, where, the spell and who
 helped; a click closes the map and opens the book there. A death of a guildmate or friend younger than 10 minutes
 pulses: maybe you can still help. A pin needs the map ID and x/y the book stores at every death (since 1.1.0); an older
@@ -126,12 +153,16 @@ a death file, the rap sheet's kill lines and victim sheet, the chronicle, guild 
 guildmate's death). The map opens on that map and the pin pulses three times; a place without a pin of its own (an
 attack) gets the red ring alone. In combat nothing on the map is touched: a click only says so in the chat, pins asked
 for in combat come after it.
-The switch at the map's bottom left corner: crime scenes on/off, period (7 days, 30 days, all; default 30), only open
+Closing the map without a pin's click after a click from the book opens the book again.
+The switch at the map's bottom left corner (a small book of its own above the pins; its tooltip is the legend of the
+pins): crime scenes on/off, period (7 days, 30 days, all; default 30), only open
 debts, own scenes, guild, friends. House Rules, sheet Book, section MAP: crime scenes on/off.
-Chronicle: the word "Chronicle" next to DEEDS on a poster opens one page of the file that tells the feud in sentences:
+Chronicle: the word "Chronicle" next to DEEDS on a poster (red ink, underlined, a link) opens one page of the file that tells the feud in sentences:
 first encounter, every deed in order (kills, assists, suspicions and attacks each by their own name), your kills and
 revenge noted by hand, entered by hand or copied, bounties, the turning points (even, ahead), who took him down for the
-others, pardoned, and the standing now; long feuds are cut in the middle ("… and 9 more"). Places in it are links too.
+others, pardoned, and the standing now; long feuds are cut in the middle ("… and 9 more"). A turning point is only told when the
+kept deeds prove it; when the book keeps fewer deeds than were counted, the chronicle says so once ("Earlier deeds are
+no longer in the book") and takes the standing from the counters. Places in it are links too.
 `/dn probe` writes `probe.scene`: map API, pins, bundles, clicks from the book, in combat, without a spot, places sent,
 received and dropped (with the reason), errors.
 

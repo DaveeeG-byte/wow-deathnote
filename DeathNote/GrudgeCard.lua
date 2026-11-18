@@ -479,7 +479,35 @@ function GripUI.Plate(S, page, y, section, Stepper)
   S.plate = Stepper(page, y, L.SET_PLATE, function(d)
     P.SetChoice(stepIn(P.ORDER, P.Choice(), d))
   end, GripUI.VALUE_W)
+  -- 1.5.0 fixer: the label explains the three marks and the standing, and where the keys are set
+  local lab = S.plate.label
+  if lab then
+    local hit = CreateFrame("Frame", nil, page)
+    hit:SetAllPoints(lab)
+    hit:EnableMouse(true)
+    hit:SetScript("OnEnter", function(self) Tip(self, GripUI.PlateTip()) end)
+    hit:SetScript("OnLeave", TipHide)
+    S.plateTip = hit
+  end
   return -y + 22
+end
+
+-- the lines of that tooltip: head, one line per mark with its picture, the keys
+local function icon(tex, grey)
+  local tint = grey and ":0:0:0:0:64:64:0:64:0:64:200:194:178" or ""
+  return "|T" .. tostring(tex) .. ":14:14" .. tint .. "|t "
+end
+function GripUI.PlateTip()
+  local P = ns.Plate
+  local T = P and P.TEX or {}
+  local out = { L.SET_PLATE, icon(T.pin) .. L.PLATE_TIP_WANTED, icon(T.pin, true) .. L.PLATE_TIP_GRUDGE,
+    icon(T.cross) .. L.PLATE_TIP_HUNT }
+  local G = ns.Grip
+  if G and G.KeysWhere then
+    local ok, line = pcall(G.KeysWhere)
+    if ok and type(line) == "string" then out[#out + 1] = line end
+  end
+  return out
 end
 
 function GripUI.Fill(S)

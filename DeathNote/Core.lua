@@ -613,6 +613,7 @@ function ns.HandleSlash(msg)
     local key = Store and Store.AddManual(rest)
     if key then
       Util.Print(Fmt(L.CHAT_ADDED, { name = Util.Display(Store.Get(key)) }))
+      if ns.Grip and ns.Grip.KeyHint then pcall(ns.Grip.KeyHint) end   -- 1.5.0 fixer: once, the key for this
     else
       Util.Print(L.CHAT_BAD_NAME)
     end

@@ -175,3 +175,27 @@ function Grip.SetNames()
   end
 end
 if ns.Locale and ns.Locale.OnActivate then ns.Locale.OnActivate(function() Grip.SetNames() end) end
+
+-- 1.5.0 fixer: where the keys are set (a line of the nameplate stepper's tooltip and of the hint below)
+function Grip.KeysWhere()
+  L = ns.L
+  return Fmt(L.GRIP_KEYS_WHERE, { title = title() })
+end
+-- the key of a binding as the game writes it, or nil (none set, no API, secret)
+function Grip.KeyOf(what)
+  local key = Str(Call(rawget(_G, "GetBindingKey"), "DEATHNOTE_" .. tostring(what)))
+  if not key or key == "" then return nil end
+  local text = Str(Call(rawget(_G, "GetBindingText"), key, "KEY_"))
+  return (text and text ~= "") and text or key
+end
+-- 1.5.0 fixer: after "/dn add" was typed, once per account: the key "Target into the book" exists (and which it is,
+-- or where to set it). Returns true when the line was said.
+function Grip.KeyHint()
+  L = ns.L
+  local S = ns.Store
+  if not (S and S.Setting and S.DB and S.DB()) or S.Setting("grip.keyHint") == true then return false end
+  S.Setting("grip.keyHint", true)
+  local key = Grip.KeyOf("ADD")
+  Util.Print(key and Fmt(L.GRIP_KEY_HAVE, { key = key }) or Fmt(L.GRIP_KEY_HINT, { title = title() }))
+  return true
+end
