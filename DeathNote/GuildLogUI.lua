@@ -345,7 +345,15 @@ function GLUI.FillLeft()
     p.empty:Hide()
   end
   if #rows > shown then
-    p.foot:SetText(Fmt(L.GLOG_FOOT_MORE, { from = state.offset + 1, to = last, count = #rows }))
+    -- design fix 1.6.0: the foot counts events like the line under the head (the day heads are no events)
+    local from, to = 0, 0
+    for i = 1, last do
+      if rows[i] and rows[i].event then
+        to = to + 1
+        if i <= state.offset then from = to end
+      end
+    end
+    p.foot:SetText(Fmt(L.GLOG_FOOT_MORE, { from = math.min(from + 1, math.max(1, to)), to = to, count = events }))
   else
     p.foot:SetText("")
   end

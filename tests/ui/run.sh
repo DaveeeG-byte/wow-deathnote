@@ -21,7 +21,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          "$adir"/SceneMap.lua tests/ui/scene_map.lua tests/ui/scene.lua tests/ui/_ju.lua tests/ui/_ju160.lua tests/ui/_jukarte.lua tests/ui/fix150_*.lua tests/ui/fix160_*.lua tests/ui/to160_*.lua \
          "$adir"/GuildLog.lua "$adir"/GuildLogUI.lua tests/ui/gc160_*.lua \
          "$adir"/CallUI.lua tests/ui/ca160_*.lua \
-         "$adir"/FeudUI.lua tests/ui/_fe160.lua tests/ui/fe160_*.lua tests/ui/dr160_*.lua tests/ui/fd160_*.lua \
+         "$adir"/FeudUI.lua tests/ui/_fe160.lua tests/ui/fe160_*.lua tests/ui/dr160_*.lua tests/ui/fd160_*.lua tests/ui/_fdwelt.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
 done

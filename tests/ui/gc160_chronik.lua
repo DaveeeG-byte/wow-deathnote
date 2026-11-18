@@ -211,7 +211,11 @@ fill(W, true)
 GLUI.Open(); W.settle()
 check("Fuß: 1 bis … von …", tostring(PL.foot._text):find("^1 bis"), PL.foot._text)
 PL._scripts.OnMouseWheel(PL, -1); W.tick()
-check("Mausrad blättert", GLUI.state.offset == 3 and tostring(PL.foot._text):find("^4 bis"), PL.foot._text)
+-- design fix 1.6.0 (jd01): the foot counts events, not rows with the day heads: after three rows the first shown line
+-- is the event after the events among those rows
+local ev = 0
+for i = 1, 3 do if PL.rows[i] and PL.rows[i].event then ev = ev + 1 end end
+check("Mausrad blättert", GLUI.state.offset == 3 and tostring(PL.foot._text):find("^" .. (ev + 1) .. " bis"), PL.foot._text)
 GLUI.Close()
 check("keine Fehler (deDE)", #W.AM.errors == 0 and #W.BM.violations == 0, tostring(W.AM.errors[1] or W.BM.violations[1]))
 
