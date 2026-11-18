@@ -525,6 +525,8 @@ end
 Feud.lastExpired, Feud.lastCapped = 0, 0
 function Feud.OnInit(d, enemies)
   Feud.lastExpired, Feud.lastCapped = 0, 0
+  -- fixer 2 1.6.0 (jb02): the book's own play days are new in 1.6.0: without them this is the first start with it
+  local first160 = type(d.days) ~= "number"
   if type(d.days) ~= "number" then
     local f = type(d.friends) == "table" and d.friends or nil
     if f and finite(f.days) and f.days >= 0 then d.days = math.floor(f.days); if finite(f.dayAt) then d.dayAt = f.dayAt end end
@@ -543,6 +545,18 @@ function Feud.OnInit(d, enemies)
   end
   local b = type(st.book) == "table" and st.book or nil
   local on = not (b and b.expire == false)
+  -- fixer 2 1.6.0 (jb02): at the first start with 1.6.0 a book of an older version knows no statusHand. What may have
+  -- been set by hand there counts as set by hand and never expires: pardoned, or wanted with only suspicions or
+  -- attacks; an entry made by hand; an entry with a note. Once: at the start that brings the play days.
+  if first160 then
+    for _, e in pairs(enemies) do
+      if type(e) == "table" then
+        local only = (tonumber(e.kills) or 0) == 0 and (tonumber(e.assists) or 0) == 0
+        local noted = type(e.note) == "string" and e.note:find("%S") ~= nil
+        if e.status == "pardoned" or (e.status == "wanted" and only) or e.manual == true or noted then e.statusHand = true end
+      end
+    end
+  end
   local n = 0
   if on and type(d.expired) ~= "table" then d.expired = {} end
   local x = d.expired
