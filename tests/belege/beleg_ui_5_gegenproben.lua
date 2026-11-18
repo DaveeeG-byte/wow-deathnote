@@ -50,8 +50,10 @@ for _, code in ipairs(K.CODES) do
     end
   end
   table.sort(paths)
-  K.check("1 " .. code .. ": zehn Haken schreiben ihre Pfade",
-    table.concat(paths, " ") == "guild.alert guild.alertHunt guild.alertListed guild.announce guild.announceHunt guild.friends guild.receive guild.share guild.shareManual guild.sightings",
+  -- fixer 1.6.0 (ju05): the old switch guild.sightings is gone from the sheet (one switch for sightings,
+  -- guild.layerSight, which like guild.sendPlace has no stored value at the start and is skipped here as before)
+  K.check("1 " .. code .. ": neun Haken schreiben ihre Pfade",
+    table.concat(paths, " ") == "guild.alert guild.alertHunt guild.alertListed guild.announce guild.announceHunt guild.friends guild.receive guild.share guild.shareManual",
     table.concat(paths, " "))
   if code == "deDE" then
     local function steps(v, path)

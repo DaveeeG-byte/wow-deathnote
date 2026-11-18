@@ -198,7 +198,7 @@ end
 W.tick()
 local cb
 for _, f in ipairs(BM.frames) do if f._kind == "CheckButton" and f.opt and f.opt.guild == "layerSight" then cb = f end end
-check("Haken 'Sichtungen meiner Mörder teilen' da, sichtbar", cb ~= nil and cb:IsVisible() and cb.label:GetText() == "Sichtungen meiner Mörder teilen", cb and cb.label:GetText())
+check("Haken 'Sichtungen meiner Mörder an Gilde & Freunde' da, sichtbar", cb ~= nil and cb:IsVisible() and cb.label:GetText() == "Sichtungen meiner Mörder an Gilde & Freunde", cb and cb.label:GetText())
 if cb then
   if ns.UI.FillSettings then ns.UI.FillSettings() end
   check("Standard: an", cb:GetChecked() == true)

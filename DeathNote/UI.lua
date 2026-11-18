@@ -2777,7 +2777,8 @@ function GF.FillHunt(h)
   local ago = ls and Look.Ago(ls.t)
   if ago then
     info[#info + 1] = GF.SeenBy(ago, ls.by)
-  elseif Look.GuildSetting("layerSight") ~= false then
+  elseif not (bline or aline) and Look.GuildSetting("layerSight") ~= false then
+    -- fixer 1.6.0: sightings are on by default now; "not seen yet" never pushes the bounty or avenged line out
     info[#info + 1] = L.POSTER_NOT_SEEN
   end
   SetInfo(E, info, opt)
