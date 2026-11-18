@@ -245,9 +245,31 @@ function SceneMap.Refresh()
 end
 
 -- 1.5.0 fixer: a new canvas scale bundles anew (pins that would now cover each other become one)
+-- fixer 2 1.6.0 (je03): the scenes come from Scene.Items' cache (a new scale reads no book); a zoom that calls this
+-- every frame bundles at once and then at most once per RESCALE_GAP seconds (the last scale always gets its turn)
+SceneMap.RESCALE_GAP = 0.1
+local scaleAt, scaleWait = nil, false
 local function rescale()
+  local S = Scene()
+  if S then S.Count("rescale") end
   if inCombat() then pending = true; return end
   if pick then pick:Hide() end
+  local gt = G("GetTime")
+  local t = type(gt) == "function" and gt() or 0
+  local After = G("C_Timer") and G("C_Timer").After
+  if scaleAt and t >= scaleAt and t - scaleAt < SceneMap.RESCALE_GAP and After then
+    if not scaleWait then
+      scaleWait = true
+      After(SceneMap.RESCALE_GAP - (t - scaleAt), function()
+        scaleWait = false
+        scaleAt = type(gt) == "function" and gt() or 0
+        if inCombat() then pending = true; return end
+        SceneMap.Refresh()
+      end)
+    end
+    return
+  end
+  scaleAt = t
   SceneMap.Refresh()
 end
 

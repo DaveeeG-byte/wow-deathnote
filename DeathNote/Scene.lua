@@ -107,7 +107,9 @@ local function myName()
 end
 
 -- every scene of the book, unfiltered (also the ones without a spot: spot = false). now = time().
-function Scene.All(now)
+-- fixer 2 1.6.0 (je03): the part from the book (my deaths, my kills, deaths of guild and friends) is collect(); the
+-- part that depends on the time (a mate's death "fresh", calls and sightings) is added per call.
+local function collect()
   local out = {}
   local S = ns.Store
   if not S then return out end
@@ -156,12 +158,19 @@ function Scene.All(now)
             seen[id] = true
             out[#out + 1] = { kind = src == "friends" and "friend" or "guild", t = d.t, mapID = d.mapID, x = d.x, y = d.y,
               zone = d.zone, key = g.key, name = str(g.display) or (g.name and Util.Display(g)) or nil, class = g.class,
-              victim = d.victim, ref = d, spot = Scene.ValidSpot(d.mapID, d.x, d.y),
-              fresh = now and now - d.t < Scene.FRESH and now - d.t >= -60 or false }
+              victim = d.victim, ref = d, spot = Scene.ValidSpot(d.mapID, d.x, d.y), mate = true }
           end
         end
       end
     end
+  end
+  return out
+end
+
+local function timed(out, now)
+  for i = 1, #out do
+    local it = out[i]
+    if it.mate then it.fresh = now and now - it.t < Scene.FRESH and now - it.t >= -60 or false end
   end
   -- 1.6.0 call: help calls and sightings of guild, group and friends while they are fresh (Call.lua)
   local CX = ns.Call
@@ -171,6 +180,50 @@ function Scene.All(now)
   end
   return out
 end
+
+function Scene.All(now)
+  return timed(collect(), now)
+end
+
+-- fixer 2 1.6.0 (je03): the scenes for the map from a cache of the book's part. It goes stale with every change of the
+-- book, the rap sheet, the guild's and friends' books (Scene.Stale, the events below) and after ITEMS_TTL seconds at the
+-- latest; a new scale of the map only bundles anew. The list returned is the caller's (a copy).
+Scene.ITEMS_TTL = 10
+Scene.stat = { reads = 0, cached = 0 }
+local items = { ver = -1 }
+local itemsVer = 0
+function Scene.Stale() itemsVer = itemsVer + 1 end
+function Scene.Items(now)
+  local G = _G.GetTime
+  local t = type(G) == "function" and G() or 0
+  local c = items
+  if c.ver ~= itemsVer or not c.list or t < c.at or t - c.at >= Scene.ITEMS_TTL then
+    c = { ver = itemsVer, at = t, list = collect() }
+    items = c
+    Scene.stat.reads = Scene.stat.reads + 1
+  else
+    Scene.stat.cached = Scene.stat.cached + 1
+  end
+  local out = {}
+  for i = 1, #c.list do out[i] = c.list[i] end
+  return timed(out, now)
+end
+for _, ev in ipairs({ "READY", "DEATH_RECORDED", "SCENE_PLACE", "OWN_KILL", "ENEMY_REMOVED", "ENEMY_REKEYED",
+  "ENEMY_STATUS", "MANUAL_ADDED", "REVENGE", "REVENGE_UNDONE", "LEDGER_CLEARED", "BOOK_IMPORTED", "EXPIRED_CHANGED",
+  "STANDING_CHANGED", "AVENGED", "GUILD_KILL" }) do
+  ns:On(ev, Scene.Stale)
+end
+-- every change of the journal goes through Store.TouchJournal (Store.lua says so); Store is loaded before this file
+do
+  local St = ns.Store
+  if St and type(St.TouchJournal) == "function" then
+    local touch = St.TouchJournal
+    St.TouchJournal = function(...) Scene.Stale(); return touch(...) end
+  end
+end
+-- a mere sighting (lastSeen) is no scene
+ns:On("ENEMY_UPDATED", function(_, why) if why ~= "seen" then Scene.Stale() end end)
+ns:On("GUILD_UPDATED", function(reason) if reason ~= "seen" then Scene.Stale() end end)
 
 -- the scene a click in the book asked for: the same entry, or the same time on the same map (a deed of the poster and
 -- its journal entry are one death)
@@ -211,7 +264,7 @@ local function rankOf(it) return it.fresh and 1 or RANK[it.kind] or 9 end
 -- many scenes were left out. translate(mapID, x, y) -> x, y on this map or nil (scenes of other maps, e.g. a zone on its
 -- continent; optional). size = { rx, ry }: a pin's width and height in percent of the map (optional).
 function Scene.Pins(mapID, now, translate, focus, size)
-  local all = Scene.All(now)
+  local all = Scene.Items(now)
   local items = {}
   for i = 1, #all do
     local it = all[i]
