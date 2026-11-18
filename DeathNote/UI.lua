@@ -2869,7 +2869,8 @@ local function FillDeath(d, index)
   D.when:SetText(Look.When(d.t))
   local place = PlaceText(d.zone, d.subzone)
   if type(d.x) == "number" and type(d.y) == "number" then
-    place = place .. (" (%d, %d)"):format(math.floor(d.x + 0.5), math.floor(d.y + 0.5))
+    -- fixer 1.6.0: a no-break space inside the coordinates, so "(61, 53)" never breaks in the middle (UI hunt 19)
+    place = place .. (" (%d,\194\160%d)"):format(math.floor(d.x + 0.5), math.floor(d.y + 0.5))
   end
   local info = { place }
   D.placeHit.placeText = place
