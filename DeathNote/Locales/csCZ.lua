@@ -503,7 +503,7 @@ L.OPT_F_ALERTHUNT = "Varovat před cíli ze seznamu na odstřel"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Hlásit smrti v guildě a mezi přáteli"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Sdílet spatření s guildou a přáteli"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Guilda"  -- [max 14]
+L.SHEET_GUILD = "Guilda"
 L.SET_BOOK_SIZE = "Velikost knihy"  -- [max 34]
 L.SET_LANGUAGE = "Jazyk"  -- [max 16]
 L.SET_LANG_AUTO = "Automaticky"  -- [max 16]
@@ -1178,7 +1178,7 @@ L.CLAIM_BY = "od {name}"
 L.CLAIM_OPEN = "k zaplacení"
 L.CLAIM_PAID = "zaplaceno"
 L.CLAIM_DECLINED = "odmítnuto"
-L.ACT_PAID = "Zaplaceno"
+L.ACT_PAID = "Označit zaplaceno"
 L.ACT_DECLINE = "Odmítnout"
 L.ACT_REOPEN = "Znovu otevřít"
 L.BANNER_CLAIM = "Odměna získána"
@@ -1210,4 +1210,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Smrti z této příčiny"
 L.FATE_FIRST_LAST = "Poprvé {first}, naposledy {last}"
 L.GLOG_OLD_N = "Starší verze: {count}"
+L.SHEET_CLAIM = "Nárok"
+L.CLAIM_HEAD = "{gold} pro {name}"
+L.CLAIM_FOR = "za {target}"
+L.CLAIM_NOTE = "Kniha sama neplatí: obchodem nebo poštou."
 end)

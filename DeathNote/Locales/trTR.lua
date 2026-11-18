@@ -506,7 +506,7 @@ L.OPT_F_ALERTHUNT = "Av listesindeki hedeflerde uyar"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Lonca üyeleri ya da arkadaşlar ölünce bildir"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Görülmeleri lonca ve arkadaşlarla paylaş"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Lonca"  -- [max 14]
+L.SHEET_GUILD = "Lonca"
 L.SET_BOOK_SIZE = "Defter boyutu"  -- [max 34]
 L.SET_LANGUAGE = "Dil"  -- [max 16]
 L.SET_LANG_AUTO = "Otomatik"  -- [max 16]
@@ -1181,7 +1181,7 @@ L.CLAIM_BY = "{name} tarafından"
 L.CLAIM_OPEN = "açık"
 L.CLAIM_PAID = "ödendi"
 L.CLAIM_DECLINED = "reddedildi"
-L.ACT_PAID = "Ödendi"
+L.ACT_PAID = "Ödendi say"
 L.ACT_DECLINE = "Reddet"
 L.ACT_REOPEN = "Yeniden aç"
 L.BANNER_CLAIM = "Ödül kazanıldı"
@@ -1213,4 +1213,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Bu sebeple ölümler"
 L.FATE_FIRST_LAST = "İlk {first}, son {last}"
 L.GLOG_OLD_N = "Eski sürüm: {count}"
+L.SHEET_CLAIM = "Talep"
+L.CLAIM_HEAD = "{name}: {gold}"
+L.CLAIM_FOR = "{target} için"
+L.CLAIM_NOTE = "Kitap kendisi ödemez: takas ya da posta ile."
 end)

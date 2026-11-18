@@ -503,7 +503,7 @@ L.OPT_F_ALERTHUNT = "Ostrzegaj przed celami z listy do odstrzału"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Zgłaszaj zgony w gildii i wśród znajomych"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Udostępniaj obserwacje gildii i znajomym"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Gildia"  -- [max 14]
+L.SHEET_GUILD = "Gildia"
 L.SET_BOOK_SIZE = "Rozmiar księgi"  -- [max 34]
 L.SET_LANGUAGE = "Język"  -- [max 16]
 L.SET_LANG_AUTO = "Automatycznie"  -- [max 16]
@@ -1178,7 +1178,7 @@ L.CLAIM_BY = "od {name}"
 L.CLAIM_OPEN = "do zapłaty"
 L.CLAIM_PAID = "zapłacone"
 L.CLAIM_DECLINED = "odrzucone"
-L.ACT_PAID = "Zapłacone"
+L.ACT_PAID = "Oznacz zapłacone"
 L.ACT_DECLINE = "Odrzuć"
 L.ACT_REOPEN = "Otwórz ponownie"
 L.BANNER_CLAIM = "Nagroda zdobyta"
@@ -1210,4 +1210,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Śmierci z tej przyczyny"
 L.FATE_FIRST_LAST = "Pierwszy raz {first}, ostatnio {last}"
 L.GLOG_OLD_N = "Starsza wersja: {count}"
+L.SHEET_CLAIM = "Roszczenie"
+L.CLAIM_HEAD = "{gold} dla {name}"
+L.CLAIM_FOR = "za {target}"
+L.CLAIM_NOTE = "Księga nie płaci sama: przez handel lub pocztę."
 end)

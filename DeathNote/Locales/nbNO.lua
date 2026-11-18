@@ -496,7 +496,7 @@ L.OPT_F_ALERTHUNT = "Varsle om mål på jaktlisten"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Meld fra når guildmedlemmer eller venner dør"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Del observasjoner med guild og venner"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Guild"  -- [max 14]
+L.SHEET_GUILD = "Guild"
 L.SET_BOOK_SIZE = "Størrelse på boken"  -- [max 34]
 L.SET_LANGUAGE = "Språk"  -- [max 16]
 L.SET_LANG_AUTO = "Automatisk"  -- [max 16]
@@ -1171,7 +1171,7 @@ L.CLAIM_BY = "fra {name}"
 L.CLAIM_OPEN = "ubetalt"
 L.CLAIM_PAID = "betalt"
 L.CLAIM_DECLINED = "avvist"
-L.ACT_PAID = "Betalt"
+L.ACT_PAID = "Merk betalt"
 L.ACT_DECLINE = "Avvis"
 L.ACT_REOPEN = "Åpne igjen"
 L.BANNER_CLAIM = "Dusør fortjent"
@@ -1203,4 +1203,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Dødsfall av denne årsaken"
 L.FATE_FIRST_LAST = "Først {first}, sist {last}"
 L.GLOG_OLD_N = "Eldre versjon: {count}"
+L.SHEET_CLAIM = "Krav"
+L.CLAIM_HEAD = "{gold} til {name}"
+L.CLAIM_FOR = "for {target}"
+L.CLAIM_NOTE = "Boka betaler ikke selv: via handel eller post."
 end)

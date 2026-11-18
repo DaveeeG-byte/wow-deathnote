@@ -503,7 +503,7 @@ L.OPT_F_ALERTHUNT = "Попереджати про цілі зі списку н
 L.OPT_F_ANNOUNCE = "Повідомляти про смерті гільдійців і друзів"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Спостереження: ділитися з гільдією й друзями"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Гільдія"  -- [max 14]
+L.SHEET_GUILD = "Гільдія"
 L.SET_BOOK_SIZE = "Розмір книги"  -- [max 34]
 L.SET_LANGUAGE = "Мова"  -- [max 16]
 L.SET_LANG_AUTO = "Автоматично"  -- [max 16]
@@ -1178,7 +1178,7 @@ L.CLAIM_BY = "від {name}"
 L.CLAIM_OPEN = "до сплати"
 L.CLAIM_PAID = "сплачено"
 L.CLAIM_DECLINED = "відхилено"
-L.ACT_PAID = "Сплачено"
+L.ACT_PAID = "Позначити сплату"
 L.ACT_DECLINE = "Відхилити"
 L.ACT_REOPEN = "Знову відкрити"
 L.BANNER_CLAIM = "Винагороду здобуто"
@@ -1210,4 +1210,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Смерті від цього"
 L.FATE_FIRST_LAST = "Уперше {first}, востаннє {last}"
 L.GLOG_OLD_N = "Старіша версія: {count}"
+L.SHEET_CLAIM = "Вимога"
+L.CLAIM_HEAD = "{gold}: {name}"
+L.CLAIM_FOR = "за {target}"
+L.CLAIM_NOTE = "Книга сама не платить: обміном або поштою."
 end)

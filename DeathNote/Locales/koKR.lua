@@ -504,7 +504,7 @@ L.OPT_F_ALERTHUNT = "척살 대상 경고"  -- [max 44]
 L.OPT_F_ANNOUNCE = "길드원이나 친구가 죽으면 알림"  -- [max 44]
 L.OPT_F_SIGHTINGS = "길드, 친구와 목격 공유"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "길드"  -- [max 14]
+L.SHEET_GUILD = "길드"
 L.SET_BOOK_SIZE = "수첩 크기"  -- [max 34]
 L.SET_LANGUAGE = "언어"  -- [max 16]
 L.SET_LANG_AUTO = "자동"  -- [max 16]
@@ -1179,7 +1179,7 @@ L.CLAIM_BY = "{name}"
 L.CLAIM_OPEN = "미지급"
 L.CLAIM_PAID = "지급함"
 L.CLAIM_DECLINED = "거절함"
-L.ACT_PAID = "지급함"
+L.ACT_PAID = "지급 완료 표시"
 L.ACT_DECLINE = "거절"
 L.ACT_REOPEN = "다시 열기"
 L.BANNER_CLAIM = "현상금 획득"
@@ -1211,4 +1211,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "같은 원인의 죽음"
 L.FATE_FIRST_LAST = "처음 {first}, 마지막 {last}"
 L.GLOG_OLD_N = "이전 버전: {count}"
+L.SHEET_CLAIM = "청구"
+L.CLAIM_HEAD = "{name}에게 {gold}"
+L.CLAIM_FOR = "{target} 건"
+L.CLAIM_NOTE = "책이 직접 지급하지 않는다: 거래나 우편으로."
 end)

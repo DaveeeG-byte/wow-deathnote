@@ -502,7 +502,7 @@ L.OPT_F_ALERTHUNT = "Предупреждать о целях из списка 
 L.OPT_F_ANNOUNCE = "Сообщать о смертях согильдийцев и друзей"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Делиться встречами с гильдией и друзьями"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Гильдия"  -- [max 14]
+L.SHEET_GUILD = "Гильдия"
 L.SET_BOOK_SIZE = "Размер книги"  -- [max 34]
 L.SET_LANGUAGE = "Язык"  -- [max 16]
 L.SET_LANG_AUTO = "Автоматически"  -- [max 16]
@@ -1177,7 +1177,7 @@ L.CLAIM_BY = "от {name}"
 L.CLAIM_OPEN = "к оплате"
 L.CLAIM_PAID = "оплачено"
 L.CLAIM_DECLINED = "отклонено"
-L.ACT_PAID = "Оплачено"
+L.ACT_PAID = "Отметить оплату"
 L.ACT_DECLINE = "Отклонить"
 L.ACT_REOPEN = "Снова открыть"
 L.BANNER_CLAIM = "Награда заработана"
@@ -1209,4 +1209,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Смерти от этого"
 L.FATE_FIRST_LAST = "Впервые {first}, последний раз {last}"
 L.GLOG_OLD_N = "Старая версия: {count}"
+L.SHEET_CLAIM = "Требование"
+L.CLAIM_HEAD = "{gold}: {name}"
+L.CLAIM_FOR = "за {target}"
+L.CLAIM_NOTE = "Книга сама не платит: обменом или почтой."
 end)

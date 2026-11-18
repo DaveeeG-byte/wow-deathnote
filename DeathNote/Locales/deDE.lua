@@ -491,7 +491,7 @@ L.OPT_F_ALERTHUNT = "Bei Zielen der Abschussliste warnen"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Melden, wenn Kollegen oder Freunde sterben"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Sichtungen mit Gilde und Freunden teilen"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Gilde"  -- [max 14]
+L.SHEET_GUILD = "Gilde"
 L.SET_BOOK_SIZE = "Größe des Buchs"  -- [max 34]
 L.SET_LANGUAGE = "Sprache"  -- [max 16]
 L.SET_LANG_AUTO = "Automatisch"  -- [max 16]
@@ -1166,7 +1166,7 @@ L.CLAIM_BY = "von {name}"
 L.CLAIM_OPEN = "offen"
 L.CLAIM_PAID = "bezahlt"
 L.CLAIM_DECLINED = "abgelehnt"
-L.ACT_PAID = "Bezahlt"
+L.ACT_PAID = "Als bezahlt abhaken"
 L.ACT_DECLINE = "Ablehnen"
 L.ACT_REOPEN = "Wieder offen"
 L.BANNER_CLAIM = "Kopfgeld fällig"
@@ -1198,4 +1198,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Tode durch diese Ursache"
 L.FATE_FIRST_LAST = "Erstmals {first}, zuletzt {last}"
 L.GLOG_OLD_N = "Ältere Fassung: {count}"
+L.SHEET_CLAIM = "Anspruch"
+L.CLAIM_HEAD = "{gold} an {name}"
+L.CLAIM_FOR = "für {target}"
+L.CLAIM_NOTE = "Das Buch zahlt nicht selbst: per Handel oder Post."
 end)

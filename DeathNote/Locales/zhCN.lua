@@ -504,7 +504,7 @@ L.OPT_F_ALERTHUNT = "追杀目标出现时警告"  -- [max 44]
 L.OPT_F_ANNOUNCE = "公会成员或好友死亡时提示"  -- [max 44]
 L.OPT_F_SIGHTINGS = "与公会和好友共享目击"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "公会"  -- [max 14]
+L.SHEET_GUILD = "公会"
 L.SET_BOOK_SIZE = "记仇本大小"  -- [max 34]
 L.SET_LANGUAGE = "语言"  -- [max 16]
 L.SET_LANG_AUTO = "自动"  -- [max 16]
@@ -1179,7 +1179,7 @@ L.CLAIM_BY = "来自 {name}"
 L.CLAIM_OPEN = "未付"
 L.CLAIM_PAID = "已付"
 L.CLAIM_DECLINED = "已拒"
-L.ACT_PAID = "已付"
+L.ACT_PAID = "标记已付"
 L.ACT_DECLINE = "拒绝"
 L.ACT_REOPEN = "重新打开"
 L.BANNER_CLAIM = "悬赏达成"
@@ -1211,4 +1211,8 @@ L.GLOG_LINE_AT = "{text}，{place}"
 L.FATE_LIST_HEAD = "同一死因"
 L.FATE_FIRST_LAST = "首次 {first}，最近 {last}"
 L.GLOG_OLD_N = "旧版本：{count}"
+L.SHEET_CLAIM = "索赏"
+L.CLAIM_HEAD = "付给{name} {gold}"
+L.CLAIM_FOR = "目标：{target}"
+L.CLAIM_NOTE = "本书不会代付：请交易或邮寄。"
 end)

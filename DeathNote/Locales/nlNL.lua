@@ -496,7 +496,7 @@ L.OPT_F_ALERTHUNT = "Waarschuwen bij doelwitten op de dodenlijst"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Melden als guildgenoten of vrienden sterven"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Waarnemingen delen met guild en vrienden"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Guild"  -- [max 14]
+L.SHEET_GUILD = "Guild"
 L.SET_BOOK_SIZE = "Grootte van het boek"  -- [max 34]
 L.SET_LANGUAGE = "Taal"  -- [max 16]
 L.SET_LANG_AUTO = "Automatisch"  -- [max 16]
@@ -1171,7 +1171,7 @@ L.CLAIM_BY = "van {name}"
 L.CLAIM_OPEN = "open"
 L.CLAIM_PAID = "betaald"
 L.CLAIM_DECLINED = "geweigerd"
-L.ACT_PAID = "Betaald"
+L.ACT_PAID = "Als betaald"
 L.ACT_DECLINE = "Weigeren"
 L.ACT_REOPEN = "Weer openen"
 L.BANNER_CLAIM = "Premie verdiend"
@@ -1203,4 +1203,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Doden door deze oorzaak"
 L.FATE_FIRST_LAST = "Eerst {first}, laatst {last}"
 L.GLOG_OLD_N = "Oudere versie: {count}"
+L.SHEET_CLAIM = "Claim"
+L.CLAIM_HEAD = "{gold} aan {name}"
+L.CLAIM_FOR = "voor {target}"
+L.CLAIM_NOTE = "Het boek betaalt niet zelf: via handel of post."
 end)

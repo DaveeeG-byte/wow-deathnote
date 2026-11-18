@@ -3754,6 +3754,7 @@ ShowRight = function()
   local n = #data
   P.enemy:Hide(); P.death:Hide(); RP.empty:Hide()
   if P.record then P.record:Hide() end
+  if P.feud then P.feud:Hide() end   -- design fix 1.6.0: the sheet of FeudUI.lua (guild, claim, filed)
   P:Show()
   if state.filter == "record" then
     -- 1.3.0: the own file, the latest kills or one victim; never the empty page (the file is always there)

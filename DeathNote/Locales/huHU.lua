@@ -505,7 +505,7 @@ L.OPT_F_ALERTHUNT = "Figyelmeztetés a halállista célpontjainál"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Jelzés, ha céhtárs vagy barát meghal"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Észlelések megosztása céhhel és barátokkal"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Céh"  -- [max 14]
+L.SHEET_GUILD = "Céh"
 L.SET_BOOK_SIZE = "A könyv mérete"  -- [max 34]
 L.SET_LANGUAGE = "Nyelv"  -- [max 16]
 L.SET_LANG_AUTO = "Automatikus"  -- [max 16]
@@ -1180,7 +1180,7 @@ L.CLAIM_BY = "{name} kéri"
 L.CLAIM_OPEN = "nyitott"
 L.CLAIM_PAID = "kifizetve"
 L.CLAIM_DECLINED = "elutasítva"
-L.ACT_PAID = "Kifizetve"
+L.ACT_PAID = "Kifizetve jelöl"
 L.ACT_DECLINE = "Elutasítás"
 L.ACT_REOPEN = "Újranyitás"
 L.BANNER_CLAIM = "Vérdíj megszerezve"
@@ -1212,4 +1212,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Halálok ettől"
 L.FATE_FIRST_LAST = "Először {first}, utoljára {last}"
 L.GLOG_OLD_N = "Régebbi változat: {count}"
+L.SHEET_CLAIM = "Igény"
+L.CLAIM_HEAD = "{gold}: {name}"
+L.CLAIM_FOR = "ezért: {target}"
+L.CLAIM_NOTE = "A könyv nem fizet: kereskedéssel vagy postán."
 end)

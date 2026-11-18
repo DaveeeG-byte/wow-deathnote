@@ -497,7 +497,7 @@ L.OPT_F_ALERTHUNT = "Varoita tappolistan kohteista"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Ilmoita, kun kiltalainen tai kaveri kuolee"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Jaa havainnot killalle ja kavereille"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Kilta"  -- [max 14]
+L.SHEET_GUILD = "Kilta"
 L.SET_BOOK_SIZE = "Kirjan koko"  -- [max 34]
 L.SET_LANGUAGE = "Kieli"  -- [max 16]
 L.SET_LANG_AUTO = "Automaattinen"  -- [max 16]
@@ -1172,7 +1172,7 @@ L.CLAIM_BY = "vaatija: {name}"
 L.CLAIM_OPEN = "maksamatta"
 L.CLAIM_PAID = "maksettu"
 L.CLAIM_DECLINED = "hylätty"
-L.ACT_PAID = "Maksettu"
+L.ACT_PAID = "Merkitse maksetuksi"
 L.ACT_DECLINE = "Hylkää"
 L.ACT_REOPEN = "Avaa uudelleen"
 L.BANNER_CLAIM = "Palkkio ansaittu"
@@ -1204,4 +1204,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Kuolemat tästä syystä"
 L.FATE_FIRST_LAST = "Ensin {first}, viimeksi {last}"
 L.GLOG_OLD_N = "Vanhempi versio: {count}"
+L.SHEET_CLAIM = "Vaatimus"
+L.CLAIM_HEAD = "{gold}: {name}"
+L.CLAIM_FOR = "kohteesta {target}"
+L.CLAIM_NOTE = "Kirja ei maksa itse: kaupalla tai postilla."
 end)

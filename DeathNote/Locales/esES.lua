@@ -491,7 +491,7 @@ L.OPT_F_ALERTHUNT = "Avisar de objetivos de la lista negra"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Avisar cuando mueran compañeros o amigos"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Compartir avistamientos con los tuyos"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Hermandad"  -- [max 14]
+L.SHEET_GUILD = "Hermandad"
 L.SET_BOOK_SIZE = "Tamaño del libro"  -- [max 34]
 L.SET_LANGUAGE = "Idioma"  -- [max 16]
 L.SET_LANG_AUTO = "Automático"  -- [max 16]
@@ -1166,7 +1166,7 @@ L.CLAIM_BY = "de {name}"
 L.CLAIM_OPEN = "pendiente"
 L.CLAIM_PAID = "pagada"
 L.CLAIM_DECLINED = "rechazada"
-L.ACT_PAID = "Pagada"
+L.ACT_PAID = "Marcar pagada"
 L.ACT_DECLINE = "Rechazar"
 L.ACT_REOPEN = "Reabrir"
 L.BANNER_CLAIM = "Recompensa ganada"
@@ -1198,4 +1198,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Muertes por esta causa"
 L.FATE_FIRST_LAST = "Primera vez {first}, última {last}"
 L.GLOG_OLD_N = "Versión anterior: {count}"
+L.SHEET_CLAIM = "Reclamación"
+L.CLAIM_HEAD = "{gold} para {name}"
+L.CLAIM_FOR = "por {target}"
+L.CLAIM_NOTE = "El libro no paga: por comercio o correo."
 end)

@@ -503,7 +503,7 @@ L.OPT_F_ALERTHUNT = "Upozori na mete s popisa za odstrel"  -- [max 44]
 L.OPT_F_ANNOUNCE = "Javi kad pogine netko iz ceha ili prijatelj"  -- [max 44]
 L.OPT_F_SIGHTINGS = "Dijeli viđenja s cehom i prijateljima"  -- [max 44]
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Ceh"  -- [max 14]
+L.SHEET_GUILD = "Ceh"
 L.SET_BOOK_SIZE = "Veličina knjige"  -- [max 34]
 L.SET_LANGUAGE = "Jezik"  -- [max 16]
 L.SET_LANG_AUTO = "Automatski"  -- [max 16]
@@ -1178,7 +1178,7 @@ L.CLAIM_BY = "od {name}"
 L.CLAIM_OPEN = "otvoreno"
 L.CLAIM_PAID = "plaćeno"
 L.CLAIM_DECLINED = "odbijeno"
-L.ACT_PAID = "Plaćeno"
+L.ACT_PAID = "Označi plaćeno"
 L.ACT_DECLINE = "Odbij"
 L.ACT_REOPEN = "Ponovno otvori"
 L.BANNER_CLAIM = "Ucjena zarađena"
@@ -1210,4 +1210,8 @@ L.GLOG_LINE_AT = "{text}, {place}"
 L.FATE_LIST_HEAD = "Smrti od ovog uzroka"
 L.FATE_FIRST_LAST = "Prvi put {first}, zadnji {last}"
 L.GLOG_OLD_N = "Starija inačica: {count}"
+L.SHEET_CLAIM = "Zahtjev"
+L.CLAIM_HEAD = "{gold} za {name}"
+L.CLAIM_FOR = "za {target}"
+L.CLAIM_NOTE = "Knjiga sama ne plaća: trgovinom ili poštom."
 end)

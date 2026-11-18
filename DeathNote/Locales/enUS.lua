@@ -511,7 +511,7 @@ L.OPT_F_ALERTHUNT = "Warn about hit list targets"  -- [max 44] check box on the 
 L.OPT_F_ANNOUNCE = "Report when guildmates or friends die"  -- [max 44] check box on the House Rules
 L.OPT_F_SIGHTINGS = "Share sightings with guild and friends"  -- [max 44] check box on the House Rules
 -- House Rules: sheets, steppers, sections, buttons, hints -----------------------------------------
-L.SHEET_GUILD = "Guild"  -- [max 14] word tab: sheet with the guild and friends settings
+L.SHEET_GUILD = "Guild"  -- head of the sheet on the right page for an enemy guild (tab Wanted, view Guilds), big like CASE_HEAD
 L.SET_BOOK_SIZE = "Book size"  -- [max 34] stepper label (value: "100 %")
 L.SET_LANGUAGE = "Language"  -- [max 16] stepper label; the values are the languages in their own names
 L.SET_LANG_AUTO = "Automatic"  -- [max 16] first value of the language stepper and /dn lang auto: no own choice, the game's language (English when DeathNote lacks it)
@@ -1186,10 +1186,10 @@ L.CLAIM_BY = "by {name}"  -- claim row, sub line: who claims it; {name} = first 
 L.CLAIM_OPEN = "open"  -- mark of a claim: not settled yet
 L.CLAIM_PAID = "paid"  -- mark of a claim: you paid it (by trade, yourself)
 L.CLAIM_DECLINED = "declined"  -- mark of a claim: you declined it
-L.ACT_PAID = "Paid"  -- button on a claim: mark it as paid
+L.ACT_PAID = "Mark as paid"  -- button on a claim: you paid it yourself (by trade or mail) and tick it off; the book pays nothing
 L.ACT_DECLINE = "Decline"  -- button on a claim: decline it
 L.ACT_REOPEN = "Open again"  -- button on a settled claim: open again
-L.BANNER_CLAIM = "Bounty earned"  -- kicker of the notice (letter-spaced): a bounty of yours was earned
+L.BANNER_CLAIM = "Bounty due"  -- kicker of the notice (letter-spaced): a bounty of yours was earned and is due
 L.FILED_SINCE = "filed {time}"  -- row of a filed entry, sub line; {time} = '3 days ago'
 L.FILED_TINY = "Filed on {time} after 30 play days without news. Take it back and it stays."  -- page of a filed entry: why it is there and what taking it back does; {time} = date
 L.ACT_RESTORE = "Take back"  -- word and button: take a filed entry back into the book
@@ -1218,4 +1218,8 @@ L.GLOG_LINE_AT = "{text}, {place}"  -- guild chronicle line with the zone, witho
 L.FATE_LIST_HEAD = "Deaths by this cause"  -- section label on the file of a creature or the world (letter-spaced, like DEEDS on the poster): the list of your deaths by this same cause follows; the count stands on the right
 L.FATE_FIRST_LAST = "First {first}, last {last}"  -- under that list: the first and the latest death by this cause; {first}, {last} = date and time
 L.GLOG_OLD_N = "Older version: {count}"  -- guild chronicle, who has the book: one quiet line under the list, how many have an older version of the addon (the rows say it in faint ink); {count} = a number
+L.SHEET_CLAIM = "Claim"  -- head of the sheet on the right page for one claim on your bounty (tab Unsolved, view Claims)
+L.CLAIM_HEAD = "{gold} to {name}"  -- big line of a claim's sheet: what you owe to whom; {gold} = '250g' (the book's money word), {name} = the hunter's first name
+L.CLAIM_FOR = "for {target}"  -- under it: for which of your targets; {target} = the target's name
+L.CLAIM_NOTE = "The book pays nothing itself: by trade or mail."  -- small line on an open claim's sheet: the book moves no money
 end)
