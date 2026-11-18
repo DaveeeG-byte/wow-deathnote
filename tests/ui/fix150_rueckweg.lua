@@ -50,8 +50,9 @@ J.check("Karte von selbst: Schliessen oeffnet kein Buch", shows == 0 and not boo
 
 -- 4) the legend: four kinds of pin with their own pictures, then the bundle
 local leg = Map.Legend and Map.Legend() or {}
-J.check("Legende: 5 Zeilen", #leg == 5, #leg)
-local want = { "scene_death", "scene_kill", "scene_guild", "scene_friend", "scene_badge" }
+-- 1.6.0 call: two more kinds (help call, sighting) before the bundle
+J.check("Legende: 7 Zeilen", #leg == 7, #leg)
+local want = { "scene_death", "scene_kill", "scene_guild", "scene_friend", "scene_guild", "scene_friend", "scene_badge" }
 local seen = {}
 for i, w in ipairs(want) do
   local l = leg[i] or ""
@@ -64,7 +65,7 @@ for i, w in ipairs(want) do
 end
 local n = 0
 for _ in pairs(seen) do n = n + 1 end
-J.check("Legende: fuenf verschiedene Texte", n == 5, n)
+J.check("Legende: sieben verschiedene Texte", n == 7, n)
 -- the switch's tooltip carries the legend
 local btn = Map.Button()
 local tipText = ""

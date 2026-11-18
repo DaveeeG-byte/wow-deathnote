@@ -716,7 +716,9 @@ local ALLOWED_NEW = { DeathNote_OnCompartmentClick = true, DeathNote_OnCompartme
                       -- 1.5.0 grip: the texts of the key binding window (Grip.lua, Bindings.xml)
                       BINDING_HEADER_DEATHNOTE = true, BINDING_NAME_DEATHNOTE_TOGGLE = true,
                       BINDING_NAME_DEATHNOTE_ADD = true, BINDING_NAME_DEATHNOTE_HUNT = true,
-                      BINDING_NAME_DEATHNOTE_ALARM = true }
+                      BINDING_NAME_DEATHNOTE_ALARM = true,
+                      -- 1.6.0 call: the key for the help call
+                      BINDING_NAME_DEATHNOTE_HELP = true }
 
 -- 1.2.2: what the real embedded LibDBIcon-1.0 (DeathNote/Libs) needs beyond the above, checked against
 -- LibDBIcon-1.0.lua (tests/ui/minimap_real_libs.lua loads the real libraries into this mock)
