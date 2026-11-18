@@ -1200,4 +1200,6 @@ L.EMPTY_JPLAYERS_SUB = "Andre dødsfall: visning {all}."
 L.CALL_SLIP_HEAD = "Nødrop"
 L.CALL_SLIP_BY = "{zone} · angriper {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
+L.FATE_LIST_HEAD = "Dødsfall av denne årsaken"
+L.FATE_FIRST_LAST = "Først {first}, sist {last}"
 end)

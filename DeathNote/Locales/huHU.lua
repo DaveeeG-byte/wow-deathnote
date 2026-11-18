@@ -1209,4 +1209,6 @@ L.EMPTY_JPLAYERS_SUB = "A többi halál: {all} nézet."
 L.CALL_SLIP_HEAD = "Segélykérés"
 L.CALL_SLIP_BY = "{zone} · támadó {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
+L.FATE_LIST_HEAD = "Halálok ettől"
+L.FATE_FIRST_LAST = "Először {first}, utoljára {last}"
 end)

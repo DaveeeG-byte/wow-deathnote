@@ -1207,4 +1207,6 @@ L.EMPTY_JPLAYERS_SUB = "Ostatní smrti: pohled {all}."
 L.CALL_SLIP_HEAD = "Volání o pomoc"
 L.CALL_SLIP_BY = "{zone} · útočník {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
+L.FATE_LIST_HEAD = "Smrti z této příčiny"
+L.FATE_FIRST_LAST = "Poprvé {first}, naposledy {last}"
 end)

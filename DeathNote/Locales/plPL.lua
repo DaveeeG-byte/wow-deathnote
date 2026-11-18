@@ -1207,4 +1207,6 @@ L.EMPTY_JPLAYERS_SUB = "Pozostałe śmierci: widok {all}."
 L.CALL_SLIP_HEAD = "Na pomoc"
 L.CALL_SLIP_BY = "{zone} · napastnik {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
+L.FATE_LIST_HEAD = "Śmierci z tej przyczyny"
+L.FATE_FIRST_LAST = "Pierwszy raz {first}, ostatnio {last}"
 end)

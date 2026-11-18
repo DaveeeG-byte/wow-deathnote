@@ -1207,4 +1207,6 @@ L.EMPTY_JPLAYERS_SUB = "Інші смерті: вигляд «{all}»."
 L.CALL_SLIP_HEAD = "Клич на допомогу"
 L.CALL_SLIP_BY = "{zone} · нападає {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
+L.FATE_LIST_HEAD = "Смерті від цього"
+L.FATE_FIRST_LAST = "Уперше {first}, востаннє {last}"
 end)

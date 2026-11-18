@@ -1194,4 +1194,6 @@ L.EMPTY_JPLAYERS_SUB = "Altre morti: vista {all}."
 L.CALL_SLIP_HEAD = "Aiuto"
 L.CALL_SLIP_BY = "{zone} · aggressore {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
+L.FATE_LIST_HEAD = "Morti per questa causa"
+L.FATE_FIRST_LAST = "Prima volta {first}, ultima {last}"
 end)

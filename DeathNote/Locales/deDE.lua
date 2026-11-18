@@ -1195,4 +1195,6 @@ L.EMPTY_JPLAYERS_SUB = "Bisher erledigen das Kreaturen und die Welt (Ansicht {al
 L.CALL_SLIP_HEAD = "Hilferuf"
 L.CALL_SLIP_BY = "{zone} · Angreifer {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
+L.FATE_LIST_HEAD = "Tode durch diese Ursache"
+L.FATE_FIRST_LAST = "Erstmals {first}, zuletzt {last}"
 end)

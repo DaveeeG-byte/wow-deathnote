@@ -1208,4 +1208,6 @@ L.EMPTY_JPLAYERS_SUB = "다른 죽음: {all} 보기."
 L.CALL_SLIP_HEAD = "도움 요청"
 L.CALL_SLIP_BY = "{zone} · 공격자 {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
+L.FATE_LIST_HEAD = "같은 원인의 죽음"
+L.FATE_FIRST_LAST = "처음 {first}, 마지막 {last}"
 end)

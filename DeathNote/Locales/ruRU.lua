@@ -1206,4 +1206,6 @@ L.EMPTY_JPLAYERS_SUB = "Остальные смерти: вид «{all}»."
 L.CALL_SLIP_HEAD = "Зов на помощь"
 L.CALL_SLIP_BY = "{zone} · нападает {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
+L.FATE_LIST_HEAD = "Смерти от этого"
+L.FATE_FIRST_LAST = "Впервые {first}, последний раз {last}"
 end)

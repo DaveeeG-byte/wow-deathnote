@@ -1200,4 +1200,6 @@ L.EMPTY_JPLAYERS_SUB = "Andere doden: weergave {all}."
 L.CALL_SLIP_HEAD = "Noodroep"
 L.CALL_SLIP_BY = "{zone} · aanvaller {attacker}"
 L.GLOG_LINE_AT = "{text}, {place}"
+L.FATE_LIST_HEAD = "Doden door deze oorzaak"
+L.FATE_FIRST_LAST = "Eerst {first}, laatst {last}"
 end)

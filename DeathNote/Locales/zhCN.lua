@@ -1208,4 +1208,6 @@ L.EMPTY_JPLAYERS_SUB = "其他死亡：{all} 视图。"
 L.CALL_SLIP_HEAD = "求援"
 L.CALL_SLIP_BY = "{zone} · 攻击者 {attacker}"
 L.GLOG_LINE_AT = "{text}，{place}"
+L.FATE_LIST_HEAD = "同一死因"
+L.FATE_FIRST_LAST = "首次 {first}，最近 {last}"
 end)

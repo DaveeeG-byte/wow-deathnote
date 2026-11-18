@@ -1215,4 +1215,6 @@ L.EMPTY_JPLAYERS_SUB = "So far creatures and the world see to that (view {all}).
 L.CALL_SLIP_HEAD = "Call for help"  -- kicker of the help call's slip (letter-spaced, red, like the bounty notice's kicker): a guildmate or friend calls for help
 L.CALL_SLIP_BY = "{zone} · attacker {attacker}"  -- third line of the help call's slip (under the caller's name): the place and the attacker; {zone} = 'Ashenvale (same zone)', {attacker} = his name
 L.GLOG_LINE_AT = "{text}, {place}"  -- guild chronicle line with the zone, without the time (the time stands apart at the right edge); {text} = the sentence, {place} = the zone
+L.FATE_LIST_HEAD = "Deaths by this cause"  -- section label on the file of a creature or the world (letter-spaced, like DEEDS on the poster): the list of your deaths by this same cause follows; the count stands on the right
+L.FATE_FIRST_LAST = "First {first}, last {last}"  -- under that list: the first and the latest death by this cause; {first}, {last} = date and time
 end)
