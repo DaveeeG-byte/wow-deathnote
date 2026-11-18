@@ -634,6 +634,11 @@ function ns.HandleSlash(msg)
     Util.Print(on and L.CHAT_ALARM_ON or L.CHAT_ALARM_OFF)
   elseif cmd == "probe" then
     -- "/dn probe combatlog" also tries to register the (closed) combat log; plain "/dn probe" never does
+    -- 1.6.0 call: "/dn probe net" tries a channel of our own and YELL once (Call.lua)
+    if rest:lower() == "net" then
+      if ns.Call and ns.Call.ProbeNet then ns.Call.ProbeNet() end
+      return
+    end
     if ns.Probe then ns.Probe.Run(true, { combatlog = rest:lower() == "combatlog" }) end
   elseif cmd == "debug" then
     local on = not (Store and Store.Setting("debug"))

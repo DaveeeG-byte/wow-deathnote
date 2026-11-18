@@ -12,6 +12,10 @@
 --                                               take no extra field: 1.4.0 and older drop a K with ten fields whole)
 --   1 H since version                           hello after login: "send me your kills newer than since"
 --   1 S key zone t                              a listed guild enemy was seen (only when sightings are on)
+--   1 T key map x y t shard                     1.6.0 call: a killer of me or a mate (30 days), a target of the hit list or
+--                                               of a bounty was seen here (map ID, x and y as in L); shard = the layer mark
+--                                               from creature GUIDs ("server-instance-zone") or empty. Call.lua sends and
+--                                               reads it; 1.5.0 and older drop T as "type"
 --   1 M key display class level t char          on my list by hand (1.1.0), live and in answers to H
 --   1 X key char                                taken off my list again (deleted or pardoned, 1.1.0)
 --   1 J key display class level t char reason [book]   released for the hunt (Abschussliste, 1.2.0)
@@ -489,7 +493,7 @@ local function int(s, lo, hi)
   return v
 end
 
-local FIELDS = { K = 9, R = 9, H = 4, S = 5, J = 9, A = 4, E = 5, Z = 4, B = 6, Y = 4, V = 6, L = 8, M = 8, X = 4 }
+local FIELDS = { K = 9, R = 9, H = 4, S = 5, J = 9, A = 4, E = 5, Z = 4, B = 6, Y = 4, V = 6, L = 8, T = 8, M = 8, X = 4 }
 -- types with one optional last field: GUID of a hello, book id of J, Z, B, Y
 local OPTIONAL = { H = true, Z = true, J = true, B = true, Y = true }
 
@@ -538,6 +542,16 @@ function P.Decode(text, now, out)
     if not out.victim or out.victim == "" then return nil, "victim" end
     out.mapID, out.px, out.py = int(F[6], 1, C.PLACE_MAP_MAX), int(F[7], 0, 1000), int(F[8], 0, 1000)
     if not (out.mapID and out.px and out.py) then return nil, "place" end
+    return out
+  end
+  if kind == "T" then
+    -- 1.6.0 call: whole numbers as in L; the shard is digits and dashes only (a broken one is dropped, not the sighting)
+    out.mapID, out.px, out.py = int(F[4], 1, C.PLACE_MAP_MAX), int(F[5], 0, 1000), int(F[6], 0, 1000)
+    if not (out.mapID and out.px and out.py) then return nil, "place" end
+    out.t = int(F[7], now - C.MAX_AGE, now + C.FUTURE)
+    if not out.t then return nil, "time" end
+    local sh = F[8]
+    if #sh <= 40 and sh:match("^%d+%-%d+%-%d+$") then out.shard = sh end
     return out
   end
   if kind == "S" then
@@ -1230,7 +1244,9 @@ local DEFAULTS = { share = true, receive = true, alert = true, announce = true, 
   -- huntExpire: days after which releases expire, 0 = never
   announceHunt = true, huntExpire = 0,
   -- 1.5.0 scene: the spot of an own death goes with it (message L)
-  sendPlace = true }
+  sendPlace = true,
+  -- 1.6.0 call: sightings of my killers with place and layer (message T, Call.lua), sent and received
+  layerSight = true }
 -- settings.guild.<name> without Store.Setting's path parsing (read on every message)
 local function setting(name)
   local db = ns.Store and ns.Store.DB()
@@ -1669,6 +1685,12 @@ local function setHook()
     local fs = friends and friends.store
     local fn = fs and ((fs.count or 0) - ((fs.bySender and fs.bySender[myName() or ""]) or 0)) or 0
     local on = store.count > 0 or fn > 0 or anyHunt()
+    -- 1.6.0 call: own killers of the last 30 days are looked for too (message T), also without a guild list
+    local cx = Guild.CallExt
+    if not on and cx and cx.wantHook then
+      local ok, v = pcall(cx.wantHook)
+      on = ok and v == true
+    end
     ns.Tracker.guildHook = on and Guild.OnUnit or nil
   end
 end
@@ -2397,6 +2419,13 @@ local function apply(ctx, m, short, full, t, known)
     if not fresh then return end
     updated()
     ns:Fire("GUILD_SIGHTING", m.key, m.zone, short, ctx.src)
+  elseif kind == "T" then
+    -- 1.6.0 call: a sighting with place and layer (Call.lua); an error there never breaks receiving
+    local cx = Guild.CallExt
+    if cx and cx.applySight then
+      local ok, err = pcall(cx.applySight, ctx, m, short, full, t)
+      if not ok and ns.ReportError then ns.ReportError(err) end
+    end
   elseif kind == "Z" then
     if not owns(m.by, short, known) then st.dropped = st.dropped + 1; st.lastReason = "by"; return end
     if applySnapshot(ctx, m, short, full) then setHook(); updated() end
@@ -2591,6 +2620,12 @@ function Guild.OnUnit(key, unit, how, listed)
   local fe = friends and friends.store.enemies[key]
   local hg = GH and GH[key]
   local fh = friends and friends.hunts()[key]
+  -- 1.6.0 call: a sighting with place and layer for guild and friends (Call.lua decides and sends; never raises here)
+  local cx = Guild.CallExt
+  if cx and cx.onUnit then
+    local ok, err = pcall(cx.onUnit, key, listed, e, fe, hg, fh)
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
   if not (e or fe or hg or fh) then return end
   -- 1.2.0: data of a bound friend in a conflict stays, but does not alarm
   if (fe or fh) and friends.AnyMuted() then fe, fh = Guild.Unmuted(fe, fh) end

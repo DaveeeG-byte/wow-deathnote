@@ -18,7 +18,9 @@ M.ADDON_DIR = ADDON_DIR
 M.FILES = { "Locale.lua", "Locales/enUS.lua", "Locales/deDE.lua", "Locales/Themes/harbor.lua", "Locales/Themes/trade.lua",
   "Theme.lua", "Themes/notebook.lua", "Themes/harbor.lua", "Themes/trade.lua",
   "Core.lua", "Store.lua", "Tracker.lua", "Attribution.lua", "Ranks.lua", "Ledger.lua", "Probe.lua", "Sync.lua",
-  "Friends.lua", "Bounty.lua", "Grudge.lua", "Scene.lua", "Chronicle.lua" }
+  "Friends.lua", "Bounty.lua", "Grudge.lua", "Scene.lua", "Chronicle.lua",
+  -- 1.6.0 call: the help call and the sighting T (logic only; CallUI.lua is UI)
+  "Call.lua" }
 M.locale = os.getenv("DN_LANG") or "deDE"
 
 -- the file list for the active M.locale (its file is added after deDE when it is another one)

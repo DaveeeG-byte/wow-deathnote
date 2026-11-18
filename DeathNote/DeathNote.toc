@@ -74,6 +74,8 @@ Share.lua
 # 1.5.0 scene: crime scenes (which places go on the map, bundled) and the feud's chronicle; data and words only
 Scene.lua
 Chronicle.lua
+# 1.6.0 call: the help call (own prefix) and sightings with place and layer (message T); data only, the screen is CallUI.lua
+Call.lua
 Alert.lua
 UI.lua
 # 1.3.0: the first-start window (language and cover), only on a new installation; /dn start
@@ -88,4 +90,6 @@ Plate.lua
 ShareUI.lua
 # 1.5.0 scene: the pins on the world map, the map's switch and the way from the book to the map
 SceneMap.lua
+# 1.6.0 call: the help call's notice, the button on the grudge notice, the chat links, the map's way
+CallUI.lua
 Humor.lua

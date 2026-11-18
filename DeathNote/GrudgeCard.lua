@@ -327,6 +327,14 @@ function Card.Fill(e)
   end
   local lines = shownRows + (more > 0 and 1 or 0)
   card:SetHeight(Card.HEAD_H + lines * Card.ROW_H + Card.FOOT)
+  -- 1.6.0 call: the button "Help" at the head while an attacker stands on the notice (CallUI.lua); the head gives way
+  local CU = ns.CallUI
+  local room = 0
+  if CU and CU.OnCard then
+    local okc, w = pcall(CU.OnCard, card, e, n)
+    room = okc and tonumber(w) or 0
+  end
+  card.head:SetWidth(Card.W - 2 * Card.PAD - 2 - room)
   local spaced = ns.Extras and ns.Extras.Spaced and ns.Extras.Spaced(L.GRUDGE_HEAD) or L.GRUDGE_HEAD
   Look.FitText(card.head, spaced, Card.FIT_HEAD)
 end

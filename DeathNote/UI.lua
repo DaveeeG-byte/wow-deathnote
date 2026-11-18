@@ -3877,6 +3877,7 @@ local GUILD_OPTIONS = {
   { "alertListed", "OPT_G_ALERTLISTED" },
   { "announce",    "OPT_G_ANNOUNCE" },
   { "sightings",   "OPT_G_SIGHTINGS" },
+  { "layerSight",  "OPT_G_LAYERSIGHT" },   -- 1.6.0 call: sightings of my killers with place and layer (message T)
 }
 -- 1.2.0 with the friends' book: sharing with friends, hit list alarm; the switches for alarm, message and
 -- sightings apply to guild and friends and are named so.
@@ -3888,6 +3889,7 @@ GF.FRIEND_SHARE = {
   { "friends",     "OPT_F_FRIENDS" },
   { "sightings",   "OPT_F_SIGHTINGS" },
   { "sendPlace",   "OPT_G_SENDPLACE" },   -- 1.5.0 scene: the spot of my death goes with it (message L)
+  { "layerSight",  "OPT_G_LAYERSIGHT" },   -- 1.6.0 call: sightings of my killers with place and layer (message T)
 }
 GF.FRIEND_WARN = {
   { "alert",       "OPT_F_ALERT" },

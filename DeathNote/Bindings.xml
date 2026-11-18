@@ -6,4 +6,5 @@
 	<Binding name="DEATHNOTE_ADD" category="BINDING_HEADER_DEATHNOTE">DeathNote_Binding("ADD")</Binding>
 	<Binding name="DEATHNOTE_HUNT" category="BINDING_HEADER_DEATHNOTE">DeathNote_Binding("HUNT")</Binding>
 	<Binding name="DEATHNOTE_ALARM" category="BINDING_HEADER_DEATHNOTE">DeathNote_Binding("ALARM")</Binding>
+	<Binding name="DEATHNOTE_HELP" category="BINDING_HEADER_DEATHNOTE">DeathNote_Binding("HELP")</Binding>
 </Bindings>

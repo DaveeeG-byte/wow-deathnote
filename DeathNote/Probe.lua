@@ -247,6 +247,8 @@ function Probe.Run(verbose, opts)
   end
   -- 1.5.0 share: lines shown per channel, refused with reason, filter hits, clicks, guest posters, secret cases
   local keepShare = db and type(db.probe) == "table" and type(db.probe.share) == "table" and db.probe.share or nil
+  -- 1.6.0 call: result codes of help calls and sightings, the net test, the guild chat echo (kept over sessions)
+  local keepCall = db and type(db.probe) == "table" and type(db.probe.call) == "table" and db.probe.call or nil
   if ns.Share and ns.Share.ProbeSnapshot then
     local oks, sh = pcall(ns.Share.ProbeSnapshot, keepShare)
     if oks and type(sh) == "table" then out.share = sh end
@@ -263,6 +265,11 @@ function Probe.Run(verbose, opts)
     if not out.kills and keepKills then out.kills = keepKills end
     if not out.grudge and keepGrudge then out.grudge = keepGrudge end
     if not out.share and keepShare then out.share = keepShare end
+    if keepCall then out.call = keepCall end
+    if ns.Call and ns.Call.ProbeLive then
+      local okc, live = pcall(ns.Call.ProbeLive)
+      if okc and type(live) == "table" then out.call = out.call or {}; out.call.live = live end
+    end
   end
   if verbose then
     -- 1.2.0: framing words from the language table; the values (codes, numbers) stay technical

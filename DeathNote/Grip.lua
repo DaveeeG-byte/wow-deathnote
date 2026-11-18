@@ -7,6 +7,7 @@ local ADDON, ns = ...
 --   HUNT    the current target on the hit list (as /dn hunt) with a standard reason (the poster's hit list sheet
 --           changes it later: releasing again with another reason replaces it)
 --   ALARM   alarm off / on (as /dn quiet)
+--   HELP    1.6.0 call: a help call with my place to guild, group and friends (Call.lua)
 -- Feedback: one chat line and the same words as a small line in the middle of the screen (UIErrorsFrame).
 -- The texts of the key binding window: BINDING_HEADER_DEATHNOTE (the addon's title from the TOC, so a new display
 -- name follows by itself) and BINDING_NAME_DEATHNOTE_* (from the language table).
@@ -18,8 +19,8 @@ local L, Fmt = ns.L, ns.F
 local Grip = {}
 ns.Grip = Grip
 
-Grip.BINDINGS = { "TOGGLE", "ADD", "HUNT", "ALARM" }
-Grip.NAME_KEYS = { TOGGLE = "BIND_TOGGLE", ADD = "BIND_ADD", HUNT = "BIND_HUNT", ALARM = "BIND_ALARM" }
+Grip.BINDINGS = { "TOGGLE", "ADD", "HUNT", "ALARM", "HELP" }
+Grip.NAME_KEYS = { TOGGLE = "BIND_TOGGLE", ADD = "BIND_ADD", HUNT = "BIND_HUNT", ALARM = "BIND_ALARM", HELP = "BIND_HELP" }
 
 -- the small line in the middle of the screen (when the client has it) and the chat line
 local function say(text)
@@ -148,7 +149,8 @@ function Grip.Run(what)
   if what == "TOGGLE" then ns:Fire("TOGGLE_UI")
   elseif what == "ADD" then Grip.AddTarget("target")
   elseif what == "HUNT" then Grip.HuntTarget("target")
-  elseif what == "ALARM" then Grip.ToggleAlarm() end
+  elseif what == "ALARM" then Grip.ToggleAlarm()
+  elseif what == "HELP" and ns.Call and ns.Call.Trigger then ns.Call.Trigger() end
 end
 
 -- the one global the bindings call (Bindings.xml); an error is reported, never raised into the key handler

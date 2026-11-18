@@ -1012,4 +1012,39 @@ L.CHRON_OPEN_TIP = "Click: the feud told as a story"  -- tooltip of the word CHR
 L.GRIP_KEYS_WHERE = "Keys: Esc > Options > Key Bindings > {title}"  -- last line of the nameplate stepper tooltip: where the key bindings are set; the client's own menu words ({title} = the addon's title); languages without a client of their own keep the English menu words
 L.GRIP_KEY_HINT = "Tip: a key does this with your target. Set it: Esc > Options > Key Bindings > {title}."  -- chat, once per account after a typed '/dn add <name>' while no key is set for BIND_ADD: such a key exists and where to set it
 L.GRIP_KEY_HAVE = "Tip: your key {key} does this with your target."  -- chat, once per account after a typed '/dn add <name>' when a key is set for BIND_ADD; {key} = that key as the game writes it
+-- 1.6.0 call
+L.BIND_HELP = "Call for help (guild, group, friends)"  -- key binding (1.6.0 call): send a help call with your position to guild, group and friends who use the addon
+L.CALL_SENT = "Call for help sent to {list}."  -- chat and screen line after a help call went out; {list} = CALL_TO_GUILD, CALL_TO_GROUP, CALL_TO_FRIENDS joined by commas
+L.CALL_TO_GUILD = "guild"  -- part of CALL_SENT: the guild got the call
+L.CALL_TO_GROUP = "group"  -- part of CALL_SENT: the party or raid got the call
+L.CALL_TO_FRIENDS = "friends ({count})"  -- part of CALL_SENT: {count} friends with the addon got the call
+L.CALL_WAIT = "Next call for help in {seconds} s."  -- help call refused: one call per 30 seconds; {seconds} = seconds left
+L.CALL_NO_LOCKDOWN = "No call for help: the chat is locked right now."  -- help call refused: the client blocks addon messages right now (chat lockdown)
+L.CALL_NO_INSTANCE = "No call for help in dungeons, raids and battlegrounds."  -- help call refused: only in the open world
+L.CALL_NO_PLACE = "No call for help: your position cannot be read here."  -- help call refused: the client gives no map position here
+L.CALL_NO_ONE = "No call for help: no guild, group or friend with Revenge Book to reach."  -- help call refused: nobody to send it to (no guild, no group, no friend online with the addon)
+L.CALL_FAILED = "Call for help not sent (code {code})."  -- help call: the client refused every way; {code} = technical result code
+L.CALL_GCHAT_LINK = "Call in guild chat"  -- clickable word after CALL_SENT in the chat: posts a visible line in guild chat
+L.CALL_GCHAT = "Help needed: {zone} ({x}, {y})"  -- the visible guild chat line (plain words, read by players without the addon); {zone} = zone name, {x} {y} = map coordinates in percent
+L.CALL_GCHAT_BY = "Help needed: {zone} ({x}, {y}), attacker {name}"  -- as CALL_GCHAT with the attacker; {name} = his name
+L.CALL_GCHAT_NO = "Not sent to guild chat: {reason}"  -- chat: the guild chat line was not sent; {reason} = why (combat, lockdown, wait)
+L.CALL_IN = "{name} calls for help: {zone}"  -- a help call came in (chat line and the notice at the top of the screen); {name} = who calls, {zone} = zone name and CALL_SAME_ZONE or CALL_OTHER_ZONE in brackets
+L.CALL_IN_BY = "{name} calls for help: {zone}, attacker {attacker}"  -- as CALL_IN with the attacker; {attacker} = his name
+L.CALL_SAME_ZONE = "same zone"  -- in brackets after the zone of a help call: you are in the same zone
+L.CALL_OTHER_ZONE = "other zone"  -- in brackets after the zone of a help call: you are elsewhere
+L.CALL_SOMEWHERE = "unknown place"  -- zone name when the map ID has no name in this client
+L.CALL_MAP = "Map"  -- clickable word in the chat after a help call or sighting: opens the world map there
+L.CALL_TIP = "Click: open the map there · Right-click: close"  -- tooltip and last line of the help call notice: what the clicks do
+L.CALL_BUTTON = "Help"  -- [max 8] small button on the grudge notice (after an attack): sends a help call; one short word
+L.CALL_BUTTON_TIP = "Sends your position to guild, group and friends with Revenge Book."  -- tooltip of CALL_BUTTON (head: BIND_HELP)
+L.SIGHT_LINE = "{name} seen by {by}: {zone}, {ago}."  -- quiet chat line: a guildmate or friend saw one of your killers; {name} = the killer, {by} = who saw him, {zone} = zone, {ago} = '3 min ago'
+L.SIGHT_LINE_LAYER = "{name} seen by {by}: {zone}, {ago}, other layer."  -- as SIGHT_LINE when he is on another layer (shard) of the zone than you
+L.SIGHT_OTHER_LAYER = "Other layer than yours"  -- map pin tooltip of a sighting: it was on another layer (shard) than yours
+L.SCENE_TIP_CALL = "{caller} called for help here"  -- map pin tooltip head of a help call; {caller} = who called
+L.SCENE_TIP_SIGHT = "{name} seen here by {by}"  -- map pin tooltip head of a sighting; {name} = the killer in class colour, {by} = who saw him
+L.SCENE_TIP_ATTACKER = "Attacker: {name}"  -- map pin tooltip line of a help call: the attacker; {name} = his name
+L.SCENE_LEG_CALL = "call for help"  -- [max 32] legend in the tooltip of the map's switch: the red pulsing pin = a help call
+L.SCENE_LEG_SIGHT = "sighting"  -- [max 32] legend in the tooltip of the map's switch: the amber pin = a sighting of a killer by a guildmate or friend
+L.OPT_G_LAYERSIGHT = "Share sightings of my killers"  -- [max 44] check box (House Rules, sheet Guild, group SHARE): sightings of my killers go to guild and friends with place and layer, and theirs come in
+L.PROBE_NET = "Net probe: own channel and yell tried once; results in two minutes (/dn probe)."  -- chat after '/dn probe net': the one-time test of an own chat channel and of yell has started
 end)
