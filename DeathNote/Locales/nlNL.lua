@@ -1199,4 +1199,5 @@ L.EMPTY_JPLAYERS_SUB = "Andere doden: weergave {all}."
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Noodroep"
 L.CALL_SLIP_BY = "{zone} · aanvaller {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)

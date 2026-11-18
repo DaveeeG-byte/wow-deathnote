@@ -1207,4 +1207,5 @@ L.EMPTY_JPLAYERS_SUB = "其他死亡：{all} 檢視。"
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "求援"
 L.CALL_SLIP_BY = "{zone} · 攻擊者 {attacker}"
+L.GLOG_LINE_AT = "{text}，{place}"
 end)

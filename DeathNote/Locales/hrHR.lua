@@ -1206,4 +1206,5 @@ L.EMPTY_JPLAYERS_SUB = "Ostale smrti: prikaz {all}."
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Poziv u pomoć"
 L.CALL_SLIP_BY = "{zone} · napadač {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)

@@ -30,7 +30,10 @@ GLUI.FIT_HEAD = { sizes = { 22, 19, 16 } }
 GLUI.FIT_TAB = { sizes = { 11, 10 } }
 GLUI.FIT_ONE = { sizes = { 11, 10 } }
 GLUI.FIT_TWO = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
-GLUI.FIT_LINE = { sizes = { 13, 12 }, lines = 2, wrapFirst = true }
+-- design fix 1.6.0: the sentence in the running font (Nimrod, like the files), 8 between two entries, the time apart
+GLUI.FIT_LINE = { sizes = { 12, 11 }, lines = 2, wrapFirst = true }
+GLUI.GAP = 8
+GLUI.TIME_ALPHA = 0.7
 GLUI.FIT_BIG = { sizes = { 16, 14, 13 }, lines = 2, wrapFirst = true }
 GLUI.FIT_EMPTY = { sizes = { 16, 14, 13 }, lines = 5, wrapFirst = true }
 GLUI.FIT_CARD_HEAD = { sizes = { 26, 22, 19, 16 } }
@@ -103,6 +106,29 @@ function GLUI.PinLook(tex, kind)
   local tint = file ~= "scene_mate.tga" and SM.TINT and SM.TINT[kind]
   if tint then tex:SetVertexColor(tint[1], tint[2], tint[3], 1) else tex:SetVertexColor(1, 1, 1, 1) end
   tex.kind = file ~= "scene_mate.tga" and kind or nil
+end
+
+-- design fix 1.6.0: a sign in the margin for every kind: a mate's death the light skull pin, revenge the crossed
+-- blades, a bounty the coin, a release the crosshair (in ink), a call and a sighting their pins (PinLook)
+GLUI.SIGN = { death = "scene_mate.tga", avenged = "scene_kill.tga", bag = "scene_kill.tga", release = "crosshair.tga" }
+function GLUI.SignLook(tex, kind)
+  tex:SetDesaturated(false)
+  if kind == "call" or kind == "sight" then return GLUI.PinLook(tex, kind) end
+  if kind == "bounty" and Look.TEX and Look.TEX.coin then
+    tex:SetTexture(Look.TEX.coin)
+    tex:SetVertexColor(1, 1, 1, 1)
+    tex.kind = "bounty"
+    return
+  end
+  local file = GLUI.SIGN[kind] or "scene_mate.tga"
+  Look.Tex(tex, Look.MEDIA .. file)
+  if kind == "release" then
+    tex:SetDesaturated(true)
+    tex:SetVertexColor(C(Look.INK, 0.85))
+  else
+    tex:SetVertexColor(1, 1, 1, 1)
+  end
+  tex.kind = GLUI.SIGN[kind] and kind or nil
 end
 
 local function ShowPlace(place)
@@ -190,10 +216,14 @@ local function BuildLeft(LP)
   for i = 1, GLUI.LINES do
     local b = CreateFrame("Button", nil, p)
     b:SetSize(GLUI.LINE_W, 16)
-    b.text = Text(b, "hand", 13)
+    b.text = Text(b, "type", 12)
     b.text:SetPoint("TOPLEFT", 0, 0)
     b.text:SetWidth(GLUI.LINE_W)
     b.text:SetSpacing(1)
+    b.time = Text(b, "body", 10, GLUI.TIME_ALPHA)
+    b.time:SetPoint("TOPRIGHT", 0, -1)
+    b.time:SetJustifyH("RIGHT")
+    b.time:SetWordWrap(false)
     b.head = K().Label(b, "", true)
     b.head:SetPoint("TOPLEFT", 0, -2)
     b.head:SetWidth(GLUI.LINE_W)
@@ -207,7 +237,7 @@ local function BuildLeft(LP)
     b.pin.tex:SetPoint("CENTER", 0, 0)
     Look.Tex(b.pin.tex, Look.MEDIA .. "scene_mate.tga")
     b.pin:SetScript("OnClick", function(self) ShowPlace(self.place) end)
-    b.pin:SetScript("OnEnter", function(self) K().Tip(self, { L.SCENE_SHOW }) end)
+    b.pin:SetScript("OnEnter", function(self) if self.place then K().Tip(self, { L.SCENE_SHOW }) end end)
     b.pin:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
     b.pin:Hide()
     b:SetScript("OnClick", function(self) if self.event then Look.Sound("click"); GLUI.OpenName(self.event) end end)
@@ -261,11 +291,12 @@ function GLUI.FillLeft()
     b.pin.place = nil
     b.pin:Hide()
     -- a day head only with room for a line below it
-    if r and r.head and y + 20 + 32 > bottom then r = nil end
+    if r and r.head and y + 20 + 30 > bottom then r = nil end
     if r and y < bottom - 14 then
       b:ClearAllPoints()
       if r.head then
         b.text:SetText("")
+        b.time:SetText("")
         b.head:SetText(r.head)
         b.head:Show()
         b:SetHeight(16)
@@ -275,7 +306,13 @@ function GLUI.FillLeft()
       else
         b.head:SetText("")
         b.head:Hide()
-        Look.FitText(b.text, r.text, GLUI.FIT_LINE)
+        -- the time at the right edge of the first row, the sentence beside it
+        b.time:SetText(r.ago or "")
+        local tw = r.ago and r.ago ~= "" and (Look.TextW(b.time) or 0) or 0
+        if type(tw) ~= "number" or Look.Secret(tw) then tw = 60 end
+        b.time:SetWidth(math.ceil(tw) + 1)
+        b.text:SetWidth(GLUI.LINE_W - (tw > 0 and math.ceil(tw) + 8 or 0))
+        Look.FitText(b.text, r.say or r.text, GLUI.FIT_LINE)
         local h = math.max(16, math.ceil(Look.TextH(b.text, 2) or 16))
         if y + h > bottom then b:Hide(); break end
         b:SetHeight(h)
@@ -283,12 +320,14 @@ function GLUI.FillLeft()
         b:EnableMouse(true)
         b.event, b.full = r.event, r.text
         local place = r.event.place
+        GLUI.SignLook(b.pin.tex, r.event.k)
+        b.pin:EnableMouse(false)
         if place and ns.Scene and ns.Scene.ValidMap and ns.Scene.ValidMap(place.mapID) then
           b.pin.place = place
-          GLUI.PinLook(b.pin.tex, r.event.k)
-          b.pin:Show()
+          b.pin:EnableMouse(true)
         end
-        y = y + h + 3
+        b.pin:Show()
+        y = y + h + GLUI.GAP
       end
       b.text:SetTextColor(C(Look.INK))
       b:Show()

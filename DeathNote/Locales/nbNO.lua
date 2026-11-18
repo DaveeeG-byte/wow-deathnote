@@ -1199,4 +1199,5 @@ L.EMPTY_JPLAYERS_SUB = "Andre dødsfall: visning {all}."
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Nødrop"
 L.CALL_SLIP_BY = "{zone} · angriper {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)

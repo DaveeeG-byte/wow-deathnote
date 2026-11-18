@@ -602,6 +602,14 @@ function GL.Line(e)
   return Fmt(L.GLOG_LINE, { text = s, time = ago })
 end
 
+-- design fix 1.6.0: the line in two parts for the page: the sentence with the place, and the time apart (it stands
+-- at the right edge of the line's first row)
+function GL.Parts(e)
+  local s = GL.Sentence(e)
+  if e.zone and not GL.ZONE_IN_SENTENCE[e.k] then s = Fmt(L.GLOG_LINE_AT, { text = s, place = e.zone }) end
+  return s, (Util.Ago and Util.Ago(e.t) or "")
+end
+
 -- the day word of a time: "Today", "Yesterday", else the date
 function GL.DayWord(t, ref)
   ref = ref or now()
@@ -623,7 +631,8 @@ function GL.Rows(src)
   for _, e in ipairs(GL.Feed(src)) do
     local day = GL.DayWord(e.t, t0)
     if day ~= last then out[#out + 1] = { head = day }; last = day end
-    out[#out + 1] = { event = e, text = GL.Line(e) }
+    local say, ago = GL.Parts(e)
+    out[#out + 1] = { event = e, text = GL.Line(e), say = say, ago = ago }
   end
   return out
 end

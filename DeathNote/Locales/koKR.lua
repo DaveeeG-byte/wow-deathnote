@@ -1207,4 +1207,5 @@ L.EMPTY_JPLAYERS_SUB = "다른 죽음: {all} 보기."
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "도움 요청"
 L.CALL_SLIP_BY = "{zone} · 공격자 {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)

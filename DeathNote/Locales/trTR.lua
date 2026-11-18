@@ -1209,4 +1209,5 @@ L.EMPTY_JPLAYERS_SUB = "Diğer ölümler: {all} görünümü."
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Yardım çağrısı"
 L.CALL_SLIP_BY = "{zone} · saldıran {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)

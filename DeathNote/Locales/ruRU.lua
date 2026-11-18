@@ -1205,4 +1205,5 @@ L.EMPTY_JPLAYERS_SUB = "Остальные смерти: вид «{all}»."
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Зов на помощь"
 L.CALL_SLIP_BY = "{zone} · нападает {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)

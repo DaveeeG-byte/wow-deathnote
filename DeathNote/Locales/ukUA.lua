@@ -1206,4 +1206,5 @@ L.EMPTY_JPLAYERS_SUB = "Інші смерті: вигляд «{all}»."
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Клич на допомогу"
 L.CALL_SLIP_BY = "{zone} · нападає {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)

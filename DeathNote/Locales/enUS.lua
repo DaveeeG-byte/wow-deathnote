@@ -1214,4 +1214,5 @@ L.EMPTY_JPLAYERS_SUB = "So far creatures and the world see to that (view {all}).
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Call for help"  -- kicker of the help call's slip (letter-spaced, red, like the bounty notice's kicker): a guildmate or friend calls for help
 L.CALL_SLIP_BY = "{zone} · attacker {attacker}"  -- third line of the help call's slip (under the caller's name): the place and the attacker; {zone} = 'Ashenvale (same zone)', {attacker} = his name
+L.GLOG_LINE_AT = "{text}, {place}"  -- guild chronicle line with the zone, without the time (the time stands apart at the right edge); {text} = the sentence, {place} = the zone
 end)

@@ -1200,4 +1200,5 @@ L.EMPTY_JPLAYERS_SUB = "Muut kuolemat: näkymä {all}."
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Avunpyyntö"
 L.CALL_SLIP_BY = "{zone} · hyökkääjä {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)

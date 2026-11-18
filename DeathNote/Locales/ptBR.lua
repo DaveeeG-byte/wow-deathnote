@@ -1194,4 +1194,5 @@ L.EMPTY_JPLAYERS_SUB = "Outras mortes: visão {all}."
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Socorro"
 L.CALL_SLIP_BY = "{zone} · agressor {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)

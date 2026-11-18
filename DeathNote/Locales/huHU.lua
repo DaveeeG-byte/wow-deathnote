@@ -1208,4 +1208,5 @@ L.EMPTY_JPLAYERS_SUB = "A többi halál: {all} nézet."
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Segélykérés"
 L.CALL_SLIP_BY = "{zone} · támadó {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)

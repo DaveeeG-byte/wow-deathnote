@@ -1194,4 +1194,5 @@ L.EMPTY_JPLAYERS_SUB = "Bisher erledigen das Kreaturen und die Welt (Ansicht {al
 -- 1.6.0 design
 L.CALL_SLIP_HEAD = "Hilferuf"
 L.CALL_SLIP_BY = "{zone} · Angreifer {attacker}"
+L.GLOG_LINE_AT = "{text}, {place}"
 end)
