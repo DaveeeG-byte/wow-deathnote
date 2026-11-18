@@ -57,10 +57,17 @@ test("Decide: Todesstoß Spieler -> sicher, Mittäter in others", function()
   eq(#r.others, 1); eq(r.others[1], "A-X"); ok(r.othersInfo["A-X"])
 end)
 
-test("Decide: Todesstoß Mob -> pve, Spieler nur Kandidaten", function()
+-- 1.6.0 fixer (jl05): a creature's blow after a player's damage in the same stage is handled like a pet's without
+-- owner (totems, guardians: "Creature-" GUIDs without owner); only a stage without any player is "pve"
+test("Decide: Todesstoß Mob nach Spielerschaden -> wie Begleiter: Verdacht auf stärksten Spieler", function()
   local r = A0.Decide({ { stage = "recap", ok = true, sources = {
     { isPlayer = false, kb = true, amount = 1 }, src("A-X") } } })
-  eq(r.kind, "pve"); no(r.killerKey); eq(r.candidates[1], "A-X")
+  eq(r.kind, "pvp"); eq(r.killerKey, "A-X"); eq(r.sure, false); eq(r.candidates[1], "A-X")
+end)
+
+test("Decide: Todesstoß Mob ohne Spieler -> pve", function()
+  local r = A0.Decide({ { stage = "recap", ok = true, sources = { { isPlayer = false, kb = true, amount = 1 } } } })
+  eq(r.kind, "pve"); no(r.killerKey); eq(#r.candidates, 0)
 end)
 
 -- 1.6.0 fixer (jl04): the world's blow after a player's damage stays unclear with the player as candidate (1.5.0)

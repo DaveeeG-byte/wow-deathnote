@@ -183,11 +183,20 @@ function A.Decide(stages, suspects, opts)
         -- PvE death; this stage cannot name the owner -> next stage / suspects decide
         petCause = petCause or causeOf(kb)
         res = nil
+      elseif kb and kb.isPlayer == false and not kb.env and #players > 0 then
+        -- 1.6.0 fix: a creature's killing blow after a player's damage in the same stage is handled like a pet's
+        -- without owner (a totem, a guardian, a mirror image carry "Creature-" GUIDs and no owner in the recap):
+        -- never a creature of the death log, the player with the most damage stays the unsure killer
+        local top = players[1]
+        res.kind, res.killerKey, res.killerInfo, res.sure, res.spell = "pvp", top.key, top.info, false, kb.spell
+        res.others = keysExcept(players, top.key)
+        res.candidates = keysExcept(players, nil)
+        return res
       elseif kb then
         -- killing blow by a creature / environment / someone we cannot identify. 1.6.0 fix: the world's blow after a
         -- player's damage in the same stage (a fall after a knockback, lava, drowning) stays unclear with the players
         -- as candidates, as in 1.5.0; the world is only noted with the death (no row among the causes)
-        res.kind = (kb.isPlayer == false and (#players == 0 or not kb.env)) and "pve" or "unknown"
+        res.kind = (kb.isPlayer == false and #players == 0) and "pve" or "unknown"
         res.spell = kb.spell
         res.cause = causeOf(kb)
         res.candidates = keysExcept(players, nil)
