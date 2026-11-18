@@ -22,6 +22,7 @@ Plate.ORDER = { "off", "small", "medium", "large" }   -- the stepper on the Hous
 Plate.MEDIA = "Interface\\AddOns\\" .. (ADDON or "DeathNote") .. "\\Media\\"
 Plate.TEX = { pin = Plate.MEDIA .. "pin.tga", cross = Plate.MEDIA .. "crosshair.tga" }
 Plate.GAP = 2            -- px between the top of the plate and the mark
+Plate.RIM = 1            -- px of the light rim around the grey thumbtack (1.5.0 fixer)
 -- 1.5.0 fixer: every mark goes back to the pool (the game never frees a frame, so a cap below the marks ever built
 -- only builds new ones on the next wave); the pool never grows beyond the most marks shown at once
 
@@ -89,6 +90,11 @@ local function newMark()
   if f.EnableMouse then f:EnableMouse(false) end
   f.icon = f:CreateTexture(nil, "ARTWORK")
   f.icon:SetPoint("LEFT", 0, 0)
+  -- 1.5.0 fixer: a light rim behind the grey thumbtack (the same picture, a little bigger, pale), so it reads on
+  -- dark ground too; hidden for the other marks
+  f.rim = f:CreateTexture(nil, "BACKGROUND")
+  f.rim:SetPoint("CENTER", f.icon, "CENTER", 0, 0)
+  f.rim:Hide()
   f.score = f:CreateFontString(nil, "OVERLAY")
   f.score:SetPoint("LEFT", f.icon, "RIGHT", 2, 0)
   f.score:SetJustifyH("LEFT")
@@ -117,6 +123,17 @@ local function fill(m, kind, score)
   if okT == false then m.icon:SetColorTexture(0.7, 0.05, 0.05, 1) end
   if m.icon.SetDesaturated then m.icon:SetDesaturated(kind == "grudge") end
   if kind == "grudge" then m.icon:SetVertexColor(0.86, 0.83, 0.76, 0.95) else m.icon:SetVertexColor(1, 1, 1, 1) end
+  if m.rim then
+    if kind == "grudge" and okT ~= false then
+      m.rim:SetSize(icon + Plate.RIM * 2, icon + Plate.RIM * 2)
+      m.rim:SetTexture(tex)
+      if m.rim.SetDesaturated then m.rim:SetDesaturated(true) end
+      m.rim:SetVertexColor(1, 0.98, 0.92, 1)
+      m.rim:Show()
+    else
+      m.rim:Hide()
+    end
+  end
   local text = kind ~= "grudge" and type(score) == "string" and score or ""
   if Look and Look.Font then Look.Font(m.score, "body", sz.font, "OUTLINE") end
   local bone = Look and Look.BONE or { 0.93, 0.89, 0.8, 1 }
