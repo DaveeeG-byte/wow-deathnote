@@ -32,7 +32,12 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   J.check(code .. ": eine Anspruchszeile", #rows == 1 and rows[1].item.fdItem == "claim", #rows)
   J.check(code .. ": Zeile: Ziel, von Anna, offen", rows[1].name._text == "Taeter Lamm" and rows[1].mark._text == L.CLAIM_OPEN,
     rows[1].mark._text)
-  J.check(code .. ": rechts der Satz", RP.empty:IsVisible() and RP.empty.small._text == line, RP.empty.small._text)
+  -- design fix 1.6.0: a sheet pinned like the files; the head line is how much to whom, the target below it
+  local S = ns.FeudUI.Sheet()
+  local big = F(L.CLAIM_HEAD, { gold = ns.UI.Kit.GF.Gold(50), name = "Anna" })
+  J.check(code .. ": rechts der Satz", S and S:IsVisible() and not RP.empty:IsVisible() and S.big._text == big
+    and tostring(S.small._text):find(F(L.CLAIM_FOR, { target = "Taeter Lamm" }), 1, true) ~= nil,
+    S and (tostring(S.big._text) .. " | " .. tostring(S.small._text)))
   local paid = W.find(L.ACT_PAID)
   J.check(code .. ": Knoepfe Bezahlt und Ablehnen", paid ~= nil and W.find(L.ACT_DECLINE) ~= nil)
   W.click(paid)

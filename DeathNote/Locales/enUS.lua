@@ -1060,10 +1060,10 @@ L.GLOG_RECOMMEND_LINE = "I keep a Revenge Book: whoever kills one of us is writt
 L.GLOG_REC_WAIT = "Again in {minutes} min"  -- the button while it waits (once per 30 minutes)
 L.GLOG_REC_SENT = "Sent to the guild chat."
 L.GLOG_NO_GUILD_CHAT = "The guild chat is not available right now."
-L.GLOG_AV_HEAD = "AVENGERS OF THE WEEK"  -- head (red, letter-spaced): who took the most killers of the guild down in 7 days
+L.GLOG_AV_HEAD = "AVENGERS OF THE WEEK"  -- head (ink, letter-spaced): who took the most killers of the guild down in 7 days
 L.GLOG_AV_EMPTY = "Nobody has taken a killer of the guild down this week."
 L.GLOG_WANTED_HEAD = "MOST WANTED OF THE WEEK"  -- head: who killed the most guildmates in 7 days
-L.GLOG_WANTED_N = "{count} {count|guildmate|guildmates}"  -- right of a most wanted: how many guildmates he killed
+L.GLOG_WANTED_N = "{count} {count|death|deaths}"  -- right of a most wanted on the avengers' page: how many deaths of guildmates he caused this week (deaths, not people: one guildmate killed three times is 3)
 L.GLOG_WANTED_EMPTY = "No guildmate died this week."
 L.GLOG_CARD_GUILD = "{guild}"  -- head of the week card: the guild's name (add a word only if your language needs one)
 L.GLOG_CARD_NOGUILD = "Our guild"  -- the head without a guild name
@@ -1161,12 +1161,12 @@ L.OPT_FATES = "Also record deaths by creatures and the world"  -- check box in t
 L.SHARE_WEEK_OTHERS = "other deaths: {count}"  -- week line: deaths by creatures and the world this week
 L.SHARE_WEEK_BEAST = "deadliest creature: {name} {times}"  -- week line: the creature that killed you most this week; {name} = its name, {times} = '3x'
 -- 1.6.0 feud
-L.FEUD_EXPIRED_CHAT = "{count} old suspicions filed away (Unsolved, Filed)."  -- chat, once after login: entries with only suspicions or only attacks and no news for 30 play days were filed away; {count} = how many; where to find them (tab Unsolved, view Filed)
+L.FEUD_EXPIRED_CHAT = "{count} old suspicions filed away (Unsolved, Filed away)."  -- chat, once after login: entries with only suspicions or only attacks and no news for 30 play days were filed away; {count} = how many; where to find them (tab Unsolved, view Filed away = VIEW_FILED)
 L.VIEW_PLAYERS = "Players"  -- word switch at the bottom left of Wanted: the list of players (as before)
 L.VIEW_GUILDS = "Guilds"  -- word switch at the bottom left of Wanted: the page 'Which guilds kill you'
-L.VIEW_OPEN = "Open"  -- word switch at the bottom left of Unsolved: open cases and suspects (as before)
+L.VIEW_OPEN = "Cases"  -- word switch at the bottom left of Unsolved: open cases and suspects (as before)
 L.VIEW_CLAIMS = "Claims"  -- word switch at the bottom left of Unsolved: claims on your own bounties (a number may follow)
-L.VIEW_FILED = "Filed"  -- word switch at the bottom left of Unsolved: old suspicions filed away (a number may follow)
+L.VIEW_FILED = "Filed away"  -- word switch at the bottom left of Unsolved: old suspicions filed away (a number may follow)
 L.FEUD_MEMBERS = "{count} in book"  -- guild row, right, and tooltip: how many of this guild are in your book; {count} = number
 L.FEUD_KILLED_YOU = "killed you {times}"  -- guild row sub line: how often players of this guild killed you; {times} = '3×'
 L.FEUD_DECLARE = "Declare feud"  -- small word on a guild row and button: declare a feud on this guild (quiet alarm when its members show up)
@@ -1186,10 +1186,10 @@ L.CLAIM_BY = "by {name}"  -- claim row, sub line: who claims it; {name} = first 
 L.CLAIM_OPEN = "open"  -- mark of a claim: not settled yet
 L.CLAIM_PAID = "paid"  -- mark of a claim: you paid it (by trade, yourself)
 L.CLAIM_DECLINED = "declined"  -- mark of a claim: you declined it
-L.ACT_PAID = "Paid"  -- button on a claim: mark it as paid
+L.ACT_PAID = "Mark as paid"  -- button on a claim: you paid it yourself (by trade or mail) and tick it off; the book pays nothing
 L.ACT_DECLINE = "Decline"  -- button on a claim: decline it
 L.ACT_REOPEN = "Open again"  -- button on a settled claim: open again
-L.BANNER_CLAIM = "Bounty earned"  -- kicker of the notice (letter-spaced): a bounty of yours was earned
+L.BANNER_CLAIM = "Bounty due"  -- kicker of the notice (letter-spaced): a bounty of yours was earned and is due
 L.FILED_SINCE = "filed {time}"  -- row of a filed entry, sub line; {time} = '3 days ago'
 L.FILED_TINY = "Filed on {time} after 30 play days without news. Take it back and it stays."  -- page of a filed entry: why it is there and what taking it back does; {time} = date
 L.ACT_RESTORE = "Take back"  -- word and button: take a filed entry back into the book
@@ -1211,4 +1211,17 @@ L.OPT_G_LAYERSIGHT_TIP = "When you see a player who killed you, a guildmate or a
 L.EMPTY_WANTED_FATES = "Deaths by creatures and the world are in the {log}."  -- tab Wanted, empty, once the Death Log holds deaths by creatures or the world: where they are; {log} = the tab's name
 L.EMPTY_JPLAYERS_HEAD = "No death by a player yet."  -- Death Log, view Players, empty while other deaths (creatures, the world) are there: big line
 L.EMPTY_JPLAYERS_SUB = "So far creatures and the world see to that (view {all})."  -- under it, dry joke; {all} = the view word All (FATE_VIEW_ALL), where the other deaths are
+-- 1.6.0 design
+L.CALL_SLIP_HEAD = "Call for help"  -- kicker of the help call's slip (letter-spaced, red, like the bounty notice's kicker): a guildmate or friend calls for help
+L.CALL_SLIP_BY = "{zone} · attacker {attacker}"  -- third line of the help call's slip (under the caller's name): the place and the attacker; {zone} = 'Ashenvale (same zone)', {attacker} = his name
+L.GLOG_LINE_AT = "{text}, {place}"  -- guild chronicle line with the zone, without the time (the time stands apart at the right edge); {text} = the sentence, {place} = the zone
+L.FATE_LIST_HEAD = "Deaths by this cause"  -- section label on the file of a creature or the world (letter-spaced, like DEEDS on the poster): the list of your deaths by this same cause follows; the count stands on the right
+L.FATE_FIRST_LAST = "First {first}, last {last}"  -- under that list: the first and the latest death by this cause; {first}, {last} = date and time
+L.GLOG_OLD_N = "Older version: {count}"  -- guild chronicle, who has the book: one quiet line under the list, how many have an older version of the addon (the rows say it in faint ink); {count} = a number
+L.SHEET_CLAIM = "Claim"  -- head of the sheet on the right page for one claim on your bounty (tab Unsolved, view Claims)
+L.CLAIM_HEAD = "{gold} to {name}"  -- big line of a claim's sheet: what you owe to whom; {gold} = '250g' (the book's money word), {name} = the hunter's first name
+L.CLAIM_FOR = "for {target}"  -- under it: for which of your targets; {target} = the target's name
+L.CLAIM_NOTE = "The book pays nothing itself: by trade or mail."  -- small line on an open claim's sheet: the book moves no money
+L.FEUD_SHEET_HEAD = "Guild"  -- head of the sheet on the right page for an enemy guild (tab Wanted, view Guilds), big like CASE_HEAD
+L.FATE_LAST = "last {time}"  -- date at the top right of a cause's file: the latest death by it; {time} = date and time
 end)

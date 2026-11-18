@@ -1057,10 +1057,16 @@ function UX.MakeRow(parent, i)
   local tk = CreateFrame("Button", nil, r)
   tk:SetSize(60, 16)
   tk:SetPoint("BOTTOMRIGHT", -2, -3)
-  tk.text = Look.Text(tk, "body", 10, Look.RED_INK)
+  -- design fix 1.6.0: a word to click in a row is ink with a line under it (like the view switches); red only on hover
+  tk.text = Look.Text(tk, "body", 10, Look.INK)
   tk.text:SetPoint("RIGHT", -4, 0)
+  tk.line = tk:CreateTexture(nil, "ARTWORK")
+  tk.line:SetHeight(1)
+  tk.line:SetPoint("TOPLEFT", tk.text, "BOTTOMLEFT", 0, -1)
+  tk.line:SetPoint("TOPRIGHT", tk.text, "BOTTOMRIGHT", 0, -1)
+  tk.line:SetColorTexture(C(Look.INK, 0.6))
   tk:SetScript("OnEnter", function(self) self.text:SetTextColor(C(Look.RED)); Tip(self, { L.TIP_ROW_TAKE }) end)
-  tk:SetScript("OnLeave", function(self) self.text:SetTextColor(C(Look.RED_INK)); GameTooltip:Hide() end)
+  tk:SetScript("OnLeave", function(self) self.text:SetTextColor(C(Look.INK)); GameTooltip:Hide() end)
   tk:SetScript("OnClick", function(self) Look.Sound("click"); OV.TakeRow(self:GetParent()) end)
   tk:Hide()
   r.take = tk
@@ -1405,14 +1411,22 @@ function GF.BindHuntRow(r, h)
   r.under:SetWidth(InkWidth(r.name))
 end
 
+-- design fix 1.6.0: while a word switch stands at the bottom left (FeudUI: Players | Guilds, Cases | Claims | Filed
+-- away), the list ends one row earlier, so the switch stands free below it
+function UX.VisRows()
+  local on = LP and ((LP.fdWanted and LP.fdWanted:IsShown()) or (LP.fdOpen and LP.fdOpen:IsShown()))
+  return on and ROWS - 1 or ROWS
+end
+
 BindRows = function()
   local n = #data
-  local maxOff = math.max(0, n - ROWS)
+  local vis = UX.VisRows()
+  local maxOff = math.max(0, n - vis)
   if state.offset > maxOff then state.offset = maxOff end
   for i = 1, ROWS do
     local r = rows[i]
     local idx = state.offset + i
-    local item = data[idx]
+    local item = i <= vis and data[idx] or nil
     r.item, r.index = item, (dataIdx and dataIdx[idx]) or idx
     if item then
       if state.filter == "journal" then UX.BindDeathRow(r, item, r.index)
@@ -3760,6 +3774,7 @@ ShowRight = function()
   local n = #data
   P.enemy:Hide(); P.death:Hide(); RP.empty:Hide()
   if P.record then P.record:Hide() end
+  if P.feud then P.feud:Hide() end   -- design fix 1.6.0: the sheet of FeudUI.lua (guild, claim, filed)
   P:Show()
   if state.filter == "record" then
     -- 1.3.0: the own file, the latest kills or one victim; never the empty page (the file is always there)
@@ -6436,7 +6451,7 @@ function UX.BuildLeftPage()
   LR:SetAllPoints()
   LR:EnableMouseWheel(true)
   LR:SetScript("OnMouseWheel", function(_, delta)
-    local maxOff = math.max(0, #data - ROWS)
+    local maxOff = math.max(0, #data - UX.VisRows())
     local o = math.max(0, math.min(maxOff, state.offset - delta * 2))
     if o ~= state.offset then state.offset = o; HideMenu(); BindRows() end
   end)
@@ -6789,7 +6804,7 @@ end
 local function ScrollTo(pred)
   for i = 1, #data do
     if pred(data[i]) then
-      state.offset = math.max(0, math.min(i - 1, #data - ROWS))
+      state.offset = math.max(0, math.min(i - 1, #data - UX.VisRows()))
       break
     end
   end

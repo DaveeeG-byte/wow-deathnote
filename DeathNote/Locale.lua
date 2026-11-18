@@ -559,6 +559,7 @@ Locale.THEME_KEYS = {
   ALERT_TITLE_HUNT = true, ALERT_TITLE_VICTIM = true,   -- 1.3.0: the head of the victim alarm (Alert.lua)
   BOUNTY_GOLD = true, BOUNTY_SILVER = true,
   WELCOME = true, EMPTY_WANTED_HEAD = true, EMPTY_WANTED_SUB = true, EMPTY_JOURNAL_HEAD = true, EMPTY_JOURNAL_SUB = true,
+  FATE_STAMP = true,   -- 1.6.0 design: the stamp on the cause that killed you most often follows the cover's stamps
 }
 
 local words = {}        -- theme -> code -> builder; nil after activation

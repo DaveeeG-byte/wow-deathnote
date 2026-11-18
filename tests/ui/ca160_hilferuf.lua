@@ -76,11 +76,16 @@ local snd = #BM.sounds
 W.call("Anna", 1434, 40, 60, "Grimm-Bart", "Grimm Bart")
 local slip = W.slip()
 check("Zettel sichtbar", slip ~= nil and slip:IsShown())
+-- design fix 1.6.0: the slip is built like the bounty notice (kicker, the caller big, place and attacker below it);
+-- the whole sentence stays in the tooltip
 check("Text: Anna ruft um Hilfe, Zone, gleiche Zone, Angreifer",
-  slip and slip.head:GetText() == "Anna ruft um Hilfe: Schlingendorntal (gleiche Zone), Angreifer Grimm Bart", slip and slip.head:GetText())
+  slip and slip.name:GetText() == "Anna" and slip.line:GetText() == "Schlingendorntal (gleiche Zone) · Angreifer Grimm Bart"
+  and slip.full == "Anna ruft um Hilfe: Schlingendorntal (gleiche Zone), Angreifer Grimm Bart",
+  slip and (tostring(slip.name:GetText()) .. " | " .. tostring(slip.line:GetText())))
 check("laut: ein Alarmton", #BM.sounds == snd + 1, #BM.sounds - snd)
 check("Hinweis unten", slip.hint:GetText() == L.CALL_TIP)
-check("Zettel nicht abgeschnitten", not ns.Look.IsCut(slip.head) and not ns.Look.IsCut(slip.hint))
+check("Zettel nicht abgeschnitten", not ns.Look.IsCut(slip.kicker) and not ns.Look.IsCut(slip.name)
+  and not ns.Look.IsCut(slip.line) and not ns.Look.IsCut(slip.hint))
 local chat = AM.chat[#AM.chat] or ""
 check("Chatzeile mit Kartenlink", chat:find("Anna ruft um Hilfe", 1, true) and chat:find("|Haddon:DeathNote:call:map:%d+|h%[Karte%]"), chat)
 
@@ -101,7 +106,7 @@ G.HideUIPanel(W.wm); W.tick()
 
 W.tick(181)
 W.call("Berta", 1440, 10, 10)
-check("zweiter Ruf (anderer Absender): andere Zone", W.slip().head:GetText():find("Eschental (andere Zone)", 1, true) ~= nil, W.slip().head:GetText())
+check("zweiter Ruf (anderer Absender): andere Zone", W.slip().line:GetText():find("Eschental (andere Zone)", 1, true) ~= nil, W.slip().line:GetText())
 W.slip()._scripts.OnMouseUp(W.slip(), "RightButton"); W.tick()
 check("Rechtsklick schliesst", not W.slip():IsShown())
 W.tick(31)
@@ -162,7 +167,7 @@ ns.Grudge.Test(3); W.tick()
 card = rawget(G, "DeathNoteGrudge")
 local btn = card and card.dnCall
 check("Knopf Rufen an der Meldung (fixer 1.6.0: Rufen statt Hilfe)", btn ~= nil and btn:IsShown() and btn.text:GetText() == "Rufen", btn and btn.text:GetText())
-check("Kopfzeile macht Platz", card.head:GetWidth() <= 210 - 16 - 2 - 54, card.head:GetWidth())
+check("Kopfzeile macht Platz", card.head:GetWidth() <= 210 - 16 - 2 - ns.CallUI.BTN_W, card.head:GetWidth())
 local sent0 = #AM.addonSent
 W.tick(31)
 btn._scripts.OnClick(btn, "LeftButton"); W.tick()
@@ -216,7 +221,8 @@ for _, code in ipairs(LANGS) do
   local V = world(code)
   V.call("Annabellerosa Wintersturm", 1440, 10, 10, "Grimmwaldener-Bartholomaeus", "Grimmwaldener Bartholomaeus")
   local s = V.slip()
-  if not s or not s:IsShown() or V.ns.Look.IsCut(s.head) or V.ns.Look.IsCut(s.hint) then cut[#cut + 1] = code .. " Zettel" end
+  if not s or not s:IsShown() or V.ns.Look.IsCut(s.kicker) or V.ns.Look.IsCut(s.name)
+    or V.ns.Look.IsCut(s.line) or V.ns.Look.IsCut(s.hint) then cut[#cut + 1] = code .. " Zettel" end
   V.ns.Grudge.Test(3); V.tick()
   local c = rawget(V.G, "DeathNoteGrudge")
   local b = c and c.dnCall

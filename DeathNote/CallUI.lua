@@ -1,9 +1,9 @@
 local ADDON, ns = ...
 
 -- 1.6.0 call: what the help call and the sightings show (the logic is Call.lua).
---   * the notice of a received call: a small paper slip at the top of the screen with the red edge of the alarm, the
---     loud alarm sound (Look.Alarm, the player's sound and volume), "Anna calls for help: Ashenvale (same zone),
---     attacker Grimm". A click opens the map there (out of combat; in combat the map says so, as the book's places do),
+--   * the notice of a received call: a paper slip at the top of the screen like the bounty notice ("CALL FOR HELP",
+--     the caller big, "Ashenvale (same zone) · attacker Grimm"), the loud alarm sound (Look.Alarm, the player's sound
+--     and volume). A click opens the map there (out of combat; in combat the map says so, as the book's places do),
 --     a right click closes it; it goes by itself after SHOW seconds. With the alarm switched off (/dn quiet): only the
 --     chat line, no sound, no slip.
 --   * the button "Help" at the head of the grudge notice while an attacker stands on it (GrudgeCard.lua asks).
@@ -16,11 +16,20 @@ local L, Fmt = ns.L, ns.F
 local CU = {}
 ns.CallUI = CU
 
-CU.W, CU.PAD, CU.SHOW = 320, 10, 20
-CU.POINT = { "TOP", "TOP", 0, -150 }     -- below the raid warning, above the middle of the screen
-CU.FIT_HEAD = { sizes = { 13, 11, 10 }, lines = 3 }
-CU.FIT_HINT = { sizes = { 10, 9 } }
-CU.BTN_W, CU.BTN_H = 54, 15
+-- design fix 1.6.0: built like the bounty slip (a strip torn from a page): the spaced red kicker "CALL FOR HELP",
+-- the caller's name big in the head font, the place and the attacker in ink, the hint small and faded. It hangs below
+-- the band of the client's red error texts (UIErrorsFrame, TOP -122, 60 high), so it never reads as one of them.
+CU.W, CU.PAD, CU.SHOW = 352, 26, 20
+CU.LINE_W = 300
+CU.POINT = { "TOP", "TOP", 0, -186 }     -- below the client's error band (TOP -122 to -182)
+CU.FIT_KICKER = { sizes = { 10, 9 } }
+CU.FIT_NAME = { sizes = { 19, 16, 13 } }
+CU.FIT_LINE = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
+CU.FIT_HINT = { sizes = { 9 } }
+CU.HINT_ALPHA = 0.6
+-- design fix 1.6.0: the button on the grudge notice is a target for a click in a fight: 72 x 18, the word at 11 pt
+CU.BTN_W, CU.BTN_H = 72, 18
+CU.FIT_BTN = { sizes = { 11, 10, 9 } }
 
 local slip
 local function C(c, a) return c[1], c[2], c[3], a or c[4] or 1 end
@@ -38,28 +47,34 @@ end
 
 local function build()
   slip = CreateFrame("Frame", "DeathNoteCall", UIParent)
-  slip:SetSize(CU.W, 56)
+  slip:SetSize(CU.W, 80)
   slip:SetFrameStrata("HIGH")
   slip:SetClampedToScreen(true)
   slip:EnableMouse(true)
   slip:Hide()
   local p = CU.POINT
   slip:SetPoint(p[1], UIParent, p[2], p[3], p[4])
+  -- the slip of the bounty notice (ragged ends that fade out), tinted like the theme's slip
   local bg = slip:CreateTexture(nil, "BACKGROUND")
   bg:SetAllPoints()
-  Look.Skin(bg, "paper")
-  local edge = slip:CreateTexture(nil, "BORDER")
-  edge:SetPoint("TOPLEFT", 0, 0); edge:SetPoint("BOTTOMLEFT", 0, 0)
-  edge:SetWidth(3)
-  edge:SetColorTexture(C(Look.RED_INK, 0.9))
-  slip.head = Look.Text(slip, "body", 13, Look.RED_INK)
-  slip.head:SetPoint("TOPLEFT", CU.PAD + 2, -8)
-  slip.head:SetWidth(CU.W - 2 * CU.PAD - 2)
-  slip.head:SetJustifyH("LEFT")
-  slip.hint = Look.Text(slip, "body", 10, Look.INK)
-  slip.hint:SetPoint("BOTTOMLEFT", CU.PAD + 2, 7)
-  slip.hint:SetWidth(CU.W - 2 * CU.PAD - 2)
-  slip.hint:SetJustifyH("LEFT")
+  Look.Skin(bg, "slip")
+  Look.Tint(bg, Look.TINT.slip or Look.TINT.paper)
+  slip.bg = bg
+  slip.kicker = Look.Text(slip, "body", 10, Look.RED_INK)
+  slip.kicker:SetPoint("TOP", 0, -7)
+  slip.kicker:SetWidth(CU.LINE_W)
+  slip.kicker:SetWordWrap(false)
+  slip.name = Look.Text(slip, "head", 19, Look.INK)
+  slip.name:SetPoint("TOP", slip.kicker, "BOTTOM", 0, -1)
+  slip.name:SetWidth(CU.LINE_W)
+  slip.name:SetWordWrap(false)
+  slip.line = Look.Text(slip, "body", 11, Look.INK)
+  slip.line:SetPoint("TOP", slip.name, "BOTTOM", 0, -2)
+  slip.line:SetWidth(CU.LINE_W)
+  slip.line:SetJustifyH("CENTER")
+  slip.hint = Look.Text(slip, "body", 9, { Look.INK[1], Look.INK[2], Look.INK[3], CU.HINT_ALPHA })
+  slip.hint:SetPoint("BOTTOM", 0, 7)
+  slip.hint:SetWidth(CU.LINE_W)
   slip.hint:SetWordWrap(false)
   slip:SetScript("OnMouseUp", function(self, mouse)
     if mouse == "RightButton" then hide(); return end
@@ -71,11 +86,20 @@ local function build()
     local tip = G("GameTooltip")
     if not tip then return end
     tip:SetOwner(self, "ANCHOR_BOTTOM")
-    tip:SetText(self.head:GetText() or "", 1, 1, 1, 1, true)
+    tip:SetText(self.full or "", 1, 1, 1, 1, true)
     tip:AddLine(L.CALL_TIP, 0.85, 0.82, 0.75, true)
     tip:Show()
   end)
   slip:SetScript("OnLeave", function() local tip = G("GameTooltip"); if tip then tip:Hide() end end)
+end
+
+-- the slip's third line: "Ashenvale (same zone) · attacker Grimm" (the words of Call.InLine without the caller)
+function CU.Where(rec)
+  local where = rec.same == true and L.CALL_SAME_ZONE or rec.same == false and L.CALL_OTHER_ZONE or nil
+  local zone = rec.zone or L.CALL_SOMEWHERE
+  if where then zone = zone .. " (" .. where .. ")" end
+  if rec.display then return Fmt(L.CALL_SLIP_BY, { zone = zone, attacker = rec.display }) end
+  return zone
 end
 
 -- 1.6.0 fix: the slip and the alarm never cover each other. While the alarm stands where the slip would, the slip goes
@@ -96,8 +120,9 @@ function CU.Place()
     local st = H + p[4]
     local sb, sl, sr = st - sh, W / 2 - CU.W / 2, W / 2 + CU.W / 2
     if sl < r and sr > l and sb < t + CU.GAP and st > b - CU.GAP then
-      if H - (t + CU.GAP) >= sh then where = { "BOTTOM", (l + r) / 2, t + CU.GAP }
-      else where = { "TOP", (l + r) / 2, b - CU.GAP } end
+      -- design fix 1.6.0: below the alarm (above it would be the client's error band), above only without room below
+      if b - CU.GAP - sh >= 0 then where = { "TOP", (l + r) / 2, b - CU.GAP }
+      else where = { "BOTTOM", (l + r) / 2, t + CU.GAP } end
     end
   end
   slip:ClearAllPoints()
@@ -113,6 +138,15 @@ function CU.Place()
       pop:HookScript("OnHide", function() pcall(CU.Place) end)
     end
   end
+  -- the bounty notice keeps clear of the slip (Extras.PlaceBanner asks CU.Rect)
+  local X = ns.Extras
+  if X and X.PlaceBanner then pcall(X.PlaceBanner) end
+end
+
+-- the shown slip in UIParent units (for the bounty notice), else nil
+function CU.Rect()
+  if not (slip and slip:IsShown()) then return nil end
+  return Look.Rect(slip)
 end
 
 -- the slip for a received call
@@ -120,11 +154,20 @@ function CU.Show(rec)
   L, Fmt = ns.L, ns.F
   if not slip then build() end
   slip.rec = rec
-  Look.FitText(slip.head, ns.Call.InLine(rec), CU.FIT_HEAD)
+  slip.full = ns.Call.InLine(rec)
+  local Ex = ns.Extras
+  Look.FitText(slip.kicker, Ex and Ex.Spaced and Ex.Spaced(L.CALL_SLIP_HEAD) or L.CALL_SLIP_HEAD, CU.FIT_KICKER)
+  Look.FitText(slip.name, tostring(rec.by or "?"), CU.FIT_NAME)
+  Look.FitText(slip.line, CU.Where(rec), CU.FIT_LINE)
   Look.FitText(slip.hint, L.CALL_TIP, CU.FIT_HINT)
-  local h = (slip.head.GetStringHeight and slip.head:GetStringHeight()) or 16
-  if type(h) ~= "number" or h <= 0 then h = 16 end
-  slip:SetHeight(math.max(48, math.ceil(h) + 8 + 22))
+  local function h(fs, n, d)
+    local v = Look.TextH and Look.TextH(fs, n) or (fs.GetStringHeight and fs:GetStringHeight())
+    if type(v) ~= "number" or Look.Secret(v) or v <= 0 then v = d end
+    return math.ceil(v)
+  end
+  -- 7 top, kicker, 1, name, 2, place (one or two lines), 3, hint, 7 bottom
+  slip:SetHeight(7 + h(slip.kicker, 1, 12) + 1 + h(slip.name, 1, 22) + 2 + h(slip.line, 2, 13) + 3
+    + h(slip.hint, 1, 11) + 7)
   slip:Show()
   pcall(CU.Place)
   local token = {}
@@ -172,7 +215,8 @@ function CU.OnCard(card, e, n)
     b:HookScript("OnLeave", function() local tip = G("GameTooltip"); if tip then tip:Hide() end end)
     card.dnCall = b
   end
-  b:SetLabel(L.CALL_BUTTON)
+  b.text:SetWidth(CU.BTN_W - 6)
+  Look.FitText(b.text, L.CALL_BUTTON, CU.FIT_BTN)
   b:Show()
   return CU.BTN_W + 6
 end

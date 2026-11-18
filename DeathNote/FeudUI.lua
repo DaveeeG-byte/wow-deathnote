@@ -136,9 +136,10 @@ local function BindHead(r, h)
     r.name:SetPoint("TOPLEFT", 40, -2)
     r.name:SetPoint("RIGHT", -inset, 0)
   end
-  local killed, stand, seen = GuildFacts(g)
+  -- design fix 1.6.0: "seen ..." stays in the tooltip and on the sheet; the row says deaths and score whole
+  local killed, stand = GuildFacts(g)
   local word = g.feud and L.FEUD_END or L.FEUD_DECLARE
-  k.SetRow(r, g.name, { Look.Join(killed, stand, seen), Look.Join(killed, stand), killed or stand }, word,
+  k.SetRow(r, g.name, { Look.Join(killed, stand), killed or stand }, word,
     g.feud and "red" or "normal", true)
   Word(r, word)
   r.tri:SetShown(g.n > 0)
@@ -262,22 +263,70 @@ end
 ---------------------------------------------------------------------------
 -- Right page
 ---------------------------------------------------------------------------
-local function Buttons(RP)
-  local E = RP.empty
-  if E.fdA then return E end
+-- design fix 1.6.0: the right page of a guild, a claim and a filed entry is a sheet pinned with tape like the death
+-- file and the cause's file (head left, date right, a line, the text left-aligned, the buttons at the bottom left),
+-- not the empty page with the skull (that one says "nothing here"). Built on P (the poster frame), shown as a card.
+FD.SHEET_W, FD.BTN_W = 352, 150
+FD.FIT_HEAD = { sizes = { 26, 22, 19, 16 } }
+FD.FIT_BIG = { sizes = { 22, 19, 16 }, lines = 2, wrapFirst = true }
+FD.FIT_SMALL = { sizes = { 13, 11 }, lines = 3, wrapFirst = true }
+FD.FIT_TINY = { sizes = { 11, 10 }, lines = 4, wrapFirst = true }
+FD.FIT_WHEN = { sizes = { 11, 10, 9 } }
+local function SheetOf()
   local k = kit()
-  E.fdA = k.InkButton(E, "", 120, 24, nil)
-  E.fdB = k.InkButton(E, "", 120, 24, nil)
-  E.fdA:SetPoint("TOP", E.tiny, "BOTTOM", -66, -18)
-  E.fdB:SetPoint("LEFT", E.fdA, "RIGHT", 12, 0)
-  E.fdA:Hide(); E.fdB:Hide()
-  return E
+  local _, _, _, P = k.Frames()
+  if not P then return nil end
+  local S = P.feud
+  if S then return S, P end
+  S = CreateFrame("Frame", nil, P)
+  S:SetAllPoints()
+  S.head = Look.Text(S, "head", 26, Look.INK)
+  S.head:SetPoint("TOPLEFT", 24, -16)
+  S.head:SetWidth(150)
+  S.head:SetJustifyH("LEFT")
+  S.head:SetWordWrap(false)
+  S.when = Look.Text(S, "type", 11, Look.INK)
+  S.when:SetPoint("TOPRIGHT", -24, -28)
+  S.when:SetWidth(160)
+  S.whenHit = CreateFrame("Frame", nil, S)
+  S.whenHit:SetAllPoints(S.when)
+  Look.TipIfCut(S.whenHit, S.when)
+  S.when:SetJustifyH("RIGHT")
+  S.when:SetWordWrap(false)
+  local rule = S:CreateTexture(nil, "ARTWORK")
+  rule:SetHeight(1)
+  rule:SetPoint("TOPLEFT", 24, -52)
+  rule:SetPoint("TOPRIGHT", -24, -52)
+  rule:SetColorTexture(Look.INK[1], Look.INK[2], Look.INK[3], 0.7)
+  S.big = Look.Text(S, "hand", 22, Look.INK)
+  S.big:SetPoint("TOPLEFT", 24, -66)
+  S.big:SetWidth(304)
+  S.big:SetJustifyH("LEFT")
+  S.small = Look.Text(S, "type", 13, Look.INK)
+  S.small:SetPoint("TOPLEFT", S.big, "BOTTOMLEFT", 0, -8)
+  S.small:SetWidth(304)
+  S.small:SetJustifyH("LEFT")
+  S.small:SetSpacing(3)
+  S.tiny = Look.Text(S, "type", 11, Look.INK)
+  S.tiny:SetTextColor(Look.INK[1], Look.INK[2], Look.INK[3], Look.TONE.sub)
+  S.tiny:SetPoint("TOPLEFT", S.small, "BOTTOMLEFT", 0, -14)
+  S.tiny:SetWidth(304)
+  S.tiny:SetJustifyH("LEFT")
+  S.tiny:SetSpacing(2)
+  S.fdA = k.InkButton(S, "", FD.BTN_W, 24, nil)
+  S.fdB = k.InkButton(S, "", FD.BTN_W, 24, nil)
+  S.fdA:SetPoint("BOTTOMLEFT", 20, 10)
+  S.fdB:SetPoint("LEFT", S.fdA, "RIGHT", 8, 0)
+  S.fdA:Hide(); S.fdB:Hide()
+  S:Hide()
+  P.feud = S
+  return S, P
 end
+FD.Sheet = SheetOf
 local function HideButtons()
   local k = kit()
-  local _, _, RP = k.Frames()
-  local E = RP and RP.empty
-  if E and E.fdA then E.fdA:Hide(); E.fdB:Hide() end
+  local _, _, _, P = k.Frames()
+  if P and P.feud then P.feud:Hide() end
 end
 local function SetButton(b, text, fn)
   if not text then b:Hide(); b.fn = nil; return end
@@ -286,19 +335,28 @@ local function SetButton(b, text, fn)
   b:Show()
 end
 
--- shows the empty page with own texts and up to two buttons
-local function Page(kind, big, small, tiny, a, fa, b, fb)
+-- shows the sheet: head word, date, the big line, two smaller blocks and up to two buttons
+local function Page(head, when, big, small, tiny, a, fa, b, fb)
   local k = kit()
   local _, _, RP = k.Frames()
-  k.ShowEmpty(kind)
-  local E = Buttons(RP)
-  E.big:SetText(big or "")
-  E.small:SetText(small or "")
-  E.tiny:SetText(tiny or "")
-  SetButton(E.fdA, a, fa)
-  SetButton(E.fdB, b, fb)
-  if a and not b then E.fdA:ClearAllPoints(); E.fdA:SetPoint("TOP", E.tiny, "BOTTOM", 0, -18)
-  else E.fdA:ClearAllPoints(); E.fdA:SetPoint("TOP", E.tiny, "BOTTOM", -66, -18) end
+  local S, P = SheetOf()
+  if not S then return end
+  RP.empty:Hide()
+  P.enemy:Hide(); P.death:Hide()
+  if P.record then P.record:Hide() end
+  -- the card: tape instead of the thumbtack
+  P.pin:Hide()
+  if P.dnPin then P.dnPin:Hide() end
+  P.card:Show()
+  Look.FitText(S.head, head or "", FD.FIT_HEAD)
+  Look.FitText(S.when, when or "", FD.FIT_WHEN)
+  Look.FitText(S.big, big or "", FD.FIT_BIG)
+  Look.FitText(S.small, small or "", FD.FIT_SMALL)
+  Look.FitText(S.tiny, tiny or "", FD.FIT_TINY)
+  SetButton(S.fdA, a, fa)
+  SetButton(S.fdB, b, fb)
+  P:Show()
+  S:Show()
 end
 
 function FD.EmptyKind()
@@ -327,9 +385,13 @@ function FD.ShowRight()
     for i = 1, #data do if data[i].g and FD.opened[data[i].g.name] then h = data[i]; break end end
     local g = h and h.g
     if not g then return nil end
-    local killed, stand, seen = GuildFacts(g)
-    Page("fguild", g.name, Look.Join(killed, stand), Look.Join(Fmt(L.FEUD_MEMBERS, { count = g.n }), seen),
-      g.feud and L.FEUD_END or L.FEUD_DECLARE, function() ToggleFeud(g.name) end)
+    local killed, stand = GuildFacts(g)
+    local lines = {}
+    if killed then lines[#lines + 1] = killed end
+    lines[#lines + 1] = stand
+    lines[#lines + 1] = Fmt(L.FEUD_MEMBERS, { count = g.n })
+    Page(L.FEUD_SHEET_HEAD, g.seen and Fmt(L.ROW_SEEN, { time = Look.Ago(g.seen) }) or "", g.name, table.concat(lines, "\n"),
+      g.feud and L.FEUD_TIP_ON or nil, g.feud and L.FEUD_END or L.FEUD_DECLARE, function() ToggleFeud(g.name) end)
     return true
   end
   if not OpenView() then return nil end
@@ -339,19 +401,23 @@ function FD.ShowRight()
   if not w then return nil end
   if w.fdItem == "claim" then
     local c = w.c
-    local line = Fmt(L.CLAIM_LINE, { name = Look.First(c.by), target = w.name, gold = c.g })
-    local tiny = Look.Join(Look.When(c.t), L[STATE_WORD[c.state] or "CLAIM_OPEN"])
+    -- design fix 1.6.0: the head line is what to do (how much to whom), the target below it
+    local big = Fmt(L.CLAIM_HEAD, { gold = k.GF.Gold(c.g), name = Look.First(c.by) })
+    local small = Fmt(L.CLAIM_FOR, { target = w.name })
+    local state = L[STATE_WORD[c.state] or "CLAIM_OPEN"]
     local Fe = Feud()
     if c.state == "open" then
-      Page("fclaims", w.name, line, tiny, L.ACT_PAID, function() Fe.SetClaim(c, "paid"); k.Refresh() end,
+      Page(L.SHEET_CLAIM, Look.When(c.t), big, small .. "\n" .. state, L.CLAIM_NOTE,
+        L.ACT_PAID, function() Fe.SetClaim(c, "paid"); k.Refresh() end,
         L.ACT_DECLINE, function() Fe.SetClaim(c, "declined"); k.Refresh() end)
     else
-      Page("fclaims", w.name, line, tiny, L.ACT_REOPEN, function() Fe.SetClaim(c, "open"); k.Refresh() end)
+      Page(L.SHEET_CLAIM, Look.When(c.t), big, small .. "\n" .. state, nil,
+        L.ACT_REOPEN, function() Fe.SetClaim(c, "open"); k.Refresh() end)
     end
   else
     local e = w.e
-    Page("ffiled", Look.Name(e), Look.Tally(e), Fmt(L.FILED_TINY, { time = Look.When(e.expiredAt) }),
-      L.ACT_RESTORE, function() Restore(w.key) end)
+    Page(L.VIEW_FILED, Look.When(e.expiredAt), Look.Name(e), Look.Tally(e),
+      Fmt(L.FILED_TINY, { time = Look.When(e.expiredAt) }), L.ACT_RESTORE, function() Restore(w.key) end)
   end
   return true
 end

@@ -30,7 +30,10 @@ GLUI.FIT_HEAD = { sizes = { 22, 19, 16 } }
 GLUI.FIT_TAB = { sizes = { 11, 10 } }
 GLUI.FIT_ONE = { sizes = { 11, 10 } }
 GLUI.FIT_TWO = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
-GLUI.FIT_LINE = { sizes = { 13, 12 }, lines = 2, wrapFirst = true }
+-- design fix 1.6.0: the sentence in the running font (Nimrod, like the files), 8 between two entries, the time apart
+GLUI.FIT_LINE = { sizes = { 13, 11 }, lines = 2, wrapFirst = true }
+GLUI.GAP = 8
+GLUI.TIME_ALPHA = 0.7
 GLUI.FIT_BIG = { sizes = { 16, 14, 13 }, lines = 2, wrapFirst = true }
 GLUI.FIT_EMPTY = { sizes = { 16, 14, 13 }, lines = 5, wrapFirst = true }
 GLUI.FIT_CARD_HEAD = { sizes = { 26, 22, 19, 16 } }
@@ -103,6 +106,29 @@ function GLUI.PinLook(tex, kind)
   local tint = file ~= "scene_mate.tga" and SM.TINT and SM.TINT[kind]
   if tint then tex:SetVertexColor(tint[1], tint[2], tint[3], 1) else tex:SetVertexColor(1, 1, 1, 1) end
   tex.kind = file ~= "scene_mate.tga" and kind or nil
+end
+
+-- design fix 1.6.0: a sign in the margin for every kind: a mate's death the light skull pin, revenge the crossed
+-- blades, a bounty the coin, a release the crosshair (in ink), a call and a sighting their pins (PinLook)
+GLUI.SIGN = { death = "scene_mate.tga", avenged = "scene_kill.tga", bag = "scene_kill.tga", release = "crosshair.tga" }
+function GLUI.SignLook(tex, kind)
+  tex:SetDesaturated(false)
+  if kind == "call" or kind == "sight" then return GLUI.PinLook(tex, kind) end
+  if kind == "bounty" and Look.TEX and Look.TEX.coin then
+    tex:SetTexture(Look.TEX.coin)
+    tex:SetVertexColor(1, 1, 1, 1)
+    tex.kind = "bounty"
+    return
+  end
+  local file = GLUI.SIGN[kind] or "scene_mate.tga"
+  Look.Tex(tex, Look.MEDIA .. file)
+  if kind == "release" then
+    tex:SetDesaturated(true)
+    tex:SetVertexColor(C(Look.INK, 0.85))
+  else
+    tex:SetVertexColor(1, 1, 1, 1)
+  end
+  tex.kind = GLUI.SIGN[kind] and kind or nil
 end
 
 local function ShowPlace(place)
@@ -190,11 +216,15 @@ local function BuildLeft(LP)
   for i = 1, GLUI.LINES do
     local b = CreateFrame("Button", nil, p)
     b:SetSize(GLUI.LINE_W, 16)
-    b.text = Text(b, "hand", 13)
+    b.text = Text(b, "type", 13)
     b.text:SetPoint("TOPLEFT", 0, 0)
     b.text:SetWidth(GLUI.LINE_W)
     b.text:SetSpacing(1)
-    b.head = K().Label(b, "", true)
+    b.time = Text(b, "body", 10, GLUI.TIME_ALPHA)
+    b.time:SetPoint("TOPRIGHT", 0, -1)
+    b.time:SetJustifyH("RIGHT")
+    b.time:SetWordWrap(false)
+    b.head = K().Label(b, "")
     b.head:SetPoint("TOPLEFT", 0, -2)
     b.head:SetWidth(GLUI.LINE_W)
     b.head:SetJustifyH("LEFT")
@@ -207,7 +237,7 @@ local function BuildLeft(LP)
     b.pin.tex:SetPoint("CENTER", 0, 0)
     Look.Tex(b.pin.tex, Look.MEDIA .. "scene_mate.tga")
     b.pin:SetScript("OnClick", function(self) ShowPlace(self.place) end)
-    b.pin:SetScript("OnEnter", function(self) K().Tip(self, { L.SCENE_SHOW }) end)
+    b.pin:SetScript("OnEnter", function(self) if self.place then K().Tip(self, { L.SCENE_SHOW }) end end)
     b.pin:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
     b.pin:Hide()
     b:SetScript("OnClick", function(self) if self.event then Look.Sound("click"); GLUI.OpenName(self.event) end end)
@@ -261,11 +291,12 @@ function GLUI.FillLeft()
     b.pin.place = nil
     b.pin:Hide()
     -- a day head only with room for a line below it
-    if r and r.head and y + 20 + 32 > bottom then r = nil end
+    if r and r.head and y + 20 + 30 > bottom then r = nil end
     if r and y < bottom - 14 then
       b:ClearAllPoints()
       if r.head then
         b.text:SetText("")
+        b.time:SetText("")
         b.head:SetText(r.head)
         b.head:Show()
         b:SetHeight(16)
@@ -275,7 +306,13 @@ function GLUI.FillLeft()
       else
         b.head:SetText("")
         b.head:Hide()
-        Look.FitText(b.text, r.text, GLUI.FIT_LINE)
+        -- the time at the right edge of the first row, the sentence beside it
+        b.time:SetText(r.ago or "")
+        local tw = r.ago and r.ago ~= "" and (Look.TextW(b.time) or 0) or 0
+        if type(tw) ~= "number" or Look.Secret(tw) then tw = 60 end
+        b.time:SetWidth(math.ceil(tw) + 1)
+        b.text:SetWidth(GLUI.LINE_W - (tw > 0 and math.ceil(tw) + 8 or 0))
+        Look.FitText(b.text, r.say or r.text, GLUI.FIT_LINE)
         local h = math.max(16, math.ceil(Look.TextH(b.text, 2) or 16))
         if y + h > bottom then b:Hide(); break end
         b:SetHeight(h)
@@ -283,12 +320,14 @@ function GLUI.FillLeft()
         b:EnableMouse(true)
         b.event, b.full = r.event, r.text
         local place = r.event.place
+        GLUI.SignLook(b.pin.tex, r.event.k)
+        b.pin:EnableMouse(false)
         if place and ns.Scene and ns.Scene.ValidMap and ns.Scene.ValidMap(place.mapID) then
           b.pin.place = place
-          GLUI.PinLook(b.pin.tex, r.event.k)
-          b.pin:Show()
+          b.pin:EnableMouse(true)
         end
-        y = y + h + 3
+        b.pin:Show()
+        y = y + h + GLUI.GAP
       end
       b.text:SetTextColor(C(Look.INK))
       b:Show()
@@ -306,7 +345,15 @@ function GLUI.FillLeft()
     p.empty:Hide()
   end
   if #rows > shown then
-    p.foot:SetText(Fmt(L.GLOG_FOOT_MORE, { from = state.offset + 1, to = last, count = #rows }))
+    -- design fix 1.6.0: the foot counts events like the line under the head (the day heads are no events)
+    local from, to = 0, 0
+    for i = 1, last do
+      if rows[i] and rows[i].event then
+        to = to + 1
+        if i <= state.offset then from = to end
+      end
+    end
+    p.foot:SetText(Fmt(L.GLOG_FOOT_MORE, { from = math.min(from + 1, math.max(1, to)), to = to, count = events }))
   else
     p.foot:SetText("")
   end
@@ -368,6 +415,11 @@ local function BuildHolders(p)
     local o = math.max(0, math.min(math.max(0, n - GLUI.HOLD_ROWS), state.hoff - delta * 2))
     if o ~= state.hoff then state.hoff = o; GLUI.FillHolders() end
   end)
+  -- design fix 1.6.0: one line under the list counts the older versions (the rows say it in faint ink)
+  v.old = Text(v, "body", 10, Look.TONE.sub)
+  v.old:SetWidth(GLUI.W - 48)
+  v.old:SetWordWrap(false)
+  v.old:Hide()
   v.hint = Text(v, "body", 10, Look.TONE.sub)
   v.hint:SetPoint("TOPLEFT", 24, -(96 + GLUI.HOLD_ROWS * GLUI.ROW_H + 6))
   v.hint:SetWidth(GLUI.W - 48)
@@ -393,15 +445,23 @@ function GLUI.FillHolders()
   Look.FitText(v.line, line, GLUI.FIT_BIG)
   if state.hoff > math.max(0, #list - GLUI.HOLD_ROWS) then state.hoff = math.max(0, #list - GLUI.HOLD_ROWS) end
   local Util = ns.Util
+  -- design fix 1.6.0: the list starts 16 below the head line (one or two lines), never lower than before
+  local top = math.min(96, 48 + math.ceil(Look.TextH(v.line, 2) or 20) + 16)
+  local old, lastY = 0, nil
+  for _, x in ipairs(list) do if x.old then old = old + 1 end end
   for i, r in ipairs(v.rows) do
     local x = list[state.hoff + i]
+    r:ClearAllPoints()
+    r:SetPoint("TOPLEFT", 24, -(top + (i - 1) * GLUI.ROW_H))
     if x then
+      lastY = top + i * GLUI.ROW_H
       Look.FitText(r.name, x.me and Fmt(L.GLOG_ME, { name = x.name }) or x.name, GLUI.FIT_ONE)
       r.name:SetTextColor(C(Look.INK, x.online and 1 or Look.TONE.sub))
       local vt = x.v or L.GLOG_VERSION_UNKNOWN
       if x.old then vt = Fmt(L.GLOG_VERSION_OLD, { version = x.v }) end
       Look.FitText(r.ver, vt, GLUI.FIT_ONE)
-      r.ver:SetTextColor(C(x.old and Look.RED_INK or Look.INK, x.old and 1 or Look.TONE.sub))
+      -- design fix 1.6.0: an older version is no error: ink, fainter (the count of them stands under the list)
+      r.ver:SetTextColor(C(Look.INK, x.old and Look.TONE.sub * 0.8 or Look.TONE.sub))
       Look.FitText(r.when, x.me and L.GLOG_NOW or (Util and Util.Ago and Util.Ago(x.t) or ""), GLUI.FIT_ONE)
       r.hit.tip = { x.full, vt, x.online and L.GLOG_ONLINE or Fmt(L.GLOG_HEARD, { time = Util and Util.Ago and Util.Ago(x.t) or "?" }) }
       r:Show()
@@ -409,6 +469,15 @@ function GLUI.FillHolders()
       r.hit.tip = nil
       r:Hide()
     end
+  end
+  local hintTop = 96 + GLUI.HOLD_ROWS * GLUI.ROW_H + 6
+  if old > 0 and lastY and lastY + 6 + 14 <= hintTop then
+    v.old:ClearAllPoints()
+    v.old:SetPoint("TOPLEFT", 24, -(lastY + 6))
+    Look.FitText(v.old, Fmt(L.GLOG_OLD_N, { count = old }), GLUI.FIT_ONE)
+    v.old:Show()
+  else
+    v.old:Hide()
   end
   Look.FitText(v.hint, L.GLOG_HOLDERS_HINT, GLUI.FIT_TWO)
   local w = GLd.RecommendWait()
@@ -446,10 +515,11 @@ end
 local function BuildAvengers(p)
   local v = CreateFrame("Frame", nil, p)
   v:SetAllPoints()
-  v.head = K().Label(v, "", true)
+  v.head = K().Label(v, "")
   v.head:SetPoint("TOPLEFT", 24, -50)
   v.head:SetWidth(GLUI.W - 48)
   v.head:SetJustifyH("LEFT")
+  v.head:SetWordWrap(false)
   v.week = Text(v, "type", 10, Look.TONE.sub)
   v.week:SetPoint("TOPLEFT", 24, -66)
   v.week:SetWidth(GLUI.W - 48)
@@ -458,7 +528,7 @@ local function BuildAvengers(p)
     local r = CreateFrame("Frame", nil, v)
     r:SetSize(GLUI.W - 48, 22)
     r:SetPoint("TOPLEFT", 24, -(86 + (i - 1) * 22))
-    r.name = Text(r, "hand", 14)
+    r.name = Text(r, "body", 11)
     r.name:SetPoint("LEFT", 0, 0)
     r.name:SetWidth(GLUI.W - 48 - 50)
     r.name:SetWordWrap(false)
@@ -473,16 +543,17 @@ local function BuildAvengers(p)
   v.empty = Text(v, "hand", 13, Look.TONE.sub)
   v.empty:SetPoint("TOPLEFT", 24, -90)
   v.empty:SetWidth(GLUI.W - 48)
-  v.whead = K().Label(v, "", true)
+  v.whead = K().Label(v, "")
   v.whead:SetPoint("TOPLEFT", 24, -256)
   v.whead:SetWidth(GLUI.W - 48)
   v.whead:SetJustifyH("LEFT")
+  v.whead:SetWordWrap(false)
   v.wanted = {}
   for i = 1, GLUI.WANTED_ROWS do
     local b = CreateFrame("Button", nil, v)
     b:SetSize(GLUI.W - 48, 22)
     b:SetPoint("TOPLEFT", 24, -(274 + (i - 1) * 22))
-    b.name = Text(b, "hand", 14)
+    b.name = Text(b, "body", 11)
     b.name:SetPoint("LEFT", 0, 0)
     b.name:SetWidth(GLUI.W - 48 - 100)
     b.name:SetWordWrap(false)
@@ -513,9 +584,10 @@ function GLUI.FillAvengers()
   if not v then return end
   local GLd = D()
   local w = GLd.Week()
-  v.head:SetText(L.GLOG_AV_HEAD)
+  local JK = ns.UI and ns.UI.JK
+  local sp = JK and JK.Spaced or function(x) return x end
+  v.head:SetText(sp(L.GLOG_AV_HEAD))
   Look.FitText(v.week, GLd.CardTexts(w).week, GLUI.FIT_ONE)
-  local rank = GLd.OwnRank()
   local rows, meIn = {}, false
   for i = 1, math.min(#w.avengers, GLUI.AV_ROWS) do
     rows[#rows + 1] = w.avengers[i]
@@ -533,11 +605,12 @@ function GLUI.FillAvengers()
     local x = rows[i]
     if x and (x.n > 0 or x.me) then
       local nm = first(x.char)
-      local label = x.me and (rank and Fmt(L.GLOG_ME_RANK, { name = nm, rank = rank }) or Fmt(L.GLOG_ME, { name = nm }))
+      -- design fix 1.6.0: the own row says only "(you)"; the rank title in the bracket read like an insult
+      local label = x.me and Fmt(L.GLOG_ME, { name = nm })
         or nm
       local pos = x.own and "" or (i .. ".  ")
       Look.FitText(r.name, pos .. label, GLUI.FIT_ONE)
-      r.name:SetTextColor(C(x.me and Look.RED_INK or Look.INK))
+      r.name:SetTextColor(C(Look.INK, x.me and 1 or Look.TONE.ink))
       r.n:SetText(tostring(x.n))
       r:Show()
     else
@@ -554,7 +627,23 @@ function GLUI.FillAvengers()
     v.rows[1]:ClearAllPoints()
     v.rows[1]:SetPoint("TOPLEFT", 24, -86)
   end
-  v.whead:SetText(L.GLOG_WANTED_HEAD)
+  -- design fix 1.6.0: the most wanted hang 20 below the last shown line of the avengers (no island at a fixed place)
+  local bottom = 86
+  for i, r in ipairs(v.rows) do if r:IsShown() then bottom = 86 + i * 22 end end
+  if #w.avengers == 0 then
+    bottom = 90 + math.ceil(Look.TextH(v.empty, 2) or 28)
+    if v.rows[1]:IsShown() then bottom = 86 + 3 * 22 end
+  end
+  local wy = math.min(256, bottom + 20)
+  v.whead:ClearAllPoints()
+  v.whead:SetPoint("TOPLEFT", 24, -wy)
+  for i, b in ipairs(v.wanted) do
+    b:ClearAllPoints()
+    b:SetPoint("TOPLEFT", 24, -(wy + 18 + (i - 1) * 22))
+  end
+  v.wempty:ClearAllPoints()
+  v.wempty:SetPoint("TOPLEFT", 24, -(wy + 22))
+  v.whead:SetText(sp(L.GLOG_WANTED_HEAD))
   for i, b in ipairs(v.wanted) do
     local x = w.wanted[i]
     if x then

@@ -29,8 +29,10 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   J.check(code .. ": Wort Fehde erklaeren", r1.take:IsVisible() and r1.take.text._text == L.FEUD_DECLARE)
   J.check(code .. ": Filter und Sortierung versteckt", not LP.filter:IsVisible() and not LP.sort:IsVisible())
   -- all closed: the guild's page on the right with the feud button
-  J.check(code .. ": rechts die Gildenseite", RP.empty:IsVisible() and RP.empty.big._text == "Die Schlaechter von Sturmwind",
-    RP.empty.big._text)
+  -- design fix 1.6.0: the guild's page is a sheet pinned like the files (FeudUI.Sheet), not the empty page
+  local S = ns.FeudUI.Sheet()
+  J.check(code .. ": rechts die Gildenseite", S and S:IsVisible() and not RP.empty:IsVisible()
+    and S.big._text == "Die Schlaechter von Sturmwind", S and S.big._text)
   -- open
   W.click(r1)
   rows = W.rows()

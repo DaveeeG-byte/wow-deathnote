@@ -225,12 +225,126 @@ local function switchOf(D, k)
   return cb
 end
 
+-- design fix 1.6.0: the file of a creature or the world fills its sheet with what the book knows of that cause:
+-- "DEATHS BY THIS CAUSE" with the count, the latest FU.HIST deaths (date, place, spell), the first and the last one.
+-- Nothing new is recorded: the rows of Fates.Rows (capped at Fates.MAX_ROWS), read once when the file opens.
+FU.HIST = 3
+function FU.History(d)
+  local Fa = ns.Fates
+  if not (Fa and Fa.Rows and Fa.FoeKey) or type(d) ~= "table" then return {}, 0 end
+  local key = d.foe and d.key or Fa.FoeKey(d)
+  local out, first = {}, nil
+  for _, r in ipairs(Fa.Rows()) do
+    if type(r) == "table" and Fa.FoeKey(r) == key then
+      if #out < FU.HIST then out[#out + 1] = r end
+      first = r
+    end
+  end
+  local n = d.foe and tonumber(d.n) or nil
+  if not n then
+    local f = Fa.DB and Fa.DB()
+    local foe = f and f.foes and f.foes[key]
+    n = foe and tonumber(foe.n) or #out
+  end
+  out.first = first
+  return out, n
+end
+
+local function histOf(D, k)
+  local H = D.fateHist
+  if H then return H end
+  local S = D.sheet
+  H = { rows = {} }
+  H.label = k.Label(S, L.FATE_LIST_HEAD)
+  H.label.fatePart = true
+  H.count = Look.Text(S, "hand", 19, Look.INK)
+  H.count:SetJustifyH("RIGHT")
+  H.count.fatePart = true
+  H.rule = S:CreateTexture(nil, "ARTWORK")
+  H.rule:SetHeight(1)
+  H.rule:SetColorTexture(C(Look.INK, 0.45))
+  H.rule.fatePart = true
+  for i = 1, FU.HIST do
+    local fs = Look.Text(S, "type", 11, Look.INK)
+    fs:SetWidth(304)
+    fs:SetJustifyH("LEFT")
+    fs:SetWordWrap(false)
+    fs.fatePart = true
+    H.rows[i] = fs
+  end
+  H.span = Look.Text(S, "type", 11, Look.INK)
+  H.span:SetTextColor(C(Look.INK, Look.TONE.sub))
+  H.span:SetWidth(304)
+  H.span:SetJustifyH("LEFT")
+  H.span.fatePart = true
+  -- the negation ("not a player, no alarm, nothing is shared") as a small line above the switch in the foot
+  H.foot = Look.Text(D.page.foot, "type", 10, Look.INK)
+  H.foot:SetTextColor(C(Look.INK, Look.TONE.sub))
+  H.foot:SetPoint("BOTTOMLEFT", 24, 36)
+  H.foot:SetWidth(304)
+  H.foot:SetJustifyH("LEFT")
+  H.foot.fatePart = true
+  D.fateHist = H
+  return H
+end
+
+local function hideHist(D)
+  local H = D.fateHist
+  if not H then return end
+  H.label:Hide(); H.count:Hide(); H.rule:Hide(); H.span:Hide(); H.foot:Hide()
+  for _, fs in ipairs(H.rows) do fs:Hide() end
+end
+
+-- the list below the file's lines from y (sheet units); returns the new y
+local function fillHist(D, k, d, y)
+  local H = histOf(D, k)
+  local list, n = FU.History(d)
+  local S = D.sheet
+  H.label:ClearAllPoints()
+  H.label:SetPoint("TOPLEFT", S, "TOPLEFT", 24, -(y + 16))
+  H.label:Show()
+  H.count:ClearAllPoints()
+  H.count:SetPoint("BOTTOMRIGHT", S, "TOPRIGHT", -24, -(y + 26))
+  H.count:SetText(Look.Times(n))
+  H.count:Show()
+  H.rule:ClearAllPoints()
+  H.rule:SetPoint("TOPLEFT", S, "TOPLEFT", 20, -(y + 28))
+  H.rule:SetWidth(312)
+  H.rule:Show()
+  y = y + 34
+  for i, fs in ipairs(H.rows) do
+    local r = list[i]
+    if r then
+      local spell = r.spell and tostring(r.spell) or nil
+      Look.FitText(fs, Look.Join(Look.When(r.t), Look.Place(r.zone, r.subzone), spell), { sizes = { 11, 10 } })
+      fs:ClearAllPoints()
+      fs:SetPoint("TOPLEFT", S, "TOPLEFT", 24, -y)
+      fs:Show()
+      y = y + 17
+    else
+      fs:Hide()
+    end
+  end
+  local first = list.first
+  if first and list[1] and first ~= list[1] then
+    H.span:SetText(Fmt(L.FATE_FIRST_LAST, { first = Look.When(first.t), last = Look.When(list[1].t) }))
+    H.span:ClearAllPoints()
+    H.span:SetPoint("TOPLEFT", S, "TOPLEFT", 24, -(y + 4))
+    H.span:Show()
+    y = y + 4 + 15
+  else
+    H.span:Hide()
+  end
+  return y
+end
+
 -- after FillDeath (UI.lua): the cause's own lines; any other file gets its head back and no stamp
 function FU.FillDeath(D, d, nInfo)
   local Fa, k = ns.Fates, K()
   if D.fateHead then D.fateHead:Hide(); D.head:Show() end
   if D.fateStamp and k then k.GF.ShowStamp(D.fateStamp, false) end
   if D.fateSwitch then D.fateSwitch:Hide() end
+  hideHist(D)
   if not (Fa and k) or type(d) ~= "table" then return end
   if not (d.art or d.foe) then
     if type(d.cause) == "table" and d.kind ~= "pvp" and d.cause.art == "pet" then
@@ -266,14 +380,33 @@ function FU.FillDeath(D, d, nInfo)
     local place = (D.info:GetText() or ""):match("^[^\n]*") or ""
     local info = { place, Fmt(L.FATE_KILLED, { times = Look.Times(d.n) }) }
     if d.spell then info[#info + 1] = Fmt(L.TIP_CAUSE, { spell = tostring(d.spell) }) end
-    if d.npc then info[#info + 1] = Fmt(L.FATE_NPC, { id = d.npc }) end
+    -- design fix 1.6.0: no NPC id on the file (technique without use for the player; it stays in the data), and
+    -- no line that explains the list: the foot says what the book does not do, the list below what it knows
     D.info:SetText(table.concat(info, "\n"))
     lines = #info
-    D.note:SetText(L.FATE_NOTE_FOE)
+    D.note:SetText("")
+    -- the date on the right is the latest death by this cause
+    if d.t then D.when:SetText(Fmt(L.FATE_LAST, { time = Look.When(d.t) })) end
+    local function fit()
+      local ww = Look.TextW(D.when)
+      if type(ww) == "number" and not Look.Secret(ww) then
+        h:SetWidth(math.max(140, math.min(FU.HEAD_W, 304 - math.ceil(ww) - 10)))
+      end
+      return Look.FitText(h, L.FATE_HEAD, FU.FIT_HEAD)
+    end
+    -- the head is never cut for the word: without room the date stands alone, as on every other file
+    if not fit() and d.t then D.when:SetText(Look.When(d.t)); fit() end
   else
-    D.note:SetText(L.FATE_NOTE)
+    D.note:SetText("")
   end
   local y = 62 + Look.TextH(D.info, lines) + 16 + 12 + 2 + 32 + 2 + Look.TextH(D.note, 2)
+  -- design fix 1.6.0: what the book knows of this cause, the negation small in the foot
+  local ok, ny = pcall(fillHist, D, k, d, y)
+  if ok and type(ny) == "number" then y = ny end
+  if D.fateHist then
+    Look.FitText(D.fateHist.foot, L.FATE_NOTE, { sizes = { 10, 9 } })
+    D.fateHist.foot:Show()
+  end
   -- number one with NEMESIS deaths or more: the stamp below the lines
   if d.foe and d.rank == 1 and (tonumber(d.n) or 0) >= Fa.NEMESIS then
     local s = stampOf(D, k)

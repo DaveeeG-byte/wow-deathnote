@@ -41,6 +41,7 @@ Locale.RegisterWords("trade", "enUS", function(T)
   T.EMPTY_WANTED_SUB    = "Cold calling is an option."
   T.EMPTY_JOURNAL_HEAD  = "No incidents yet."
   T.EMPTY_JOURNAL_SUB   = "Accident-free. Or unreported."
+  T.FATE_STAMP          = "REGULAR"   -- 1.6.0 design: the stamp on the cause that killed you most often
 end)
 
 Locale.RegisterWords("trade", "deDE", function(T)
@@ -77,6 +78,7 @@ Locale.RegisterWords("trade", "deDE", function(T)
   T.EMPTY_WANTED_SUB    = "Kaltakquise wäre eine Option."
   T.EMPTY_JOURNAL_HEAD  = "Noch kein Schadensfall."
   T.EMPTY_JOURNAL_SUB   = "Unfallfrei. Oder nicht gemeldet."
+  T.FATE_STAMP          = "STAMMKUNDE"
 end)
 
 Locale.RegisterWords("trade", "frFR", function(T)
@@ -113,6 +115,7 @@ Locale.RegisterWords("trade", "frFR", function(T)
   T.EMPTY_WANTED_SUB    = "Le démarchage reste une option."
   T.EMPTY_JOURNAL_HEAD  = "Aucun sinistre pour l'instant."
   T.EMPTY_JOURNAL_SUB   = "Zéro accident. Ou non déclaré."
+  T.FATE_STAMP          = "HABITUÉ"
 end)
 
 Locale.RegisterWords("trade", "esES", function(T)
@@ -149,6 +152,7 @@ Locale.RegisterWords("trade", "esES", function(T)
   T.EMPTY_WANTED_SUB    = "La venta en frío sería una opción."
   T.EMPTY_JOURNAL_HEAD  = "Ningún siniestro todavía."
   T.EMPTY_JOURNAL_SUB   = "Sin accidentes. O sin declarar."
+  T.FATE_STAMP          = "CLIENTE FIJO"
 end)
 
 Locale.RegisterWords("trade", "itIT", function(T)
@@ -185,6 +189,7 @@ Locale.RegisterWords("trade", "itIT", function(T)
   T.EMPTY_WANTED_SUB    = "Il porta a porta resta un'opzione."
   T.EMPTY_JOURNAL_HEAD  = "Ancora nessun sinistro."
   T.EMPTY_JOURNAL_SUB   = "Zero incidenti. O non denunciati."
+  T.FATE_STAMP          = "CLIENTE FISSO"
 end)
 
 Locale.RegisterWords("trade", "ptBR", function(T)
@@ -221,6 +226,7 @@ Locale.RegisterWords("trade", "ptBR", function(T)
   T.EMPTY_WANTED_SUB    = "Prospecção ativa seria uma opção."
   T.EMPTY_JOURNAL_HEAD  = "Nenhum sinistro ainda."
   T.EMPTY_JOURNAL_SUB   = "Zero acidentes. Ou não notificados."
+  T.FATE_STAMP          = "FREGUÊS FIEL"
 end)
 
 Locale.RegisterWords("trade", "ruRU", function(T)
@@ -257,6 +263,7 @@ Locale.RegisterWords("trade", "ruRU", function(T)
   T.EMPTY_WANTED_SUB    = "Можно попробовать холодные звонки."
   T.EMPTY_JOURNAL_HEAD  = "Происшествий пока нет."
   T.EMPTY_JOURNAL_SUB   = "Без аварий. Или без заявлений."
+  T.FATE_STAMP          = "ПОСТОЯННЫЙ КЛИЕНТ"
 end)
 
 Locale.RegisterWords("trade", "koKR", function(T)
@@ -293,6 +300,7 @@ Locale.RegisterWords("trade", "koKR", function(T)
   T.EMPTY_WANTED_SUB    = "영업 전화라도 돌려 볼까."
   T.EMPTY_JOURNAL_HEAD  = "아직 접수된 사고가 없다."
   T.EMPTY_JOURNAL_SUB   = "무사고. 아니면 신고를 안 했거나."
+  T.FATE_STAMP          = "단골손님"
 end)
 
 Locale.RegisterWords("trade", "zhCN", function(T)
@@ -329,6 +337,7 @@ Locale.RegisterWords("trade", "zhCN", function(T)
   T.EMPTY_WANTED_SUB    = "可以考虑电话推销。"
   T.EMPTY_JOURNAL_HEAD  = "还没有事故。"
   T.EMPTY_JOURNAL_SUB   = "零事故。要么就是没上报。"
+  T.FATE_STAMP          = "老主顾"
 end)
 
 Locale.RegisterWords("trade", "zhTW", function(T)
@@ -365,6 +374,7 @@ Locale.RegisterWords("trade", "zhTW", function(T)
   T.EMPTY_WANTED_SUB    = "可以考慮電話推銷。"
   T.EMPTY_JOURNAL_HEAD  = "還沒有事故。"
   T.EMPTY_JOURNAL_SUB   = "零事故。不然就是沒通報。"
+  T.FATE_STAMP          = "老主顧"
 end)
 
 Locale.RegisterWords("trade", "svSE", function(T)
@@ -401,6 +411,7 @@ Locale.RegisterWords("trade", "svSE", function(T)
   T.EMPTY_WANTED_SUB    = "Kallringning vore ett alternativ."
   T.EMPTY_JOURNAL_HEAD  = "Inget skadeärende än."
   T.EMPTY_JOURNAL_SUB   = "Olycksfritt. Eller inte anmält."
+  T.FATE_STAMP          = "STAMKUND"
 end)
 
 Locale.RegisterWords("trade", "nbNO", function(T)
@@ -437,6 +448,7 @@ Locale.RegisterWords("trade", "nbNO", function(T)
   T.EMPTY_WANTED_SUB    = "Telefonsalg kunne vært et alternativ."
   T.EMPTY_JOURNAL_HEAD  = "Ingen skadesak ennå."
   T.EMPTY_JOURNAL_SUB   = "Skadefri. Eller ikke meldt."
+  T.FATE_STAMP          = "STAMKUNDE"
 end)
 
 Locale.RegisterWords("trade", "daDK", function(T)
@@ -473,6 +485,7 @@ Locale.RegisterWords("trade", "daDK", function(T)
   T.EMPTY_WANTED_SUB    = "Kold kanvas kunne være en mulighed."
   T.EMPTY_JOURNAL_HEAD  = "Ingen skadesag endnu."
   T.EMPTY_JOURNAL_SUB   = "Skadefri. Eller ikke anmeldt."
+  T.FATE_STAMP          = "STAMKUNDE"
 end)
 
 Locale.RegisterWords("trade", "fiFI", function(T)
@@ -509,6 +522,7 @@ Locale.RegisterWords("trade", "fiFI", function(T)
   T.EMPTY_WANTED_SUB    = "Kylmäsoitot ovat aina vaihtoehto."
   T.EMPTY_JOURNAL_HEAD  = "Ei vielä vahinkoja."
   T.EMPTY_JOURNAL_SUB   = "Tapaturmaton. Tai ilmoittamatta jätetty."
+  T.FATE_STAMP          = "VAKIASIAKAS"
 end)
 
 Locale.RegisterWords("trade", "nlNL", function(T)
@@ -545,6 +559,7 @@ Locale.RegisterWords("trade", "nlNL", function(T)
   T.EMPTY_WANTED_SUB    = "Koude acquisitie is een optie."
   T.EMPTY_JOURNAL_HEAD  = "Nog geen schadegeval."
   T.EMPTY_JOURNAL_SUB   = "Schadevrij. Of niet gemeld."
+  T.FATE_STAMP          = "VASTE KLANT"
 end)
 
 Locale.RegisterWords("trade", "plPL", function(T)
@@ -581,6 +596,7 @@ Locale.RegisterWords("trade", "plPL", function(T)
   T.EMPTY_WANTED_SUB    = "Zimne telefony to jakaś opcja."
   T.EMPTY_JOURNAL_HEAD  = "Jeszcze żadnej szkody."
   T.EMPTY_JOURNAL_SUB   = "Bezwypadkowo. Albo nie zgłoszono."
+  T.FATE_STAMP          = "STAŁY KLIENT"
 end)
 
 Locale.RegisterWords("trade", "csCZ", function(T)
@@ -617,6 +633,7 @@ Locale.RegisterWords("trade", "csCZ", function(T)
   T.EMPTY_WANTED_SUB    = "Studené volání by bylo řešení."
   T.EMPTY_JOURNAL_HEAD  = "Zatím žádná škoda."
   T.EMPTY_JOURNAL_SUB   = "Bez nehody. Nebo nenahlášeno."
+  T.FATE_STAMP          = "STÁLÝ ZÁKAZNÍK"
 end)
 
 Locale.RegisterWords("trade", "huHU", function(T)
@@ -653,6 +670,7 @@ Locale.RegisterWords("trade", "huHU", function(T)
   T.EMPTY_WANTED_SUB    = "A hideghívás is egy lehetőség."
   T.EMPTY_JOURNAL_HEAD  = "Még nincs káreset."
   T.EMPTY_JOURNAL_SUB   = "Balesetmentes. Vagy be nem jelentett."
+  T.FATE_STAMP          = "TÖRZSVENDÉG"
 end)
 
 Locale.RegisterWords("trade", "hrHR", function(T)
@@ -689,6 +707,7 @@ Locale.RegisterWords("trade", "hrHR", function(T)
   T.EMPTY_WANTED_SUB    = "Hladni pozivi su opcija."
   T.EMPTY_JOURNAL_HEAD  = "Još nijedna šteta."
   T.EMPTY_JOURNAL_SUB   = "Bez nezgode. Ili neprijavljeno."
+  T.FATE_STAMP          = "STALNI KUPAC"
 end)
 
 Locale.RegisterWords("trade", "ukUA", function(T)
@@ -725,6 +744,7 @@ Locale.RegisterWords("trade", "ukUA", function(T)
   T.EMPTY_WANTED_SUB    = "Можна спробувати холодні дзвінки."
   T.EMPTY_JOURNAL_HEAD  = "Інцидентів поки що немає."
   T.EMPTY_JOURNAL_SUB   = "Без аварій. Або без заяв."
+  T.FATE_STAMP          = "ПОСТІЙНИЙ КЛІЄНТ"
 end)
 
 Locale.RegisterWords("trade", "trTR", function(T)
@@ -761,4 +781,5 @@ Locale.RegisterWords("trade", "trTR", function(T)
   T.EMPTY_WANTED_SUB    = "Soğuk arama da bir seçenek."
   T.EMPTY_JOURNAL_HEAD  = "Henüz hasar kaydı yok."
   T.EMPTY_JOURNAL_SUB   = "Kazasız. Ya da bildirilmemiş."
+  T.FATE_STAMP          = "DAİMİ MÜŞTERİ"
 end)
