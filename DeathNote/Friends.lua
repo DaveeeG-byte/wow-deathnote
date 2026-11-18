@@ -118,7 +118,8 @@ local function countDay()
   end
   local d = math.floor(now() / 86400)
   -- only a later calendar day counts (a clock set back and forth again counts nothing twice)
-  if not P.Finite(fdb.dayAt) or d > fdb.dayAt then fdb.dayAt = d; fdb.days = (fdb.days or 0) + 1 end
+  if not P.Finite(fdb.dayAt) or d > fdb.dayAt then fdb.dayAt = d; fdb.days = (fdb.days or 0) + 1
+  elseif d < fdb.dayAt - 1 then fdb.dayAt = d end   -- fixer 2 1.6.0 (jb07): a day further ahead is set back to today
 end
 local function days() return fdb and fdb.days or 0 end
 

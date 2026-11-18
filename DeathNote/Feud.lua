@@ -83,7 +83,11 @@ function Feud.CountDay(d)
   if type(d) ~= "table" then return end
   local day = math.floor(now() / 86400)
   -- only a later calendar day counts (a clock set back and forth again counts nothing twice)
-  if not finite(d.dayAt) or day > d.dayAt then d.dayAt = day; d.days = (finite(d.days) and d.days or 0) + 1 end
+  if not finite(d.dayAt) or day > d.dayAt then d.dayAt = day; d.days = (finite(d.days) and d.days or 0) + 1
+  -- fixer 2 1.6.0 (jb07): a remembered day in the future (one login with a clock far ahead) is set back to today without
+  -- counting; every later day counts again. One day ahead is let be: a clock that goes back and forth over midnight
+  -- must not count a day twice (beleg_a04)
+  elseif day < d.dayAt - 1 then d.dayAt = day end
   -- 1.5.0 reads its own copy in the friends' book (a downgrade keeps counting from here)
   local f = d.friends
   if type(f) == "table" then f.days, f.dayAt = d.days, d.dayAt end
