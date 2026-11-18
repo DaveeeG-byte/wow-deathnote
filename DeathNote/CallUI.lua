@@ -78,6 +78,43 @@ local function build()
   slip:SetScript("OnLeave", function() local tip = G("GameTooltip"); if tip then tip:Hide() end end)
 end
 
+-- 1.6.0 fix: the slip and the alarm never cover each other. While the alarm stands where the slip would, the slip goes
+-- above it (the bounty slip and the remark use the room below), below it only when there is no room above; when the
+-- alarm goes, the slip goes back. Alert.lua calls this after placing its popup; the popup's OnHide is hooked here.
+CU.GAP = 4
+local hooked
+function CU.Place()
+  if not slip then return end
+  local p = CU.POINT
+  local l, b, r, t
+  if slip:IsShown() and ns.Alert and ns.Alert.Rect then l, b, r, t = ns.Alert.Rect() end
+  local W, H = UIParent:GetWidth(), UIParent:GetHeight()
+  local sh = slip:GetHeight()
+  local where
+  if l and type(W) == "number" and type(H) == "number" and type(sh) == "number"
+    and not (Look.Secret(W) or Look.Secret(H) or Look.Secret(sh)) then
+    local st = H + p[4]
+    local sb, sl, sr = st - sh, W / 2 - CU.W / 2, W / 2 + CU.W / 2
+    if sl < r and sr > l and sb < t + CU.GAP and st > b - CU.GAP then
+      if H - (t + CU.GAP) >= sh then where = { "BOTTOM", (l + r) / 2, t + CU.GAP }
+      else where = { "TOP", (l + r) / 2, b - CU.GAP } end
+    end
+  end
+  slip:ClearAllPoints()
+  if where then
+    slip:SetPoint(where[1], UIParent, "BOTTOMLEFT", where[2], where[3])
+  else
+    slip:SetPoint(p[1], UIParent, p[2], p[3], p[4])
+  end
+  if not hooked then
+    local pop = G("DeathNoteAlert")
+    if pop and pop.HookScript then
+      hooked = true
+      pop:HookScript("OnHide", function() pcall(CU.Place) end)
+    end
+  end
+end
+
 -- the slip for a received call
 function CU.Show(rec)
   L, Fmt = ns.L, ns.F
@@ -89,6 +126,7 @@ function CU.Show(rec)
   if type(h) ~= "number" or h <= 0 then h = 16 end
   slip:SetHeight(math.max(48, math.ceil(h) + 8 + 22))
   slip:Show()
+  pcall(CU.Place)
   local token = {}
   slip.token = token
   local T = G("C_Timer")

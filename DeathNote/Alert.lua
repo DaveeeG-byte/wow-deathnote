@@ -1672,6 +1672,8 @@ local function Show(e, unit, how, silent, guild, quiet)
   hideTimer = C_Timer.NewTimer(HOLD, function() hideTimer = nil; Dismiss() end)
   -- a running notice (other player) moves below or above the popup, never hidden under it
   if ns.Extras and ns.Extras.PlaceBanner then ns.Extras.PlaceBanner() end
+  -- 1.6.0 fix: so does the slip of a help call (CallUI.lua)
+  if ns.CallUI and ns.CallUI.Place then pcall(ns.CallUI.Place) end
 end
 
 -- shown popup in UIParent units (for the notice), else nil
