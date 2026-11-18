@@ -603,7 +603,8 @@ function Call.OnAddon(_, prefix, text, channel, sender)
     from = "group"
   elseif channel == "WHISPER" then
     local F = ns.Friends
-    local x = F and F.Enabled and F.Enabled() and F.FriendOf and F.FriendOf(short)
+    -- 1.6.0 fix: only a bound friend, by the book's own identity check (a namesake of a friend stays a stranger)
+    local x = F and F.Enabled and F.Enabled() and F.Vouch and F.Vouch(short)
     if not x or (F.Muted and F.Muted(full or short)) then Call.Count("stranger"); return end
     from = "friend"
   else

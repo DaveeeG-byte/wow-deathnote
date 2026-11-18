@@ -941,6 +941,27 @@ function Friends.Bound()
   return out
 end
 
+-- 1.6.0 fix: may a whisper of this sender be taken as a bound friend's (the help call on its own prefix)? The same
+-- identity as the book's, read only (nothing is bound, nobody is named): a friend listed with surname matches by
+-- name; a sender the client names without surname needs the list's GUID proven by his hello in this session (or no
+-- GUID on the list); a friend listed without surname needs the full name bound to him (proven by the GUID when the
+-- list gives one), never a rival in a conflict. Returns the friend or nil.
+function Friends.Vouch(short)
+  if not on or not fdb or IsSecret(short) or type(short) ~= "string" or short == "" then return nil end
+  local x = friendOf(short)
+  if not x then return nil end
+  if not short:find(" ", 1, true) then
+    if x.guid and proven[x.name] ~= true then return nil end
+    return x
+  end
+  if x.surname then return x end
+  local tie = fdb.ties and fdb.ties[x.name]
+  if type(tie) ~= "table" or type(tie.full) ~= "string" or tie.full:lower() ~= short:lower() then return nil end
+  if tie.rival then return nil end
+  if x.guid and not (tie.sure and tie.guid == x.guid) then return nil end
+  return x
+end
+
 -- a char of a bound friend in a conflict: his data stays, but it does not alarm (Sync.lua, Guild.OnUnit)
 function Friends.Muted(char)
   if IsSecret(char) then return false end
