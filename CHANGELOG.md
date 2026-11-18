@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.6.0
+## 1.6.0 (2026-11-18)
 
 ### Changed
 - The feud stays the heart of the book: deaths by creatures and the world are now kept too, but they never ring the alarm and are never shared.
@@ -8,6 +8,7 @@
 - Every death and attack keeps the guild the killer wore at that moment, so a later change of guild moves nothing; revenge counts for the guild he wore then. The guild on the poster stays "last seen".
 - Lighter on big books: the lists are sorted once per change instead of on every refresh, a crowd of sightings rebuilds the list at most every half second, the guild and friends view is no longer joined anew after every message, the guild tab's number is counted once per change. The probe's death records are kept only while `/dn debug` is on.
 - Play days are counted in one place for the whole book (the friends' book reads the same counter).
+- A creature's killing blow right after a player's damage no longer makes the death a plain creature death: the player with the most damage is kept as the unsure killer (Unsolved decides). A totem or guardian cannot be told from a wild creature there, and the ganker who lets a creature finish you belongs in the book.
 - My week names the other deaths of the week and the deadliest creature, when there were any.
 - Who had the book before gets one chat line after the update, once per account and never in combat: every death in the Death Log, the guild chronicle behind the red ribbon, the call for help and its key, sightings to guild and friends and where to switch them off. Who comes from 1.4 gets the line of 1.5.0 with the new name first.
 
@@ -33,7 +34,7 @@
 
 ### Fixed
 - Names in another script (Cyrillic, Chinese, Korean) showed as boxes on a client of another language; every text of the book now takes the fonts of the script it needs. The same holds while typing such a name into the search, the note, the reason or the import field.
-- Damage by the world (falling, drowning, lava and the like) in the death recap was taken for an unclear killer and gave a row in the player journal; it is never a player now.
+- Damage by the world (falling, drowning, lava and the like) in the death recap was taken for a player of unknown name; alone it is a death by the world now. After a player's damage the death stays in the player journal as before, with the players as candidates.
 
 ### Known open
 - Unmeasured in the game: whether the death recap of Forever carries lines of the world (falling, drowning) and whether `C_CreatureInfo.GetCreatureID` exists (`probe.pve`); whether a call for help goes through in combat and in a chat lockdown, and over party, raid and Battle.net (`probe.call`); whether the layer mark read from creatures differs per layer; whether the guild roster says who is online (`probe.glog`); whether an enemy's guild is readable in the open world and in combat (`probe.feud`).
