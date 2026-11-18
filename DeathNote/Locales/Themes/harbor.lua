@@ -40,6 +40,7 @@ Locale.RegisterWords("harbor", "enUS", function(T)
   T.EMPTY_WANTED_SUB    = "Calm seas. Suspiciously calm."
   T.EMPTY_JOURNAL_HEAD  = "Never went overboard."
   T.EMPTY_JOURNAL_SUB   = "Seaworthy. Or a sailor's yarn."
+  T.FATE_STAMP          = "SEA DEVIL"   -- 1.6.0 design: the stamp on the cause that killed you most often
 end)
 
 Locale.RegisterWords("harbor", "deDE", function(T)
@@ -75,6 +76,7 @@ Locale.RegisterWords("harbor", "deDE", function(T)
   T.EMPTY_WANTED_SUB    = "Ruhige See. Verdächtig ruhig."
   T.EMPTY_JOURNAL_HEAD  = "Noch nie über Bord gegangen."
   T.EMPTY_JOURNAL_SUB   = "Seefest. Oder Seemannsgarn."
+  T.FATE_STAMP          = "SEETEUFEL"
 end)
 
 Locale.RegisterWords("harbor", "frFR", function(T)
@@ -110,6 +112,7 @@ Locale.RegisterWords("harbor", "frFR", function(T)
   T.EMPTY_WANTED_SUB    = "Mer calme. Étrangement calme."
   T.EMPTY_JOURNAL_HEAD  = "Jamais tombé à la mer."
   T.EMPTY_JOURNAL_SUB   = "Pied marin. Ou conte de marin."
+  T.FATE_STAMP          = "DIABLE DES MERS"
 end)
 
 Locale.RegisterWords("harbor", "esES", function(T)
@@ -145,6 +148,7 @@ Locale.RegisterWords("harbor", "esES", function(T)
   T.EMPTY_WANTED_SUB    = "Mar en calma. Sospechosamente en calma."
   T.EMPTY_JOURNAL_HEAD  = "Nunca has caído por la borda."
   T.EMPTY_JOURNAL_SUB   = "Buen marinero. O cuentos de marinero."
+  T.FATE_STAMP          = "DIABLO MARINO"
 end)
 
 Locale.RegisterWords("harbor", "itIT", function(T)
@@ -180,6 +184,7 @@ Locale.RegisterWords("harbor", "itIT", function(T)
   T.EMPTY_WANTED_SUB    = "Mare calmo. Sospettosamente calmo."
   T.EMPTY_JOURNAL_HEAD  = "Mai finito fuori bordo."
   T.EMPTY_JOURNAL_SUB   = "Piede marino. O storie da marinaio."
+  T.FATE_STAMP          = "DIAVOLO DI MARE"
 end)
 
 Locale.RegisterWords("harbor", "ptBR", function(T)
@@ -215,6 +220,7 @@ Locale.RegisterWords("harbor", "ptBR", function(T)
   T.EMPTY_WANTED_SUB    = "Mar calmo. Calmo demais."
   T.EMPTY_JOURNAL_HEAD  = "Nunca caiu no mar."
   T.EMPTY_JOURNAL_SUB   = "Firme no convés. Ou papo de marinheiro."
+  T.FATE_STAMP          = "DIABO DO MAR"
 end)
 
 Locale.RegisterWords("harbor", "ruRU", function(T)
@@ -250,6 +256,7 @@ Locale.RegisterWords("harbor", "ruRU", function(T)
   T.EMPTY_WANTED_SUB    = "Штиль. Подозрительный штиль."
   T.EMPTY_JOURNAL_HEAD  = "Ни одного падения за борт."
   T.EMPTY_JOURNAL_SUB   = "Бывалый моряк. Или морские байки."
+  T.FATE_STAMP          = "МОРСКОЙ ДЬЯВОЛ"
 end)
 
 Locale.RegisterWords("harbor", "koKR", function(T)
@@ -285,6 +292,7 @@ Locale.RegisterWords("harbor", "koKR", function(T)
   T.EMPTY_WANTED_SUB    = "잔잔한 바다. 수상할 만큼 잔잔하다."
   T.EMPTY_JOURNAL_HEAD  = "아직 한 번도 바다에 빠진 적 없다."
   T.EMPTY_JOURNAL_SUB   = "튼튼한 뱃사람. 아니면 뱃사람 허풍이거나."
+  T.FATE_STAMP          = "바다 악마"
 end)
 
 Locale.RegisterWords("harbor", "zhCN", function(T)
@@ -320,6 +328,7 @@ Locale.RegisterWords("harbor", "zhCN", function(T)
   T.EMPTY_WANTED_SUB    = "风平浪静。静得可疑。"
   T.EMPTY_JOURNAL_HEAD  = "还从没落过水。"
   T.EMPTY_JOURNAL_SUB   = "老水手。要么就是在吹牛。"
+  T.FATE_STAMP          = "海魔"
 end)
 
 Locale.RegisterWords("harbor", "zhTW", function(T)
@@ -355,6 +364,7 @@ Locale.RegisterWords("harbor", "zhTW", function(T)
   T.EMPTY_WANTED_SUB    = "風平浪靜。靜得可疑。"
   T.EMPTY_JOURNAL_HEAD  = "還沒落過水。"
   T.EMPTY_JOURNAL_SUB   = "老水手。不然就是在吹牛。"
+  T.FATE_STAMP          = "海魔"
 end)
 
 Locale.RegisterWords("harbor", "svSE", function(T)
@@ -390,6 +400,7 @@ Locale.RegisterWords("harbor", "svSE", function(T)
   T.EMPTY_WANTED_SUB    = "Lugnt hav. Misstänkt lugnt."
   T.EMPTY_JOURNAL_HEAD  = "Aldrig gått överbord än."
   T.EMPTY_JOURNAL_SUB   = "Sjöduglig. Eller en skepparhistoria."
+  T.FATE_STAMP          = "SJÖODJUR"
 end)
 
 Locale.RegisterWords("harbor", "nbNO", function(T)
@@ -425,6 +436,7 @@ Locale.RegisterWords("harbor", "nbNO", function(T)
   T.EMPTY_WANTED_SUB    = "Rolig sjø. Mistenkelig rolig."
   T.EMPTY_JOURNAL_HEAD  = "Aldri gått over bord ennå."
   T.EMPTY_JOURNAL_SUB   = "Sjødyktig. Eller skipperskrøne."
+  T.FATE_STAMP          = "SJØUHYRE"
 end)
 
 Locale.RegisterWords("harbor", "daDK", function(T)
@@ -460,6 +472,7 @@ Locale.RegisterWords("harbor", "daDK", function(T)
   T.EMPTY_WANTED_SUB    = "Rolig sø. Mistænkeligt rolig."
   T.EMPTY_JOURNAL_HEAD  = "Aldrig gået over bord endnu."
   T.EMPTY_JOURNAL_SUB   = "Sødygtig. Eller en skipperhistorie."
+  T.FATE_STAMP          = "SØUHYRE"
 end)
 
 Locale.RegisterWords("harbor", "fiFI", function(T)
@@ -495,6 +508,7 @@ Locale.RegisterWords("harbor", "fiFI", function(T)
   T.EMPTY_WANTED_SUB    = "Tyyni meri. Epäilyttävän tyyni."
   T.EMPTY_JOURNAL_HEAD  = "Et ole vielä kertaakaan pudonnut yli laidan."
   T.EMPTY_JOURNAL_SUB   = "Merikelpoinen. Tai merimiehen juttuja."
+  T.FATE_STAMP          = "MERIHIRVIÖ"
 end)
 
 Locale.RegisterWords("harbor", "nlNL", function(T)
@@ -530,6 +544,7 @@ Locale.RegisterWords("harbor", "nlNL", function(T)
   T.EMPTY_WANTED_SUB    = "Kalme zee. Verdacht kalm."
   T.EMPTY_JOURNAL_HEAD  = "Nog nooit overboord gegaan."
   T.EMPTY_JOURNAL_SUB   = "Zeebenen. Of een zeemansverhaal."
+  T.FATE_STAMP          = "ZEEDUIVEL"
 end)
 
 Locale.RegisterWords("harbor", "plPL", function(T)
@@ -565,6 +580,7 @@ Locale.RegisterWords("harbor", "plPL", function(T)
   T.EMPTY_WANTED_SUB    = "Spokojne morze. Podejrzanie spokojne."
   T.EMPTY_JOURNAL_HEAD  = "Jeszcze nigdy za burtą."
   T.EMPTY_JOURNAL_SUB   = "Nie do zatopienia. Albo marynarskie bajdy."
+  T.FATE_STAMP          = "MORSKI DIABEŁ"
 end)
 
 Locale.RegisterWords("harbor", "csCZ", function(T)
@@ -600,6 +616,7 @@ Locale.RegisterWords("harbor", "csCZ", function(T)
   T.EMPTY_WANTED_SUB    = "Klidné moře. Podezřele klidné."
   T.EMPTY_JOURNAL_HEAD  = "Ještě nikdy přes palubu."
   T.EMPTY_JOURNAL_SUB   = "Mořský vlk. Nebo námořnická latina."
+  T.FATE_STAMP          = "MOŘSKÝ ĎÁBEL"
 end)
 
 Locale.RegisterWords("harbor", "huHU", function(T)
@@ -635,6 +652,7 @@ Locale.RegisterWords("harbor", "huHU", function(T)
   T.EMPTY_WANTED_SUB    = "Csendes tenger. Gyanúsan csendes."
   T.EMPTY_JOURNAL_HEAD  = "Még sosem estél a vízbe."
   T.EMPTY_JOURNAL_SUB   = "Tengerálló. Vagy tengerészmese."
+  T.FATE_STAMP          = "TENGERI ÖRDÖG"
 end)
 
 Locale.RegisterWords("harbor", "hrHR", function(T)
@@ -670,6 +688,7 @@ Locale.RegisterWords("harbor", "hrHR", function(T)
   T.EMPTY_WANTED_SUB    = "Mirno more. Sumnjivo mirno."
   T.EMPTY_JOURNAL_HEAD  = "Još nikad preko palube."
   T.EMPTY_JOURNAL_SUB   = "Morski vuk. Ili ribarska priča."
+  T.FATE_STAMP          = "MORSKI VRAG"
 end)
 
 Locale.RegisterWords("harbor", "ukUA", function(T)
@@ -705,6 +724,7 @@ Locale.RegisterWords("harbor", "ukUA", function(T)
   T.EMPTY_WANTED_SUB    = "Штиль. Підозріло тихо."
   T.EMPTY_JOURNAL_HEAD  = "Жодного падіння за борт."
   T.EMPTY_JOURNAL_SUB   = "Бувалий моряк. Або морські байки."
+  T.FATE_STAMP          = "МОРСЬКИЙ ДИЯВОЛ"
 end)
 
 Locale.RegisterWords("harbor", "trTR", function(T)
@@ -740,4 +760,5 @@ Locale.RegisterWords("harbor", "trTR", function(T)
   T.EMPTY_WANTED_SUB    = "Deniz sakin. Şüpheli derecede sakin."
   T.EMPTY_JOURNAL_HEAD  = "Hiç denize düşmedin."
   T.EMPTY_JOURNAL_SUB   = "Deniz kurdu. Ya da gemici masalı."
+  T.FATE_STAMP          = "DENİZ ŞEYTANI"
 end)
