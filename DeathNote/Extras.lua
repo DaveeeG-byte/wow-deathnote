@@ -418,6 +418,13 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   banner.kind = stamp
   banner.open = open
   banner:EnableMouse(open ~= nil)
+  -- 1.5.0 share: the button "Show" of a payback notice goes with it, the line takes its place again
+  if banner.dnShare then
+    banner.dnShare:Hide()
+    banner.line:ClearAllPoints()
+    banner.line:SetPoint("BOTTOM", 0, 7)
+    banner.line:SetWidth(LINE_W)
+  end
   local kc = Colours()
   banner.kicker:SetTextColor(kc[1], kc[2], kc[3], 1)
   Look.FitText(banner.kicker, kicker, Extras.FIT_KICKER)
@@ -503,8 +510,10 @@ local function OnRevenge(key)
   local r, g, b = Look.ClassRGB(e.class)
   -- 1.3.0: the second line is the standing ("Score 1 : 1 · even") while the rap sheet is on
   local stand = Look.StandLine and Look.StandLine(e)
-  Banner(L.BANNER_REVENGE, Look.Name(e), { r, g, b },
-         stand and Fmt(L.STAND_LINE, { score = stand }) or Fmt(L.BANNER_REVENGE_LINE, { count = e.revenge or 1 }), "rache", false, key)
+  local line = stand and Fmt(L.STAND_LINE, { score = stand }) or Fmt(L.BANNER_REVENGE_LINE, { count = e.revenge or 1 })
+  Banner(L.BANNER_REVENGE, Look.Name(e), { r, g, b }, line, "rache", false, key)
+  -- 1.5.0 share: the button "Show" (switch share.revengeButton, off by default)
+  if ns.ShareUI and ns.ShareUI.OnRevenge then pcall(ns.ShareUI.OnRevenge, banner, key, line, Extras.FIT_LINE) end
   Look.Alarm("revenge")
 end
 

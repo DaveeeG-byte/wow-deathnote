@@ -406,6 +406,10 @@ local function Tip(owner, lines, anchor)
   GameTooltip:Show()
 end
 
+-- 1.5.0 share: the building blocks for the window "Show" and the guest poster (ShareUI.lua)
+UI.Kit = { InkButton = InkButton, WordButton = WordButton, WordTab = WordTab, Label = Label, Rule = Rule,
+           Shadow = UX.Shadow, Tip = Tip }
+
 -- insert a name into an open chat input (only if the user has one open; never send)
 function UX.InsertIntoChat(text)
   if type(text) ~= "string" or text == "" then return false end
@@ -870,6 +874,14 @@ function UX.RowMenu(row, anchor)
     if #spec > GF.MENU_MAX then spec[GF.MENU_MAX + 1] = nil end
   elseif item.status == "wanted" then spec = GF.MenuWithHunt(MenuSpec(item), item.key)
   else spec = MenuSpec(item) end
+  -- 1.5.0 share: "Show" (an own entry that may be shown, the guild and friends' book with kills, the hit list)
+  local sk = GF.HuntView() and "hunt" or (state.filter == "guild" and "guild") or "own"
+  local SU = ns.ShareUI
+  local sok, son = false, false
+  if SU and SU.Offer then sok, son = pcall(SU.Offer, item, sk) end
+  if sok and son == true and #spec < GF.MENU_MAX then
+    spec[#spec + 1] = { L.ACT_SHARE, function() GF.ShareOpen(item, sk) end }
+  end
   -- 1.2.1: post a bounty (own wanted and suspects, guild, friends, hit list; the same rule as on the poster)
   if GF.MayBounty(item) then
     spec[#spec + 1] = { L.ACT_BOUNTY, function() GF.EditBounty(item.key) end }
@@ -1650,6 +1662,14 @@ function UX.BuildPoster()
   E.doa = Look.Text(E, "body", 11, Look.INK)
   E.doa:SetPoint("TOP", 0, -61)
   Rule(E, -76, 24, 24, 0.7)
+  -- 1.5.0 share: "Show" at the right end of the strip under the head (GF.ShareWord); the strip's words give way
+  E.share = WordButton(E, "", "hand", 13)
+  E.share.text:ClearAllPoints()
+  E.share.text:SetPoint("RIGHT", 0, 0)
+  E.share.text:SetJustifyH("RIGHT")
+  E.share:SetPoint("RIGHT", E, "TOPRIGHT", -24, -66)
+  E.share:SetScript("OnClick", function(self) Look.Sound("click"); GF.ShareOpen(self.item, self.kind) end)
+  E.share:Hide()
 
   local photo = CreateFrame("Frame", nil, E)
   photo:SetSize(100, 100)
@@ -2055,6 +2075,46 @@ local function ConfigButtons(E, spec)
   end
 end
 
+-- 1.5.0 share: the window "Show" (ShareUI.lua) for a poster or a row; kind "own" | "guild" | "hunt"
+function GF.ShareOpen(item, kind)
+  local SU = ns.ShareUI
+  if not (SU and SU.Open) or type(item) ~= "table" then return end
+  if kind == "own" and type(item.key) == "string" then item = Store().Get(item.key) or item end
+  local ok = pcall(SU.Open, { item = item, kind = kind,
+    src = kind == "guild" and GCall("Source", item.key) or nil })
+  if not ok then Look.Sound("click") end
+end
+-- the word "Show" in the strip under the head, when the entry may be shown; the strip's words (letter-spaced, 11 pt)
+-- give way to it in the same width on both sides (10, 9 pt), so they stay in the middle
+GF.FIT_SHARE, GF.FIT_DOA = { sizes = { 13, 11 } }, { sizes = { 11, 10, 9 } }
+GF.STRIP_W, GF.SHARE_MAX = 352 - 48, 84
+function GF.ShareWord(E, item, kind)
+  local SU = ns.ShareUI
+  local okc, on = false, false
+  if SU and SU.Offer then okc, on = pcall(SU.Offer, item, kind) end
+  on = okc and on == true
+  local doa = E.doa:GetText() or ""   -- the Fill functions write it just before
+  local room = GF.STRIP_W
+  if on then
+    E.share.text:SetWidth(GF.SHARE_MAX)
+    Look.FitText(E.share.text, L.ACT_SHARE, GF.FIT_SHARE)
+    local w = math.min(GF.SHARE_MAX, math.ceil(Look.TextW(E.share.text) or 40))
+    E.share:SetSize(w + 2, 19)
+    E.share.text:SetWidth(w + 2)
+    room = GF.STRIP_W - 2 * (w + 8)
+    E.share.item, E.share.kind = item, kind
+  else
+    E.share.item, E.share.kind = nil, nil
+  end
+  E.share:SetShown(on)
+  -- without the word the strip stays as before (no width) until the word was there once
+  if on or E.doa.dnShrunk then
+    E.doa.dnShrunk = true
+    E.doa:SetWidth(room)
+    Look.FitText(E.doa, doa, GF.FIT_DOA)
+  end
+end
+
 -- valid unit token for the portrait (tracker first, otherwise target/mouseover)
 function UX.PortraitUnitFor(key)
   if ns.Tracker and ns.Tracker.UnitFor then
@@ -2349,6 +2409,8 @@ local function FillEnemy(e)
   E.strike.key = e.key
   E.strike:Show()
 
+  GF.ShareWord(E, e, "own")
+
   -- rebuild buttons (with their closures) only when entry or status changed
   local sig = "e\0" .. e.key .. "\0" .. tostring(e.status) .. (GF.undo and GF.undo.key == e.key and "\0u" or "")
   if E.specSig ~= sig then
@@ -2515,6 +2577,7 @@ local function FillGuild(g)
   E.racheCount:Hide()
   E.strike.key = nil
   E.strike:Hide()
+  GF.ShareWord(E, g, "guild")
 
   local u = OV.undo
   local sig = "g\0" .. g.key .. "\0" .. (Store().Get(g.key) and "1" or "0") .. (u and u.one == g.key and "u" or "")
@@ -2623,6 +2686,7 @@ function GF.FillHunt(h)
   -- me" is in the row menu
   E.hunt.key, E.hunt.hide = nil, nil
   E.hunt:Hide()
+  GF.ShareWord(E, h, "hunt")
   local sig = "h\0" .. h.key .. "\0" .. (Store().Get(h.key) and "1" or "0") .. (GF.Released(h.key) and "1" or "0")
     .. (h.hidden and "1" or "0")
   if E.specSig ~= sig then
@@ -3627,6 +3691,8 @@ GF.GRUDGE_OPTIONS = {
   { "grudge.battlegrounds", "OPT_GRUDGE_BG", false },
 }
 GF.GRUDGE_SECONDS = { 10, 20, 30, 60 }
+-- 1.5.0 share: the section SHOW on sheet 3 (Guild)
+GF.SHARE_OPTIONS = { { "share.revengeButton", "OPT_SHARE_REVENGE", false } }
 function GF.SheetOn(i)
   if i == 3 then return HasGuild() end
   if i == 4 then return type(ns.Ledger) == "table" and type(ns.Ledger.Enabled) == "function" end
@@ -4021,7 +4087,10 @@ BuildSettings = function()
     y = section(B1, ROW_Y0 + 6, L.SET_SEC_SHARING)
     y = checks(B1, GF.FRIEND_SHARE, "guild.", y)
     y = section(B1, y - 6, L.SET_SEC_WARN)
-    B1.bottom = -checks(B1, GF.FRIEND_WARN, "guild.", y)
+    y = checks(B1, GF.FRIEND_WARN, "guild.", y)
+    -- 1.5.0 share: the section SHOW (the button on the payback notice; off by default)
+    y = section(B1, y - 6, L.SET_SEC_SHOW)
+    B1.bottom = -checks(B1, GF.SHARE_OPTIONS, nil, y)
     y = section(B2, ROW_Y0 + 6, L.SET_SEC_SHARING)
     y = checks(B2, GF.MORE_SHARE, "guild.", y)
     y = expireRow(B2, y)
@@ -4039,6 +4108,8 @@ BuildSettings = function()
     y = checks(B, GUILD_OPTIONS, "guild.")
     y = minKillsRow(B, y, L.SET_G_MINKILLS)
     y = expireRow(B, y)
+    y = section(B, y - 6, L.SET_SEC_SHOW)   -- 1.5.0 share
+    y = checks(B, GF.SHARE_OPTIONS, nil, y)
   end
   y = section(B2, y, L.SET_SEC_STATUS)
   local function statusLine(anchorY, prev)
@@ -6347,6 +6418,26 @@ function UI.ShowCase(d)
   if state.panel then UI.ClosePanel(true) end
   Refresh()
   ScrollTo(function(x) return x == d end)
+end
+
+-- 1.5.0 share: open a guild or friends' book entry (the click on a shown line); false when the books do not have it
+function UI.ShowGuildEntry(key)
+  if not ready or type(key) ~= "string" or not GCall("Get", key, "all") then return false end
+  UI.Open()
+  UI.ClearSearch()
+  HideMenu()
+  state.filter, state.gview, state.gselected = "guild", "enemy", key
+  if GF.HasFriends() and not GCall("Get", key, GF.Src()) then
+    state.gsource = "all"
+    Set("ui.guildSource", "all")
+    mv.dirty = true
+    gpart.src = nil
+  end
+  state.offset = 0
+  if state.panel then UI.ClosePanel(true) end
+  Refresh()
+  ScrollTo(function(x) return x.key == key end)
+  return true
 end
 
 -- open the hit list (/dn jagd without a name, after posting a call)
