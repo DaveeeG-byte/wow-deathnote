@@ -18,7 +18,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          "$adir"/Grudge.lua "$adir"/GrudgeCard.lua tests/ui/grudge_card.lua \
          "$adir"/Grip.lua "$adir"/Plate.lua tests/ui/grip.lua \
          "$adir"/Share.lua "$adir"/ShareUI.lua tests/ui/share.lua \
-         "$adir"/SceneMap.lua tests/ui/scene_map.lua tests/ui/scene.lua \
+         "$adir"/SceneMap.lua tests/ui/scene_map.lua tests/ui/scene.lua tests/ui/_ju.lua tests/ui/_jukarte.lua tests/ui/fix150_*.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
 done
@@ -106,6 +106,11 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     if [ -f "$adir/ShareUI.lua" ]; then luajit tests/ui/share.lua . || status=1; fi
     # 1.5.0 scene: crime scenes on the (stand-in) world map, the book's places as links, the chronicle
     luajit tests/ui/scene.lua . || status=1
+    # 1.5.0 fixer: proofs of the two hunts (copies of dev/berichte/150/jagd-tests/ui) and the fixes after them
+    for t in tests/ui/fix150_*.lua; do
+      out=$(luajit "$t" . 2>&1) || { status=1; printf '%s\n' "$out" | grep "^ROT"; }
+      printf '%s: %s\n' "$(basename "$t" .lua)" "$(printf '%s\n' "$out" | tail -1)"
+    done
   fi
 fi
 

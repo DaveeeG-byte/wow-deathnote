@@ -26,9 +26,11 @@ ns.Scene = Scene
 Scene.DEFAULTS = { on = true, days = 30, open = false, own = true, guild = true, friends = true }
 Scene.DAYS = { 7, 30, 0 }        -- the period's steps (0 = all)
 Scene.FRESH = 600                -- seconds: a mate's death this young pulses on the map ("go and help")
--- bundling: scenes closer than this (percent of the map's width; the map is 3:2, so a height percent counts 2/3) are
--- one pin with a count. 2.5 % of a zone map of 1002 px are 25 px: about one pin's width, so pins never cover each other.
-Scene.RADIUS = 2.5
+-- bundling: two scenes whose pins would cover each other are one pin with a count. 1.5.0 fixer: measured in pixels of
+-- the shown map (SceneMap passes the pin's size as percent of the canvas, rx and ry: it changes with the canvas scale),
+-- so pins never cover each other at any map size. Without a map (tests, the probe) the pin of 28 px on the zone map of
+-- 1002 x 668 px at scale 1: 2.8 % of the width, 4.2 % of the height.
+Scene.RX, Scene.RY = 2.8, 4.2
 -- at most this many pins per map. Measured on the stand-in map (tests/ui/scene_map.lua, 1002 x 668 px, pins 24 px):
 -- 40 pins at the bundling radius cover about a fifth of a zone map; more makes the map unreadable. The scenes behind
 -- them are not lost: the oldest go first (newest scenes are bundled first) and the count says how many were left out.
@@ -196,9 +198,10 @@ end
 local RANK = { death = 2, kill = 3, guild = 4, friend = 5 }
 local function rankOf(it) return it.fresh and 1 or RANK[it.kind] or 9 end
 
--- The pins of one map: { { x, y, items = { newest first }, kind, fresh, count } }, and how many scenes were left out.
--- translate(mapID, x, y) -> x, y on this map or nil (scenes of other maps, e.g. a zone on its continent; optional).
-function Scene.Pins(mapID, now, translate, focus)
+-- The pins of one map: { { x, y, items = { the lead first, then newest first }, kind, fresh, count, lead } }, and how
+-- many scenes were left out. translate(mapID, x, y) -> x, y on this map or nil (scenes of other maps, e.g. a zone on its
+-- continent; optional). size = { rx, ry }: a pin's width and height in percent of the map (optional).
+function Scene.Pins(mapID, now, translate, focus, size)
   local all = Scene.All(now)
   local items = {}
   for i = 1, #all do
@@ -221,14 +224,15 @@ function Scene.Pins(mapID, now, translate, focus)
   end)
   while #items > Scene.MAX_ITEMS do table.remove(items) end
   local pins, left = {}, 0
-  local r2 = Scene.RADIUS * Scene.RADIUS
+  local rx = type(size) == "table" and num(size.rx) and size.rx > 0 and size.rx or Scene.RX
+  local ry = type(size) == "table" and num(size.ry) and size.ry > 0 and size.ry or Scene.RY
   for i = 1, #items do
     local it = items[i]
     local home
     for k = 1, #pins do
       local p = pins[k]
-      local dx, dy = it.px - p.x, (it.py - p.y) * 2 / 3
-      if dx * dx + dy * dy <= r2 then home = p; break end
+      -- the pins would cover each other (a pin stands on its spot: its box is rx wide and ry high)
+      if math.abs(it.px - p.x) < rx and math.abs(it.py - p.y) < ry then home = p; break end
     end
     if home then
       home.items[#home.items + 1] = it
@@ -245,6 +249,11 @@ function Scene.Pins(mapID, now, translate, focus)
       if it.fresh then p.fresh = true end
     end
     p.kind, p.count, p.lead = best.kind, #p.items, best
+    -- 1.5.0 fixer: the scene the pin's look stands for first (its click and its list start there)
+    if p.items[1] ~= best then
+      for i = 2, #p.items do if p.items[i] == best then table.remove(p.items, i); break end end
+      table.insert(p.items, 1, best)
+    end
   end
   return pins, left
 end
@@ -335,7 +344,7 @@ function Scene.TipLines(pin, now)
     for i = 1, math.min(#items, SHOW) do out[#out + 1] = { Scene.Short(items[i]) } end
     if #items > SHOW then out[#out + 1] = { Fmt(L.MORE_LINE, { count = #items - SHOW }), 0.7, 0.7, 0.7 } end
   end
-  out[#out + 1] = { L.SCENE_TIP_CLICK, 0.6, 0.6, 0.6 }
+  out[#out + 1] = { #items > 1 and L.SCENE_TIP_PICK or L.SCENE_TIP_CLICK, 0.6, 0.6, 0.6 }
   return out
 end
 

@@ -936,7 +936,7 @@ L.SCENE_DAYS_LINE = "Razdoblje: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Moje smrti i ubojstva"  -- [max 32]
 L.OPT_G_SENDPLACE = "Šalji mjesto moje smrti"  -- [max 44]
 L.SCENE_MAP_TIP = "Mjesta zločina iz tvoje knjige"
-L.SCENE_MAP_CLICK = "Klik: što karta prikazuje"
+L.SCENE_MAP_CLICK = "Klik: filtriraj mjesta zločina"
 L.SCENE_SOMEONE = "netko"
 L.SCENE_TIP_DEATH = "Ovdje te ubio {killer}"
 L.SCENE_TIP_DEATH_UNCLEAR = "Ovdje si poginuo; ubojica nije jasan"
@@ -993,4 +993,8 @@ L.SCENE_TIP_SUSPECT = "Ovdje si poginuo; sumnja: {name}"
 L.CHRON_EARLIER = "Ranijih djela više nema u knjizi."
 L.GRUDGE_TIP_PET = "I njegov ljubimac te napao"
 L.SHARE_GUEST_WEEK = "Tjedan: {name}"
+L.SCENE_TIP_PICK = "Klik: odaberi mjesto zločina"
+L.SCENE_LEG_DEATH = "tvoja smrt"
+L.SCENE_LEG_KILL = "tvoje ubojstvo"
+L.SCENE_LEG_BUNDLE = "više mjesta zločina"
 end)

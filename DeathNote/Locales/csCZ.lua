@@ -936,7 +936,7 @@ L.SCENE_DAYS_LINE = "Období: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Moje smrti a zabití"  -- [max 32]
 L.OPT_G_SENDPLACE = "Posílat místo mé smrti"  -- [max 44]
 L.SCENE_MAP_TIP = "Místa činu z tvé knihy"
-L.SCENE_MAP_CLICK = "Klik: co mapa ukazuje"
+L.SCENE_MAP_CLICK = "Klik: filtrovat místa činu"
 L.SCENE_SOMEONE = "někdo"
 L.SCENE_TIP_DEATH = "Tady tě zabil {killer}"
 L.SCENE_TIP_DEATH_UNCLEAR = "Tady jsi zemřel; vrah je nejasný"
@@ -993,4 +993,8 @@ L.SCENE_TIP_SUSPECT = "Tady jsi zemřel; podezření: {name}"
 L.CHRON_EARLIER = "Starší činy už v knize nejsou."
 L.GRUDGE_TIP_PET = "Jeho mazlíček tě taky napadl"
 L.SHARE_GUEST_WEEK = "Týden: {name}"
+L.SCENE_TIP_PICK = "Klik: vybrat místo činu"
+L.SCENE_LEG_DEATH = "tvoje smrt"
+L.SCENE_LEG_KILL = "tvůj úlovek"
+L.SCENE_LEG_BUNDLE = "více míst činu"
 end)

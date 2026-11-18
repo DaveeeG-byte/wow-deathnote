@@ -930,7 +930,7 @@ L.SCENE_DAYS_LINE = "Aikaväli: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Omat kuolemat ja tapot"  -- [max 32]
 L.OPT_G_SENDPLACE = "Lähetä kuolinpaikkani"  -- [max 44]
 L.SCENE_MAP_TIP = "Kirjasi rikospaikat"
-L.SCENE_MAP_CLICK = "Napsautus: mitä kartta näyttää"
+L.SCENE_MAP_CLICK = "Napsautus: suodata rikospaikat"
 L.SCENE_SOMEONE = "joku"
 L.SCENE_TIP_DEATH = "Täällä {killer} tappoi sinut"
 L.SCENE_TIP_DEATH_UNCLEAR = "Täällä kuolit; tappaja on epäselvä"
@@ -987,4 +987,8 @@ L.SCENE_TIP_SUSPECT = "Täällä kuolit; epäilty: {name}"
 L.CHRON_EARLIER = "Aiemmat teot eivät ole enää kirjassa."
 L.GRUDGE_TIP_PET = "Hänen lemmikkinsä hyökkäsi myös"
 L.SHARE_GUEST_WEEK = "Viikko: {name}"
+L.SCENE_TIP_PICK = "Napsautus: valitse rikospaikka"
+L.SCENE_LEG_DEATH = "kuolemasi"
+L.SCENE_LEG_KILL = "tappamasi"
+L.SCENE_LEG_BUNDLE = "useita rikospaikkoja"
 end)

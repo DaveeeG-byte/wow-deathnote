@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Rebuilds DeathNote's own textures (ImageMagick 7, `magick`).
 # Output: <addon folder>/Media/*.tga (DeathNote/, or the old Staatsfeind/), 32-bit RGBA, uncompressed, edges a power of two.
-# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade|grip]
+# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade|grip|scene|scenefix]
 #   all (default) = everything; base = the black book's files; kit = the shared grey parts of the themes (g_*.tga);
 #   harbor, trade = the kit plus the files of that theme only (<id>_*.tga). The header check runs over every file.
 set -euo pipefail
@@ -371,15 +371,59 @@ scene_media() {
   tga "$TMP/scene_badge.png" "$OUT/scene_badge.tga"
 }
 
+# 1.5.0 fixer: guild and friends differ in shape, not only in colour (guild: a shield head; friend: a round head with a
+# small heart), and the map's switch has its own sign (a closed book with a red pin in it), never a crime scene pin
+scene_fix_media() {
+  needle() {   # shadow and steel needle of a pin (the tip at the bottom centre)
+    magick -size 64x64 xc:none \
+      -fill 'rgba(0,0,0,0.40)' -draw 'ellipse 36,61 7,2 0,360' -blur 0x1.2 \
+      \( -size 64x64 xc:none -stroke '#5b5f63' -strokewidth 3 -draw 'line 32,40 32,61' \
+         -stroke '#c9ced2' -strokewidth 1 -draw 'line 31,40 31,59' \) -compose over -composite "$1"
+  }
+  needle "$TMP/n.png"
+  # guild: a shield head with a dark skull
+  magick "$TMP/n.png" \
+    \( -size 64x64 xc:none -fill 'rgba(0,0,0,0.35)' -draw 'polygon 13,5 53,5 53,25 33,46 13,25' -blur 0x1.5 \) -compose over -composite \
+    \( -size 64x64 xc:none -fill '#6c6a64' -draw 'polygon 11,2 53,2 53,24 32,45 11,24' \
+       -fill '#e4e1da' -draw 'polygon 14,5 50,5 50,23 32,41 14,23' \
+       -fill 'rgba(255,255,255,0.22)' -draw 'ellipse 22,9 6,3 0,360' \) -compose over -composite \
+    \( -size 64x64 xc:none -font "$SYMFONT" -pointsize 24 -gravity center \
+       -fill '#3a3631' -stroke none -annotate +0-11 $'☠' \) -compose over -composite "$TMP/scene_guild.png"
+  tga "$TMP/scene_guild.png" "$OUT/scene_guild.tga"
+  # friend: a round head with a dark skull and a small heart at its lower right
+  magick "$TMP/n.png" \
+    \( -size 64x64 xc:none -fill 'rgba(0,0,0,0.35)' -draw 'circle 33,24 33,45' -blur 0x1.5 \) -compose over -composite \
+    \( -size 64x64 xc:none -fill '#6c6a64' -draw 'circle 32,22 32,43' -fill '#e4e1da' -draw 'circle 32,22 32,40' \
+       -fill 'rgba(255,255,255,0.22)' -draw 'ellipse 22,9 6,3 0,360' \) -compose over -composite \
+    \( -size 64x64 xc:none -font "$SYMFONT" -pointsize 22 -gravity center \
+       -fill '#3a3631' -stroke none -annotate -4-12 $'☠' \) -compose over -composite \
+    \( -size 64x64 xc:none -fill '#3a3631' -draw 'circle 44,31 44,41' -font "$SYMFONT" -pointsize 15 -gravity center \
+       -fill '#efe4c8' -stroke none -annotate +12+0 $'♥' \) -compose over -composite "$TMP/scene_friend.png"
+  tga "$TMP/scene_friend.png" "$OUT/scene_friend.tga"
+  # the map's switch: a closed black book (bone page edge) with a red pin stuck into its cover
+  magick -size 64x64 xc:none \
+    -fill 'rgba(0,0,0,0.45)' -draw 'roundrectangle 13,13 55,61 4,4' -blur 0x1.5 \
+    -fill '#efe4c8' -draw 'roundrectangle 14,9 53,57 3,3' \
+    -fill '#1b1918' -draw 'roundrectangle 10,8 49,58 4,4' \
+    -fill none -stroke '#5e4a3a' -strokewidth 1.5 -draw 'line 15,8 15,58' \
+    -stroke '#8a7a62' -strokewidth 1 -draw 'roundrectangle 19,16 44,50 2,2' \
+    -stroke none -fill '#efe4c8' -font "$SYMFONT" -pointsize 18 -gravity center -annotate -2+9 $'☠' \
+    -stroke '#c9ced2' -strokewidth 2 -draw 'line 40,18 35,25' \
+    -stroke '#5e0b0b' -strokewidth 1 -fill '#b51f1f' -draw 'circle 42,15 42,7' \
+    -stroke none -fill 'rgba(255,255,255,0.35)' -draw 'ellipse 40,12 3,2 0,360' "$TMP/scene_switch.png"
+  tga "$TMP/scene_switch.png" "$OUT/scene_switch.tga"
+}
+
 case "$WHAT" in
-  all) base_media; kit_media; theme_harbor; theme_trade; grip_media; scene_media ;;
+  all) base_media; kit_media; theme_harbor; theme_trade; grip_media; scene_media; scene_fix_media ;;
+  scenefix) scene_fix_media ;;
   grip) grip_media ;;
   scene) scene_media ;;
   base) base_media ;;
   kit) kit_media ;;
   harbor) kit_media; theme_harbor ;;
   trade) kit_media; theme_trade ;;
-  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip, scene)" >&2; exit 2 ;;
+  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip, scene, scenefix)" >&2; exit 2 ;;
 esac
 
 # Check the headers: type 2 (uncompressed), 32 bpp, descriptor 0x08, edges a power of two

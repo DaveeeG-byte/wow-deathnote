@@ -944,7 +944,7 @@ L.SCENE_DAYS_LINE = "Period: {days}"  -- [max 32] the map's switch: the period; 
 L.SCENE_KIND_OWN = "My deaths and kills"  -- [max 32] the map's switch: your own deaths and kills
 L.OPT_G_SENDPLACE = "Send the spot of my death"  -- [max 44] check box (House Rules, sheet Guild, More): the exact spot of your death goes to guild and friends with it
 L.SCENE_MAP_TIP = "Crime scenes of your book"  -- tooltip head of the small button at the world map's corner
-L.SCENE_MAP_CLICK = "Click: what the map shows"  -- tooltip line of that button: what a click does
+L.SCENE_MAP_CLICK = "Click: filter the crime scenes"  -- tooltip line of that button: what a click does
 L.SCENE_SOMEONE = "someone"  -- name for a killer nobody knows (map tooltip)
 L.SCENE_TIP_DEATH = "Here {killer} killed you"  -- map pin tooltip, your death; {killer} = full name in class colour
 L.SCENE_TIP_DEATH_UNCLEAR = "Here you were killed; the killer is unclear"  -- map pin tooltip, your death without a known killer
@@ -1001,4 +1001,8 @@ L.SCENE_TIP_SUSPECT = "Here you died; suspicion: {name}"  -- map pin tooltip, yo
 L.CHRON_EARLIER = "Earlier deeds are no longer in the book."  -- chronicle, second line of a long feud whose oldest deeds the book no longer keeps (it keeps 30 per enemy); the last line still gives the full standing
 L.GRUDGE_TIP_PET = "His pet attacked you too"  -- grudge notice, row tooltip: a unit he controls (hunter pet, demon, elemental) had you targeted at the same hit
 L.SHARE_GUEST_WEEK = "{name}'s week"  -- [max 24] head of the card a click on a received week line opens (no wanted poster); {name} = the sender's first name
+L.SCENE_TIP_PICK = "Click: pick a crime scene"  -- last line of a map pin's tooltip when the pin holds several crime scenes: a click opens a list of them
+L.SCENE_LEG_DEATH = "your death"  -- [max 32] legend in the tooltip of the map's switch: the red pin = a place where you died
+L.SCENE_LEG_KILL = "your kill"  -- [max 32] legend in the tooltip of the map's switch: the black pin with blades = a player of your book you killed there
+L.SCENE_LEG_BUNDLE = "several crime scenes"  -- [max 32] legend in the tooltip of the map's switch: the number badge on a pin = several crime scenes close together
 end)

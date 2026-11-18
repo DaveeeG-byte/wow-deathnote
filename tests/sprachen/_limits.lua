@@ -351,6 +351,10 @@ return {
   SCENE_KIND_OWN = { max = 32, field = "map switch row, 190 px, Nimrod 11, tooltip when cut" },
   OPT_G_SENDPLACE = { max = 44, field = "check box label, 280 px, Friz 11, one line" },
   CHRON_OPEN = { max = 14, field = "word below the photo, 112 px, hand 13, tooltip when cut" },
+  SHARE_GUEST_WEEK = { max = 24, field = "head of the week card (1.5.0 fixer)" },
+  SCENE_LEG_DEATH = { max = 32, field = "legend line in the map switch's tooltip (1.5.0 fixer)" },
+  SCENE_LEG_KILL = { max = 32, field = "legend line in the map switch's tooltip (1.5.0 fixer)" },
+  SCENE_LEG_BUNDLE = { max = 32, field = "legend line in the map switch's tooltip (1.5.0 fixer)" },
   CHRON_HEAD = { max = 20, field = "head of the chronicle card (big handwriting, 26 pt)" },
   CHRON_BACK = { max = 19, field = "word at the bottom right of the chronicle: back to the poster" },
 }

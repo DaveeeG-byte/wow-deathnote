@@ -154,7 +154,11 @@ tick(3)
 check("nach drei Pulsen still", lit and not lit.pulsing)
 -- the pin's click: back into the book
 local _, jv = nil, nil
+-- 1.5.0 fixer: a bundle (count 3) first shows the list of its scenes; a click on one opens it
 if lit then lit._scripts.OnMouseUp(lit, "LeftButton"); tick() end
+local pk = ns.SceneMap.Pick()
+check("Klick auf das Buendel: Liste der Tatorte", pk ~= nil and pk:IsShown() and pk.rows[1]:IsShown())
+if pk and pk.rows[1].item then pk.rows[1]._scripts.OnClick(pk.rows[1]); tick() end
 check("Klick auf die Nadel: Karte zu, Buch auf", not wm:IsShown() and book:IsShown())
 
 -- the death file: the place is a link
@@ -204,7 +208,7 @@ whisper(P.EncodePlace({ key = "Rau-Bold", t = kt, victim = "Fritz Frei", mapID =
 tick(2)
 local mate
 for _, f in ipairs(pins()) do if f.data.lead.kind == "friend" then mate = f end end
-check("Freund: eigene leisere Nadel (helles Bild, blau getoent)", mate ~= nil and mate.icon._tex:find("scene_mate", 1, true) ~= nil
+check("Freund: eigene leisere Nadel (helles Bild, blau getoent)", mate ~= nil and mate.icon._tex:find("scene_friend", 1, true) ~= nil
   and mate.icon._vc and mate.icon._vc[3] > mate.icon._vc[1])
 local tm = mate and tipOf(mate) or ""
 check("Freund: Hier wurde <Freund> von <Taeter> getoetet, Freund, frisch", tm:find("Hier wurde Fritz Frei von", 1, true) ~= nil

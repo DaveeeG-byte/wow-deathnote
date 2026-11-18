@@ -939,7 +939,7 @@ L.SCENE_DAYS_LINE = "Dönem: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Kendi ölümlerim ve öldürmelerim"  -- [max 32]
 L.OPT_G_SENDPLACE = "Ölüm yerimi gönder"  -- [max 44]
 L.SCENE_MAP_TIP = "Defterindeki olay yerleri"
-L.SCENE_MAP_CLICK = "Tıkla: haritada ne görünsün"
+L.SCENE_MAP_CLICK = "Tıkla: olay yerlerini süz"
 L.SCENE_SOMEONE = "biri"
 L.SCENE_TIP_DEATH = "Burada seni öldüren: {killer}"
 L.SCENE_TIP_DEATH_UNCLEAR = "Burada öldün; katil belirsiz"
@@ -996,4 +996,8 @@ L.SCENE_TIP_SUSPECT = "Burada öldün; şüpheli: {name}"
 L.CHRON_EARLIER = "Daha eski olaylar artık defterde yok."
 L.GRUDGE_TIP_PET = "Evcil hayvanı da sana saldırdı"
 L.SHARE_GUEST_WEEK = "{name} haftası"
+L.SCENE_TIP_PICK = "Tıkla: olay yeri seç"
+L.SCENE_LEG_DEATH = "ölümün"
+L.SCENE_LEG_KILL = "öldürdüğün"
+L.SCENE_LEG_BUNDLE = "birkaç olay yeri"
 end)

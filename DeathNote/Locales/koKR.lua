@@ -937,7 +937,7 @@ L.SCENE_DAYS_LINE = "기간: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "내 죽음과 처치"  -- [max 32]
 L.OPT_G_SENDPLACE = "내 사망 위치 보내기"  -- [max 44]
 L.SCENE_MAP_TIP = "수첩의 사건 현장"
-L.SCENE_MAP_CLICK = "클릭: 지도에 표시할 것"
+L.SCENE_MAP_CLICK = "클릭: 사건 현장 거르기"
 L.SCENE_SOMEONE = "누군가"
 L.SCENE_TIP_DEATH = "여기서 {killer}에게 죽었다"
 L.SCENE_TIP_DEATH_UNCLEAR = "여기서 죽었다. 범인은 불분명"
@@ -994,4 +994,8 @@ L.SCENE_TIP_SUSPECT = "여기서 죽었다; 의심: {name}"
 L.CHRON_EARLIER = "이전 기록은 더 이상 수첩에 없다."
 L.GRUDGE_TIP_PET = "그의 소환수도 너를 공격했다"
 L.SHARE_GUEST_WEEK = "{name}의 한 주"
+L.SCENE_TIP_PICK = "클릭: 사건 현장 고르기"
+L.SCENE_LEG_DEATH = "너의 죽음"
+L.SCENE_LEG_KILL = "너의 처치"
+L.SCENE_LEG_BUNDLE = "여러 사건 현장"
 end)

@@ -935,7 +935,7 @@ L.SCENE_DAYS_LINE = "Период: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Мои смерти и убийства"  -- [max 32]
 L.OPT_G_SENDPLACE = "Отправлять место моей смерти"  -- [max 44]
 L.SCENE_MAP_TIP = "Места преступлений из книги"
-L.SCENE_MAP_CLICK = "Щелчок: что показывает карта"
+L.SCENE_MAP_CLICK = "Щелчок: отбор мест преступлений"
 L.SCENE_SOMEONE = "кто-то"
 L.SCENE_TIP_DEATH = "Здесь тебя убил {killer}"
 L.SCENE_TIP_DEATH_UNCLEAR = "Здесь ты погиб; убийца неясен"
@@ -992,4 +992,8 @@ L.SCENE_TIP_SUSPECT = "Здесь ты погиб; подозрение: {name}"
 L.CHRON_EARLIER = "Более ранних дел в книге уже нет."
 L.GRUDGE_TIP_PET = "Его питомец тоже напал на тебя"
 L.SHARE_GUEST_WEEK = "Неделя: {name}"
+L.SCENE_TIP_PICK = "Щелчок: выбрать место преступления"
+L.SCENE_LEG_DEATH = "твоя смерть"
+L.SCENE_LEG_KILL = "твоё убийство"
+L.SCENE_LEG_BUNDLE = "несколько мест"
 end)

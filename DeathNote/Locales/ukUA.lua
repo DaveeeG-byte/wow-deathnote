@@ -936,7 +936,7 @@ L.SCENE_DAYS_LINE = "Період: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Мої смерті та вбивства"  -- [max 32]
 L.OPT_G_SENDPLACE = "Надсилати місце моєї смерті"  -- [max 44]
 L.SCENE_MAP_TIP = "Місця злочинів із книги"
-L.SCENE_MAP_CLICK = "Клац: що показує мапа"
+L.SCENE_MAP_CLICK = "Клац: відбір місць злочинів"
 L.SCENE_SOMEONE = "хтось"
 L.SCENE_TIP_DEATH = "Тут тебе вбив {killer}"
 L.SCENE_TIP_DEATH_UNCLEAR = "Тут ти загинув; вбивця неясний"
@@ -993,4 +993,8 @@ L.SCENE_TIP_SUSPECT = "Тут ти загинув; підозра: {name}"
 L.CHRON_EARLIER = "Давніших справ у книзі вже немає."
 L.GRUDGE_TIP_PET = "Його улюбленець теж напав на тебе"
 L.SHARE_GUEST_WEEK = "Тиждень: {name}"
+L.SCENE_TIP_PICK = "Клац: вибрати місце злочину"
+L.SCENE_LEG_DEATH = "твоя смерть"
+L.SCENE_LEG_KILL = "твоє вбивство"
+L.SCENE_LEG_BUNDLE = "кілька місць"
 end)

@@ -938,7 +938,7 @@ L.SCENE_DAYS_LINE = "Időszak: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Saját halálaim és ölések"  -- [max 32]
 L.OPT_G_SENDPLACE = "Halálom helyének küldése"  -- [max 44]
 L.SCENE_MAP_TIP = "Tetthelyek a könyvedből"
-L.SCENE_MAP_CLICK = "Kattintás: mit mutat a térkép"
+L.SCENE_MAP_CLICK = "Kattintás: tetthelyek szűrése"
 L.SCENE_SOMEONE = "valaki"
 L.SCENE_TIP_DEATH = "Itt ölt meg {killer}"
 L.SCENE_TIP_DEATH_UNCLEAR = "Itt haltál meg; a tettes nem világos"
@@ -995,4 +995,8 @@ L.SCENE_TIP_SUSPECT = "Itt haltál meg; gyanú: {name}"
 L.CHRON_EARLIER = "A korábbi tettek már nincsenek a könyvben."
 L.GRUDGE_TIP_PET = "A társa is megtámadott"
 L.SHARE_GUEST_WEEK = "{name} hete"
+L.SCENE_TIP_PICK = "Kattintás: tetthely választása"
+L.SCENE_LEG_DEATH = "a halálod"
+L.SCENE_LEG_KILL = "a győzelmed"
+L.SCENE_LEG_BUNDLE = "több tetthely"
 end)

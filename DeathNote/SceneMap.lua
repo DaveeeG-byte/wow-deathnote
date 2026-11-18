@@ -4,9 +4,12 @@
 -- map and the words of a pin come from Scene.lua.
 --
 -- Pins: a red pin with a skull (my death), a black pin with crossed blades (my kill), a light pin in a quiet colour
--- with a dark skull (a guildmate's or a friend's death). Close scenes are one pin with a count. A mate's death younger
--- than Scene.FRESH pulses (an animation group, no OnUpdate). A pin's tooltip says who killed whom, when and where; a
--- click closes the map and opens the book there.
+-- with a dark skull (a guildmate's or a friend's death; 1.5.0 fixer: guild a shield head, friend a round head with a
+-- small heart, so they differ without colour). Pins that would cover each other are one pin with a count. A mate's
+-- death younger than Scene.FRESH pulses (an animation group, no OnUpdate). A pin's tooltip says who killed whom, when
+-- and where; a click closes the map and opens the book there (a bundle: a small list of its scenes to pick from).
+-- The switch at the map's corner is a closed book with a red pin (its own sign, never a crime scene pin); its tooltip
+-- names the pins. A place shown from the book closes the book; closing the map again opens it again.
 -- Combat: nothing on the map is touched in combat (taint and "action blocked" on Forever, hunt-technik §2). A refresh
 -- asked in combat waits for PLAYER_REGEN_ENABLED; a click from the book in combat only says so in the chat (nothing
 -- is opened later). Pins are positioned like Leatrix Maps' (Leatrix_Maps.lua: canvas child, scale 1 / canvas scale).
@@ -24,8 +27,11 @@ SceneMap.PULSES = 3        -- pulses of the ring after a click from the book
 SceneMap.HINT_SECONDS = 6  -- the hint on the map ("exact spot unknown")
 
 local TEX = {
-  death = "scene_death.tga", kill = "scene_kill.tga", guild = "scene_mate.tga", friend = "scene_mate.tga",
+  death = "scene_death.tga", kill = "scene_kill.tga", guild = "scene_guild.tga", friend = "scene_friend.tga",
 }
+SceneMap.TEX = TEX
+SceneMap.SWITCH = "scene_switch.tga"   -- the switch at the map's corner
+SceneMap.PICK_MAX = 8                  -- scenes in the list of a bundle (the rest: "… and n more")
 -- the mates' quiet colours (multiplied into the light pin): guild a muted green, friends a muted blue
 SceneMap.TINT = { guild = { 0.62, 0.80, 0.58 }, friend = { 0.60, 0.72, 0.92 } }
 
@@ -50,7 +56,7 @@ local function now() local S = Scene(); return S and S.Now() or 0 end
 
 local map            -- WorldMapFrame
 local pool, used = {}, {}
-local button, menu, hint, marker
+local button, menu, hint, marker, pick
 local pending = false
 SceneMap.focus, SceneMap.focusUntil = nil, 0
 
@@ -80,11 +86,19 @@ local function pinEnter(self)
 end
 local function pinLeave() local tip = G("GameTooltip"); if tip then tip:Hide() end end
 
--- a click on a pin: the map closes (out of combat), the book opens on the newest scene of the pin
+-- a click on a pin: the map closes (out of combat), the book opens on the pin's scene; 1.5.0 fixer: a bundle shows the
+-- list of its scenes (the one of the pin's look first), a click there opens that one
 local function pinClick(self, mouse)
   if mouse == "RightButton" or not self.data then return end
   local it = self.data.items[1]
   if not it then return end
+  if #self.data.items > 1 then SceneMap.ShowPick(self); return end
+  SceneMap.Go(it)
+end
+-- from the map into the book on one scene
+function SceneMap.Go(it)
+  if pick then pick:Hide() end
+  SceneMap.fromBook = nil   -- the book opens on the scene: closing the map must not open it a second time
   if not inCombat() then SceneMap.CloseMap() end
   SceneMap.OpenBook(it)
 end
@@ -140,6 +154,16 @@ local function startPulse(f, times)
       end)
     end
   end
+end
+
+-- a pin's width and height in percent of the canvas (the pin keeps PIN px on the screen whatever the canvas scale)
+function SceneMap.PinSize()
+  local canvas = canvasOf()
+  if not canvas then return nil end
+  local w, h = canvas:GetWidth() or 0, canvas:GetHeight() or 0
+  if type(w) ~= "number" or type(h) ~= "number" or w <= 0 or h <= 0 then return nil end
+  local px = SceneMap.PIN / canvasScale()
+  return { rx = px / w * 100, ry = px / h * 100 }
 end
 
 local function place(f, p)
@@ -203,7 +227,7 @@ function SceneMap.Refresh()
     local mapID = map.GetMapID and map:GetMapID()
     if type(mapID) ~= "number" then return end
     local focus = (now() <= SceneMap.focusUntil) and SceneMap.focus or nil
-    local pins = S.Pins(mapID, now(), translate, focus)
+    local pins = S.Pins(mapID, now(), translate, focus, SceneMap.PinSize())
     S.Count("refreshes")
     for _, p in ipairs(pins) do
       local f = table.remove(pool) or makePin()
@@ -216,9 +240,11 @@ function SceneMap.Refresh()
   end)
 end
 
+-- 1.5.0 fixer: a new canvas scale bundles anew (pins that would now cover each other become one)
 local function rescale()
   if inCombat() then pending = true; return end
-  guard("scale", function() for _, f in ipairs(used) do if f.data then place(f, f.data) end end end)
+  if pick then pick:Hide() end
+  SceneMap.Refresh()
 end
 
 -- the shown pin that holds a scene (for the highlight): the same entry, or the same time on the same map
@@ -343,9 +369,9 @@ function SceneMap.Show(placeT, ref)
   local spot = S.ValidSpot(placeT.mapID, placeT.x, placeT.y)
   SceneMap.focus = spot and (ref or placeT) or nil
   SceneMap.focusUntil = now() + S.FOCUS
-  -- the book gives way to the map (a pin's click opens it again)
+  -- the book gives way to the map (a pin's click opens it again; 1.5.0 fixer: so does closing the map)
   local book = G("DeathNoteFrame")
-  if book and book.IsShown and book:IsShown() then book:Hide() end
+  if book and book.IsShown and book:IsShown() then book:Hide(); SceneMap.fromBook = true end
   local ok = guard("open", openMap, placeT.mapID)
   if ok == nil and not map:IsShown() then return "unavailable" end
   SceneMap.Refresh()
@@ -480,13 +506,17 @@ local function buildButton()
   button = CreateFrame("Button", nil, host)
   button:SetSize(26, 26)
   button:SetPoint("BOTTOMLEFT", host, "BOTTOMLEFT", 8, 8)
-  button:SetFrameStrata("HIGH")
+  -- 1.5.0 fixer: one layer above the pins (HIGH), with a light frame and its own sign (a book, no crime scene pin)
+  button:SetFrameStrata("DIALOG")
+  local rim = button:CreateTexture(nil, "BACKGROUND", nil, -1)
+  rim:SetPoint("TOPLEFT", -3, 3); rim:SetPoint("BOTTOMRIGHT", 3, -3)
+  rim:SetColorTexture(0.86, 0.80, 0.66, 0.9)
   local bg = button:CreateTexture(nil, "BACKGROUND")
   bg:SetPoint("TOPLEFT", -2, 2); bg:SetPoint("BOTTOMRIGHT", 2, -2)
-  bg:SetColorTexture(0.05, 0.03, 0.02, 0.6)
+  bg:SetColorTexture(0.05, 0.03, 0.02, 0.85)
   button.icon = button:CreateTexture(nil, "ARTWORK")
   button.icon:SetAllPoints()
-  Look.Tex(button.icon, media("scene_death.tga"))
+  Look.Tex(button.icon, media(SceneMap.SWITCH))
   button:SetScript("OnClick", function() Look.Sound("click"); SceneMap.ToggleMenu() end)
   button:SetScript("OnEnter", function(self)
     local tip = G("GameTooltip")
@@ -494,6 +524,8 @@ local function buildButton()
     tip:SetOwner(self, "ANCHOR_RIGHT")
     tip:SetText(L.SCENE_MAP_TIP, 1, 1, 1, 1, true)
     tip:AddLine(Look.Join(setting("on") ~= false and L.WORD_ON or L.WORD_OFF, SceneMap.DaysWord(setting("days"))), 0.85, 0.82, 0.75, true)
+    -- 1.5.0 fixer: what the pins mean
+    for _, l in ipairs(SceneMap.Legend()) do tip:AddLine(l, 0.85, 0.82, 0.75, true) end
     tip:AddLine(L.SCENE_MAP_CLICK, 0.6, 0.6, 0.6, true)
     tip:Show()
   end)
@@ -501,6 +533,84 @@ local function buildButton()
   SceneMap.UpdateButton()
 end
 function SceneMap.Button() return button end
+
+-- the legend of the switch's tooltip: one line per kind of pin, its picture in front
+local LEGEND = { { "death", "SCENE_LEG_DEATH" }, { "kill", "SCENE_LEG_KILL" }, { "guild", "SCENE_SRC_GUILD" },
+  { "friend", "SCENE_SRC_FRIEND" } }
+function SceneMap.Legend()
+  local out = {}
+  for _, row in ipairs(LEGEND) do
+    local tint = SceneMap.TINT[row[1]]
+    local col = tint and (":0:0:0:0:64:64:0:64:0:64:%d:%d:%d"):format(math.floor(tint[1] * 255), math.floor(tint[2] * 255),
+      math.floor(tint[3] * 255)) or ""
+    out[#out + 1] = "|T" .. media(TEX[row[1]]) .. ":16:16" .. col .. "|t " .. (L[row[2]] or row[2])
+  end
+  out[#out + 1] = "|T" .. media("scene_badge.tga") .. ":12:12|t " .. L.SCENE_LEG_BUNDLE
+  return out
+end
+
+---------------------------------------------------------------------------
+-- 1.5.0 fixer: the list of a bundle (a click on a pin with a count): its scenes, a click opens one
+---------------------------------------------------------------------------
+SceneMap.PICK_W, SceneMap.PICK_ROW = 300, 18
+local function buildPick()
+  local host = map.ScrollContainer or map
+  pick = CreateFrame("Frame", nil, host)
+  pick:SetSize(SceneMap.PICK_W, 40)
+  pick:SetFrameStrata("DIALOG")
+  pick:EnableMouse(true)
+  local bg = pick:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  Look.Skin(bg, "paper")
+  pick.head = Look.Text(pick, "type", 11, Look.INK)
+  pick.head:SetPoint("TOPLEFT", 8, -6)
+  pick.head:SetWidth(SceneMap.PICK_W - 16)
+  pick.head:SetJustifyH("LEFT")
+  pick.head:SetWordWrap(false)
+  pick.rows = {}
+  for i = 1, SceneMap.PICK_MAX + 1 do
+    local b = CreateFrame("Button", nil, pick)
+    b:SetSize(SceneMap.PICK_W - 12, SceneMap.PICK_ROW)
+    b:SetPoint("TOPLEFT", 6, -22 - (i - 1) * SceneMap.PICK_ROW)
+    b.text = Look.Text(b, "body", 11, Look.INK)
+    b.text:SetPoint("LEFT", 4, 0)
+    b.text:SetWidth(SceneMap.PICK_W - 20)
+    b.text:SetJustifyH("LEFT")
+    b.text:SetWordWrap(false)
+    Look.TipShows(b, b.text)
+    b:SetScript("OnClick", function(self)
+      if self.item then Look.Sound("click"); SceneMap.Go(self.item) end
+    end)
+    pick.rows[i] = b
+  end
+  pick:Hide()
+end
+
+function SceneMap.ShowPick(pin)
+  local p = pin and pin.data
+  if not (p and map) then return end
+  guard("pick", function()
+    if not pick then buildPick() end
+    local S = Scene()
+    pick.head:SetText(Fmt(L.SCENE_BUNDLE, { count = #p.items }))
+    local n = math.min(#p.items, SceneMap.PICK_MAX)
+    for i, b in ipairs(pick.rows) do
+      local it = i <= n and p.items[i] or nil
+      b.item = it
+      if it then b.text:SetText(S.Short(it)); b:Show()
+      elseif i == n + 1 and #p.items > n then b.text:SetText(Fmt(L.MORE_LINE, { count = #p.items - n })); b:Show()
+      else b:Hide() end
+    end
+    local rows = n + ((#p.items > n) and 1 or 0)
+    pick:SetHeight(28 + rows * SceneMap.PICK_ROW)
+    pick:ClearAllPoints()
+    pick:SetPoint("TOPLEFT", pin, "BOTTOMRIGHT", 2, 0)
+    pick:SetClampedToScreen(true)
+    pick:Show()
+    pick:Raise()
+  end)
+end
+function SceneMap.Pick() return pick end
 
 ---------------------------------------------------------------------------
 -- Attaching to the map (once; the map exists at login on Forever: HereBeDragons in Questie adds its provider at load)
@@ -517,7 +627,16 @@ function SceneMap.Attach()
       if type(wm.OnCanvasScaleChanged) == "function" then hook(wm, "OnCanvasScaleChanged", rescale) end
     end
     wm:HookScript("OnShow", SceneMap.Refresh)
-    wm:HookScript("OnHide", function() if menu then menu:Hide() end end)
+    wm:HookScript("OnHide", function()
+      if menu then menu:Hide() end
+      if pick then pick:Hide() end
+      -- 1.5.0 fixer: the map was opened from the book and closed without a pin's click: back to the book
+      if SceneMap.fromBook then
+        SceneMap.fromBook = nil
+        local book = G("DeathNoteFrame")
+        if book and not inCombat() and not book:IsShown() then guard("back", function() book:Show() end) end
+      end
+    end)
     buildButton()
     return true
   end)
@@ -539,7 +658,8 @@ end
 -- tests: back to nothing attached
 function SceneMap.Reset()
   releaseAll()
-  map, button, menu, hint, marker, pending = nil, nil, nil, nil, nil, false
+  map, button, menu, hint, marker, pick, pending = nil, nil, nil, nil, nil, nil, false
+  SceneMap.fromBook = nil
   pool, used = {}, {}
   SceneMap.focus, SceneMap.focusUntil = nil, 0
   local S = Scene()

@@ -929,7 +929,7 @@ L.SCENE_DAYS_LINE = "Period: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Mina dödsfall och dödanden"  -- [max 32]
 L.OPT_G_SENDPLACE = "Skicka platsen där jag dog"  -- [max 44]
 L.SCENE_MAP_TIP = "Brottsplatser ur din bok"
-L.SCENE_MAP_CLICK = "Klick: vad kartan visar"
+L.SCENE_MAP_CLICK = "Klick: filtrera brottsplatser"
 L.SCENE_SOMEONE = "någon"
 L.SCENE_TIP_DEATH = "Här dödade {killer} dig"
 L.SCENE_TIP_DEATH_UNCLEAR = "Här dog du; mördaren är oklar"
@@ -986,4 +986,8 @@ L.SCENE_TIP_SUSPECT = "Här dog du; misstanke: {name}"
 L.CHRON_EARLIER = "Tidigare dåd finns inte längre i boken."
 L.GRUDGE_TIP_PET = "Hans husdjur anföll dig också"
 L.SHARE_GUEST_WEEK = "{name}s vecka"
+L.SCENE_TIP_PICK = "Klick: välj brottsplats"
+L.SCENE_LEG_DEATH = "din död"
+L.SCENE_LEG_KILL = "ditt dråp"
+L.SCENE_LEG_BUNDLE = "flera brottsplatser"
 end)

@@ -936,7 +936,7 @@ L.SCENE_DAYS_LINE = "Okres: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Moje śmierci i zabójstwa"  -- [max 32]
 L.OPT_G_SENDPLACE = "Wysyłaj miejsce mojej śmierci"  -- [max 44]
 L.SCENE_MAP_TIP = "Miejsca zbrodni z twojej księgi"
-L.SCENE_MAP_CLICK = "Klik: co pokazuje mapa"
+L.SCENE_MAP_CLICK = "Klik: filtruj miejsca zbrodni"
 L.SCENE_SOMEONE = "ktoś"
 L.SCENE_TIP_DEATH = "Tutaj zabił cię {killer}"
 L.SCENE_TIP_DEATH_UNCLEAR = "Tutaj zginąłeś; sprawca niejasny"
@@ -993,4 +993,8 @@ L.SCENE_TIP_SUSPECT = "Tutaj zginąłeś; podejrzenie: {name}"
 L.CHRON_EARLIER = "Wcześniejszych czynów nie ma już w księdze."
 L.GRUDGE_TIP_PET = "Jego towarzysz też cię zaatakował"
 L.SHARE_GUEST_WEEK = "Tydzień: {name}"
+L.SCENE_TIP_PICK = "Klik: wybierz miejsce zbrodni"
+L.SCENE_LEG_DEATH = "twoja śmierć"
+L.SCENE_LEG_KILL = "twoje zabójstwo"
+L.SCENE_LEG_BUNDLE = "kilka miejsc zbrodni"
 end)

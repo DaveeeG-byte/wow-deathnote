@@ -929,7 +929,7 @@ L.SCENE_DAYS_LINE = "Periode: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Mijn doden en kills"  -- [max 32]
 L.OPT_G_SENDPLACE = "Plek van mijn dood meesturen"  -- [max 44]
 L.SCENE_MAP_TIP = "Plaatsen delict uit je boek"
-L.SCENE_MAP_CLICK = "Klik: wat de kaart toont"
+L.SCENE_MAP_CLICK = "Klik: plaatsen delict filteren"
 L.SCENE_SOMEONE = "iemand"
 L.SCENE_TIP_DEATH = "Hier heeft {killer} je gedood"
 L.SCENE_TIP_DEATH_UNCLEAR = "Hier stierf je; de dader is onduidelijk"
@@ -986,4 +986,8 @@ L.SCENE_TIP_SUSPECT = "Hier ben je gestorven; verdenking: {name}"
 L.CHRON_EARLIER = "Eerdere daden staan niet meer in het boek."
 L.GRUDGE_TIP_PET = "Zijn huisdier viel je ook aan"
 L.SHARE_GUEST_WEEK = "Week van {name}"
+L.SCENE_TIP_PICK = "Klik: plaats delict kiezen"
+L.SCENE_LEG_DEATH = "jouw dood"
+L.SCENE_LEG_KILL = "jouw kill"
+L.SCENE_LEG_BUNDLE = "meerdere plaatsen delict"
 end)

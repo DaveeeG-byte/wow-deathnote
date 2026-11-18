@@ -937,7 +937,7 @@ L.SCENE_DAYS_LINE = "时间范围：{days}"  -- [max 32]
 L.SCENE_KIND_OWN = "我的死亡与击杀"  -- [max 32]
 L.OPT_G_SENDPLACE = "发送我的死亡地点"  -- [max 44]
 L.SCENE_MAP_TIP = "记仇本里的案发现场"
-L.SCENE_MAP_CLICK = "点击：设置地图显示内容"
+L.SCENE_MAP_CLICK = "点击：筛选案发现场"
 L.SCENE_SOMEONE = "某人"
 L.SCENE_TIP_DEATH = "{killer}在这里杀了你"
 L.SCENE_TIP_DEATH_UNCLEAR = "你死在这里；凶手不明"
@@ -994,4 +994,8 @@ L.SCENE_TIP_SUSPECT = "你在这里死去；嫌疑：{name}"
 L.CHRON_EARLIER = "更早的事已不在本子里。"
 L.GRUDGE_TIP_PET = "他的宠物也攻击了你"
 L.SHARE_GUEST_WEEK = "{name}的一周"
+L.SCENE_TIP_PICK = "点击：选择案发现场"
+L.SCENE_LEG_DEATH = "你的死亡"
+L.SCENE_LEG_KILL = "你的击杀"
+L.SCENE_LEG_BUNDLE = "多个案发现场"
 end)

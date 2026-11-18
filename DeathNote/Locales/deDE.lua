@@ -924,7 +924,7 @@ L.SCENE_DAYS_LINE = "Zeitraum: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Meine Tode und Kills"  -- [max 32]
 L.OPT_G_SENDPLACE = "Ort meines Todes mitsenden"  -- [max 44]
 L.SCENE_MAP_TIP = "Tatorte aus deinem Buch"
-L.SCENE_MAP_CLICK = "Klick: was die Karte zeigt"
+L.SCENE_MAP_CLICK = "Klick: Tatorte filtern"
 L.SCENE_SOMEONE = "jemand"
 L.SCENE_TIP_DEATH = "Hier hat {killer} dich getötet"
 L.SCENE_TIP_DEATH_UNCLEAR = "Hier bist du gestorben; der Täter ist unklar"
@@ -981,4 +981,8 @@ L.SCENE_TIP_SUSPECT = "Hier bist du gestorben; Verdacht: {name}"
 L.CHRON_EARLIER = "Frühere Taten stehen nicht mehr im Buch."
 L.GRUDGE_TIP_PET = "Sein Begleiter griff dich auch an"
 L.SHARE_GUEST_WEEK = "Woche von {name}"  -- [max 24]
+L.SCENE_TIP_PICK = "Klick: Tatort wählen"
+L.SCENE_LEG_DEATH = "dein Tod"  -- [max 32]
+L.SCENE_LEG_KILL = "dein Kill"  -- [max 32]
+L.SCENE_LEG_BUNDLE = "mehrere Tatorte"  -- [max 32]
 end)

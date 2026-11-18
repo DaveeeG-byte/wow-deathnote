@@ -924,7 +924,7 @@ L.SCENE_DAYS_LINE = "Período: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Mis muertes y bajas"  -- [max 32]
 L.OPT_G_SENDPLACE = "Enviar el lugar de mi muerte"  -- [max 44]
 L.SCENE_MAP_TIP = "Escenas del crimen de tu libro"
-L.SCENE_MAP_CLICK = "Clic: qué muestra el mapa"
+L.SCENE_MAP_CLICK = "Clic: filtrar las escenas del crimen"
 L.SCENE_SOMEONE = "alguien"
 L.SCENE_TIP_DEATH = "Aquí te mató {killer}"
 L.SCENE_TIP_DEATH_UNCLEAR = "Aquí moriste; el asesino no está claro"
@@ -981,4 +981,8 @@ L.SCENE_TIP_SUSPECT = "Aquí moriste; sospecha: {name}"
 L.CHRON_EARLIER = "Los hechos anteriores ya no están en el libro."
 L.GRUDGE_TIP_PET = "Su mascota también te atacó"
 L.SHARE_GUEST_WEEK = "Semana de {name}"
+L.SCENE_TIP_PICK = "Clic: elegir una escena del crimen"
+L.SCENE_LEG_DEATH = "tu muerte"
+L.SCENE_LEG_KILL = "tu víctima"
+L.SCENE_LEG_BUNDLE = "varias escenas del crimen"
 end)

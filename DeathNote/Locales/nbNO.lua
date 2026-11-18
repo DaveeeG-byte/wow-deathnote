@@ -929,7 +929,7 @@ L.SCENE_DAYS_LINE = "Periode: {days}"  -- [max 32]
 L.SCENE_KIND_OWN = "Mine dødsfall og drap"  -- [max 32]
 L.OPT_G_SENDPLACE = "Send stedet der jeg døde"  -- [max 44]
 L.SCENE_MAP_TIP = "Åsteder fra boka di"
-L.SCENE_MAP_CLICK = "Klikk: hva kartet viser"
+L.SCENE_MAP_CLICK = "Klikk: filtrer åsteder"
 L.SCENE_SOMEONE = "noen"
 L.SCENE_TIP_DEATH = "Her drepte {killer} deg"
 L.SCENE_TIP_DEATH_UNCLEAR = "Her døde du; drapsmannen er uklar"
@@ -986,4 +986,8 @@ L.SCENE_TIP_SUSPECT = "Her døde du; mistanke: {name}"
 L.CHRON_EARLIER = "Tidligere gjerninger står ikke lenger i boka."
 L.GRUDGE_TIP_PET = "Kjæledyret hans angrep deg også"
 L.SHARE_GUEST_WEEK = "Uka til {name}"
+L.SCENE_TIP_PICK = "Klikk: velg åsted"
+L.SCENE_LEG_DEATH = "din død"
+L.SCENE_LEG_KILL = "ditt drap"
+L.SCENE_LEG_BUNDLE = "flere åsteder"
 end)
