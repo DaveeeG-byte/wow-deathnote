@@ -53,6 +53,11 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   LP.search:SetText("rot"); LP.search._scripts.OnTextChanged(LP.search, true); W.tick()
   rows = W.rows()
   J.check(code .. ": Suche nach Gilde oder Mitglied", #rows == 2 and rows[1].item.fdHead and rows[2].item.key == "Rot-Hand", #rows)
+  -- Enter without a match adds nobody on the guild page
+  LP.search:SetText("Niemandsgilde"); LP.search._scripts.OnTextChanged(LP.search, true); W.tick()
+  LP.search._scripts.OnEnterPressed(LP.search); W.tick()
+  J.check(code .. ": Enter auf der Gildenseite traegt niemanden ein", ns.Store.Find("Niemandsgilde") == nil)
+  J.check(code .. ": Platzhalter nur Suchen", LP.search.ph._text ~= L.SEARCH_ADD, LP.search.ph._text)
   LP.search:SetText(""); LP.search._scripts.OnTextChanged(LP.search, true); W.tick()
   -- back to players
   W.click(W.find(L.VIEW_PLAYERS))

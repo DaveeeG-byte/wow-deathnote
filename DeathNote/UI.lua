@@ -2940,7 +2940,8 @@ local function FillDeath(d, index)
 end
 
 -- Journal, Unsolved and Guild: Enter only searches, never adds an entry
-local function SearchOnly() return state.filter ~= "wanted" end
+-- 1.6.0 feud: the guild page of Wanted only searches (Enter adds no player named like a guild)
+local function SearchOnly() return state.filter ~= "wanted" or UX.FD("On") == true end
 
 local function EmptyKind()
   local fk = UX.FD("EmptyKind")
@@ -5147,7 +5148,7 @@ function UX.UpdateTabs()
   LP.search.ph:SetWidth(sw - 4)
   Look.FitText(LP.search.ph, (state.filter == "guild" and ((views or GF.HuntView()) and L.SEARCH_SHORT or L.SEARCH_KILLER))
                        or (state.filter == "journal" and L.SEARCH_JOURNAL)
-                       or ((state.filter == "open" or state.filter == "record" or sw < 150) and L.SEARCH_SHORT) or L.SEARCH_ADD, GF.FIT_PH)
+                       or ((state.filter == "open" or state.filter == "record" or fdOn or sw < 150) and L.SEARCH_SHORT) or L.SEARCH_ADD, GF.FIT_PH)
 end
 
 function UX.UpdateStatus()
