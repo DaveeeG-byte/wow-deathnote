@@ -256,6 +256,11 @@ function Probe.Run(verbose, opts)
     local oks, sc = pcall(ns.Scene.ProbeSnapshot)
     if oks and type(sc) == "table" then out.scene = sc end
   end
+  -- 1.6.0 guildlog: book holders heard, chronicle events per kind, whether the guild roster was readable
+  if ns.GuildLog and ns.GuildLog.ProbeSnapshot then
+    local okg, gl = pcall(ns.GuildLog.ProbeSnapshot)
+    if okg and type(gl) == "table" then out.glog = S(gl) end
+  end
   if db then
     local keep = db.probe and db.probe.deaths
     db.probe = out

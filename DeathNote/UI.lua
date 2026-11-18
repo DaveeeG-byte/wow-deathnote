@@ -5113,6 +5113,12 @@ function UX.UpdateTabs()
   Look.FitText(LP.search.ph, (state.filter == "guild" and ((views or GF.HuntView()) and L.SEARCH_SHORT or L.SEARCH_KILLER))
                        or (state.filter == "journal" and L.SEARCH_JOURNAL)
                        or ((state.filter == "open" or state.filter == "record" or sw < 150) and L.SEARCH_SHORT) or L.SEARCH_ADD, GF.FIT_PH)
+  -- 1.6.0 guildlog: the ribbon only in the guild tab, the dot on it, the chronicle steps aside for another selection
+  if ns.GuildLogUI and ns.GuildLogUI.Update then
+    local ok, err = pcall(ns.GuildLogUI.Update, state.filter, state.panel, table.concat({ tostring(state.gview),
+      tostring(state.gselected), tostring(state.hselected), tostring(state.gmember), tostring(state.gsource) }, "\t"))
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
 end
 
 function UX.UpdateStatus()
@@ -6606,6 +6612,11 @@ local function Build()
   local gso = Look.Setting("ui.guildSort", "rank")
   for _, k in ipairs(UX.GSORTS) do if k == gso then state.gsort = gso end end
   state.gnew = Look.Setting("ui.guildNew", false) == true
+  -- 1.6.0 guildlog: the guild's chronicle (GuildLogUI.lua): the ribbon on the fold, two pages over the book
+  if ns.GuildLogUI and ns.GuildLogUI.Attach then
+    local ok, err = pcall(ns.GuildLogUI.Attach, F, LP, RP, P)
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
 end
 
 function UI.ConfirmDelete(key)

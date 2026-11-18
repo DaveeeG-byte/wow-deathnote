@@ -1012,4 +1012,72 @@ L.CHRON_OPEN_TIP = "Click: the feud told as a story"  -- tooltip of the word CHR
 L.GRIP_KEYS_WHERE = "Keys: Esc > Options > Key Bindings > {title}"  -- last line of the nameplate stepper tooltip: where the key bindings are set; the client's own menu words ({title} = the addon's title); languages without a client of their own keep the English menu words
 L.GRIP_KEY_HINT = "Tip: a key does this with your target. Set it: Esc > Options > Key Bindings > {title}."  -- chat, once per account after a typed '/dn add <name>' while no key is set for BIND_ADD: such a key exists and where to set it
 L.GRIP_KEY_HAVE = "Tip: your key {key} does this with your target."  -- chat, once per account after a typed '/dn add <name>' when a key is set for BIND_ADD; {key} = that key as the game writes it
+-- 1.6.0 guildlog
+L.GLOG_HEAD = "Guild chronicle"  -- head of the chronicle's left page and of the ribbon's tooltip: what happened to the guild
+L.GLOG_SUB = "{guild} · {count} {count|event|events}"  -- under the head: the guild's name and how many events the page holds
+L.GLOG_SUB_NOGUILD = "Friends · {count} {count|event|events}"  -- the same without a guild (only the friends' book)
+L.GLOG_EMPTY = "Nothing has happened yet. Deaths, revenge, bounties and calls of the guild show up here."  -- empty chronicle
+L.GLOG_FOOT_MORE = "{from} to {to} of {count} · mouse wheel turns the page"  -- foot of the chronicle while it holds more lines than fit
+L.GLOG_TIP_POSTER = "Click: open the poster"  -- tooltip of a chronicle line: its click opens the killer's poster
+L.GLOG_RIBBON_TIP = "Click: what happened to the guild, who has the book, the week"  -- tooltip of the red ribbon on the book's fold
+L.GLOG_RIBBON_CLOSE = "Click: back to the book"  -- the same while the chronicle is open
+L.GLOG_NEW = "{count} new since you last looked"  -- tooltip line of the ribbon: events of others since the chronicle was last open
+L.GLOG_BACK = "Back to the book"  -- word at the bottom right of the right page: closes the chronicle
+L.GLOG_VIEW_HOLDERS = "Who has the book"  -- word tab of the right page: guildmates heard with Revenge Book
+L.GLOG_VIEW_AVENGERS = "Avengers"  -- word tab: avengers of the week
+L.GLOG_VIEW_CARD = "Week card"  -- word tab: the week's card of the guild
+L.GLOG_TODAY = "TODAY"  -- day head in the chronicle (red, letter-spaced)
+L.GLOG_YESTERDAY = "YESTERDAY"  -- day head in the chronicle
+L.GLOG_LINE = "{text}, {time}"  -- a chronicle line: the sentence and how long ago ({time} = "3 min ago")
+L.GLOG_LINE_PLACE = "{text}, {place}, {time}"  -- the same with the zone
+L.GLOG_EV_DEATH = "{victim} was killed by {name}"  -- {victim} = a guildmate's first name, {name} = the killer
+L.GLOG_EV_DEATH_ME = "You were killed by {name}"
+L.GLOG_EV_AVENGED = "{by} took {name} down and avenged {victims}"  -- {by} = guildmate, {victims} = whom the killer had killed
+L.GLOG_EV_AVENGED_ME = "You took {name} down and avenged {victims}"
+L.GLOG_EV_TOOK = "{by} took {name} down"  -- a killer of the guild taken down (whom he killed is not in this book)
+L.GLOG_EV_TOOK_ME = "You took {name} down"
+L.GLOG_EV_BAG = "{by} took {name} off the hit list"  -- a target of the hit list killed
+L.GLOG_EV_BAG_ME = "You took {name} off the hit list"
+L.GLOG_EV_BOUNTY = "Bounty from {by} on {name}: {gold}"  -- {gold} = "50g"
+L.GLOG_EV_BOUNTY_ME = "Your bounty on {name}: {gold}"
+L.GLOG_EV_RELEASE = "{by} put {name} on the hit list"
+L.GLOG_EV_RELEASE_ME = "You put {name} on the hit list"
+L.GLOG_EV_OTHER = "{by}: {name}"  -- an event without words of its own (another part of the addon)
+L.GLOG_VICTIMS_MORE = "{name} and {count} {count|other|others}"  -- several avenged: the newest and how many more
+L.GLOG_VICTIM_YOU = "you"  -- an avenged victim that is the player ("Bertram took Grimm down and avenged you")
+L.GLOG_HAVE = "{count} in the guild {count|has|have} the book"  -- head of "Who has the book" without the guild roster
+L.GLOG_HAVE_ONLINE = "{count} of {total} online {count|has|have} the book"  -- head with the roster: online guildmates with the book of all online
+L.GLOG_ME = "{name} (you)"  -- the own row
+L.GLOG_ME_RANK = "{name} (you, {rank})"  -- the own row among the avengers, with the own rank of the rap sheet
+L.GLOG_NOW = "now"  -- last heard: the own char
+L.GLOG_ONLINE = "online now"  -- tooltip of a row
+L.GLOG_HEARD = "last heard {time}"  -- tooltip of a row ({time} = "3 h ago")
+L.GLOG_VERSION_OLD = "{version} · older"  -- a guildmate with an older version of the addon
+L.GLOG_VERSION_UNKNOWN = "version ?"  -- no version heard yet
+L.GLOG_HOLDERS_HINT = "Only who sent something with Revenge Book stands here. Nobody is listed for not having it."  -- under the list
+L.GLOG_RECOMMEND = "Recommend to the guild"  -- button: one line into the guild chat
+L.GLOG_RECOMMEND_LINE = "I keep a Revenge Book: whoever kills one of us is written in, and the guild sees it. Free on CurseForge: Revenge Book."  -- the line the button sends to the guild chat (plain text, no link, no brackets)
+L.GLOG_REC_WAIT = "Again in {minutes} min"  -- the button while it waits (once per 30 minutes)
+L.GLOG_REC_SENT = "Sent to the guild chat."
+L.GLOG_NO_GUILD_CHAT = "The guild chat is not available right now."
+L.GLOG_AV_HEAD = "AVENGERS OF THE WEEK"  -- head (red, letter-spaced): who took the most killers of the guild down in 7 days
+L.GLOG_AV_EMPTY = "Nobody has taken a killer of the guild down this week."
+L.GLOG_WANTED_HEAD = "MOST WANTED OF THE WEEK"  -- head: who killed the most guildmates in 7 days
+L.GLOG_WANTED_N = "{count} {count|guildmate|guildmates}"  -- right of a most wanted: how many guildmates he killed
+L.GLOG_WANTED_EMPTY = "No guildmate died this week."
+L.GLOG_CARD_GUILD = "{guild}"  -- head of the week card: the guild's name (add a word only if your language needs one)
+L.GLOG_CARD_NOGUILD = "Our guild"  -- the head without a guild name
+L.GLOG_CARD_WEEK = "Week of {from} to {to}"  -- {from}, {to} = dates
+L.GLOG_CARD_DEATHS = "{count} {count|death|deaths}"  -- big number on the card
+L.GLOG_CARD_AVENGED = "{count} avenged"  -- big number on the card: killers taken down
+L.GLOG_CARD_WANTED = "Most wanted {name} ({count})"  -- chat line and Discord block
+L.GLOG_CARD_WANTED_NONE = "No most wanted"
+L.GLOG_CARD_AVENGER = "Avenger of the week {name} ({count})"  -- chat line and Discord block
+L.GLOG_CARD_AVENGER_NONE = "No avenger yet"
+L.GLOG_CARD_WANTED_HEAD = "MOST WANTED"  -- label on the card
+L.GLOG_CARD_AVENGER_HEAD = "AVENGER OF THE WEEK"  -- label on the card
+L.GLOG_CARD_NAME_N = "{name} ({count})"  -- under a label of the card
+L.GLOG_CARD_NONE = "nobody yet"  -- under a label when nobody is there
+L.GLOG_LINE_WANTED = "most wanted ({count})"  -- segment of the chat line: the most wanted stands in the bracket before it
+L.GLOG_DISCORD = "Copy for Discord"  -- button under the card: marks a block to copy
 end)

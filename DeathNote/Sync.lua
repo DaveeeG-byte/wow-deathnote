@@ -2175,6 +2175,9 @@ local function noteMember(short, full, version)
   m.lastHeard = now()
   membersVersion = membersVersion + 1
   if version then m.version = version end
+  -- 1.6.0 guildlog: who has the book (GuildLog.lua keeps its own list: 500 members, 30 days)
+  local GL = ns.GuildLog
+  if GL and GL.Heard then pcall(GL.Heard, short, full, version) end
 end
 
 -- Own echo. The sender may arrive as "Name", "Name-Realm", "Name-Surname" or with the surname
