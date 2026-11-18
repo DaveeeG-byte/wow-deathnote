@@ -32,6 +32,7 @@ GLUI.FIT_ONE = { sizes = { 11, 10 } }
 GLUI.FIT_TWO = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
 GLUI.FIT_LINE = { sizes = { 13, 12 }, lines = 2, wrapFirst = true }
 GLUI.FIT_BIG = { sizes = { 16, 14, 13 }, lines = 2, wrapFirst = true }
+GLUI.FIT_EMPTY = { sizes = { 16, 14, 13 }, lines = 5, wrapFirst = true }
 GLUI.FIT_CARD_HEAD = { sizes = { 26, 22, 19, 16 } }
 GLUI.FIT_CARD = { sizes = { 15, 13, 12 }, lines = 2, wrapFirst = true }
 GLUI.FIT_NUM = { sizes = { 24, 20, 16 } }
@@ -287,7 +288,7 @@ function GLUI.FillLeft()
   end
   for i = shown + 1, GLUI.LINES do p.lines[i]:Hide(); p.lines[i].pin:Hide() end
   if events == 0 then
-    Look.FitText(p.empty, L.GLOG_EMPTY, GLUI.FIT_BIG)
+    Look.FitText(p.empty, L.GLOG_EMPTY, GLUI.FIT_EMPTY)
     p.empty:Show()
   else
     p.empty:Hide()
@@ -471,11 +472,11 @@ local function BuildAvengers(p)
     b:SetPoint("TOPLEFT", 24, -(274 + (i - 1) * 22))
     b.name = Text(b, "hand", 14)
     b.name:SetPoint("LEFT", 0, 0)
-    b.name:SetWidth(GLUI.W - 48 - 80)
+    b.name:SetWidth(GLUI.W - 48 - 100)
     b.name:SetWordWrap(false)
     b.n = Text(b, "type", 10, Look.TONE.sub)
     b.n:SetPoint("RIGHT", 0, 0)
-    b.n:SetWidth(76)
+    b.n:SetWidth(96)
     b.n:SetJustifyH("RIGHT")
     b.n:SetWordWrap(false)
     b:SetScript("OnClick", function(self) if self.event then Look.Sound("click"); GLUI.OpenName(self.event) end end)
