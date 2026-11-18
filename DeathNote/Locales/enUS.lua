@@ -878,4 +878,41 @@ L.EMPTY_SEARCHHAS_SUB = "Just not on this page. Enter opens it."  -- under it
 L.FILTER_TWO = "{count} filters"  -- filter word when role and class are both on and the two words do not fit (the tooltip names both)
 L.CHAT_NEWS_140 = "New in 1.4.0: after an attack a small notice asks whether the attacker goes into your book (Grudge; on/off: /dn grudge or {rules}, sheet {sheet}); \"{takeall}\" is under {guild}, a filter and a search under {wanted}."  -- chat, once per account after the update to 1.4.0 for players who had the book before; {rules} {sheet} {guild} {wanted} = the names of the House Rules, the rap sheet sheet and the tabs in the active cover, {takeall} = the button
 L.GRUDGE_TIP_OFF = "Turn it off: /dn grudge or {rules}, sheet {sheet}."  -- last line of the grudge notice's tooltip: how to turn it off; {rules} {sheet} = names of the House Rules and the sheet in the active cover
+-- 1.5.0 share
+L.ACT_SHARE = "Show"  -- word at the top right of the poster and entry of the row menu: opens the window that shows this enemy in the chat
+L.SHARE_HEAD = "Show in the chat"  -- head of that window
+L.SHARE_TAB_LINE = "Poster"  -- word tab: the poster as one chat line
+L.SHARE_TAB_WEEK = "My week"  -- word tab: the week as one chat line (most wanted, payback, open debts)
+L.SHARE_TAB_DISCORD = "Discord"  -- word tab: a block to copy for Discord
+L.SHARE_PREVIEW = "This line goes out"  -- small letter-spaced label above the preview of the line
+L.SHARE_CH_GUILD = "Guild"  -- button: send the line to the guild chat
+L.SHARE_CH_PARTY = "Party"  -- button: ... to the party
+L.SHARE_CH_RAID = "Raid"  -- button: ... to the raid
+L.SHARE_CH_INSTANCE = "Instance"  -- button: ... to the instance group
+L.SHARE_CH_SAY = "Say"  -- button: ... say (players nearby)
+L.SHARE_SENT = "Shown in {channel}."  -- status after sending; {channel} = the button's word
+L.SHARE_WAIT = "One line every 10 seconds. Again in {seconds} s."  -- status: at most one line every 10 s; {seconds} = how long still
+L.SHARE_LOCKED = "The chat is locked here right now."  -- status: the game locks the chat (boss fight, arena, battleground)
+L.SHARE_COMBAT = "Not in combat. Click again after the fight."  -- status: nothing is sent in combat
+L.SHARE_FAILED = "The game did not send the line."  -- status: sending failed
+L.SHARE_HINT = "Plain text for everybody; with the addon the name is a link."  -- status before sending: what readers see
+L.SHARE_DISCORD_HINT = "Marked: Ctrl+C copies it. Notes never go along."  -- under the Discord block
+L.SHARE_CLOSE = "Close"  -- word: close the window
+L.SHARE_KILLED_ME = "killed me {times}"  -- part of the chat line (sender's language); {times} = '3x'
+L.SHARE_BOUNTY = "{gold} bounty"  -- part of the chat line; {gold} = '131g'
+L.SHARE_SEEN = "last seen {zone}"  -- part of the chat line; {zone} = zone from the game
+L.SHARE_DEED_AT = "last deed {place}"  -- part of the chat line; {place} = zone, subzone of his last kill on you
+L.SHARE_REVENGE_NOW = "now {score}"  -- part of the payback line; {score} = '3 : 5' (you : them)
+L.SHARE_KIND_PARDONED = "PARDONED"  -- first part of the line of a pardoned enemy, in capitals like WANTED
+L.SHARE_WEEK_HEAD = "MY WEEK"  -- first part of the week line, in capitals
+L.SHARE_WEEK_TOP = "most wanted, killed me {times}"  -- week line, after the name of the most wanted; {times} = '3x' this week
+L.SHARE_WEEK_NONE = "nobody killed me"  -- week line when nobody killed you this week
+L.SHARE_WEEK_REVENGE = "payback taken: {count}"  -- week line: own kills on your killers this week
+L.SHARE_WEEK_DEBTS = "open debts: {count}"  -- week line: enemies who still lead the score
+L.SHARE_DC_LAST = "Last deed: {place}, {time}"  -- Discord block; {place} = zone, subzone, {time} = date and time
+L.SHARE_GUEST_BY = "shown by {name}"  -- guest poster (a line whose name is in none of your books): who showed it; {name} = first name
+L.SHARE_GUEST_SAYS = "The line says"  -- small letter-spaced label above the parts of the line on the guest poster
+L.SHARE_GUEST_HINT = "Only what the line says. Not in any of your books."  -- guest poster, above the buttons
+L.SET_SEC_SHOW = "SHOW"  -- section head on the House Rules sheet Guild, capitals like the others
+L.OPT_SHARE_REVENGE = "Button \"Show\" on the payback notice"  -- switch (off by default): a small button 'Show' on the payback notice
 end)
