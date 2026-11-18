@@ -989,4 +989,6 @@ L.CHRON_END_NONE = "지금까지: 너를 {times} 죽였다."
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  /dn과 같다"
 L.CHAT_NEWS_150 = "DeathNote는 이제 Revenge Book이다. 네 수첩과 /dn은 그대로다. 1.5.0의 새 기능: 채팅에 수배서 보이기, 세계 지도의 사건 현장, 단축키, 너를 죽인 자의 이름표 표식."
+-- 1.5.0 fix
+L.SCENE_TIP_SUSPECT = "여기서 죽었다; 의심: {name}"
 end)

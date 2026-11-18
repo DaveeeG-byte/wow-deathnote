@@ -991,4 +991,6 @@ L.CHRON_END_NONE = "Şimdiye dek: seni {times} öldürdü."
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  /dn ile aynı"
 L.CHAT_NEWS_150 = "DeathNote artık Revenge Book. Defterin ve /dn kalıyor. 1.5.0'da yeni: sohbette afiş göster, dünya haritasında olay yerleri, kısayol tuşları, katillerinin isim plakasında bir işaret."
+-- 1.5.0 fix
+L.SCENE_TIP_SUSPECT = "Burada öldün; şüpheli: {name}"
 end)

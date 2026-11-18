@@ -3,7 +3,8 @@
 -- on the map are SceneMap.lua (loaded after the book), the links in the book are UI.lua.
 --
 -- A scene is one place with a story:
---   "death"   my own death (journal, kind "pvp"): "Here <killer> killed you"
+--   "death"   my own death (journal, kind "pvp"): "Here <killer> killed you" (without a sure killing blow: "Here you
+--             died; suspicion: <name>")
 --   "kill"    my own kill on a player of the book or a revenge (rap sheet log): "Here you took down <name>"
 --   "guild"   a guildmate's death, "friend" a friend's death (1.5.0: the sender's spot comes with message L, Sync.lua):
 --             "Here <mate> was killed by <killer>"
@@ -113,7 +114,7 @@ function Scene.All(now)
     if type(j) == "table" and j.kind == "pvp" and j.counted ~= false and num(j.t) then
       local name, class = Scene.NameOf(j.killerKey, j.killerName)
       out[#out + 1] = { kind = "death", t = j.t, mapID = j.mapID, x = j.x, y = j.y, zone = j.zone, subzone = j.subzone,
-        key = j.killerKey, name = name, class = class, spell = str(j.spell), ref = j,
+        key = j.killerKey, name = name, class = class, spell = str(j.spell), ref = j, suspect = j.sure == false,
         spot = Scene.ValidSpot(j.mapID, j.x, j.y) }
     end
   end
@@ -273,6 +274,8 @@ local function placeOf(it) return str(it.subzone) or str(it.zone) end
 function Scene.Head(it)
   if it.kind == "death" then
     if not it.name then return L.SCENE_TIP_DEATH_UNCLEAR end
+    -- 1.5.0 fixer: no sure killing blow (the book holds a suspicion): the map says suspicion, never "killed you"
+    if it.suspect then return Fmt(L.SCENE_TIP_SUSPECT, { name = colored(it.name, it.class) }) end
     return Fmt(L.SCENE_TIP_DEATH, { killer = colored(it.name, it.class) })
   elseif it.kind == "kill" then
     return Fmt(L.SCENE_TIP_KILL, { name = colored(it.name, it.class) })

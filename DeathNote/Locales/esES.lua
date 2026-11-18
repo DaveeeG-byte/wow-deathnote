@@ -976,4 +976,6 @@ L.CHRON_END_NONE = "Hasta ahora: te mató {times}."
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  lo mismo que /dn"
 L.CHAT_NEWS_150 = "DeathNote ahora se llama Revenge Book. Tu libro y /dn se quedan. Novedades de 1.5.0: mostrar un cartel en el chat, escenas del crimen en el mapa del mundo, atajos de teclado, una marca en la placa de nombre de tus asesinos."
+-- 1.5.0 fix
+L.SCENE_TIP_SUSPECT = "Aquí moriste; sospecha: {name}"
 end)

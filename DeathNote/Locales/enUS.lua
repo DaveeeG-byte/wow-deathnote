@@ -996,4 +996,6 @@ L.CHRON_END_NONE = "So far: killed you {times}."  -- chronicle, last line while 
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  the same as /dn"  -- /dn help line: the two new commands of 1.5.0
 L.CHAT_NEWS_150 = "DeathNote is now Revenge Book. Your book and /dn stay. New in 1.5.0: show a poster in the chat, crime scenes on the world map, key bindings, a mark on your killers' nameplates."  -- chat, once per account after the update to 1.5.0 for players who had the book before: the new name, what stays and what is new (show in chat, crime scenes on the map, key bindings, the nameplate mark); the old name DeathNote and Revenge Book stay in English
+-- 1.5.0 fix
+L.SCENE_TIP_SUSPECT = "Here you died; suspicion: {name}"  -- map pin tooltip, your death without a sure killing blow (the book holds a suspicion); {name} = full name in class colour; never say he killed you
 end)
