@@ -205,7 +205,7 @@ Every deed keeps the guild the killer wore at that moment (`deed.guild`), reveng
 every 5 minutes, open world only; nothing is sent). Claims: a `V` also goes out when another's bounty lies on the target;
 the bounty's owner gets a claim under Unsolved > Claims (`DeathNoteDB.claims`, 50, 30 days; Paid, Declined, open
 again). Filing: entries with only suspicions or attacks, not by hand, no revenge, no hit list, no bounty, no feud guild,
-not marked "Keep", silent for 30 play days, go to Unsolved > Filed at login (`DeathNoteDB.expired`, 200; "Take back"
+not marked "Keep", silent for 30 play days, go to Unsolved > Filed away at login (`DeathNoteDB.expired`, 200; "Take back"
 marks them Keep); the book with the filed holds at most 3000 entries (deaths never go). Switch: House Rules, sheet Book,
 "File away old suspicions". The game's options have a page "Revenge Book" with a button to the House Rules.
 
