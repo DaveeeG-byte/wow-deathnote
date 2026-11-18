@@ -519,6 +519,7 @@ local function BuildAvengers(p)
   v.head:SetPoint("TOPLEFT", 24, -50)
   v.head:SetWidth(GLUI.W - 48)
   v.head:SetJustifyH("LEFT")
+  v.head:SetWordWrap(false)
   v.week = Text(v, "type", 10, Look.TONE.sub)
   v.week:SetPoint("TOPLEFT", 24, -66)
   v.week:SetWidth(GLUI.W - 48)
@@ -527,7 +528,7 @@ local function BuildAvengers(p)
     local r = CreateFrame("Frame", nil, v)
     r:SetSize(GLUI.W - 48, 22)
     r:SetPoint("TOPLEFT", 24, -(86 + (i - 1) * 22))
-    r.name = Text(r, "hand", 14)
+    r.name = Text(r, "body", 11)
     r.name:SetPoint("LEFT", 0, 0)
     r.name:SetWidth(GLUI.W - 48 - 50)
     r.name:SetWordWrap(false)
@@ -546,12 +547,13 @@ local function BuildAvengers(p)
   v.whead:SetPoint("TOPLEFT", 24, -256)
   v.whead:SetWidth(GLUI.W - 48)
   v.whead:SetJustifyH("LEFT")
+  v.whead:SetWordWrap(false)
   v.wanted = {}
   for i = 1, GLUI.WANTED_ROWS do
     local b = CreateFrame("Button", nil, v)
     b:SetSize(GLUI.W - 48, 22)
     b:SetPoint("TOPLEFT", 24, -(274 + (i - 1) * 22))
-    b.name = Text(b, "hand", 14)
+    b.name = Text(b, "body", 11)
     b.name:SetPoint("LEFT", 0, 0)
     b.name:SetWidth(GLUI.W - 48 - 100)
     b.name:SetWordWrap(false)
@@ -625,6 +627,22 @@ function GLUI.FillAvengers()
     v.rows[1]:ClearAllPoints()
     v.rows[1]:SetPoint("TOPLEFT", 24, -86)
   end
+  -- design fix 1.6.0: the most wanted hang 20 below the last shown line of the avengers (no island at a fixed place)
+  local bottom = 86
+  for i, r in ipairs(v.rows) do if r:IsShown() then bottom = 86 + i * 22 end end
+  if #w.avengers == 0 then
+    bottom = 90 + math.ceil(Look.TextH(v.empty, 2) or 28)
+    if v.rows[1]:IsShown() then bottom = 86 + 3 * 22 end
+  end
+  local wy = math.min(256, bottom + 20)
+  v.whead:ClearAllPoints()
+  v.whead:SetPoint("TOPLEFT", 24, -wy)
+  for i, b in ipairs(v.wanted) do
+    b:ClearAllPoints()
+    b:SetPoint("TOPLEFT", 24, -(wy + 18 + (i - 1) * 22))
+  end
+  v.wempty:ClearAllPoints()
+  v.wempty:SetPoint("TOPLEFT", 24, -(wy + 22))
   v.whead:SetText(sp(L.GLOG_WANTED_HEAD))
   for i, b in ipairs(v.wanted) do
     local x = w.wanted[i]
