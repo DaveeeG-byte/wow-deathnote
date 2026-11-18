@@ -45,10 +45,12 @@ function Grip.EnemyOf(unit)
   local key, name, surname
   if T and T.Identity then key, name, surname = T.Identity(unit) end
   if not key then return nil, "secret" end
-  -- hostile: enemy or attackable, or of the other faction (a city: not attackable, still the enemy)
-  local hostile = True(Call(_G.UnitIsEnemy, "player", unit)) or True(Call(_G.UnitCanAttack, "player", unit))
+  -- hostile: enemy, or attackable and not of my faction, or of the other faction (a city: not attackable, still the
+  -- enemy). 1.5.0 fixer: a duel partner of my own faction is attackable for the duel, but no enemy (as for the grudge)
+  local mine, theirs = Str(Call(_G.UnitFactionGroup, "player")), Str(Call(_G.UnitFactionGroup, unit))
+  local same = mine ~= nil and theirs ~= nil and theirs == mine
+  local hostile = True(Call(_G.UnitIsEnemy, "player", unit)) or (not same and True(Call(_G.UnitCanAttack, "player", unit)))
   if not hostile then
-    local mine, theirs = Str(Call(_G.UnitFactionGroup, "player")), Str(Call(_G.UnitFactionGroup, unit))
     hostile = mine ~= nil and theirs ~= nil and theirs ~= "Neutral" and theirs ~= mine
   end
   if not hostile then return nil, "friendly" end
