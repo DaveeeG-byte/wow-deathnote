@@ -843,8 +843,13 @@ ns:On("READY", function()
   Call.RefreshKillers()
   if B.setHook then B.setHook() end
 end)
-ns:On("DEATH_RECORDED", function()
+ns:On("DEATH_RECORDED", function(journal, key)
   Call.RefreshKillers()
+  -- the death just recorded counts at once (the journal may be written after this event)
+  if type(journal) == "table" and journal.kind == "pvp" and journal.sure == true and journal.counted ~= false
+    and type(key) == "string" and GP.Finite(journal.t) and journal.t >= now() - C.SIGHT_DAYS * 86400 then
+    if not ownKillers[key] or ownKillers[key] < journal.t then ownKillers[key] = journal.t end
+  end
   if B.setHook then B.setHook() end
 end)
 ns:On("SETTINGS_CHANGED", function(path)
