@@ -1429,6 +1429,7 @@ function Friends.Init()
   peers, peerN, helloAt, helloLog, helloFrom, replies, flood, mateFrom = {}, 0, {}, {}, {}, {}, {}, {}
   helloRetry, suspended, failsOf, failedFriends, totalFails, impostorSeen, proven = {}, {}, {}, {}, 0, {}, {}
   rivalHello = {}
+  Friends.RestoreSession(t)
   stats.impostor = nil
   blocked, scanPending, lastSync = false, false, nil
   loginAt = GetTime()
@@ -1507,9 +1508,46 @@ ns:RegisterEvent("BN_CHAT_MSG_ADDON", Friends.OnBattleNet)
 -- Sync.lua reads the roster again on these; the check runs a moment later
 ns:RegisterEvent("GUILD_ROSTER_UPDATE", function() Friends.OnGuildChange() end)
 ns:RegisterEvent("PLAYER_GUILD_UPDATE", function() Friends.OnGuildChange() end)
+-- fixer 2 1.6.0 (jb05): a /reload (or a relog) within HELLO_PER_SENDER seconds: a friend answers a hello of the same
+-- char at most that often, so the session's knowledge would come back only later (the help call to friends and its
+-- reception hang on it). Who answered with the book (peers) and whose hello proved the list's GUID (proven) are kept
+-- at the logout and taken back at the next start of the same char within that time; the scan of the friend list then
+-- keeps only who is still online (Friends.Scan), a new hello of the friend proves him anew. At most PEERS_MAX names
+-- each; the table is gone after the start.
+function Friends.SaveSession(t)
+  if not fdb then return end
+  local mine = B.myFullName()
+  if not mine then fdb.session = nil; return end
+  local p, v, n = {}, {}, 0
+  for name in pairs(peers) do if n < FC.PEERS_MAX then p[name] = true; n = n + 1 end end
+  n = 0
+  for name, ok in pairs(proven) do if ok == true and n < FC.PEERS_MAX then v[name] = true; n = n + 1 end end
+  fdb.session = { at = t or now(), char = mine, peers = p, proven = v }
+end
+function Friends.RestoreSession(t)
+  if not fdb then return end
+  local s0 = fdb.session
+  fdb.session = nil
+  if type(s0) ~= "table" or not P.Finite(s0.at) or type(s0.char) ~= "string" then return end
+  t = t or now()
+  if s0.char ~= B.myFullName() or s0.at > t or t - s0.at > C.HELLO_PER_SENDER then return end
+  local n = 0
+  for name, ok in pairs(type(s0.peers) == "table" and s0.peers or {}) do
+    if ok == true and type(name) == "string" and not peers[name] and n < FC.PEERS_MAX then
+      peers[name] = true; peerN = peerN + 1; n = n + 1
+    end
+  end
+  n = 0
+  for name, ok in pairs(type(s0.proven) == "table" and s0.proven or {}) do
+    if ok == true and type(name) == "string" and n < FC.PEERS_MAX then proven[name] = true; n = n + 1 end
+  end
+  stats.restored = (stats.restored or 0) + 1
+end
+
 ns:RegisterEvent("PLAYER_LOGOUT", function()
   if not fdb then return end
   local t, mine = now(), B.myFullName()
+  Friends.SaveSession(t)
   fdb.lastOnline = t
   -- 1.2.0: per own char
   if mine and type(fdb.lastOnlineBy) == "table" then fdb.lastOnlineBy[mine] = t end
