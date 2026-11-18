@@ -64,5 +64,8 @@ check("enUS Hinweis CHRON_OPEN: rechts neben DEEDS", note("CHRON_OPEN"):find("ri
 check("enUS Hinweis OPT_G_SENDPLACE: Gruppe SHARE", note("OPT_G_SENDPLACE"):find("group SHARE", 1, true) and not note("OPT_G_SENDPLACE"):find("More", 1, true),
   note("OPT_G_SENDPLACE"))
 
+-- language table of the UI hunt: ptBR says the killer is unknown (not "not clear")
+check("ptBR Taeter unbekannt", Raw("ptBR").SCENE_TIP_DEATH_UNCLEAR == "Aqui você morreu; o assassino é desconhecido", Raw("ptBR").SCENE_TIP_DEATH_UNCLEAR)
+
 print(("fix150 texte        %d ok, %d rot"):format(pass, fail))
 os.exit(fail == 0 and 0 or 1)
