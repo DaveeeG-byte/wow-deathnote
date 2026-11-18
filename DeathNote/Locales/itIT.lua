@@ -516,8 +516,6 @@ L.SET_SEC_SHARING = "CONDIVISIONE"
 L.SET_SEC_WARN = "ALLARME"
 L.SET_MORE = "Altro"
 L.SET_GUILD_CLEAR = "Svuota libro di gilda"  -- [max 26]
-L.SET_HINT_GUILD = "Riceve qualcosa solo la tua gilda. Ciò che arriva da lì resta separato dal tuo libro finché non lo prendi tu."
-L.SET_HINT_FRIENDS = "Ricevono qualcosa solo gilda e amici con Revenge Book."
 L.BTN_BACK = "Indietro"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Sincronizza"  -- [max 14]
@@ -984,4 +982,6 @@ L.SCENE_TIP_PICK = "Clic: scegli una scena del crimine"
 L.SCENE_LEG_DEATH = "la tua morte"
 L.SCENE_LEG_KILL = "la tua uccisione"
 L.SCENE_LEG_BUNDLE = "più scene del crimine"
+L.SET_HINT_FRIENDS_POST = "Condivisione e allarme: solo gilda e amici con Revenge Book. Ciò che pubblichi lo legge tutta la chat."
+L.SET_HINT_GUILD_POST = "Condivisione e allarme: solo la tua gilda. Ciò che arriva da lì resta separato dal tuo libro finché non lo prendi tu. Ciò che pubblichi lo legge tutta la chat."
 end)

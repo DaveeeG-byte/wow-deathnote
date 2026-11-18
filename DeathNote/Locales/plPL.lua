@@ -529,8 +529,6 @@ L.SET_SEC_SHARING = "UDOSTĘPNIANIE"
 L.SET_SEC_WARN = "ALARM"
 L.SET_MORE = "Więcej"
 L.SET_GUILD_CLEAR = "Wyczyść księgę gildii"  -- [max 26]
-L.SET_HINT_GUILD = "Dostaje to tylko twoja gildia. To, co stamtąd przychodzi, jest trzymane osobno od twojej księgi, dopóki tego nie przejmiesz."
-L.SET_HINT_FRIENDS = "Dostają to tylko gildia i znajomi z Revenge Book."
 L.BTN_BACK = "Wstecz"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Synchronizuj"  -- [max 14]
@@ -997,4 +995,6 @@ L.SCENE_TIP_PICK = "Klik: wybierz miejsce zbrodni"
 L.SCENE_LEG_DEATH = "twoja śmierć"
 L.SCENE_LEG_KILL = "twoje zabójstwo"
 L.SCENE_LEG_BUNDLE = "kilka miejsc zbrodni"
+L.SET_HINT_FRIENDS_POST = "Udostępnianie i alarm tylko dla gildii i znajomych z Revenge Book. To, co opublikujesz, czyta każdy na czacie."
+L.SET_HINT_GUILD_POST = "Udostępnianie i alarm tylko dla twojej gildii. To, co stamtąd przychodzi, jest trzymane osobno od twojej księgi, dopóki tego nie przejmiesz. To, co opublikujesz, czyta każdy na czacie."
 end)

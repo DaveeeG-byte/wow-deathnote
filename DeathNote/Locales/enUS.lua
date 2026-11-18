@@ -537,8 +537,6 @@ L.SET_SEC_SHARING = "SHARING"  -- [max 24] section label, House Rules sheet Guil
 L.SET_SEC_WARN = "ALERTS"  -- [max 24] section label, House Rules sheet Guild: the alarm switches
 L.SET_MORE = "More"  -- [max 12] word tab at the foot of the House Rules sheet Guild: shows the remaining, rarely needed settings
 L.SET_GUILD_CLEAR = "Empty guild book"  -- [max 26] button
-L.SET_HINT_GUILD = "Only your own guild gets anything. What comes from there stays apart from your book until you take it over yourself."  -- hint at the bottom of the sheet Guild, wraps
-L.SET_HINT_FRIENDS = "Only guild and friends with Revenge Book get anything."  -- hint at the bottom of the sheet Guild with friends
 L.BTN_BACK = "Back"  -- [max 17] button at the bottom of the side pages
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Sync"  -- [max 14] button bottom left: ask guild and friends for their books now
@@ -1005,4 +1003,6 @@ L.SCENE_TIP_PICK = "Click: pick a crime scene"  -- last line of a map pin's tool
 L.SCENE_LEG_DEATH = "your death"  -- [max 32] legend in the tooltip of the map's switch: the red pin = a place where you died
 L.SCENE_LEG_KILL = "your kill"  -- [max 32] legend in the tooltip of the map's switch: the black pin with blades = a player of your book you killed there
 L.SCENE_LEG_BUNDLE = "several crime scenes"  -- [max 32] legend in the tooltip of the map's switch: the number badge on a pin = several crime scenes close together
+L.SET_HINT_FRIENDS_POST = "Sharing and alerts go only to guild and friends with Revenge Book. A post is for everyone in the chat."  -- hint at the bottom of the sheet Guild with friends: sharing and alerts go only to addon users; a post (ACT_SHARE) is read by everyone in the chat
+L.SET_HINT_GUILD_POST = "Sharing and alerts go only to your own guild. What comes from there stays apart from your book until you take it over yourself. A post is for everyone in the chat."  -- hint at the bottom of the sheet Guild without friends, wraps; same rule as SET_HINT_FRIENDS_POST
 end)

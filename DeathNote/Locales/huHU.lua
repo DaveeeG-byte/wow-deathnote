@@ -531,8 +531,6 @@ L.SET_SEC_SHARING = "MEGOSZTÁS"
 L.SET_SEC_WARN = "RIASZTÁS"
 L.SET_MORE = "Több"
 L.SET_GUILD_CLEAR = "Céhkönyv kiürítése"  -- [max 26]
-L.SET_HINT_GUILD = "Csak a saját céhed kap bármit. Ami onnan jön, külön marad a könyvedtől, amíg magad át nem veszed."
-L.SET_HINT_FRIENDS = "Csak a Revenge Book-os céhtársak és barátok kapnak bármit."
 L.BTN_BACK = "Vissza"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Egyeztetés"  -- [max 14]
@@ -999,4 +997,6 @@ L.SCENE_TIP_PICK = "Kattintás: tetthely választása"
 L.SCENE_LEG_DEATH = "a halálod"
 L.SCENE_LEG_KILL = "a győzelmed"
 L.SCENE_LEG_BUNDLE = "több tetthely"
+L.SET_HINT_FRIENDS_POST = "Megosztás és riasztás csak a Revenge Book-os céhtársaknak és barátoknak. Amit kitűzöl, a chatben mindenki olvassa."
+L.SET_HINT_GUILD_POST = "Megosztás és riasztás csak a saját céhednek. Ami onnan jön, külön marad a könyvedtől, amíg magad át nem veszed. Amit kitűzöl, a chatben mindenki olvassa."
 end)

@@ -517,8 +517,6 @@ L.SET_SEC_SHARING = "COMPARTILHAR"
 L.SET_SEC_WARN = "ALARME"
 L.SET_MORE = "Mais"
 L.SET_GUILD_CLEAR = "Limpar livro da guilda"  -- [max 26]
-L.SET_HINT_GUILD = "Só a sua própria guilda recebe algo. O que vem de lá fica separado do seu livro até você mesmo copiar."
-L.SET_HINT_FRIENDS = "Só guilda e amigos com Revenge Book recebem algo."
 L.BTN_BACK = "Voltar"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Sincronizar"  -- [max 14]
@@ -985,4 +983,6 @@ L.SCENE_TIP_PICK = "Clique: escolher uma cena do crime"
 L.SCENE_LEG_DEATH = "sua morte"
 L.SCENE_LEG_KILL = "sua vítima"
 L.SCENE_LEG_BUNDLE = "várias cenas do crime"
+L.SET_HINT_FRIENDS_POST = "Compartilhar e alarme: só guilda e amigos com Revenge Book. O que você publica, todo o chat lê."
+L.SET_HINT_GUILD_POST = "Compartilhar e alarme: só a sua própria guilda. O que vem de lá fica separado do seu livro até você mesmo copiar. O que você publica, todo o chat lê."
 end)

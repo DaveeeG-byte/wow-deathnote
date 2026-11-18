@@ -522,8 +522,6 @@ L.SET_SEC_SHARING = "DELEN"
 L.SET_SEC_WARN = "ALARM"
 L.SET_MORE = "Meer"
 L.SET_GUILD_CLEAR = "Guildboek leegmaken"  -- [max 26]
-L.SET_HINT_GUILD = "Alleen je eigen guild krijgt iets. Wat daarvandaan komt, blijft los van je boek tot je het zelf overneemt."
-L.SET_HINT_FRIENDS = "Alleen guild en vrienden met Revenge Book krijgen iets."
 L.BTN_BACK = "Terug"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Sync"  -- [max 14]
@@ -990,4 +988,6 @@ L.SCENE_TIP_PICK = "Klik: plaats delict kiezen"
 L.SCENE_LEG_DEATH = "jouw dood"
 L.SCENE_LEG_KILL = "jouw kill"
 L.SCENE_LEG_BUNDLE = "meerdere plaatsen delict"
+L.SET_HINT_FRIENDS_POST = "Delen en alarm alleen met guild en vrienden met Revenge Book. Wat je plaatst, leest iedereen in de chat."
+L.SET_HINT_GUILD_POST = "Delen en alarm alleen met je eigen guild. Wat daarvandaan komt, blijft los van je boek tot je het zelf overneemt. Wat je plaatst, leest iedereen in de chat."
 end)

@@ -530,8 +530,6 @@ L.SET_SEC_SHARING = "分享"
 L.SET_SEC_WARN = "警報"
 L.SET_MORE = "更多"
 L.SET_GUILD_CLEAR = "清空公會記仇本"  -- [max 26]
-L.SET_HINT_GUILD = "只與你自己的公會分享。從那裡傳來的內容與你的記仇本分開存放，直到你親自轉入。"
-L.SET_HINT_FRIENDS = "只與裝了Revenge Book的公會成員和好友分享。"
 L.BTN_BACK = "返回"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "同步"  -- [max 14]
@@ -998,4 +996,6 @@ L.SCENE_TIP_PICK = "點擊：選擇案發現場"
 L.SCENE_LEG_DEATH = "你的死亡"
 L.SCENE_LEG_KILL = "你的擊殺"
 L.SCENE_LEG_BUNDLE = "多個案發現場"
+L.SET_HINT_FRIENDS_POST = "分享和警報只發給裝了Revenge Book的公會成員和好友。展示到聊天裡的內容，人人可見。"
+L.SET_HINT_GUILD_POST = "分享和警報只發給你自己的公會。從那裡傳來的內容與你的記仇本分開存放，直到你親自轉入。展示到聊天裡的內容，人人可見。"
 end)

@@ -517,8 +517,6 @@ L.SET_SEC_SHARING = "COMPARTIR"
 L.SET_SEC_WARN = "ALARMA"
 L.SET_MORE = "Más"
 L.SET_GUILD_CLEAR = "Vaciar libro hermandad"  -- [max 26]
-L.SET_HINT_GUILD = "Solo tu propia hermandad recibe algo. Lo que llega de ahí queda aparte de tu libro hasta que tú mismo lo copies."
-L.SET_HINT_FRIENDS = "Solo la hermandad y los amigos con Revenge Book reciben algo."
 L.BTN_BACK = "Volver"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Sincronizar"  -- [max 14]
@@ -985,4 +983,6 @@ L.SCENE_TIP_PICK = "Clic: elegir una escena del crimen"
 L.SCENE_LEG_DEATH = "tu muerte"
 L.SCENE_LEG_KILL = "tu víctima"
 L.SCENE_LEG_BUNDLE = "varias escenas del crimen"
+L.SET_HINT_FRIENDS_POST = "Compartir y alarma: solo la hermandad y los amigos con Revenge Book. Lo que publicas lo lee todo el chat."
+L.SET_HINT_GUILD_POST = "Compartir y alarma: solo tu propia hermandad. Lo que llega de ahí queda aparte de tu libro hasta que tú mismo lo copies. Lo que publicas lo lee todo el chat."
 end)

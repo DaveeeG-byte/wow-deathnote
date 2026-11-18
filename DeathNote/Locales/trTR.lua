@@ -532,8 +532,6 @@ L.SET_SEC_SHARING = "PAYLAŞIM"
 L.SET_SEC_WARN = "ALARM"
 L.SET_MORE = "Daha fazla"
 L.SET_GUILD_CLEAR = "Lonca defterini boşalt"  -- [max 26]
-L.SET_HINT_GUILD = "Sadece kendi loncan bir şey alır. Oradan gelen, sen kendin alana kadar defterinden ayrı kalır."
-L.SET_HINT_FRIENDS = "Sadece Revenge Book kullanan lonca üyeleri ve arkadaşlar bir şey alır."
 L.BTN_BACK = "Geri"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Eşitle"  -- [max 14]
@@ -1000,4 +998,6 @@ L.SCENE_TIP_PICK = "Tıkla: olay yeri seç"
 L.SCENE_LEG_DEATH = "ölümün"
 L.SCENE_LEG_KILL = "öldürdüğün"
 L.SCENE_LEG_BUNDLE = "birkaç olay yeri"
+L.SET_HINT_FRIENDS_POST = "Paylaşım ve alarm yalnızca Revenge Book kullanan lonca üyeleri ve arkadaşlar için. Yayınladığını sohbetteki herkes okur."
+L.SET_HINT_GUILD_POST = "Paylaşım ve alarm yalnızca kendi loncan için. Oradan gelen, sen kendin alana kadar defterinden ayrı kalır. Yayınladığını sohbetteki herkes okur."
 end)

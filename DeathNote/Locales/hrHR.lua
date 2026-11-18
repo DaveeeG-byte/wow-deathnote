@@ -529,8 +529,6 @@ L.SET_SEC_SHARING = "DIJELJENJE"
 L.SET_SEC_WARN = "UZBUNA"
 L.SET_MORE = "Više"
 L.SET_GUILD_CLEAR = "Isprazni knjigu ceha"  -- [max 26]
-L.SET_HINT_GUILD = "Podatke dobiva samo tvoj ceh. Ono što dođe odande ostaje odvojeno od tvoje knjige dok to ne preuzmeš."
-L.SET_HINT_FRIENDS = "Podatke dobivaju samo ceh i prijatelji s Revenge Bookom."
 L.BTN_BACK = "Natrag"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Uskladi"  -- [max 14]
@@ -997,4 +995,6 @@ L.SCENE_TIP_PICK = "Klik: odaberi mjesto zločina"
 L.SCENE_LEG_DEATH = "tvoja smrt"
 L.SCENE_LEG_KILL = "tvoje ubojstvo"
 L.SCENE_LEG_BUNDLE = "više mjesta zločina"
+L.SET_HINT_FRIENDS_POST = "Dijeljenje i uzbuna samo za ceh i prijatelje s Revenge Bookom. Ono što pokažeš u chatu čitaju svi."
+L.SET_HINT_GUILD_POST = "Dijeljenje i uzbuna samo za tvoj ceh. Ono što dođe odande ostaje odvojeno od tvoje knjige dok to ne preuzmeš. Ono što pokažeš u chatu čitaju svi."
 end)

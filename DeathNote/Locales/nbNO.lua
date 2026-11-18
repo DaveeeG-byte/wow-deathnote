@@ -522,8 +522,6 @@ L.SET_SEC_SHARING = "DELING"
 L.SET_SEC_WARN = "ALARM"
 L.SET_MORE = "Mer"
 L.SET_GUILD_CLEAR = "Tøm guildboken"  -- [max 26]
-L.SET_HINT_GUILD = "Bare din egen guild får noe. Det som kommer derfra, holdes atskilt fra boken din til du selv tar det over."
-L.SET_HINT_FRIENDS = "Bare guild og venner med Revenge Book får noe."
 L.BTN_BACK = "Tilbake"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Synkroniser"  -- [max 14]
@@ -990,4 +988,6 @@ L.SCENE_TIP_PICK = "Klikk: velg åsted"
 L.SCENE_LEG_DEATH = "din død"
 L.SCENE_LEG_KILL = "ditt drap"
 L.SCENE_LEG_BUNDLE = "flere åsteder"
+L.SET_HINT_FRIENDS_POST = "Deling og alarm bare med guild og venner med Revenge Book. Det du henger opp, kan alle i chatten lese."
+L.SET_HINT_GUILD_POST = "Deling og alarm bare med din egen guild. Det som kommer derfra, holdes atskilt fra boken din til du selv tar det over. Det du henger opp, kan alle i chatten lese."
 end)

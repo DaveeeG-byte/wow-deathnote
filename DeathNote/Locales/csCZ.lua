@@ -529,8 +529,6 @@ L.SET_SEC_SHARING = "SDÍLENÍ"
 L.SET_SEC_WARN = "POPLACH"
 L.SET_MORE = "Více"
 L.SET_GUILD_CLEAR = "Vyčistit knihu guildy"  -- [max 26]
-L.SET_HINT_GUILD = "Dostává to jen tvoje guilda. Co přijde odtamtud, zůstává odděleně od tvé knihy, dokud si to nepřevezmeš."
-L.SET_HINT_FRIENDS = "Dostávají to jen guilda a přátelé s Revenge Book."
 L.BTN_BACK = "Zpět"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Synchronizovat"  -- [max 14]
@@ -997,4 +995,6 @@ L.SCENE_TIP_PICK = "Klik: vybrat místo činu"
 L.SCENE_LEG_DEATH = "tvoje smrt"
 L.SCENE_LEG_KILL = "tvůj úlovek"
 L.SCENE_LEG_BUNDLE = "více míst činu"
+L.SET_HINT_FRIENDS_POST = "Sdílení a poplach jen pro guildu a přátele s Revenge Book. Co vyvěsíš, čte v chatu každý."
+L.SET_HINT_GUILD_POST = "Sdílení a poplach jen pro tvoji guildu. Co přijde odtamtud, zůstává odděleně od tvé knihy, dokud si to nepřevezmeš. Co vyvěsíš, čte v chatu každý."
 end)

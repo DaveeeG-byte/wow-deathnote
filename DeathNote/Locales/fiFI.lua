@@ -523,8 +523,6 @@ L.SET_SEC_SHARING = "JAKAMINEN"
 L.SET_SEC_WARN = "HÄLYTYS"
 L.SET_MORE = "Lisää"
 L.SET_GUILD_CLEAR = "Tyhjennä kiltakirja"  -- [max 26]
-L.SET_HINT_GUILD = "Vain oma kilta saa mitään. Sieltä tuleva pysyy erillään kirjastasi, kunnes otat sen itse."
-L.SET_HINT_FRIENDS = "Vain kilta ja kaverit, joilla on Revenge Book, saavat mitään."
 L.BTN_BACK = "Takaisin"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Synkronoi"  -- [max 14]
@@ -991,4 +989,6 @@ L.SCENE_TIP_PICK = "Napsautus: valitse rikospaikka"
 L.SCENE_LEG_DEATH = "kuolemasi"
 L.SCENE_LEG_KILL = "tappamasi"
 L.SCENE_LEG_BUNDLE = "useita rikospaikkoja"
+L.SET_HINT_FRIENDS_POST = "Jakaminen ja hälytys vain kiltaan ja kavereille, joilla on Revenge Book. Julkaisusi näkee jokainen chatissa."
+L.SET_HINT_GUILD_POST = "Jakaminen ja hälytys vain omaan kiltaan. Sieltä tuleva pysyy erillään kirjastasi, kunnes otat sen itse. Julkaisusi näkee jokainen chatissa."
 end)

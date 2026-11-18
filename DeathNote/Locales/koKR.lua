@@ -530,8 +530,6 @@ L.SET_SEC_SHARING = "공유"
 L.SET_SEC_WARN = "경보"
 L.SET_MORE = "더 보기"
 L.SET_GUILD_CLEAR = "길드 수첩 비우기"  -- [max 26]
-L.SET_HINT_GUILD = "네 길드와만 공유한다. 거기서 온 것은 네가 직접 가져올 때까지 네 수첩과 따로 보관된다."
-L.SET_HINT_FRIENDS = "Revenge Book을 쓰는 길드원과 친구하고만 공유한다."
 L.BTN_BACK = "뒤로"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "동기화"  -- [max 14]
@@ -998,4 +996,6 @@ L.SCENE_TIP_PICK = "클릭: 사건 현장 고르기"
 L.SCENE_LEG_DEATH = "너의 죽음"
 L.SCENE_LEG_KILL = "너의 처치"
 L.SCENE_LEG_BUNDLE = "여러 사건 현장"
+L.SET_HINT_FRIENDS_POST = "공유와 경보는 Revenge Book을 쓰는 길드원과 친구에게만 간다. 채팅에 보인 것은 누구나 읽는다."
+L.SET_HINT_GUILD_POST = "공유와 경보는 네 길드에만 간다. 거기서 온 것은 네가 직접 가져올 때까지 네 수첩과 따로 보관된다. 채팅에 보인 것은 누구나 읽는다."
 end)

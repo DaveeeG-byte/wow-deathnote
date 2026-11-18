@@ -516,8 +516,6 @@ L.SET_SEC_SHARING = "PARTAGE"
 L.SET_SEC_WARN = "ALERTE"
 L.SET_MORE = "Plus"
 L.SET_GUILD_CLEAR = "Vider carnet de guilde"  -- [max 26]
-L.SET_HINT_GUILD = "Seule ta guilde reçoit quelque chose. Ce qui en vient reste à part de ton carnet jusqu'à ce que tu le reprennes toi-même."
-L.SET_HINT_FRIENDS = "Seuls la guilde et les amis qui ont Revenge Book reçoivent quelque chose."
 L.BTN_BACK = "Retour"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Synchroniser"  -- [max 14]
@@ -984,4 +982,6 @@ L.SCENE_TIP_PICK = "Clic : choisir un lieu du crime"
 L.SCENE_LEG_DEATH = "ta mort"
 L.SCENE_LEG_KILL = "ta victime"
 L.SCENE_LEG_BUNDLE = "plusieurs lieux du crime"
+L.SET_HINT_FRIENDS_POST = "Partage et alerte : seulement la guilde et les amis qui ont Revenge Book. Ce que tu affiches, tout le chat le lit."
+L.SET_HINT_GUILD_POST = "Partage et alerte : seulement ta guilde. Ce qui en vient reste à part de ton carnet jusqu'à ce que tu le reprennes toi-même. Ce que tu affiches, tout le chat le lit."
 end)

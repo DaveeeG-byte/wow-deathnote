@@ -2,6 +2,7 @@
 -- U10: the word that puts a line into the chat is not the word that shows a place on the map (deDE "Aushängen",
 -- enUS "Post"; the switch, the section, the status and the guest card use the same verb; the window's head stays).
 -- U11: one word for one thing. U14: the translators' notes say where a word stands.
+-- U15: the foot of the sheet Guild.
 local ROOT = (arg and arg[0] and arg[0]:match("^(.*)/tests/")) or "."
 local DIR = ROOT .. "/DeathNote/"
 local pass, fail = 0, 0
@@ -66,6 +67,14 @@ check("enUS Hinweis OPT_G_SENDPLACE: Gruppe SHARE", note("OPT_G_SENDPLACE"):find
 
 -- language table of the UI hunt: ptBR says the killer is unknown (not "not clear")
 check("ptBR Taeter unbekannt", Raw("ptBR").SCENE_TIP_DEATH_UNCLEAR == "Aqui você morreu; o assassino é desconhecido", Raw("ptBR").SCENE_TIP_DEATH_UNCLEAR)
+
+-- U15: the foot of the sheet Guild speaks of sharing and alerts only; the old sentences are gone
+for _, c in ipairs(order) do
+  local T = Raw(c)
+  check(c .. " beide Fusszeilen", type(T.SET_HINT_FRIENDS_POST) == "string" and type(T.SET_HINT_GUILD_POST) == "string"
+    and T.SET_HINT_FRIENDS_POST ~= T.SET_HINT_GUILD_POST and T.SET_HINT_FRIENDS_POST:find("Revenge Book", 1, true) ~= nil)
+  check(c .. " alte Fusszeilen weg", T.SET_HINT_FRIENDS == nil and T.SET_HINT_GUILD == nil)
+end
 
 print(("fix150 texte        %d ok, %d rot"):format(pass, fail))
 os.exit(fail == 0 and 0 or 1)

@@ -4361,7 +4361,7 @@ BuildSettings = function()
     fclear:SetPoint("TOPLEFT", 30 + 132 + 10, clearY)
     S.fclear = fclear
   end
-  hint(B, friendsSheet and L.SET_HINT_FRIENDS or L.SET_HINT_GUILD)
+  hint(B, friendsSheet and L.SET_HINT_FRIENDS_POST or L.SET_HINT_GUILD_POST)   -- 1.5.0 fixer: sharing only; a post is public
 
   -- sheet 4 (1.3.0): the rap sheet: keep it, chat line, victim alarm, alarm when settled, empty it
   local RR = sheet()

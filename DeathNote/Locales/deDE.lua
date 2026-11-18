@@ -517,8 +517,6 @@ L.SET_SEC_SHARING = "TEILEN"  -- [max 24]
 L.SET_SEC_WARN = "WARNEN"  -- [max 24]
 L.SET_MORE = "Mehr"  -- [max 12]
 L.SET_GUILD_CLEAR = "Gildenbuch leeren"  -- [max 26]
-L.SET_HINT_GUILD = "Geteilt wird nur mit der eigenen Gilde. Was von dort kommt, bleibt getrennt von deinem Buch, bis du es selbst übernimmst."
-L.SET_HINT_FRIENDS = "Geteilt wird nur mit Gilde und Freunden mit Revenge Book."
 L.BTN_BACK = "Zurück"  -- [max 17]
 -- Sync button and guild tooltip (left page, bottom) -----------------------------------------------
 L.SYNC_BUTTON = "Abgleichen"  -- [max 14]
@@ -985,4 +983,6 @@ L.SCENE_TIP_PICK = "Klick: Tatort wählen"
 L.SCENE_LEG_DEATH = "dein Tod"  -- [max 32]
 L.SCENE_LEG_KILL = "dein Kill"  -- [max 32]
 L.SCENE_LEG_BUNDLE = "mehrere Tatorte"  -- [max 32]
+L.SET_HINT_FRIENDS_POST = "Teilen und Warnen nur mit Gilde und Freunden mit Revenge Book. Ein Aushang ist für alle im Chat."
+L.SET_HINT_GUILD_POST = "Teilen und Warnen nur mit der eigenen Gilde. Was von dort kommt, bleibt getrennt von deinem Buch, bis du es selbst übernimmst. Ein Aushang ist für alle im Chat."
 end)
