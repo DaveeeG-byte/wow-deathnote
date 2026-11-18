@@ -76,6 +76,9 @@ test("In Instanzen nie, andere Gilde nie, ohne Gilde nie", function()
   M.FireEvent("ZONE_CHANGED_NEW_AREA")
   see("target", "Anon", "Rote Hand")
   eq(#spotted, 0, "Instanz")
+  -- the rule of Feud.lua itself (the tracker is quiet in instances anyway): a record of a feud guild from inside
+  ns.Feud.OnUnit({ key = "Anon-Rot", guild = "Rote Hand" }, "target", "target")
+  eq(#spotted, 0, "Instanz: auch der Haken selbst bleibt still")
   M.instance = { false, "none" }
   M.FireEvent("ZONE_CHANGED_NEW_AREA")
   see("target", "Anon", "Rote Hand")
