@@ -75,8 +75,7 @@ local UI, GLUI, GL = ns.UI, ns.GuildLogUI, ns.GuildLog
 fill(W)
 local F = rawget(W.G, "DeathNoteFrame")
 local R, PL, PR = GLUI.Frames()
-local poster
-for _, f in ipairs(W.BM.frames) do if f.current and f.buttons and f.share then poster = f:GetParent() end end
+local poster = GLUI.Poster()
 
 ------------------------------------------------------------------------
 -- 1) the ribbon: guild tab only, never over the manual or the house rules
@@ -97,14 +96,14 @@ check("Band wieder da nach der Gebrauchsanweisung", R:IsVisible())
 W.click(R); W.settle()
 check("Klick aufs Band: zwei Seiten offen", PL:IsVisible() and PR:IsVisible() and GLUI.IsOpen())
 local P = poster
-check("Plakat unsichtbar unter der Chronik", P == nil or P:GetAlpha() == 0, P and P:GetAlpha())
+check("Plakat unsichtbar unter der Chronik", P ~= nil and P:GetAlpha() == 0, P and P:GetAlpha())
 local back
 for _, f in ipairs(W.BM.frames) do
   if f._kind == "Button" and f.text and f.text._text == L.GLOG_BACK and f:IsVisible() then back = f end
 end
 W.click(back); W.settle()
 check("Zurück zum Buch schließt", not PL:IsVisible() and not PR:IsVisible() and not GLUI.IsOpen())
-check("Plakat wieder sichtbar", P == nil or P:GetAlpha() == 1)
+check("Plakat wieder sichtbar", P ~= nil and P:GetAlpha() == 1)
 GLUI.Open(); W.settle()
 UI.SetFilter("journal"); W.tick(); W.settle()
 check("Anderer Reiter schließt", not GLUI.IsOpen() and not PL:IsVisible())

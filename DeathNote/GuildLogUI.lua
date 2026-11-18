@@ -857,6 +857,7 @@ function GLUI.Attach(F, LP, RP, poster)
 end
 
 function GLUI.Frames() return R, PL, PR end
+function GLUI.Poster() return B.P end
 
 -- something changed in the guild's data while the book is open: the marks and the open pages follow
 ns:On("GUILDLOG_UPDATED", function()
