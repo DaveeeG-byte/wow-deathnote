@@ -558,14 +558,20 @@ function Call.Receive(text, short, full, from)
   local who = (full or short):lower()
   local last = fromAt[who]
   if last and gt - last < C.PER_SENDER and gt >= last then Call.Count("dup"); return nil, "dup" end
+  -- 1.6.0 fix: the same call over two ways (group and Battle.net, where the client names the sender once with and
+  -- once without surname) is one call: the same text from the same first name
+  local same = "\t" .. ((short:match("^(%S+)") or short):lower()) .. "\t" .. text
+  last = fromAt[same]
+  if last and gt - last < C.PER_SENDER and gt >= last then Call.Count("dup"); return nil, "dup" end
   for i = #minute, 1, -1 do if gt - minute[i] >= 60 or minute[i] > gt then table.remove(minute, i) end end
   if #minute >= C.MINUTE_MAX then Call.Count("flood"); return nil, "flood" end
   fromAt[who] = gt
+  fromAt[same] = gt
   minute[#minute + 1] = gt
   -- the senders' table stays small: who is older than PER_SENDER goes
   local n = 0
   for _ in pairs(fromAt) do n = n + 1 end
-  if n > 50 then for k, v in pairs(fromAt) do if gt - v >= C.PER_SENDER then fromAt[k] = nil end end end
+  if n > 100 then for k, v in pairs(fromAt) do if gt - v >= C.PER_SENDER or v > gt then fromAt[k] = nil end end end
   local rec = { t = m.t, at = t, by = short, from = from, mapID = m.mapID, x = m.px / 10, y = m.py / 10,
     key = m.key, display = m.display, zone = Call.MapName(m.mapID) }
   if rec.zone and (#rec.zone > 80 or rec.zone:find("[%c|]")) then rec.zone = nil end
