@@ -1,4 +1,4 @@
-# Revenge Book 1.4.0
+# Revenge Book 1.5.0
 
 An addon for WoW Forever (Interface 16001). In open-world PvP it writes down who killed you, shows your killers as a
 book and warns you when one of them is in sight again. Confirmed kills are shared silently with your guildmates (the

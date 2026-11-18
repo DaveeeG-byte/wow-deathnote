@@ -1,65 +1,38 @@
 # Changelog
 
-## 1.5.0
+## 1.5.0 (2026-11-18)
 
-<!-- grip -->
+### Changed
+- The addon is called **Revenge Book** now (it was DeathNote): the addon list, the title of the black book (the covers Privateer and Workshop keep their own), the red chat prefix, the minimap button and its tooltip, the addon compartment, the key bindings section and every sentence that names the addon, in all 21 languages (the name stays English everywhere). The folder `DeathNote`, your saved books (`DeathNoteDB`), the commands `/dn`, `/deathnote`, `/deathlist` and `/todesliste`, the minimap button's saved position, the backup text (`DEATHNOTE:1`, readable both ways between 1.4.0 and 1.5.0) and the messages between versions stay as they are. `/rb` and `/revengebook` do the same as `/dn` (listed in `/dn help`).
+- Who had the book before gets one chat line after the update, once per account and never in combat: the new name, what stays, what is new in 1.5.0 and where to find it. It replaces the line of 1.4.0 for those who had not seen that one yet.
+- Grudge detection is sharper. A spell cast by an enemy who has you targeted no longer counts on its own (a self-buff or mounting opened notices); it counts only together with a hit on you, and it belongs to the player who cast it. New second signals make a row sure: he goes into combat right with a hit on you, he has you targeted at two hits a second or more apart, or his pet is on you (where the client names the owner). A hostile creature that has you targeted (or you on its threat list) at the moment of a hit holds the player back for that hit only; a player's pet, demon or totem is no creature. Rather shown than kept quiet: a row once shown never goes again and only grows surer, and whoever is still held back at the end of the fight is shown then.
+- The grudge notice moves with a plain drag; Shift is no longer needed. The place is kept as before.
+- The book title steps down a size before it would reach the first tab.
+- House Rules, sheet Guild: the foot speaks of sharing and alerts only and says that a post is for everyone in the chat.
+
 ### Added
-- Key bindings (Esc > Options > Key Bindings, a section of their own, no keys set by default): open or close the book; target into the book (like `/dn add`, with class, level, guild from the target); target on the hit list (like `/dn hunt`, with the reason "Marked in a fight", no question in combat; releasing again from the book with another reason replaces it); alarm off / on. All of them work in combat. Without a target, or with a creature, a friendly player or a group member as target, one clear line and nothing is written.
-- A mark on the nameplate of everyone in your book: a red thumbtack and the standing "me : him" for the wanted, a plain grey thumbtack for those who only attacked you, a crosshair stamp for the hit list; pardoned players and suspects get none. Only in the open world and only while enemy nameplates are on; the mark is a small frame of its own on the plate, nothing of the plate itself is changed. House Rules, sheet Rap Sheet, section NAMEPLATES: off, small, medium (default), large.
+- **Post in the chat:** the word "Post" at the top right of a poster (own book, guild and friends' book, hit list) and in the row menu opens a small window with the line as it goes out and the channels that work right now (guild, party or raid or instance group, say). One click sends one plain line, e.g. `[Revenge Book: Grimwald Ashbrand] WANTED · Score 2 : 5 · 131g bounty · last seen Stranglethorn Vale`, in the plain words of your language (never the words of your cover). Anybody can read it; at most one line every 10 seconds, never in combat or while the game locks the chat (the window says why and when).
+- With the addon the name in such a line is a link: a click opens his poster from your book, else from the guild or friends' book, else a guest poster that shows only what the line says, marked "posted by …"; its head follows the kind of the line (wanted, pardoned, payback), and a line about somebody wanted offers "Copy to my book" (the entry is marked as copied from that player and never passed on). In dungeons and battlegrounds, where the game hides chat text from addons, the line stays plain text.
+- Copy for Discord: a tab of the window marks a few lines (name, level, class, guild, score, bounty, last deed with place and time, last seen) for Ctrl+C.
+- My week: a tab of the window makes one line of the week: who killed you most this week, payback taken, open debts. A click on such a line opens a plain card "Bertram's week".
+- Payback notice: with the switch "Button "Post" on the payback notice" (House Rules, sheet Guild, section POST, off by default) the notice after a kill on a wanted enemy carries a small "Post" button; it opens the window with "PAYBACK · now 3 : 5". Nothing is ever sent without your click.
+- Never posted: attacks, suspicion, notes, anything copied from someone else's book or read in from a text, names of guildmates or friends. An entry made only of such things offers no "Post".
+- **Crime scenes on the world map:** a red pin with a skull where you died, a black pin with crossed blades where you took one of your book down, a light pin where a guildmate (green, with a shield) or a friend (blue, with a heart) died. Close places are one pin with a count, bundled by the map as shown (at most 40 pins per map); a click on a bundle lists its scenes to pick one. The tooltip says who killed whom ("Here Grimwald Ashbrand killed you", "Here Liora Stormwell was killed by Velka Thornheart"), when, where, the spell, who helped, revenge; a death without a sure killing blow says suspicion, never "killed you". A click opens the book there. A guildmate's or friend's death younger than 10 minutes pulses.
+- From the book to the map: every place with a small pin in the margin is a link (deed lines on the poster, the place of a death file, the rap sheet's kills and victim sheet, the chronicle, guild and friends' deed lines, the notice of a guildmate's death). The map opens there and the pin pulses; without coordinates the zone's map opens with "exact spot unknown"; in combat a chat line instead. Closing the map brings the book back.
+- A small book at the map's corner switches the crime scenes: on/off, period (7 days, 30 days, all), only open debts, own, guild, friends; its tooltip is a legend of the pins. House Rules, sheet Book, section MAP: on/off.
+- **Chronicle:** the word "Chronicle" next to DEEDS on the poster opens one page that tells the feud in sentences: first encounter, every deed in order, your revenge, bounties, the turning points, the standing now. Long feuds are cut in the middle; a story whose early deeds are no longer in the book says so and claims no turning point it cannot prove. Places in it are links to the map.
+- The spot of your death goes to guild and friends with it (new message `L`, older versions drop it unseen). Switch: House Rules, sheet Guild, "Send the spot of my death" (on by default). Attacks, suspicions, notes and copied entries never go out, nor their places.
+- **Key bindings** (Esc > Options > Key Bindings, a section of their own, no keys set by default): open or close the book; target into the book (like `/dn add`, with class, level, guild from the target); target on the hit list (like `/dn hunt`, with the reason "Marked in a fight", no question in combat; releasing again from the book with another reason replaces it); alarm off / on. All of them work in combat. Without a target, or with a creature, a friendly player, a group member or a duel partner of your own faction as target, one clear line and nothing is written. After the first `/dn add` typed by hand the chat says once that a key does this.
+- **A mark on the nameplate** of everyone in your book: a red thumbtack and the standing "me : him" for the wanted, a grey thumbtack with a light rim for those who only attacked you, a crosshair stamp for the hit list; pardoned players and suspects get none. Only in the open world and only while enemy nameplates are on; the mark is a small frame of its own on the plate, nothing of the plate itself is changed. House Rules, sheet Rap Sheet, section NAMEPLATES: off, small, medium (default), large; the tooltip there explains the marks.
 - Grudge notice size: small, medium (default) or large (House Rules, sheet Rap Sheet, under GRUDGE).
 - Grudge rows show how sure they are: a row seen only once (or while a creature also had you targeted) is paler and carries a "?", its tooltip says why; sure rows come first.
-- `/dn probe` shows the new grudge signals and the nameplate mark (`probe.grip`); the grudge cases (no names) are kept without `/dn probe`, at most 20, and the counters of a session are kept at logout.
-
-### Changed
-- Grudge detection: a spell cast by an enemy who has you targeted no longer counts on its own (a self-buff or mounting opened notices); it counts only together with a hit on you. New second signals: he goes into combat right with a hit on you, or he has you targeted at two hits a second or more apart. When a hostile creature has you targeted (or you on its threat list) at the same moment, the player is held back until a second signal comes.
-
-### Known open
-- Unmeasured in the game: the nameplate mark (whether `C_NamePlate.GetNamePlateForUnit` answers on Forever in the open world, how the mark sits on the client's plates and on plate addons), the creature cross-check (whether a creature's target and its threat are readable in a fight), and the new signals. `/dn probe` and `probe.grip` / `probe.grudge` count all of it.
-<!-- orchestrator -->
-### Changed
-- The grudge notice moves with a plain drag; Shift is no longer needed. The place is kept as before.
-
-<!-- share -->
-### Added
-- Show in the chat: the word "Show" at the top right of a poster (own book, guild and friends' book, hit list) and in the row menu opens a small window with the line as it goes out and the channels that work right now (guild, party or raid or instance group, say). One click sends one plain line, e.g. `[Revenge Book: Grimwald Ashbrand] WANTED · Score 2 : 5 · 131g bounty · last seen Stranglethorn Vale`, in your language. Anybody can read it; at most one line every 10 seconds, never in combat or while the game locks the chat (the window says why and when).
-- With the addon the name in such a line is a link: a click opens his poster from your book, else from the guild or friends' book, else a guest poster that shows only what the line says, marked "shown by …", with "Copy to my book" (the entry is marked as copied from that player and never passed on). In dungeons and battlegrounds, where the game hides chat text from addons, the line stays plain text.
-- Copy for Discord: a tab of the window marks a few lines (name, level, class, guild, score, bounty, last deed with place and time, last seen) for Ctrl+C.
-- My week: a tab of the window makes one line of the week: who killed you most this week, payback taken, open debts.
-- Payback notice: with the switch "Button "Show" on the payback notice" (House Rules, sheet Guild, section SHOW, off by default) the notice after a kill on a wanted enemy carries a small "Show" button; it opens the window with "PAYBACK · now 3 : 5". Nothing is ever sent without your click.
-- Never shown: attacks, suspicion, notes, anything copied from someone else's book, names of guildmates or friends. An entry made only of such things offers no "Show".
-- `/dn probe` writes `probe.share`: lines sent per channel, refused with the reason, link hits in the chat, clicks, guest posters, cases with hidden chat text.
-<!-- scene -->
-### Added
-- Crime scenes on the world map: a red pin with a skull where you died, a black pin with crossed blades where you took one of your book down, a light pin in a quiet colour where a guildmate (green) or friend (blue) died. Close places are one pin with a count (at most 40 pins per map). The tooltip says who killed whom ("Here Grimwald Ashbrand killed you", "Here Liora Stormwell was killed by Velka Thornheart"), when, where, the spell, who helped, revenge; a click opens the book there. A guildmate's or friend's death younger than 10 minutes pulses.
-- From the book to the map: every place with a small pin in the margin is a link (deed lines on the poster, the place of a death file, the rap sheet's kills and victim sheet, the chronicle, guild and friends' deed lines, the notice of a guildmate's death). The map opens there and the pin pulses; without coordinates the zone's map opens with "exact spot unknown"; in combat a chat line instead.
-- A small switch at the map's corner: crime scenes on/off, period (7 days, 30 days, all), only open debts, own, guild, friends. House Rules, sheet Book, section MAP: on/off.
-- Chronicle: next to DEEDS on the poster, one page of the file tells the feud in sentences: first encounter, every deed in order, your revenge, bounties, the turning points, the standing now; long feuds are cut in the middle. Places in it are links to the map.
-- The spot of your death goes to guild and friends with it (new message `L`, older versions drop it unseen). Switch: House Rules, sheet Guild, "Send the spot of my death" (on by default). Attacks, suspicions, notes and copied entries never go out, nor their places.
-- `/dn probe` writes `probe.scene` (map API, pins, clicks, combat, places sent, received and dropped with the reason).
+- `/dn probe` writes `probe.share`, `probe.scene` and `probe.grip` and shows the new grudge signals; the grudge cases (no names) are kept without `/dn probe`, at most 20, and the counters of a session are kept at logout.
 - New texts in all 21 languages.
 
-<!-- name -->
-### Changed
-- The addon is called Revenge Book now (it was DeathNote): the addon list, the title of the black book (the covers Privateer and Workshop keep their own), the red chat prefix, the minimap button and its tooltip, the addon compartment, the key bindings section and every sentence that names the addon, in all 21 languages (the name stays English everywhere). The folder `DeathNote`, your saved books (`DeathNoteDB`), the commands `/dn`, `/deathnote`, `/deathlist` and `/todesliste`, the minimap button's saved position, the backup text (`DEATHNOTE:1`, readable both ways between 1.4.0 and 1.5.0) and the messages between versions stay as they are.
-- Who had the book before gets one chat line after the update, once per account and never in combat: the new name, what stays, what is new in 1.5.0. It replaces the line of 1.4.0 for those who had not seen that one yet.
-- The book title steps down a size before it would reach the first tab.
+### Known open
+- Unmeasured in the game: whether the server passes the posted line unchanged and the click on the name arrives; the map's API and hooks on Forever and the pins next to other map addons; the nameplate mark (whether `C_NamePlate.GetNamePlateForUnit` answers in the open world, how the mark sits on the client's plates and on plate addons); the creature cross-check, the pet queries and the new grudge signals. `/dn probe` counts all of it.
 
-### Added
-- `/rb` and `/revengebook` do the same as `/dn` (listed in `/dn help`).
-
-<!-- fixer -->
-### Changed
-- The word that puts a line into the chat is "Post" now (it was "Show", the same word as "show on the map"): on the poster, in the row menu, the switch and section on the House Rules, the status after sending, the guest poster ("posted by"). The window's head stays "Show in the chat".
-- Lines in the chat and the Discord block use the plain words of your language (WANTED, Score, bounty, payback), never the words of your cover; data read in from a text is no own deed and goes into no line, block or week.
-- Guest poster: its head follows the kind of the line (wanted, pardoned, payback); a week line opens a plain card "Bertram's week"; "Copy to my book" only for a line about somebody wanted.
-- Crime scenes: pins are bundled by pixels of the map as shown (anew when its scale changes); a bundle shows the scene that comes first and its click lists the scenes to pick one; guildmates' pins carry a shield, friends' a heart; the switch at the corner is a small book of its own above the pins, its tooltip filters and shows a legend of the pins; a death without a sure killing blow says suspicion, never "killed you"; closing the map after a click from the book opens the book again.
-- Chronicle: no turning point the kept deeds cannot prove; a shortened story says so once and takes the standing from the counters; the word "Chronicle" on the poster is a link (red ink, underlined, tooltip).
-- Grudge notice: a row once shown never goes again and only grows surer; a creature counts for its own hit only; a player's pet is no creature and supports its owner (new signal p where the client names the owner); a spell belongs to its caster; rows still held at the end of the fight are shown.
-- Nameplate mark: every mark goes back to the pool; the grey thumbtack carries a light rim; the size stepper's tooltip explains the three marks, the score and where the keys are set.
-- Key "target into the book": a duel partner of your own faction is no enemy. After the first `/dn add` typed by hand the chat says once that a key does this (and which).
-- The line after the update says where the new things are. House Rules, sheet Guild: the foot speaks of sharing and alerts only and says a post is for everyone in the chat. Friends' answers leave room for the crime scenes (message `L`).
-- Texts: one word for one thing (poster, open debts), singular and plural of the chronicle's avenger line, corrections in several languages.
-
+---
 ## 1.4.0 (2026-11-17)
 
 ### Added

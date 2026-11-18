@@ -390,7 +390,7 @@ function Grudge.Close(why)
       local row = e.rows[key]
       local st = row.state
       if st == "yes" then c.yes = c.yes + 1 elseif st == "no" then c.no = c.no + 1 elseif st == "gone" then c.gone = c.gone + 1 end
-      if row.conf == "held" then counts.held = counts.held   -- (1.5.0 fixer: counted when shown at the fight's end)
+      if row.conf == "held" then   -- left held (the episode was cut off before the end of the fight): no count
       elseif row.conf == "sure" then counts.sure = counts.sure + 1 else counts.probable = counts.probable + 1 end
       if #c.list < Grudge.CASE_ROWS then
         local p = {}
