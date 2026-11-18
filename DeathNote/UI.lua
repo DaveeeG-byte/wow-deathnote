@@ -16,6 +16,17 @@ ns.UI = UI
 local UX = {}
 -- 1.3.0: the rap sheet's tab (fifth tab, own file, victims), filled further down
 local RS = {}
+-- 1.6.0 feud: calls into FeudUI.lua (the guild page of Wanted, claims and archive in Unsolved); an error there never
+-- breaks the book (it is reported once like any other, the book goes on without it)
+function UX.FD(fn, ...)
+  local X = ns.FeudUI
+  local f = X and X[fn]
+  if type(f) ~= "function" then return nil end
+  local ok, a, b = pcall(f, ...)
+  if ok then return a, b end
+  if ns.ReportError then ns.ReportError(a) end
+  return nil
+end
 
 local W, H = 800, 548
 local PAGE_W, PAGE_H = 380, 490
@@ -712,6 +723,9 @@ local function MenuSpec(e)
   if S.HandRevenge and (tonumber(S.HandRevenge(e)) or 0) > 0 and not (u and u.key == e.key) then
     out[#out + 1] = { L.ACT_REVENGE_TAKE, function() S.UndoRevenge(e.key); UI.Refresh() end }
   end
+  -- 1.6.0 feud: "Keep" for an entry that would expire after 30 play days (only suspicions or only attacks)
+  local keep = UX.FD("KeepAct", e)
+  if keep then out[#out + 1] = keep end
   return out
 end
 
@@ -874,7 +888,7 @@ end
 
 function UX.RowMenu(row, anchor)
   local item = row.item
-  if not item or item.ovHead or state.filter == "journal" or state.filter == "record" or IsCase(item) then return end
+  if not item or item.ovHead or item.fdItem or state.filter == "journal" or state.filter == "record" or IsCase(item) then return end
   if item.wrap then
     item = GuildItem(item)
     if not item then return end
@@ -909,6 +923,7 @@ function UX.RowMenu(row, anchor)
 end
 
 local function RowClick(row, mouse)
+  if row.item and row.item.fdHead then UX.FD("HeadClick", row, mouse); return end
   if not row.item or row.item.ovHead then return end
   if row.item.wrap and row.item.head then
     if mouse == "RightButton" and GF.TieMenu(row) then return end
@@ -927,7 +942,7 @@ local function RowClick(row, mouse)
 end
 
 local function RowEnter(row)
-  if not row.item or row.item.ovHead then return end
+  if not row.item or (row.item.ovHead and not row.item.fdHead) then return end
   if row.tipFn then
     Tip(row, row.tipFn(row.item))
   elseif row.full then
@@ -1389,6 +1404,7 @@ BindRows = function()
         if item.head then UX.BindMemberHead(r, item) else UX.BindMemberChild(r, item) end
       elseif state.filter == "guild" then
         if GF.HuntView() then GF.BindHuntRow(r, item) else UX.BindGuildRow(r, item, idx) end
+      elseif item.fdHead or item.fdItem then UX.FD("BindRow", r, item)
       elseif item.ovHead then OV.BindHead(r, item)
       elseif IsCase(item) then UX.BindCaseRow(r, item)
       else UX.BindEnemyRow(r, item) end
@@ -1888,6 +1904,7 @@ function UX.BuildPoster()
     self:SetText(e and Look.NoteOf(e) or "")
     self:ClearFocus()
   end)
+  Look.TypingScript(note)     -- 1.6.0: typed text in another script takes that script's fonts
   E.note = note
   -- 1.2.2: note longer than the field shows: in full in the tooltip (measured on show with an invisible font string)
   note.measure = Look.Text(E, "hand", 13, Look.INK)
@@ -2926,6 +2943,8 @@ end
 local function SearchOnly() return state.filter ~= "wanted" end
 
 local function EmptyKind()
+  local fk = UX.FD("EmptyKind")
+  if fk then return fk end
   if state.query ~= "" then
     if SearchOnly() then return "searchro" end
     -- 1.4.0 fixer: the filter hides matches, or the name stands elsewhere in the book: Enter adds nothing then
@@ -3696,6 +3715,8 @@ ShowRight = function()
     if RS.Show() then picked = true end
   elseif n == 0 then
     ShowEmpty(EmptyKind())
+  elseif UX.FD("ShowRight") then
+    -- 1.6.0 feud: the guild page of Wanted, claims and archive of Unsolved show their own right page
   elseif state.filter == "journal" then
     -- the selection is the entry itself; the position follows it when new deaths slide in before it
     local pos
@@ -3901,6 +3922,10 @@ GF.MORE_SHARE = {
 -- filter, only open debts and which kinds, is in the map's own switch, SceneMap.lua)
 GF.SCENE_OPTIONS = {
   { "scene.on", "OPT_SCENE", true },
+}
+-- 1.6.0 feud: section ORDER on sheet Book (old suspicions go to the archive after 30 play days, Feud.lua)
+GF.FEUD_OPTIONS = {
+  { "book.expire", "OPT_BOOK_EXPIRE", true },
 }
 GF.MORE_WARN = {
   { "alertListed", "OPT_G_ALERTLISTED" },
@@ -4215,6 +4240,12 @@ BuildSettings = function()
     y = checks(A, GF.SCENE_OPTIONS, nil, y)
     A.bottom = -y - 2
   end
+  if ns.Feud then
+    -- 1.6.0 feud: one row below MAP (a section label of its own made the sheet scroll in seven languages)
+    local y0 = y + 4
+    y = checks(A, GF.FEUD_OPTIONS, nil, y0)
+    A.bottom = -y0 + 20 + 2          -- the row is 20 px high; the sheet ends 2 px below it (German fits without scrolling)
+  end
   hint(A, L.SET_HINT_BOOK)
 
   -- sheet 2: alarm with sound, volume and channel
@@ -4460,6 +4491,7 @@ BuildSettings = function()
   eb:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
   -- 1.4.0 overview: a changed text needs a new preview
   eb:SetScript("OnTextChanged", function(_, user) if user and state.panel == "import" then OV.IOReset() end end)
+  Look.TypingScript(eb)       -- 1.6.0: pasted names in another script take that script's fonts
   sf:SetScrollChild(eb)
   sf:SetScript("OnMouseDown", function() eb:SetFocus() end)
   IO.edit = eb
@@ -4607,6 +4639,7 @@ function GF.BuildRelease()
   ul:SetPoint("BOTTOMLEFT", 0, 1); ul:SetPoint("BOTTOMRIGHT", 0, 1)
   eb:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
   eb:SetScript("OnEnterPressed", function(self) self:ClearFocus(); GF.DoRelease() end)
+  Look.TypingScript(eb)       -- 1.6.0: typed text in another script takes that script's fonts
   R.edit = eb
   R.hint = Look.Text(Rs, "type", 11, Look.INK)
   R.hint:SetTextColor(C(Look.INK, TONE.hint))
@@ -5100,14 +5133,16 @@ function UX.UpdateTabs()
   local sortKey = (state.filter == "guild" and state.gsort) or (state.filter == "record" and state.rsort) or state.sort
   LP.sort.text:SetText(SORT_LABEL[sortKey] and L[SORT_LABEL[sortKey]] or "")
   -- 1.4.0 overview: in Wanted the sorting is as wide as its word (the filter stands left of it, the search keeps room)
-  local wanted = state.filter == "wanted"
+  local fdOn = state.filter == "wanted" and UX.FD("On") and true or false
+  local wanted = state.filter == "wanted" and not fdOn
   LP.sort:SetWidth(math.max(wanted and 50 or 90, math.min(120, TextWidth(LP.sort.text, 60) + 16)))
   LP.filter:SetShown(wanted)
   if wanted then
     sw = OV.LayoutFilter(LP.sort:GetWidth())
     if LP.search.w ~= sw then LP.search.w = sw; LP.search:SetWidth(sw) end
   end
-  LP.sort:SetShown(state.filter == "wanted" or state.filter == "record" or (state.filter == "guild" and not member and not GF.HuntView()))
+  LP.sort:SetShown(wanted or state.filter == "record" or (state.filter == "guild" and not member and not GF.HuntView()))
+  UX.FD("Layout")                -- 1.6.0 feud: the switches at the bottom left of Wanted and Unsolved
   -- 1.2.2: the placeholder stays inside the field (smaller, then truncated)
   LP.search.ph:SetWidth(sw - 4)
   Look.FitText(LP.search.ph, (state.filter == "guild" and ((views or GF.HuntView()) and L.SEARCH_SHORT or L.SEARCH_KILLER))
@@ -5356,7 +5391,7 @@ Refresh = function()
   if state.filter == "journal" then
     list = UX.Journal()
   elseif state.filter == "open" then
-    list = UX.OpenData()
+    list = UX.FD("OpenData") or UX.OpenData()
   elseif GF.HuntView() then
     list = GF.SrcOn() and GF.Hunts() or {}
   elseif state.filter == "guild" and not MemberView() then
@@ -5366,11 +5401,14 @@ Refresh = function()
   elseif state.filter == "record" then
     list = ns.Ledger.Victims(state.rsort)    -- the rap sheet's own list, read only
   elseif state.filter ~= "guild" then
-    list = UX.WantedData()
+    list = UX.FD("WantedData") or UX.WantedData()
   end
   if MemberView() then
     dataIdx = nil
     data = UX.MemberData()
+  elseif state.filter == "wanted" and UX.FD("On") then
+    dataIdx = nil
+    data = list                       -- 1.6.0 feud: the guild page searches itself (guild and member names)
   else
     data = UX.ApplyQuery(list)
     if state.filter == "wanted" then data = OV.Sections(data) end   -- 1.4.0 overview: section heads
@@ -5387,12 +5425,30 @@ end
 UI.Refresh = Refresh
 
 -- merge several changes in the same frame into one rebuild
+-- 1.6.0 feud: the frequent kind (a sighting writes "last seen", a guild sighting) is bundled to at most one rebuild per
+-- UX.REFRESH_GAP seconds; a change of the book (a death, a revenge, an entry) still shows at once
+UX.REFRESH_GAP, UX.autoRefreshes, UX.seenRefreshes = 0.5, 0, 0
+local seenPending = false
 local function RequestRefresh()
   if not F or not F:IsShown() then dirty = true; return end
   if pending then return end
   pending = true
-  C_Timer.After(0, function() pending = false; Refresh() end)
+  C_Timer.After(0, function() pending = false; UX.autoRefreshes = UX.autoRefreshes + 1; Refresh() end)
 end
+local function RequestSeenRefresh()
+  if not F or not F:IsShown() then dirty = true; return end
+  if pending or seenPending then return end
+  seenPending = true
+  local wait, t = 0, GetTime()
+  if UX.lastSeenAt and t >= UX.lastSeenAt and t - UX.lastSeenAt < UX.REFRESH_GAP then wait = UX.REFRESH_GAP - (t - UX.lastSeenAt) end
+  C_Timer.After(wait, function()
+    seenPending = false
+    UX.lastSeenAt, UX.seenRefreshes = GetTime(), UX.seenRefreshes + 1
+    if pending then return end      -- a change of the book rebuilds in this frame anyway
+    Refresh()
+  end)
+end
+UX.RequestSeenRefresh = RequestSeenRefresh
 
 local function SetFilter(id)
   if state.filter == id then
@@ -5483,6 +5539,7 @@ function UX.BuildSearch(parent)
   sb:SetScript("OnEscapePressed", function(self)
     if (self:GetText() or "") ~= "" then self:SetText(""); changed(self) else self:ClearFocus() end
   end)
+  Look.TypingScript(sb)       -- 1.6.0: a name typed in another script takes that script's fonts
   return sb
 end
 
@@ -5854,6 +5911,7 @@ function OV.ShowTake(r, on)
 end
 function OV.TakeRow(r)
   local item = r and r.item
+  if item and (item.fdHead or item.fdItem) then UX.FD("RowWord", r); return end
   local g = item and GuildItem(item)
   if g then OV.TakeOne(g, item.wrap and item.m and item.m.name or nil) end
 end
@@ -6926,6 +6984,15 @@ function DeathNote_OnCompartmentLeave() GameTooltip:Hide() end
 ------------------------------------------------------------------------
 -- Bus
 ------------------------------------------------------------------------
+-- 1.6.0 feud (FeudUI.lua): the book's own pieces for the guild page of Wanted and for claims and archive in Unsolved
+do
+  local K = UI.Kit
+  K.state, K.SetRowMode, K.SetRow, K.SetRank, K.TextWidth, K.InkWidth = state, SetRowMode, SetRow, SetRank, TextWidth, InkWidth
+  K.Spaced, K.ShowEmpty, K.EMPTY, K.GF, K.OV = Spaced, ShowEmpty, EMPTY, GF, OV
+  K.HideMenu, K.Refresh = function() HideMenu() end, function() Refresh() end
+  K.Frames, K.Data = function() return F, LP, RP, P end, function() return data end
+end
+
 ns:On("READY", function()
   ready = true
   UI.UpdateMinimap()
@@ -6939,14 +7006,15 @@ ns:On("PLATES_CHANGED", function()
     dirty = true
   end
 end)
-ns:On("ENEMY_UPDATED", RequestRefresh)
+-- 1.6.0 feud: a sighting ("seen" from Store.Seen) is bundled, every other change shows at once
+ns:On("ENEMY_UPDATED", function(_, why) if why == "seen" then RequestSeenRefresh() else RequestRefresh() end end)
 -- 1.3.0 rap sheet: an own kill, a new standing, rank, path or award, the rap sheet emptied (also while switched off)
 for _, ev in ipairs({ "OWN_KILL", "STANDING_CHANGED", "REPUTE_RANK", "REPUTE_PATH", "AWARD" }) do ns:On(ev, RequestRefresh) end
 ns:On("LEDGER_CLEARED", function() state.rsel, state.rview = nil, "file"; RequestRefresh() end)
 ns:On("DEATH_RECORDED", RequestRefresh)
 ns:On("REVENGE", RequestRefresh)
 ns:On("GUILD_UPDATED", function() mv.dirty = true; gpart.src = nil; RequestRefresh() end)
-ns:On("GUILD_SIGHTING", function() if state.filter == "guild" then RequestRefresh() end end)
+ns:On("GUILD_SIGHTING", function() if state.filter == "guild" then RequestSeenRefresh() end end)
 ns:On("HUNT_BAGGED", function() if state.filter == "guild" then RequestRefresh() end end)
 -- the store moves an entry to a new key: selection and note field move with it
 ns:On("ENEMY_REKEYED", function(old, new)

@@ -595,6 +595,13 @@ local function Later(fn, a, b, c, d, e)
   fn(a, b, c, d, e)
 end
 
+-- 1.6.0 feud: a notice on the slip for another file (FeudUI.lua: a claim on an own bounty); waits like a guild notice.
+-- open: function for a click on it, or nil
+function Extras.Slip(kicker, name, rgb, line, key, open)
+  if not ready then return end
+  Later(function(k, n, c, l, ky) Banner(k, n, c, l, nil, true, ky, open) end, kicker, name, rgb, line, key)
+end
+
 local function OnGuildKill(tat, key, src)
   if not ready or type(tat) ~= "table" or not Look.HasGuild() then return end
   if Look.GuildSetting("announce") ~= true then return end
