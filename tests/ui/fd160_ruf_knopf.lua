@@ -8,6 +8,9 @@ local cut = {}
 for _, code in ipairs(LANGS) do
   local W = J.world(WT, code, { guild = "Die Rostigen Naegel" })
   local ns = W.ns
+  -- the notice's own file (the shared world loads the book's windows, not the grudge notice)
+  W.BM.Load(WT .. "/DeathNote/GrudgeCard.lua", ns)
+  ns:Fire("READY")
   ns.Grudge.Test(3); W.tick(1)
   local card = rawget(W.G, "DeathNoteGrudge")
   local b = card and card.dnCall
