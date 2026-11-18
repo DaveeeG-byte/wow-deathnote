@@ -528,7 +528,11 @@ end
 function GL.MarkSeen(which)
   local g = db()
   if not g or (which ~= "seenTab" and which ~= "seenFeed") then return end
-  g[which] = now()
+  -- 1.6.0 fix: a time a little ahead (a clock that runs early, Sync takes up to 300 s) is seen as well
+  local t = now()
+  local top = GL.All("all")[1]
+  if top and num(top.t) and top.t > t then t = math.min(top.t, t + 300) end
+  g[which] = t
 end
 function GL.Unseen(which)
   local g = db()
