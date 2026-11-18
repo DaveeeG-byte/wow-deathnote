@@ -52,7 +52,7 @@ J.check("Karte von selbst: Schliessen oeffnet kein Buch", shows == 0 and not boo
 local leg = Map.Legend and Map.Legend() or {}
 -- 1.6.0 call: two more kinds (help call, sighting) before the bundle
 J.check("Legende: 7 Zeilen", #leg == 7, #leg)
-local want = { "scene_death", "scene_kill", "scene_guild", "scene_friend", "scene_guild", "scene_friend", "scene_badge" }
+local want = { "scene_death", "scene_kill", "scene_guild", "scene_friend", "scene_call", "scene_sight", "scene_badge" }
 local seen = {}
 for i, w in ipairs(want) do
   local l = leg[i] or ""

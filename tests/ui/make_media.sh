@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Rebuilds DeathNote's own textures (ImageMagick 7, `magick`).
 # Output: <addon folder>/Media/*.tga (DeathNote/, or the old Staatsfeind/), 32-bit RGBA, uncompressed, edges a power of two.
-# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade|grip|griprim|scene|scenefix|fates]
+# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade|grip|griprim|scene|scenefix|fates|call]
 #   all (default) = everything; base = the black book's files; kit = the shared grey parts of the themes (g_*.tga);
 #   harbor, trade = the kit plus the files of that theme only (<id>_*.tga). The header check runs over every file.
 set -euo pipefail
@@ -436,9 +436,38 @@ fates_media() {
   tga "$TMP/fates.png" "$OUT/fates.tga"
 }
 
+# 1.6.0 wiring: the pins of a call for help and of a sighting differ in shape from the others, not only in colour (light
+# heads, tinted in the game like the guild's and the friend's): a call is a diamond head with an exclamation mark, a
+# sighting a wide almond head drawn as an eye (iris and pupil). The chronicle's margin wears them too.
+call_media() {
+  magick -size 64x64 xc:none \
+    -fill 'rgba(0,0,0,0.40)' -draw 'ellipse 36,61 7,2 0,360' -blur 0x1.2 \
+    \( -size 64x64 xc:none -stroke '#5b5f63' -strokewidth 3 -draw 'line 32,40 32,61' \
+       -stroke '#c9ced2' -strokewidth 1 -draw 'line 31,40 31,59' \) -compose over -composite "$TMP/n.png"
+  # call: a diamond head, a thick exclamation mark drawn by hand (bar and dot)
+  magick "$TMP/n.png" \
+    \( -size 64x64 xc:none -fill 'rgba(0,0,0,0.35)' -draw 'polygon 33,2 55,24 33,46 11,24' -blur 0x1.5 \) -compose over -composite \
+    \( -size 64x64 xc:none -fill '#6c6a64' -draw 'polygon 32,0 55,22 32,45 9,22' \
+       -fill '#e4e1da' -draw 'polygon 32,4 51,22 32,41 13,22' \
+       -fill 'rgba(255,255,255,0.22)' -draw 'ellipse 26,11 5,2 0,360' \
+       -fill '#3a3631' -draw 'polygon 29,9 35,9 34,26 30,26' -draw 'circle 32,32 32,35' \) -compose over -composite \
+    "$TMP/scene_call.png"
+  tga "$TMP/scene_call.png" "$OUT/scene_call.tga"
+  # sighting: an almond head (an eye's outline) with a dark iris and a light glint
+  magick "$TMP/n.png" \
+    \( -size 64x64 xc:none -fill 'rgba(0,0,0,0.35)' -draw "path 'M 4,25 Q 33,1 62,25 Q 33,49 4,25 Z'" -blur 0x1.5 \) -compose over -composite \
+    \( -size 64x64 xc:none -fill '#6c6a64' -draw "path 'M 1,22 Q 32,-4 63,22 Q 32,48 1,22 Z'" \
+       -fill '#e4e1da' -draw "path 'M 6,22 Q 32,1 58,22 Q 32,43 6,22 Z'" \
+       -fill '#3a3631' -draw 'circle 32,22 32,32' -fill '#e4e1da' -draw 'circle 32,22 32,26' \
+       -fill '#3a3631' -draw 'circle 32,22 32,24' -fill 'rgba(255,255,255,0.85)' -draw 'circle 36,18 36,20' \) \
+    -compose over -composite "$TMP/scene_sight.png"
+  tga "$TMP/scene_sight.png" "$OUT/scene_sight.tga"
+}
+
 case "$WHAT" in
-  all) base_media; kit_media; theme_harbor; theme_trade; grip_media; plate_rim_media; scene_media; scene_fix_media; fates_media ;;
+  all) base_media; kit_media; theme_harbor; theme_trade; grip_media; plate_rim_media; scene_media; scene_fix_media; fates_media; call_media ;;
   fates) fates_media ;;
+  call) call_media ;;
   griprim) plate_rim_media ;;
   scenefix) scene_fix_media ;;
   grip) grip_media ;;
@@ -447,7 +476,7 @@ case "$WHAT" in
   kit) kit_media ;;
   harbor) kit_media; theme_harbor ;;
   trade) kit_media; theme_trade ;;
-  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip, griprim, scene, scenefix, fates)" >&2; exit 2 ;;
+  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip, griprim, scene, scenefix, fates, call)" >&2; exit 2 ;;
 esac
 
 # Check the headers: type 2 (uncompressed), 32 bpp, descriptor 0x08, edges a power of two

@@ -28,8 +28,9 @@ SceneMap.HINT_SECONDS = 6  -- the hint on the map ("exact spot unknown")
 
 local TEX = {
   death = "scene_death.tga", kill = "scene_kill.tga", guild = "scene_guild.tga", friend = "scene_friend.tga",
-  -- 1.6.0 call: a help call (the guild's pin in alarm red, pulsing) and a sighting (the friend's pin in amber)
-  call = "scene_guild.tga", sight = "scene_friend.tga",
+  -- 1.6.0 call: a help call (alarm red, pulsing) and a sighting (amber); 1.6.0 wiring: own shapes, also without colour
+  -- (a call: a diamond head with an exclamation mark; a sighting: an eye)
+  call = "scene_call.tga", sight = "scene_sight.tga",
 }
 SceneMap.TEX = TEX
 SceneMap.SWITCH = "scene_switch.tga"   -- the switch at the map's corner

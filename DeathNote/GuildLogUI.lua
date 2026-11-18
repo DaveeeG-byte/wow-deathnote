@@ -94,6 +94,17 @@ function GLUI.OpenName(e)
   return nil
 end
 
+-- 1.6.0 wiring: the pin in the margin wears the sign of its kind: a call for help and a sighting their own pins of the
+-- map (SceneMap.TEX, tinted as there), every other event the light pin of a mate's crime scene
+function GLUI.PinLook(tex, kind)
+  local SM = ns.SceneMap
+  local file = SM and SM.TEX and (kind == "call" or kind == "sight") and SM.TEX[kind] or "scene_mate.tga"
+  Look.Tex(tex, Look.MEDIA .. file)
+  local tint = file ~= "scene_mate.tga" and SM.TINT and SM.TINT[kind]
+  if tint then tex:SetVertexColor(tint[1], tint[2], tint[3], 1) else tex:SetVertexColor(1, 1, 1, 1) end
+  tex.kind = file ~= "scene_mate.tga" and kind or nil
+end
+
 local function ShowPlace(place)
   if not place then return end
   Look.Sound("click")
@@ -274,6 +285,7 @@ function GLUI.FillLeft()
         local place = r.event.place
         if place and ns.Scene and ns.Scene.ValidMap and ns.Scene.ValidMap(place.mapID) then
           b.pin.place = place
+          GLUI.PinLook(b.pin.tex, r.event.k)
           b.pin:Show()
         end
         y = y + h + 3
