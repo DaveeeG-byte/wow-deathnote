@@ -334,4 +334,16 @@ return {
   SET_GRUDGE_SECONDS = { max = 34, field = "stepper label (value: \"20 s\")" },
   SET_GRUDGE_TEST = { max = 17, field = "button 104 px" },
   SET_GRUDGE_RESET = { max = 24, field = "button 132 to 180 px (grows with the word)" },
+  -- 1.5.0 scene
+  SET_SEC_MAP = { max = 24, field = "section label, House Rules sheet Book" },
+  OPT_SCENE = { max = 44, field = "check box label, 280 px, Friz 11, one line (also the map's switch, 190 px, tooltip)" },
+  OPT_SCENE_OPEN = { max = 32, field = "map switch row, 190 px, Nimrod 11, tooltip when cut" },
+  SET_SCENE_DAYS = { max = 30, field = "stepper label, sheet Book" },
+  SCENE_DAYS_ALL = { max = 10, field = "value of SET_SCENE_DAYS" },
+  SCENE_DAYS_LINE = { max = 32, field = "map switch row, 190 px, Nimrod 11, tooltip when cut" },
+  SCENE_KIND_OWN = { max = 32, field = "map switch row, 190 px, Nimrod 11, tooltip when cut" },
+  OPT_G_SENDPLACE = { max = 44, field = "check box label, 280 px, Friz 11, one line" },
+  CHRON_OPEN = { max = 14, field = "word below the photo, 112 px, hand 13, tooltip when cut" },
+  CHRON_HEAD = { max = 20, field = "head of the chronicle card (big handwriting, 26 pt)" },
+  CHRON_BACK = { max = 19, field = "word at the bottom right of the chronicle: back to the poster" },
 }
