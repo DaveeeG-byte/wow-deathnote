@@ -899,7 +899,7 @@ L.GRIP_ALREADY = "{name} is in the book already."  -- after the key binding 'Tar
 L.GRIP_HUNT_WHY = "Marked in a fight"  -- [max 40] the standard reason of a hit list call made by key in a fight; shared with guild and friends as the reason
 L.GRIP_HUNT_CHANGE = "Reason: \"{why}\". To change it: \"{action}\" in the book."  -- after the key binding 'Target on the hit list'; {why} = GRIP_HUNT_WHY, {action} = ACT_RELEASE (the button on the poster)
 -- 1.5.0 share
-L.ACT_SHARE = "Show"  -- word at the top right of the poster and entry of the row menu: opens the window that shows this enemy in the chat
+L.ACT_SHARE = "Post"  -- word at the top right of the poster and entry of the row menu: opens the window that posts this enemy in the chat (a public notice, like a poster on a board; not the same word as SCENE_SHOW 'show on the map')
 L.SHARE_HEAD = "Show in the chat"  -- head of that window
 L.SHARE_TAB_LINE = "Poster"  -- word tab: the poster as one chat line
 L.SHARE_TAB_WEEK = "My week"  -- word tab: the week as one chat line (most wanted, payback, open debts)
@@ -910,7 +910,7 @@ L.SHARE_CH_PARTY = "Party"  -- button: ... to the party
 L.SHARE_CH_RAID = "Raid"  -- button: ... to the raid
 L.SHARE_CH_INSTANCE = "Instance"  -- button: ... to the instance group
 L.SHARE_CH_SAY = "Say"  -- button: ... say (players nearby)
-L.SHARE_SENT = "Shown in {channel}."  -- status after sending; {channel} = the button's word
+L.SHARE_SENT = "Posted in {channel}."  -- status after sending; {channel} = the button's word; same verb as ACT_SHARE
 L.SHARE_WAIT = "One line every 10 seconds. Again in {seconds} s."  -- status: at most one line every 10 s; {seconds} = how long still
 L.SHARE_LOCKED = "The chat is locked here right now."  -- status: the game locks the chat (boss fight, arena, battleground)
 L.SHARE_COMBAT = "Not in combat. Click again after the fight."  -- status: nothing is sent in combat
@@ -930,11 +930,11 @@ L.SHARE_WEEK_NONE = "nobody killed me"  -- week line when nobody killed you this
 L.SHARE_WEEK_REVENGE = "payback taken: {count}"  -- week line: own kills on your killers this week
 L.SHARE_WEEK_DEBTS = "open debts: {count}"  -- week line: enemies who still lead the score
 L.SHARE_DC_LAST = "Last deed: {place}, {time}"  -- Discord block; {place} = zone, subzone, {time} = date and time
-L.SHARE_GUEST_BY = "shown by {name}"  -- guest poster (a line whose name is in none of your books): who showed it; {name} = first name
+L.SHARE_GUEST_BY = "posted by {name}"  -- guest poster (a line whose name is in none of your books): who posted it; {name} = first name; same verb as ACT_SHARE
 L.SHARE_GUEST_SAYS = "The line says"  -- small letter-spaced label above the parts of the line on the guest poster
 L.SHARE_GUEST_HINT = "Only what the line says. Not in any of your books."  -- guest poster, above the buttons
-L.SET_SEC_SHOW = "SHOW"  -- section head on the House Rules sheet Guild, capitals like the others
-L.OPT_SHARE_REVENGE = "Button \"Show\" on the payback notice"  -- switch (off by default): a small button 'Show' on the payback notice
+L.SET_SEC_SHOW = "POST"  -- section head on the House Rules sheet Guild, capitals like the others; same verb as ACT_SHARE
+L.OPT_SHARE_REVENGE = "Button \"Post\" on the payback notice"  -- switch (off by default): a small button with the word of ACT_SHARE on the payback notice
 -- 1.5.0 scene
 L.SET_SEC_MAP = "MAP"  -- [max 24] section label on the House Rules, sheet Book: the crime scenes on the world map
 L.OPT_SCENE = "Crime scenes on the world map"  -- [max 44] check box (House Rules, sheet Book, and the map's own switch): pins of the book on the world map
@@ -995,7 +995,7 @@ L.CHRON_END = "Now: {score} · {state}"  -- chronicle, last line; {score} = '1 :
 L.CHRON_END_NONE = "So far: {name} killed you {times}."  -- chronicle, last line while the rap sheet is off; {name} = his first name, {times} = '3×'
 -- 1.5.0 name
 L.HELP_ALIASES = "/rb, /revengebook  the same as /dn"  -- /dn help line: the two new commands of 1.5.0
-L.CHAT_NEWS_150 = "DeathNote is now Revenge Book. Your book and /dn stay. New in 1.5.0: show a poster in the chat, crime scenes on the world map, key bindings, a mark on your killers' nameplates."  -- chat, once per account after the update to 1.5.0 for players who had the book before: the new name, what stays and what is new (show in chat, crime scenes on the map, key bindings, the nameplate mark); the old name DeathNote and Revenge Book stay in English
+L.CHAT_NEWS_150 = "DeathNote is now Revenge Book. Your book and /dn stay. New in 1.5.0: post a poster in the chat, crime scenes on the world map, key bindings, a mark on your killers' nameplates."  -- chat, once per account after the update to 1.5.0 for players who had the book before: the new name, what stays and what is new (show in chat, crime scenes on the map, key bindings, the nameplate mark); the old name DeathNote and Revenge Book stay in English
 -- 1.5.0 fix
 L.SCENE_TIP_SUSPECT = "Here you died; suspicion: {name}"  -- map pin tooltip, your death without a sure killing blow (the book holds a suspicion); {name} = full name in class colour; never say he killed you
 L.CHRON_EARLIER = "Earlier deeds are no longer in the book."  -- chronicle, second line of a long feud whose oldest deeds the book no longer keeps (it keeps 30 per enemy); the last line still gives the full standing
