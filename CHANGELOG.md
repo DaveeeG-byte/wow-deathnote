@@ -38,6 +38,15 @@
 - `/dn probe` writes `probe.scene` (map API, pins, clicks, combat, places sent, received and dropped with the reason).
 - New texts in all 21 languages.
 
+<!-- name -->
+### Changed
+- The addon is called Revenge Book now (it was DeathNote): the addon list, the title of the black book (the covers Privateer and Workshop keep their own), the red chat prefix, the minimap button and its tooltip, the addon compartment, the key bindings section and every sentence that names the addon, in all 21 languages (the name stays English everywhere). The folder `DeathNote`, your saved books (`DeathNoteDB`), the commands `/dn`, `/deathnote`, `/deathlist` and `/todesliste`, the minimap button's saved position, the backup text (`DEATHNOTE:1`, readable both ways between 1.4.0 and 1.5.0) and the messages between versions stay as they are.
+- Who had the book before gets one chat line after the update, once per account and never in combat: the new name, what stays, what is new in 1.5.0. It replaces the line of 1.4.0 for those who had not seen that one yet.
+- The book title steps down a size before it would reach the first tab.
+
+### Added
+- `/rb` and `/revengebook` do the same as `/dn` (listed in `/dn help`).
+
 ## 1.4.0 (2026-11-17)
 
 ### Added

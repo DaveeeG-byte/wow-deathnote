@@ -1,4 +1,4 @@
-# DeathNote 1.4.0
+# Revenge Book 1.4.0
 
 An addon for WoW Forever (Interface 16001). In open-world PvP it writes down who killed you, shows your killers as a
 book and warns you when one of them is in sight again. Confirmed kills are shared silently with your guildmates (the
@@ -6,6 +6,14 @@ guild book) and with friends from your friend list (the friends' book); together
 post your own bounties. Since 1.3.0 it also keeps your own kills on players (the rap sheet: the score
 "you : them" per killer and a repute with ranks), and the book comes in three covers. Changes per version:
 `CHANGELOG.md`.
+
+## Name (1.5.0)
+Players see the addon as **Revenge Book** (it was DeathNote up to 1.4.0): the addon list, the book's title, the chat
+lines, the minimap button, the key bindings. Everything that keeps books and versions together stays as it was: the
+folder `DeathNote`, the saved data `DeathNoteDB`, the addon message prefix `DeathNote`, the frame names, the broker
+object `DeathNote` (so `LibDBIcon10_DeathNote` and its saved position stay), the first line `DEATHNOTE:1` of the backup
+text, and the commands `/dn`, `/deathnote`, `/deathlist`, `/todesliste`. New commands `/rb` and `/revengebook` do the
+same as `/dn`. Who had the book before gets one chat line after the update (once per account, never in combat).
 
 ## Folders
 - `DeathNote/` the addon (copy it as is to `_forever_/Interface/AddOns/DeathNote/`)
@@ -38,10 +46,10 @@ gold or 0: take it back; nothing at all: list your own) · `/dn lang <code|auto>
 also `/dn cover`, `/dn einband`) · `/dn start` the first-start window again (language and cover) · `/dn grudge` the
 notice after an attack on/off (`/dn grudge test`: a test notice with made-up names; German `/dn rachsucht`) · `/dn probe`
 troubleshooting (`/dn probe combatlog` also tries the combat log) · `/dn debug` detailed log of every death and of
-your own kills (`probe.kills`) · `/dn help`. Same thing: `/deathnote`, `/todesliste`, `/deathlist`. The English
-subcommands work in every language (`help quiet guild friends test sync add del hunt calloff bounty lang theme cover
-start`, plus the aliases `?`, `mute`, `rm`, `delete` and `language`); the German ones (`hilfe still ruhe gilde freunde
-jagd abblasen kopfgeld sprache einband`) keep working too. On the first login (once per account) a greeting line
+your own kills (`probe.kills`) · `/dn help`. Same thing: `/rb`, `/revengebook` (1.5.0), `/deathnote`, `/todesliste`,
+`/deathlist`. The English subcommands work in every language (`help quiet guild friends test sync add del hunt calloff
+bounty lang theme cover start`, plus the aliases `?`, `mute`, `rm`, `delete` and `language`); the German ones
+(`hilfe still ruhe gilde freunde jagd abblasen kopfgeld sprache einband`) keep working too. On the first login (once per account) a greeting line
 shows in chat 5 s later, never in combat; on a new installation the first-start window comes first and the rest of
 the greeting follows it.
 
@@ -131,7 +139,7 @@ received and dropped (with the reason), errors.
 The same silent messages as in the guild (protocol version 1), but as whispers to character friends on the friend
 list who are online. First a hello to the friends online (at login after 22 to 34 s; a friend who comes online later
 after 25 to 40 s; at most 30 hellos per 10 minutes, at most one per friend per 5 minutes, in friend list order). Live
-messages only go to friends who answered in this session, i.e. who have DeathNote, at most 10 at a time. A friend who is
+messages only go to friends who answered in this session, i.e. who have Revenge Book, at most 10 at a time. A friend who is
 certainly (by full name) in your own guild gets nothing by whisper (they hear it in the guild; only calls meant for
 friends alone also reach them by whisper); if the client only gives first names, it whispers when in doubt (duplicates
 are merged). Someone who leaves the guild is served by whisper right away. The same person on the friend list and on
@@ -167,13 +175,13 @@ Switch: House Rules, sheet Guild, "Share with friends" (on by default).
 "Put on hit list" in the row menu, on the poster (when there is no stamp on the photo) or with `/dn hunt`: for the
 guild, friends or both, with a short reason (at most 60 characters, one line, cleaned on sending and on receiving).
 Shared are name, class, level, reason and who made the call. Everyone can only take back their own call ("Call off the
-hunt"); a target stays as long as any call on it stands. When someone with DeathNote kills a target with their own
+hunt"); a target stays as long as any call on it stands. When someone with Revenge Book kills a target with their own
 killing blow, everyone sees "taken down by …" (a counter on the entry, one message).
 
 Targets trigger the alarm (own switch, on by default); the alarm shows the target's level next to the name; if it is
 higher than yours, in warning colour with the gap ("Level 63 (+3)", skull: "Level ??"). In the fourth tab ("Guild &
 Friends") the hit list is the first view as soon as there is a call (without calls the view does not exist); the source
-(All, Guild, Friends) can be picked as soon as there is a guild and a friend with DeathNote. New targets from others
+(All, Guild, Friends) can be picked as soon as there is a guild and a friend with Revenge Book. New targets from others
 arrive as one chat line; every new target that is in sight right now gets the alarm (own switch "Warn about hit list
 targets", even when the news switch is off). "Hide for me" (row menu) takes a target out of the alarm and moves it,
 faded, to the end; nothing is sent. "Call off all mine" in the row menu of one of your own calls (from two on) takes
@@ -195,10 +203,10 @@ amounts in the line's tooltip; if the line is too wide, the name is shortened. W
 and guild give way first, then the bounty line; "Last seen" stays. On your own poster the total is written large in red
 ink. In the lists a small coin sits next to the killer (gone once the bounty has expired).
 
-Shared with guild and friends who have DeathNote, independent of the hit list; no window, no sound when one arrives.
+Shared with guild and friends who have Revenge Book, independent of the hit list; no window, no sound when one arrives.
 Everyone sends only their own, nobody passes anything on, everyone takes back only their own. At most 20 of your own per
-character, not on your own characters, guildmates or friends with DeathNote (also on receipt: a bounty on the receiver,
-their characters, or guildmates and friends they have heard with DeathNote under their full name is dropped). Bounties
+character, not on your own characters, guildmates or friends with Revenge Book (also on receipt: a bounty on the receiver,
+their characters, or guildmates and friends they have heard with Revenge Book under their full name is dropped). Bounties
 expire like calls ("Calls last"); someone who leaves the guild loses their bounties in the guild book just like their
 calls. The addon pays nothing and checks nothing: it is an announcement, you settle it among yourselves. The book's
 automatic value (kills, assists, level, revenge) stays as it was and applies as long as nobody has posted a bounty.
@@ -214,7 +222,7 @@ Stamp, counter, the book's bounty and rank follow the counter; a milestone alrea
 back. (1.3.0) With the rap sheet on, list, poster and tooltip show the score "you : them" in place of
 the revenge count, and the rank follows the open debt (see Rap sheet and repute).
 
-Avenged for you: when someone with DeathNote kills, with their own killing blow, a killer who stands in the guild or
+Avenged for you: when someone with Revenge Book kills, with their own killing blow, a killer who stands in the guild or
 friends' book for killing others, that goes to the guild, or only to the friends that killer killed. Anyone whom this
 killer hurt in their own book (kill or assist) gets a chat line "Anna took down Grimm Bart for you." with the short
 revenge sound, no window; everyone else only sees it on the poster ("Avenged by Anna 2×", several: "Avenged by
@@ -428,7 +436,7 @@ Settings added in 1.3.0 (`DeathNoteDB.settings`): `ledger.enabled` (true), `ledg
 The minimap button is a standard LibDBIcon-1.0 button with a LibDataBroker-1.1 launcher, so minimap button collectors
 recognise it. Its position and "Show minimap button" carry over from 1.2.1. The libraries sit unmodified in
 `DeathNote/Libs/` and load through `Libs/embeds.xml` before `Core.lua`; LibStub loads each library only once per client,
-the newest minor of all installed addons wins. Without them DeathNote falls back to its own button.
+the newest minor of all installed addons wins. Without them the addon falls back to its own button.
 
 | Library | Minor | License |
 |---|---|---|
