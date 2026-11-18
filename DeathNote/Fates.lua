@@ -320,19 +320,21 @@ function Fates.Record(j)
   while #f.rows > Fates.MAX_ROWS do f.rows[#f.rows] = nil end
   -- the cause
   local key = Fates.FoeKey(row)
-  local foe = f.foes[key]
+  local foe, new = f.foes[key], false
   if not foe then
-    foe = { n = 0 }
+    foe, new = { n = 0 }, true
     f.foes[key] = foe
-    local cnt = 0
-    for _ in pairs(f.foes) do cnt = cnt + 1 end
-    if cnt > Fates.MAX_FOES then Fates.CapFoes(f.foes) end
   end
   foe.n = foe.n + 1
   foe.art, foe.env, foe.npc = row.art, row.env, row.npc or foe.npc
   foe.name = row.name or foe.name
   foe.spell = row.spell or foe.spell
   cleanPlace(row, foe)
+  if new then
+    local cnt = 0
+    for _ in pairs(f.foes) do cnt = cnt + 1 end
+    if cnt > Fates.MAX_FOES then Fates.CapFoes(f.foes) end
+  end
   remember(f, t)
   Fates.version = Fates.version + 1
   j.fate, j.fateN = row, foe.n      -- for the dry remarks (Humor.lua), never stored with the journal
@@ -406,9 +408,10 @@ function Fates.Week(since)
   local n, by, best, bestN, bestT = 0, {}, nil, 0, 0
   for i = 1, #rows do
     local r = rows[i]
-    if (tonumber(r.t) or 0) < since then break end
-    n = n + 1
-    if r.art == "creature" and r.name then
+    if (tonumber(r.t) or 0) >= since then
+      n = n + 1
+    end
+    if (tonumber(r.t) or 0) >= since and r.art == "creature" and r.name then
       local k = Fates.FoeKey(r)
       local c = by[k] or { n = 0, name = r.name, t = r.t }
       by[k] = c
