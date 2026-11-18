@@ -9,8 +9,8 @@
 -- Data only here (lines, the Discord block, the week, the chat filter, sending, the probe); the window, the guest
 -- poster and the click are ShareUI.lua. Nothing is ever sent without the player's click on a channel in that window
 -- (the click is the hardware event SAY needs), never in combat, never in a chat lockdown, at most one line per 10 s.
--- Never in a line: attacks (role "attack"), suspicion, notes, anything copied from someone else's book (an entry made
--- only of such offers no "Show" at all), names of guildmates or friends (posters of bounties, victims, callers).
+-- Never in a line: attacks (role "attack"), suspicion, notes, anything copied from someone else's book or read in from
+-- a text (an entry made only of such offers no "Show" at all; 1.5.0 fixer: nor the week, nor Discord), names of guildmates or friends (posters of bounties, victims, callers).
 
 local ADDON, ns = ...
 local L, Fmt = ns.L, ns.F
@@ -143,10 +143,33 @@ local function standing(key)
 end
 Share.Standing = standing
 
--- own deeds: he killed me (or I took part), or I killed him. Attacks, suspicion and copied data are no own deeds.
+-- a deed of my own (killing blow or assist on me), never read in from a text (Store.Import: d.imported)
+local function ownDeed(d)
+  if type(d) ~= "table" or d.imported then return false end
+  local r = d.role
+  if r == nil then r = d.sure == true and "kill" or "suspect" end
+  return r == "kill" or r == "assist"
+end
+
+-- killing blows on me that are my own (not read in); nil for an entry that was never read in (its counter is mine)
+local function ownKills(e)
+  if not e.imported then return nil end
+  local n = 0
+  for _, d in ipairs(type(e.deaths) == "table" and e.deaths or {}) do
+    if ownDeed(d) and (d.role == "kill" or (d.role == nil and d.sure == true)) then n = n + 1 end
+  end
+  return n
+end
+
+-- own deeds: he killed me (or I took part), or I killed him. Attacks, suspicion and copied or read-in data are no own
+-- deeds (1.5.0 fixer: an entry read in from a text counts only the deeds that happened to me since).
 function Share.OwnDeeds(e)
   if type(e) ~= "table" then return false end
-  if (tonumber(e.kills) or 0) > 0 or (tonumber(e.assists) or 0) > 0 then return true end
+  if e.imported then
+    for _, d in ipairs(type(e.deaths) == "table" and e.deaths or {}) do if ownDeed(d) then return true end end
+  elseif (tonumber(e.kills) or 0) > 0 or (tonumber(e.assists) or 0) > 0 then
+    return true
+  end
   local m = standing(e.key)
   return m ~= nil and m > 0
 end
@@ -195,12 +218,7 @@ end
 function Share.LastOwnDeed(e)
   if type(e) ~= "table" or type(e.deaths) ~= "table" then return nil end
   for i = 1, #e.deaths do
-    local d = e.deaths[i]
-    if type(d) == "table" then
-      local r = d.role
-      if r == nil then r = d.sure == true and "kill" or "suspect" end
-      if r == "kill" or r == "assist" then return d end
-    end
+    if ownDeed(e.deaths[i]) then return e.deaths[i] end
   end
   return nil
 end
@@ -213,8 +231,10 @@ end
 
 local function scoreSeg(e)
   local m, h = standing(e.key)
+  local own = ownKills(e)
+  if m and own then h = math.min(h, own) end   -- read-in killing blows are not part of what I show
   if m and (m > 0 or h > 0) then return Fmt(L.STAND_LINE, { score = m .. " : " .. h }), m, h end
-  local k = tonumber(e.kills) or 0
+  local k = own or tonumber(e.kills) or 0
   if k > 0 then return Fmt(L.SHARE_KILLED_ME, { times = times(k) }) end
   return nil
 end
@@ -275,7 +295,7 @@ end
 -- The week: most wanted (most killing blows on me in 7 days), revenge taken, open debts. Own data only.
 ------------------------------------------------------------------------
 local function isKill(d)
-  if type(d) ~= "table" then return false end
+  if type(d) ~= "table" or d.imported then return false end   -- read in from a text: not my week
   if d.role ~= nil then return d.role == "kill" end
   return d.sure == true
 end
@@ -297,9 +317,11 @@ function Share.Week(now)
       if n > topN or (n == topN and n > 0 and last > topT) then top, topN, topT = e, n, last end
       if e.status == "wanted" then
         local m, h = standing(key)
+        local own = ownKills(e)
         if m then
+          if own then h = math.min(h, own) end
           if h > m then debts = debts + 1 end
-        elseif (tonumber(e.kills) or 0) > (tonumber(e.revenge) or 0) then
+        elseif (own or tonumber(e.kills) or 0) > (tonumber(e.revenge) or 0) then
           debts = debts + 1
         end
       end
