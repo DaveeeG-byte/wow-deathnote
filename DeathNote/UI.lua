@@ -6988,7 +6988,7 @@ function DeathNote_OnCompartmentLeave() GameTooltip:Hide() end
 do
   local K = UI.Kit
   K.state, K.SetRowMode, K.SetRow, K.SetRank, K.TextWidth, K.InkWidth = state, SetRowMode, SetRow, SetRank, TextWidth, InkWidth
-  K.Spaced, K.ShowEmpty, K.EMPTY, K.GF, K.OV = Spaced, ShowEmpty, EMPTY, GF, OV
+  K.Spaced, K.ShowEmpty, K.EMPTY, K.GF, K.OV, K.UX = Spaced, ShowEmpty, EMPTY, GF, OV, UX
   K.HideMenu, K.Refresh = function() HideMenu() end, function() Refresh() end
   K.Frames, K.Data = function() return F, LP, RP, P end, function() return data end
 end
