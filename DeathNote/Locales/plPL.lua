@@ -1105,7 +1105,7 @@ L.SCENE_TIP_SIGHT = "Tu {by} widział {name}"
 L.SCENE_TIP_ATTACKER = "Napastnik: {name}"
 L.SCENE_LEG_CALL = "wezwanie pomocy"  -- [max 32]
 L.SCENE_LEG_SIGHT = "dostrzeżenie"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Dziel się, gdzie widziano moich zabójców"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Moi zabójcy widziani: gildii i znajomym"  -- [max 44]
 L.PROBE_NET = "Sonda sieci: własny kanał i krzyk sprawdzone raz; wynik za dwie minuty (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Gracze"
@@ -1196,7 +1196,8 @@ L.GLOG_EV_CALL = "{by} wzywał(a) pomocy: {zone}"
 L.GLOG_EV_CALL_BY = "{by} wzywał(a) pomocy: {zone}, napastnik {name}"
 L.GLOG_EV_SIGHT = "{by} widział(a) {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} widziany {count}×, ostatnio przez {by}: {zone}"
-L.CHAT_NEWS_160 = "Nowość w 1.6.0: karta {log} zapisuje teraz wszystkie twoje zgony, także przez stwory i otoczenie. Kronika gildii jest za czerwoną wstążką w karcie {guild}; wezwanie pomocy ściąga gildię i znajomych (klawisz: Esc > Options > Key Bindings > Revenge Book). Zauważenia twoich zabójców trafiają teraz do gildii i znajomych ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Nowość w 1.6.0: karta {log} zapisuje teraz wszystkie twoje zgony, także przez stwory i otoczenie. Kronika gildii jest za czerwoną wstążką w karcie {guild}; wezwanie pomocy ściąga gildię i znajomych (klawisz: Esc > Options > Key Bindings > Revenge Book). Zauważenia twoich zabójców trafiają teraz do gildii i znajomych (wyłączyć: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Cios kończący zadało otoczenie: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Gdy widzisz gracza, który w ostatnich 30 dniach zabił ciebie, członka gildii lub znajomego, jest na liście do odstrzału albo ma nagrodę, jego imię, twoje miejsce z warstwą i czas idą do gildii i znajomych z Revenge Book. Ich zgłoszenia trafiają do ciebie. Nic więcej nie wychodzi."
 end)

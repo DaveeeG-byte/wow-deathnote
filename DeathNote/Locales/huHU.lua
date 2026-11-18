@@ -1107,7 +1107,7 @@ L.SCENE_TIP_SIGHT = "Itt látta {by}: {name}"
 L.SCENE_TIP_ATTACKER = "Támadó: {name}"
 L.SCENE_LEG_CALL = "segélykérés"  -- [max 32]
 L.SCENE_LEG_SIGHT = "észlelés"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Gyilkosaim észleléseinek megosztása"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Gyilkosaim észlelése a céhnek és barátoknak"  -- [max 44]
 L.PROBE_NET = "Hálózati próba: saját csatorna és kiáltás egyszer kipróbálva; eredmény két perc múlva (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Játékosok"
@@ -1198,7 +1198,8 @@ L.GLOG_EV_CALL = "{by} segítséget kért: {zone}"
 L.GLOG_EV_CALL_BY = "{by} segítséget kért: {zone}, támadó {name}"
 L.GLOG_EV_SIGHT = "{by} látta {name} játékost: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} {count}× látták, utoljára {by}: {zone}"
-L.CHAT_NEWS_160 = "Új az 1.6.0-ban: a(z) {log} fül most minden halálodat megőrzi, a lények és a környezet okozta halált is. A céhkrónika a(z) {guild} fül piros szalagja mögött van; a segélykérés hozzád hívja a céhet és a barátokat (billentyű: Esc > Options > Key Bindings > Revenge Book). Gyilkosaid észlelése most a céhhez és a barátokhoz megy ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Új az 1.6.0-ban: a(z) {log} fül most minden halálodat megőrzi, a lények és a környezet okozta halált is. A céhkrónika a(z) {guild} fül piros szalagja mögött van; a segélykérés hozzád hívja a céhet és a barátokat (billentyű: Esc > Options > Key Bindings > Revenge Book). Gyilkosaid észlelése most a céhhez és a barátokhoz megy (kikapcsolás: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "A halálos csapást a környezet mérte: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Ha olyan játékost látsz, aki az elmúlt 30 napban megölt téged, egy céhtársat vagy barátot, a halállistán van vagy vérdíj van rajta, a neve, a helyed a réteggel és az idő a céhnek és a Revenge Bookot használó barátoknak megy. Az ő észleléseik hozzád jönnek. Más nem megy ki."
 end)

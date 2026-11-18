@@ -1108,7 +1108,7 @@ L.SCENE_TIP_SIGHT = "{by} burada {name} gördü"
 L.SCENE_TIP_ATTACKER = "Saldıran: {name}"
 L.SCENE_LEG_CALL = "yardım çağrısı"  -- [max 32]
 L.SCENE_LEG_SIGHT = "görülme"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Katillerimin görüldüğü yerleri paylaş"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Katillerimin görüldüğü yer: lonca, dostlar"  -- [max 44]
 L.PROBE_NET = "Ağ sondası: kendi kanal ve bağırma bir kez denendi; sonuç iki dakika sonra (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Oyuncular"
@@ -1199,7 +1199,8 @@ L.GLOG_EV_CALL = "{by} yardım çağırdı: {zone}"
 L.GLOG_EV_CALL_BY = "{by} yardım çağırdı: {zone}, saldıran {name}"
 L.GLOG_EV_SIGHT = "{by}, {name} oyuncusunu gördü: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} {count}× görüldü, son gören {by}: {zone}"
-L.CHAT_NEWS_160 = "1.6.0'da yeni: {log} sekmesi artık yaratıklar ve çevre dahil tüm ölümlerini tutar. Lonca vakayinamesi {guild} sekmesindeki kırmızı kurdelenin arkasında; yardım çağrısı loncayı ve arkadaşları sana çağırır (tuş: Esc > Options > Key Bindings > Revenge Book). Katillerinin görülmesi artık loncaya ve arkadaşlara gider ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "1.6.0'da yeni: {log} sekmesi artık yaratıklar ve çevre dahil tüm ölümlerini tutar. Lonca vakayinamesi {guild} sekmesindeki kırmızı kurdelenin arkasında; yardım çağrısı loncayı ve arkadaşları sana çağırır (tuş: Esc > Options > Key Bindings > Revenge Book). Katillerinin görülmesi artık loncaya ve arkadaşlara gider (kapatmak için: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Öldürücü darbeyi çevre vurdu: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Son 30 günde seni, bir lonca üyesini ya da bir arkadaşını öldüren, av listesinde olan veya başına ödül konmuş bir oyuncuyu gördüğünde, adı, katmanıyla birlikte senin yerin ve zaman Revenge Book kullanan lonca ve arkadaşlara gider. Onların gördükleri sana gelir. Başka hiçbir şey gitmez."
 end)

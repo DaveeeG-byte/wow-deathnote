@@ -1105,7 +1105,7 @@ L.SCENE_TIP_SIGHT = "Tady {by} viděl {name}"
 L.SCENE_TIP_ATTACKER = "Útočník: {name}"
 L.SCENE_LEG_CALL = "volání o pomoc"  -- [max 32]
 L.SCENE_LEG_SIGHT = "spatření"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Sdílet, kde viděli mé vrahy"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Výskyt mých vrahů hlásit guildě a přátelům"  -- [max 44]
 L.PROBE_NET = "Síťová sonda: vlastní kanál a výkřik zkoušeny jednou; výsledek za dvě minuty (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Hráči"
@@ -1196,7 +1196,8 @@ L.GLOG_EV_CALL = "{by} volal(a) o pomoc: {zone}"
 L.GLOG_EV_CALL_BY = "{by} volal(a) o pomoc: {zone}, útočník {name}"
 L.GLOG_EV_SIGHT = "{by} viděl(a) {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} viděn {count}×, naposledy hráčem {by}: {zone}"
-L.CHAT_NEWS_160 = "Novinka 1.6.0: karta {log} teď zapisuje všechny tvé smrti, i od tvorů a prostředí. Kronika guildy je za červenou stužkou v kartě {guild}; volání o pomoc přivolá guildu a přátele (klávesa: Esc > Options > Key Bindings > Revenge Book). Spatření tvých vrahů teď jdou guildě a přátelům ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Novinka 1.6.0: karta {log} teď zapisuje všechny tvé smrti, i od tvorů a prostředí. Kronika guildy je za červenou stužkou v kartě {guild}; volání o pomoc přivolá guildu a přátele (klávesa: Esc > Options > Key Bindings > Revenge Book). Spatření tvých vrahů teď jdou guildě a přátelům (vypnout: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Smrtící úder od prostředí: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Když uvidíš hráče, který za posledních 30 dní zabil tebe, člena guildy nebo přítele, je na seznamu na odstřel nebo má odměnu, odejde jeho jméno, tvé místo s vrstvou a čas guildě a přátelům s Revenge Book. Jejich hlášení dostáváš ty. Nic jiného neodchází."
 end)

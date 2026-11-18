@@ -584,14 +584,17 @@ test("Tracker: GUILD_ENEMY_SPOTTED nur für Gildenfeinde, die nicht auf meiner L
   eq(ns.Guild.Count(), 0)
 end)
 
+-- fixer 1.6.0 (ju05): one switch guild.layerSight (on by default) rules the old S as well; guild.sightings is not read
 test("Sichtungen (S) nur mit Einstellung", function()
   local ns = loadGuild()
   M.Advance(30); M.addonSent = {}
   hear(killMsg(ns, { t = time() - 30 }))
   M.ClearFired()
-  hear(ns.Guild.Proto.EncodeSight("Grimm-Bart", "Dämmerwald", time()))
-  eq(#M.Fired("GUILD_SIGHTING"), 0, "aus: ignoriert")
+  ns.Store.Setting("guild.layerSight", false)
   ns.Store.Setting("guild.sightings", true)
+  hear(ns.Guild.Proto.EncodeSight("Grimm-Bart", "Dämmerwald", time()))
+  eq(#M.Fired("GUILD_SIGHTING"), 0, "aus: ignoriert (auch mit dem alten Schalter)")
+  ns.Store.Setting("guild.layerSight", true)
   hear(ns.Guild.Proto.EncodeSight("Grimm-Bart", "Dämmerwald", time()))
   hear(ns.Guild.Proto.EncodeSight("Unbe-Kannt", "Dämmerwald", time()))
   local s = M.Fired("GUILD_SIGHTING")

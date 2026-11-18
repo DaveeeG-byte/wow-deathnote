@@ -1093,7 +1093,7 @@ L.SCENE_TIP_SIGHT = "{name} visto aqui por {by}"
 L.SCENE_TIP_ATTACKER = "Agressor: {name}"
 L.SCENE_LEG_CALL = "pedido de ajuda"  -- [max 32]
 L.SCENE_LEG_SIGHT = "avistamento"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Compartilhar avistamentos dos meus algozes"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Meus algozes avistados: guilda e amigos"  -- [max 44]
 L.PROBE_NET = "Sonda de rede: canal próprio e grito testados uma vez; resultado em dois minutos (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Jogadores"
@@ -1184,7 +1184,8 @@ L.GLOG_EV_CALL = "{by} pediu ajuda: {zone}"
 L.GLOG_EV_CALL_BY = "{by} pediu ajuda: {zone}, agressor {name}"
 L.GLOG_EV_SIGHT = "{by} viu {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} visto {count}×, por último por {by}: {zone}"
-L.CHAT_NEWS_160 = "Novo na 1.6.0: a aba {log} guarda agora todas as suas mortes, também por criaturas e ambiente. A crônica da guilda fica atrás da fita vermelha na aba {guild}; o pedido de ajuda chama guilda e amigos (tecla: Esc > Opções > Atalhos > Revenge Book). Avistamentos dos seus assassinos vão agora para guilda e amigos ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Novo na 1.6.0: a aba {log} guarda agora todas as suas mortes, também por criaturas e ambiente. A crônica da guilda fica atrás da fita vermelha na aba {guild}; o pedido de ajuda chama guilda e amigos (tecla: Esc > Opções > Atalhos > Revenge Book). Avistamentos dos seus assassinos vão agora para guilda e amigos (desativar: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Golpe fatal do ambiente: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Quando você vê um jogador que nos últimos 30 dias matou você, alguém da guilda ou um amigo, está na lista de caça ou tem recompensa, o nome dele, o seu lugar com a camada e a hora vão para guilda e amigos com Revenge Book. Os avistamentos deles chegam a você. Nada mais sai."
 end)

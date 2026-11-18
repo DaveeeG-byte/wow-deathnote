@@ -66,7 +66,8 @@ H.lauf("Mein Moerder gesehen: T nach 2 bis 6 s an die Gilde, leise Zeile mit Ort
   W.run(4.2)
   local ts = ofType(W, "T")
   H.erwartet("eine T an die Gilde", #ts == 1 and ts[1].channel == "GUILD", #ts)
-  H.erwartet("das alte S nicht (Schalter aus)", #ofType(W, "S") == 0)
+  -- fixer 1.6.0 (ju05): one switch; the old S goes along for clients up to 1.5.0 (only for the enemies of a T)
+  H.erwartet("das alte S fuer Clients bis 1.5.0 dazu", #ofType(W, "S") == 1, #ofType(W, "S"))
   H.erwartet("Berta: Ereignis SIGHTING", H.zaehle(b, "SIGHTING") == 1, H.zaehle(b, "SIGHTING"))
   local line = chatHas("Grimm Bart gesehen von Anton")
   H.erwartet("leise Zeile mit Zone und Karte", line and line:find("Schlingendorntal, gerade eben.", 1, true)
@@ -166,23 +167,28 @@ H.lauf("Layer: beide Kennungen bekannt und verschieden: 'anderer Layer'", functi
   H.erwartet("gleicher Layer: kein Zusatz", line and not line:find("anderer Layer", 1, true), line)
 end)
 
-H.lauf("Schalter guild.layerSight: aus = kein Senden, kein Empfang; das alte S geht mit seinem Schalter", function()
+H.lauf("Schalter guild.layerSight: aus = kein Senden, kein Empfang, auch kein altes S; der alte Schalter zaehlt nicht mehr", function()
   local W, a, b = paar()
   local key = H.tod(a, "Grimm", "Bart")
   W.run(5)
   a.ns.Store.Setting("guild.layerSight", false)
   sieht(a, key); W.run(7)
   H.erwartet("aus: keine T", #ofType(W, "T") == 0)
+  H.erwartet("aus: auch kein S", #ofType(W, "S") == 0)
   a.ns.Store.Setting("guild.layerSight", true)
   b.ns.Store.Setting("guild.layerSight", false)
   W.run(121)
   sieht(a, key); W.run(7)
   H.erwartet("an beim Sender: T", #ofType(W, "T") == 1)
   H.erwartet("aus beim Empfaenger: keine Zeile", H.zaehle(b, "SIGHTING") == 0 and sightLines(b) == 0)
+  H.erwartet("an beim Sender: S dazu", #ofType(W, "S") == 1, #ofType(W, "S"))
+  H.erwartet("aus beim Empfaenger: auch S nicht angewandt", b.ns.Guild.Get(key, "guild").lastSeen == nil)
+  -- the old key is no longer read: switched on it changes nothing while the one switch is off
   a.ns.Store.Setting("guild.sightings", true)
+  a.ns.Store.Setting("guild.layerSight", false)
   W.run(121)
   sieht(a, key); W.run(7)
-  H.erwartet("alter Schalter an: S sofort und T dazu", #ofType(W, "S") == 1 and #ofType(W, "T") == 2,
+  H.erwartet("alter Schalter an, neuer aus: nichts", #ofType(W, "S") == 1 and #ofType(W, "T") == 1,
     #ofType(W, "S") .. "/" .. #ofType(W, "T"))
 end)
 
@@ -226,12 +232,15 @@ H.lauf("Mischbetrieb: 1.5.0 verwirft T und DeathNoteSOS still und bleibt heil", 
   local dropped, received = st.dropped, st.received
   sieht(a, key); W.run(7)
   H.erwartet("T ging hinaus", #ofType(W, "T") == 1)
-  H.erwartet("1.5.0: T als 'type' verworfen", st.dropped == dropped + 1 and st.lastReason == "type",
+  H.erwartet("1.5.0: T als 'type' verworfen", st.dropped == dropped + 1,
     tostring(st.dropped - dropped) .. " " .. tostring(st.lastReason))
-  H.erwartet("1.5.0: lastSeen unberuehrt", o.ns.Guild.Get(key, "guild").lastSeen == nil)
+  -- fixer 1.6.0 (ju05): the old S goes along; 1.5.0 takes it only with its own (old) switch on, else ignores it
+  H.erwartet("das alte S ging dazu hinaus", #ofType(W, "S") == 1, #ofType(W, "S"))
+  H.erwartet("1.5.0: lastSeen unberuehrt (alter Schalter dort aus)", o.ns.Guild.Get(key, "guild").lastSeen == nil)
+  dropped, received = st.dropped, st.received
   a.ns.Call.Send(); W.run(1)
   H.erwartet("Hilferuf ging hinaus", #ofType(W, "P", "DeathNoteSOS") == 1)
-  H.erwartet("1.5.0: fremder Praefix zaehlt nicht einmal als verworfen", st.dropped == dropped + 1 and st.received == received,
+  H.erwartet("1.5.0: fremder Praefix zaehlt nicht einmal als verworfen", st.dropped == dropped and st.received == received,
     st.dropped .. "/" .. st.received)
   -- the answer path still works between the two (a 1.6.0 kill reaches 1.5.0 after the new messages)
   local k2 = H.tod(a, "Velka", "Dorn")

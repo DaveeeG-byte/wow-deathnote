@@ -1092,7 +1092,7 @@ L.SCENE_TIP_SIGHT = "{name} vu ici par {by}"
 L.SCENE_TIP_ATTACKER = "Agresseur : {name}"
 L.SCENE_LEG_CALL = "appel à l'aide"  -- [max 32]
 L.SCENE_LEG_SIGHT = "repérage"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Partager les repérages de mes tueurs"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Repérages de mes tueurs à guilde et amis"  -- [max 44]
 L.PROBE_NET = "Sonde réseau : canal propre et cri essayés une fois ; résultat dans deux minutes (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Joueurs"
@@ -1183,7 +1183,8 @@ L.GLOG_EV_CALL = "{by} a appelé à l'aide : {zone}"
 L.GLOG_EV_CALL_BY = "{by} a appelé à l'aide : {zone}, agresseur {name}"
 L.GLOG_EV_SIGHT = "{by} a vu {name} : {zone}"
 L.GLOG_EV_SIGHT_N = "{name} vu {count}×, en dernier par {by} : {zone}"
-L.CHAT_NEWS_160 = "Nouveau en 1.6.0 : l'onglet {log} note maintenant toutes tes morts, aussi par les créatures et le monde. La chronique de guilde est derrière le ruban rouge de l'onglet {guild} ; un appel à l'aide fait venir guilde et amis (touche : Échap > Options > Raccourcis > Revenge Book). Les observations de tes tueurs vont maintenant à la guilde et aux amis ({rules}, {sheet} : {switch})."
+L.CHAT_NEWS_160 = "Nouveau en 1.6.0 : l'onglet {log} note maintenant toutes tes morts, aussi par les créatures et le monde. La chronique de guilde est derrière le ruban rouge de l'onglet {guild} ; un appel à l'aide fait venir guilde et amis (touche : Échap > Options > Raccourcis > Revenge Book). Les observations de tes tueurs vont maintenant à la guilde et aux amis (désactiver : {rules}, {sheet} : {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Coup fatal de l'environnement : {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Quand tu vois un joueur qui t'a tué, toi, un membre de ta guilde ou un ami ces 30 derniers jours, qui est sur la liste de chasse ou porte une prime, son nom, ton lieu avec sa couche et l'heure partent vers guilde et amis avec Revenge Book. Leurs repérages te parviennent. Rien d'autre ne part."
 end)

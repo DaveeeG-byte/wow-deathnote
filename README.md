@@ -194,8 +194,8 @@ Sightings: an enemy who killed you or a guildmate or friend in the last 30 days,
 open world goes with place and layer (read from creature GUIDs) to guild and friends, at most once per enemy every 2
 minutes after a random wait of 2 to 6 s, and not when someone else just reported him. The receiver (only for enemies in
 his own, the guild's or friends' book or on a hit list) gets his "last seen", a quiet chat line once per enemy every 5
-minutes and an amber eye pin for 10 minutes. Switch: House Rules, sheet Guild, "Share sightings of my killers" (on by
-default). `/dn probe` writes `probe.call` (result codes per channel, in and out of combat); `/dn probe net` tries an own
+minutes and an amber eye pin for 10 minutes. Switch: House Rules, sheet Guild, "Sightings of my killers to guild &
+friends" (on by default; the only switch for sightings, it rules the old `S` as well, sent only for the same enemies). `/dn probe` writes `probe.call` (result codes per channel, in and out of combat); `/dn probe net` tries an own
 chat channel and yell once.
 
 ## Enemy guilds, feuds, claims, filing (1.6.0)
@@ -472,7 +472,7 @@ Sheets Book, Alert, Guild, Rap Sheet (1.3.0). Sheet Book: language and, under it
 one hint line and one reload button). Sheet Alert: sound (No sound, Raid warning, Bell, Gong, Heartbeat, Quill, Siren; the
 addon's own sounds are in `Media/Sounds/`), volume 1 to 5, channel (Master, Effects, Dialog), cooldown per killer,
 threshold "Alarm at this many deaths by them" (counts kills plus assists), alarm size, test alarm.
-Sheet Guild: two groups, SHARING (with the guild, with friends, sightings, sightings of my killers (1.6.0), the spot of your death) and ALERTS (killers from guild and friends,
+Sheet Guild: two groups, SHARING (with the guild, with friends, the spot of your death, sightings of my killers (1.6.0, the only sightings switch)) and ALERTS (killers from guild and friends,
 hit list targets); everything rarely used sits behind "More" at the bottom right (sharing entries added by hand,
 receiving the guild book, "Calls last", warning about entries added by hand, messages, threshold, status, emptying the
 books). The state of "More" is remembered. Sheet Rap Sheet: keep a rap sheet, report own kills in the chat, the
@@ -533,7 +533,7 @@ Details: `DeathNote/Libs/README.txt`. The release zip contains the folder with i
 2. At most 255 bytes per message, fields separated by tabs, `%`, `|` and control characters escaped as `%XX`.
 3. `K` = a kill that just happened (killer, class, level, zone, time, victim character).
 4. `H` = hello 8 to 20 s after login with `since`; `R` = answer, only your OWN confirmed kills, at most 30.
-5. `S` = sighting of a guild enemy, only when switched on in the House Rules.
+5. `S` = sighting of a guild enemy; since 1.6.0 under the one sightings switch and only for the enemies a `T` goes out for.
 6. Nobody passes on other players' data. Notes, suspicions, pardons and imported entries are never sent.
 7. A deed is identified by victim character plus timestamp; the victim must match the sender.
 8. Caps: 400 enemies, 20 deeds per enemy, 40 enemies per sender, one list per guild (at most 5).

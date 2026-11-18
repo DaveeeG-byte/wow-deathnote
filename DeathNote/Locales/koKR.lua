@@ -1106,7 +1106,7 @@ L.SCENE_TIP_SIGHT = "{by}이(가) 여기서 {name} 목격"
 L.SCENE_TIP_ATTACKER = "공격자: {name}"
 L.SCENE_LEG_CALL = "도움 요청"  -- [max 32]
 L.SCENE_LEG_SIGHT = "목격"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "내 살해자 목격 정보 공유"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "내 살해자 목격을 길드와 친구에게 공유"  -- [max 44]
 L.PROBE_NET = "네트워크 탐침: 전용 채널과 외치기를 한 번 시도함. 결과는 2분 뒤 (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "플레이어"
@@ -1197,7 +1197,8 @@ L.GLOG_EV_CALL = "{by}님의 도움 요청: {zone}"
 L.GLOG_EV_CALL_BY = "{by}님의 도움 요청: {zone}, 공격자 {name}"
 L.GLOG_EV_SIGHT = "{by}님이 {name} 목격: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} {count}회 목격, 마지막 {by}: {zone}"
-L.CHAT_NEWS_160 = "1.6.0 새 기능: {log} 탭에 이제 생물과 환경에 의한 죽음까지 모두 기록된다. 길드 연대기는 {guild} 탭의 빨간 리본 뒤에 있다. 도움 요청은 길드와 친구를 부른다 (단축키: Esc > 설정 > 단축키 > Revenge Book). 너를 죽인 자의 목격 정보가 이제 길드와 친구에게 간다 ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "1.6.0 새 기능: {log} 탭에 이제 생물과 환경에 의한 죽음까지 모두 기록된다. 길드 연대기는 {guild} 탭의 빨간 리본 뒤에 있다. 도움 요청은 길드와 친구를 부른다 (단축키: Esc > 설정 > 단축키 > Revenge Book). 너를 죽인 자의 목격 정보가 이제 길드와 친구에게 간다 (끄기: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "환경의 결정타: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "최근 30일 안에 나, 길드원 또는 친구를 죽였거나 척살 명단에 있거나 현상금이 걸린 플레이어를 보면, 그의 이름, 레이어를 포함한 내 위치와 시각이 Revenge Book을 쓰는 길드와 친구에게 갑니다. 그들의 목격도 나에게 옵니다. 그 밖에는 아무것도 보내지 않습니다."
 end)

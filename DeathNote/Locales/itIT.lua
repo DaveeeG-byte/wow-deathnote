@@ -1092,7 +1092,7 @@ L.SCENE_TIP_SIGHT = "{name} visto qui da {by}"
 L.SCENE_TIP_ATTACKER = "Aggressore: {name}"
 L.SCENE_LEG_CALL = "richiesta d'aiuto"  -- [max 32]
 L.SCENE_LEG_SIGHT = "avvistamento"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Condividi avvistamenti dei miei assassini"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Miei assassini avvistati: a gilda e amici"  -- [max 44]
 L.PROBE_NET = "Sonda di rete: canale proprio e urlo provati una volta; risultato tra due minuti (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Giocatori"
@@ -1183,7 +1183,8 @@ L.GLOG_EV_CALL = "{by} ha chiesto aiuto: {zone}"
 L.GLOG_EV_CALL_BY = "{by} ha chiesto aiuto: {zone}, aggressore {name}"
 L.GLOG_EV_SIGHT = "{by} ha visto {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} visto {count}×, l'ultima da {by}: {zone}"
-L.CHAT_NEWS_160 = "Novità 1.6.0: la scheda {log} tiene ora tutte le tue morti, anche per creature e ambiente. La cronaca della gilda è dietro il nastro rosso nella scheda {guild}; la richiesta d'aiuto chiama gilda e amici (tasto: Esc > Opzioni > Assegnazione tasti > Revenge Book). Gli avvistamenti dei tuoi assassini vanno ora a gilda e amici ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Novità 1.6.0: la scheda {log} tiene ora tutte le tue morti, anche per creature e ambiente. La cronaca della gilda è dietro il nastro rosso nella scheda {guild}; la richiesta d'aiuto chiama gilda e amici (tasto: Esc > Opzioni > Assegnazione tasti > Revenge Book). Gli avvistamenti dei tuoi assassini vanno ora a gilda e amici (disattivare: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Colpo mortale dall'ambiente: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Quando vedi un giocatore che negli ultimi 30 giorni ha ucciso te, un membro della gilda o un amico, è nella lista nera o ha una taglia, il suo nome, il tuo luogo con il layer e l'ora vanno a gilda e amici con Revenge Book. I loro avvistamenti arrivano a te. Nient'altro esce."
 end)

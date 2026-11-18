@@ -1105,7 +1105,7 @@ L.SCENE_TIP_SIGHT = "Ovdje je {by} vidio {name}"
 L.SCENE_TIP_ATTACKER = "Napadač: {name}"
 L.SCENE_LEG_CALL = "poziv u pomoć"  -- [max 32]
 L.SCENE_LEG_SIGHT = "viđenje"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Dijeli gdje su viđeni moji ubojice"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Gdje su viđeni moji ubojice: ceh, prijatelji"  -- [max 44]
 L.PROBE_NET = "Mrežna sonda: vlastiti kanal i vika isprobani jednom; rezultat za dvije minute (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Igrači"
@@ -1196,7 +1196,8 @@ L.GLOG_EV_CALL = "{by} je zvao/la u pomoć: {zone}"
 L.GLOG_EV_CALL_BY = "{by} je zvao/la u pomoć: {zone}, napadač {name}"
 L.GLOG_EV_SIGHT = "{by} je vidio/la {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} viđen {count}×, zadnji ga je vidio/la {by}: {zone}"
-L.CHAT_NEWS_160 = "Novo u 1.6.0: kartica {log} sada bilježi sve tvoje smrti, i od stvorenja i okoline. Kronika ceha je iza crvene vrpce na kartici {guild}; poziv u pomoć zove ceh i prijatelje k tebi (tipka: Esc > Options > Key Bindings > Revenge Book). Viđenja tvojih ubojica sada idu cehu i prijateljima ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Novo u 1.6.0: kartica {log} sada bilježi sve tvoje smrti, i od stvorenja i okoline. Kronika ceha je iza crvene vrpce na kartici {guild}; poziv u pomoć zove ceh i prijatelje k tebi (tipka: Esc > Options > Key Bindings > Revenge Book). Viđenja tvojih ubojica sada idu cehu i prijateljima (isključiti: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Smrtni udarac okoline: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Kad vidiš igrača koji je u zadnjih 30 dana ubio tebe, člana ceha ili prijatelja, na popisu je za odstrel ili nosi ucjenu, njegovo ime, tvoje mjesto sa slojem i vrijeme idu cehu i prijateljima s Revenge Book. Njihova viđenja stižu tebi. Ništa drugo ne odlazi."
 end)

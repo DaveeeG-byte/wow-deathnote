@@ -1093,7 +1093,7 @@ L.SCENE_TIP_SIGHT = "Hier sah {by} {name}"
 L.SCENE_TIP_ATTACKER = "Angreifer: {name}"
 L.SCENE_LEG_CALL = "Hilferuf"  -- [max 32]
 L.SCENE_LEG_SIGHT = "Sichtung"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Sichtungen meiner Mörder teilen"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Sichtungen meiner Mörder an Gilde & Freunde"  -- [max 44]
 L.PROBE_NET = "Netz-Sonde: eigener Kanal und Rufen einmal versucht; Ergebnis in zwei Minuten (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Spieler"
@@ -1184,7 +1184,8 @@ L.GLOG_EV_CALL = "{by} rief um Hilfe: {zone}"
 L.GLOG_EV_CALL_BY = "{by} rief um Hilfe: {zone}, Angreifer {name}"
 L.GLOG_EV_SIGHT = "{by} hat {name} gesehen: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} {count}× gesehen, zuletzt von {by}: {zone}"
-L.CHAT_NEWS_160 = "Neu in 1.6.0: Im Reiter {log} stehen jetzt alle Tode, auch durch Kreaturen und Umwelt. Die Gildenchronik liegt hinter dem roten Bändchen im Reiter {guild}; der Hilferuf holt Gilde und Freunde zu dir (Taste belegen: Esc > Optionen > Tastaturbelegung > Revenge Book). Sichtungen deiner Mörder gehen jetzt an Gilde und Freunde ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Neu in 1.6.0: Im Reiter {log} stehen jetzt alle Tode, auch durch Kreaturen und Umwelt. Die Gildenchronik liegt hinter dem roten Bändchen im Reiter {guild}; der Hilferuf holt Gilde und Freunde zu dir (Taste belegen: Esc > Optionen > Tastaturbelegung > Revenge Book). Sichtungen deiner Mörder gehen jetzt an Gilde und Freunde (abschalten: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Todesstoß durch die Umwelt: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Siehst du einen Spieler, der in den letzten 30 Tagen dich, einen Gildie oder Freund getötet hat, zur Jagd freigegeben ist oder ein Kopfgeld trägt, gehen sein Name, dein Ort samt Layer und die Zeit an Gilde und Freunde mit Revenge Book. Ihre Sichtungen kommen bei dir an. Sonst geht nichts hinaus."
 end)

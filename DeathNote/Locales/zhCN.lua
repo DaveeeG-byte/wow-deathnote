@@ -1106,7 +1106,7 @@ L.SCENE_TIP_SIGHT = "{by} 在这里看到了 {name}"
 L.SCENE_TIP_ATTACKER = "攻击者：{name}"
 L.SCENE_LEG_CALL = "求援"  -- [max 32]
 L.SCENE_LEG_SIGHT = "目击"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "分享仇人的目击位置"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "向公会和好友分享仇人目击"  -- [max 44]
 L.PROBE_NET = "网络探测：自建频道和大喊各试了一次；两分钟后看结果（/dn probe）。"
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "玩家"
@@ -1197,7 +1197,8 @@ L.GLOG_EV_CALL = "{by} 求援：{zone}"
 L.GLOG_EV_CALL_BY = "{by} 求援：{zone}，攻击者 {name}"
 L.GLOG_EV_SIGHT = "{by} 看到了 {name}：{zone}"
 L.GLOG_EV_SIGHT_N = "{name} 被看到 {count} 次，最后是 {by}：{zone}"
-L.CHAT_NEWS_160 = "1.6.0 新功能：{log} 现在记录你的所有死亡，包括生物和环境造成的。公会编年史在 {guild} 标签的红色书签后面；求援会召唤公会和好友（按键：Esc > 选项 > 按键设置 > Revenge Book）。你的仇人被看到时，现在会通知公会和好友（{rules}，{sheet}：{switch}）。"
+L.CHAT_NEWS_160 = "1.6.0 新功能：{log} 现在记录你的所有死亡，包括生物和环境造成的。公会编年史在 {guild} 标签的红色书签后面；求援会召唤公会和好友（按键：Esc > 选项 > 按键设置 > Revenge Book）。你的仇人被看到时，现在会通知公会和好友（关闭：{rules}，{sheet}：{switch}）。"
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "环境给了致命一击：{name}。"
+L.OPT_G_LAYERSIGHT_TIP = "当你看到最近 30 天内杀过你、公会成员或好友，在追杀名单上或身负悬赏的玩家时，他的名字、你所在的位置（含位面）和时间会发给装有 Revenge Book 的公会和好友。他们的目击也会发给你。不会发送其他内容。"
 end)

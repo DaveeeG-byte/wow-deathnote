@@ -1098,7 +1098,7 @@ L.SCENE_TIP_SIGHT = "Her så {by} {name}"
 L.SCENE_TIP_ATTACKER = "Angriber: {name}"
 L.SCENE_LEG_CALL = "hjælperåb"  -- [max 32]
 L.SCENE_LEG_SIGHT = "observation"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Del hvor mine drabsmænd er set"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Del mine drabsmænd set med guild og venner"  -- [max 44]
 L.PROBE_NET = "Netsonde: egen kanal og råb prøvet én gang; resultat om to minutter (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Spillere"
@@ -1189,7 +1189,8 @@ L.GLOG_EV_CALL = "{by} råbte om hjælp: {zone}"
 L.GLOG_EV_CALL_BY = "{by} råbte om hjælp: {zone}, angriber {name}"
 L.GLOG_EV_SIGHT = "{by} så {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} set {count}×, sidst af {by}: {zone}"
-L.CHAT_NEWS_160 = "Nyt i 1.6.0: fanen {log} gemmer nu alle dine dødsfald, også ved væsner og omgivelser. Laugets krønike ligger bag det røde bånd i fanen {guild}; et råb om hjælp kalder laug og venner til dig (tast: Esc > Options > Key Bindings > Revenge Book). Observationer af dine mordere går nu til laug og venner ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Nyt i 1.6.0: fanen {log} gemmer nu alle dine dødsfald, også ved væsner og omgivelser. Laugets krønike ligger bag det røde bånd i fanen {guild}; et råb om hjælp kalder laug og venner til dig (tast: Esc > Options > Key Bindings > Revenge Book). Observationer af dine mordere går nu til laug og venner (slå fra: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Dødsstød fra omgivelserne: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Ser du en spiller, der har dræbt dig, et guildmedlem eller en ven inden for 30 dage, står på jagtlisten eller har en dusør, går hans navn, dit sted med lag og tidspunktet til guild og venner med Revenge Book. Deres meldinger kommer til dig. Intet andet sendes."
 end)

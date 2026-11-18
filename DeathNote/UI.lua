@@ -2777,7 +2777,7 @@ function GF.FillHunt(h)
   local ago = ls and Look.Ago(ls.t)
   if ago then
     info[#info + 1] = GF.SeenBy(ago, ls.by)
-  elseif Look.GuildSetting("sightings") == true then
+  elseif Look.GuildSetting("layerSight") ~= false then
     info[#info + 1] = L.POSTER_NOT_SEEN
   end
   SetInfo(E, info, opt)
@@ -3911,8 +3911,8 @@ local GUILD_OPTIONS = {
   { "alert",       "OPT_G_ALERT" },
   { "alertListed", "OPT_G_ALERTLISTED" },
   { "announce",    "OPT_G_ANNOUNCE" },
-  { "sightings",   "OPT_G_SIGHTINGS" },
-  { "layerSight",  "OPT_G_LAYERSIGHT" },   -- 1.6.0 call: sightings of my killers with place and layer (message T)
+  -- 1.6.0 fix: one switch for sightings (T and the old S, sent and received), its tooltip says what goes out
+  { "layerSight",  "OPT_G_LAYERSIGHT", tip = "OPT_G_LAYERSIGHT_TIP" },
 }
 -- 1.2.0 with the friends' book: sharing with friends, hit list alarm; the switches for alarm, message and
 -- sightings apply to guild and friends and are named so.
@@ -3922,9 +3922,9 @@ local GUILD_OPTIONS = {
 GF.FRIEND_SHARE = {
   { "share",       "OPT_F_SHARE" },
   { "friends",     "OPT_F_FRIENDS" },
-  { "sightings",   "OPT_F_SIGHTINGS" },
   { "sendPlace",   "OPT_G_SENDPLACE" },   -- 1.5.0 scene: the spot of my death goes with it (message L)
-  { "layerSight",  "OPT_G_LAYERSIGHT" },   -- 1.6.0 call: sightings of my killers with place and layer (message T)
+  -- 1.6.0 fix: one switch for sightings (T and the old S, sent and received), its tooltip says what goes out
+  { "layerSight",  "OPT_G_LAYERSIGHT", tip = "OPT_G_LAYERSIGHT_TIP" },
 }
 GF.FRIEND_WARN = {
   { "alert",       "OPT_F_ALERT" },
@@ -4178,6 +4178,23 @@ BuildSettings = function()
       -- 1.2.2: 11, then 10 pt, otherwise truncated with tooltip
       Look.FitText(cb.label, cb.label:GetText(), GF.FIT_WORD)
       Look.TipIfCut(cb, cb.label)
+      -- 1.6.0 fix: a switch that sends something says what and to whom (the label whole, then the tip)
+      if o.tip and L[o.tip] then
+        cb.optTip = o.tip
+        cb:HookScript("OnEnter", function(self)
+          local tip = rawget(_G, "GameTooltip")
+          if not tip then return end
+          tip:SetOwner(self, "ANCHOR_RIGHT")
+          tip:SetText(L[o[2]], Look.BONE[1], Look.BONE[2], Look.BONE[3], 1, true)
+          tip:AddLine(L[o.tip], 0.85, 0.82, 0.75, true)
+          tip:Show()
+          self.optTipShown = true
+        end)
+        cb:HookScript("OnLeave", function(self)
+          local tip = rawget(_G, "GameTooltip")
+          if self.optTipShown and tip then self.optTipShown = nil; tip:Hide() end
+        end)
+      end
       if prefix then cb.opt = { path = prefix .. o[1], guild = o[1] }
       else cb.opt = { path = o[1], def = o[3], invert = o.invert } end
       cb:SetScript("OnClick", onCheck)

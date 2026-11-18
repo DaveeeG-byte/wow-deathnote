@@ -21,8 +21,8 @@
 -- per enemy per SIGHT_SEND seconds, after a random wait of WAIT_MIN..WAIT_MAX seconds, and not at all when a T for the
 -- same enemy came in meanwhile. Received: only for enemies in my book, the guild's or the friends' book or a hit list;
 -- lastSeen of the lists, a quiet chat line (no sound) at most once per enemy per SIGHT_LINE seconds, a pin for
--- SIGHT_PIN seconds. Switch guild.layerSight (on by default) for sending and receiving; the old S keeps its switch
--- guild.sightings (Sync.lua).
+-- SIGHT_PIN seconds. Switch guild.layerSight (on by default) for sending and receiving; 1.6.0 fix: it rules the old S
+-- too (sent only for the enemies a T goes out for; guild.sightings is no longer read, Sync.lua).
 --
 -- What goes out is only one's own: one's own place and the enemy in sight. Attacks, notes, suspicion and anything
 -- taken over are never sent. Nothing visible goes out unless the player clicks "Call in guild chat" (Share.lua's way).
@@ -839,7 +839,7 @@ function Call.Reset()
   Call.ResetShard()
 end
 
-Guild.CallExt = { onUnit = Call.OnUnit, applySight = Call.ApplySight, wantHook = Call.WantHook }
+Guild.CallExt = { onUnit = Call.OnUnit, applySight = Call.ApplySight, wantHook = Call.WantHook, eligible = Call.Eligible }
 
 ns:On("READY", function()
   local db = ns.Store and ns.Store.DB and ns.Store.DB()

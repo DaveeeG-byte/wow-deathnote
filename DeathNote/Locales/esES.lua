@@ -1093,7 +1093,7 @@ L.SCENE_TIP_SIGHT = "{name} visto aquí por {by}"
 L.SCENE_TIP_ATTACKER = "Atacante: {name}"
 L.SCENE_LEG_CALL = "petición de ayuda"  -- [max 32]
 L.SCENE_LEG_SIGHT = "avistamiento"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Compartir avistamientos de mis asesinos"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Mis asesinos vistos: a hermandad y amigos"  -- [max 44]
 L.PROBE_NET = "Sonda de red: canal propio y grito probados una vez; resultado en dos minutos (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Jugadores"
@@ -1184,7 +1184,8 @@ L.GLOG_EV_CALL = "{by} pidió ayuda: {zone}"
 L.GLOG_EV_CALL_BY = "{by} pidió ayuda: {zone}, atacante {name}"
 L.GLOG_EV_SIGHT = "{by} vio a {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} visto {count}×, la última por {by}: {zone}"
-L.CHAT_NEWS_160 = "Nuevo en 1.6.0: la pestaña {log} guarda ahora todas tus muertes, también por criaturas y el entorno. La crónica de hermandad está tras la cinta roja de la pestaña {guild}; la llamada de ayuda trae a hermandad y amigos (tecla: Esc > Opciones > Asignación de teclas > Revenge Book). Los avistamientos de tus asesinos van ahora a hermandad y amigos ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Nuevo en 1.6.0: la pestaña {log} guarda ahora todas tus muertes, también por criaturas y el entorno. La crónica de hermandad está tras la cinta roja de la pestaña {guild}; la llamada de ayuda trae a hermandad y amigos (tecla: Esc > Opciones > Asignación de teclas > Revenge Book). Los avistamientos de tus asesinos van ahora a hermandad y amigos (desactivar: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Golpe mortal del entorno: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Si ves a un jugador que en los últimos 30 días te mató a ti, a alguien de tu hermandad o a un amigo, está en la lista negra o tiene recompensa, su nombre, tu lugar con su capa y la hora van a hermandad y amigos con Revenge Book. Sus avistamientos te llegan. Nada más sale."
 end)

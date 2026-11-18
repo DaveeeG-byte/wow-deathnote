@@ -1099,7 +1099,7 @@ L.SCENE_TIP_SIGHT = "Tässä {by} näki: {name}"
 L.SCENE_TIP_ATTACKER = "Hyökkääjä: {name}"
 L.SCENE_LEG_CALL = "avunpyyntö"  -- [max 32]
 L.SCENE_LEG_SIGHT = "havainto"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Jaa tappajieni havainnot"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Tappajieni havainnot killalle ja ystäville"  -- [max 44]
 L.PROBE_NET = "Verkkoluotain: oma kanava ja huuto kokeiltu kerran; tulos kahden minuutin päästä (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Pelaajat"
@@ -1190,7 +1190,8 @@ L.GLOG_EV_CALL = "{by} pyysi apua: {zone}"
 L.GLOG_EV_CALL_BY = "{by} pyysi apua: {zone}, hyökkääjä {name}"
 L.GLOG_EV_SIGHT = "{by} näki pelaajan {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} nähty {count}×, viimeksi näki {by}: {zone}"
-L.CHAT_NEWS_160 = "Uutta 1.6.0:ssa: {log}-välilehti tallentaa nyt kaikki kuolemasi, myös olentojen ja ympäristön aiheuttamat. Killan kronikka on punaisen nauhan takana {guild}-välilehdellä; avunpyyntö kutsuu killan ja ystävät luoksesi (näppäin: Esc > Options > Key Bindings > Revenge Book). Havainnot tappajistasi menevät nyt killalle ja ystäville ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Uutta 1.6.0:ssa: {log}-välilehti tallentaa nyt kaikki kuolemasi, myös olentojen ja ympäristön aiheuttamat. Killan kronikka on punaisen nauhan takana {guild}-välilehdellä; avunpyyntö kutsuu killan ja ystävät luoksesi (näppäin: Esc > Options > Key Bindings > Revenge Book). Havainnot tappajistasi menevät nyt killalle ja ystäville (pois päältä: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Kuoliniskun antoi ympäristö: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Kun näet pelaajan, joka on 30 päivän sisällä tappanut sinut, kiltalaisen tai ystävän, on tappolistalla tai jolla on palkkio, hänen nimensä, paikkasi kerroksineen ja aika menevät killalle ja ystäville, joilla on Revenge Book. Heidän havaintonsa tulevat sinulle. Muuta ei lähetetä."
 end)

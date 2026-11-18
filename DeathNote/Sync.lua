@@ -1241,7 +1241,7 @@ local GH
 
 local function now() return time() end
 
-local DEFAULTS = { share = true, receive = true, alert = true, announce = true, sightings = false, minKills = 1,
+local DEFAULTS = { share = true, receive = true, alert = true, announce = true, minKills = 1,
   shareManual = true, alertListed = false, friends = true, alertHunt = true,
   -- announceHunt: the notice "taken down" / "new targets" (fix: the window had no switch);
   -- huntExpire: days after which releases expire, 0 = never
@@ -1250,8 +1250,11 @@ local DEFAULTS = { share = true, receive = true, alert = true, announce = true, 
   sendPlace = true,
   -- 1.6.0 call: sightings of my killers with place and layer (message T, Call.lua), sent and received
   layerSight = true }
--- settings.guild.<name> without Store.Setting's path parsing (read on every message)
+-- settings.guild.<name> without Store.Setting's path parsing (read on every message).
+-- 1.6.0 fix: one switch for sightings: the old key "sightings" (message S, off by default) is no longer read; asking
+-- for it gives the switch layerSight (T and S, sent and received, on by default)
 local function setting(name)
+  if name == "sightings" then name = "layerSight" end
   local db = ns.Store and ns.Store.DB()
   local g = db and type(db.settings) == "table" and db.settings.guild
   local v
@@ -2421,7 +2424,7 @@ local function apply(ctx, m, short, full, t, known)
     setHook()
     updated()
   elseif kind == "S" then
-    if setting("sightings") ~= true then return end
+    if setting("layerSight") == false then return end
     local e = ctx.store.enemies[m.key]
     local h = ctx.hunts and ctx.hunts[m.key]
     local fresh = false
@@ -2654,7 +2657,12 @@ function Guild.OnUnit(key, unit, how, listed)
     if hg then hg.lastSeen = { t = t, zone = zone, by = me } end
     if fh then fh.lastSeen = { t = t, zone = zone, by = me } end
     updated("seen")
-    if setting("sightings") == true and (not sightSent[key] or gt - sightSent[key] >= C.SIGHT_SEND) then
+    -- 1.6.0 fix: the old S (clients up to 1.5.0) only for the enemies a T goes out for, under the same switch
+    local cx = Guild.CallExt
+    local okS, eligible = true, false
+    if cx and cx.eligible then okS, eligible = pcall(cx.eligible, key, e, fe, hg, fh) end
+    if setting("layerSight") ~= false and okS and eligible == true
+      and (not sightSent[key] or gt - sightSent[key] >= C.SIGHT_SEND) then
       sightSent[key] = gt
       local text = P.EncodeSight(key, zone, t)
       if (e or hg) and canSend() then enqueue(text) end

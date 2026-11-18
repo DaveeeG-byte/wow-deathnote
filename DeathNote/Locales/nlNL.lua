@@ -1098,7 +1098,7 @@ L.SCENE_TIP_SIGHT = "Hier zag {by} {name}"
 L.SCENE_TIP_ATTACKER = "Aanvaller: {name}"
 L.SCENE_LEG_CALL = "hulproep"  -- [max 32]
 L.SCENE_LEG_SIGHT = "waarneming"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Waarnemingen van mijn moordenaars delen"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Mijn moordenaars gezien: guild en vrienden"  -- [max 44]
 L.PROBE_NET = "Netwerksonde: eigen kanaal en schreeuw één keer geprobeerd; uitslag over twee minuten (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Spelers"
@@ -1189,7 +1189,8 @@ L.GLOG_EV_CALL = "{by} riep om hulp: {zone}"
 L.GLOG_EV_CALL_BY = "{by} riep om hulp: {zone}, aanvaller {name}"
 L.GLOG_EV_SIGHT = "{by} zag {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} {count}× gezien, laatst door {by}: {zone}"
-L.CHAT_NEWS_160 = "Nieuw in 1.6.0: het tabblad {log} houdt nu al je doden bij, ook door wezens en omgeving. De gildekroniek zit achter het rode lint in het tabblad {guild}; een hulproep haalt gilde en vrienden naar je toe (toets: Esc > Options > Key Bindings > Revenge Book). Waarnemingen van je moordenaars gaan nu naar gilde en vrienden ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Nieuw in 1.6.0: het tabblad {log} houdt nu al je doden bij, ook door wezens en omgeving. De gildekroniek zit achter het rode lint in het tabblad {guild}; een hulproep haalt gilde en vrienden naar je toe (toets: Esc > Options > Key Bindings > Revenge Book). Waarnemingen van je moordenaars gaan nu naar gilde en vrienden (uitzetten: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Doodsklap door de omgeving: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Zie je een speler die jou, een guildgenoot of een vriend de afgelopen 30 dagen doodde, op de dodenlijst staat of een premie draagt, dan gaan zijn naam, jouw plek met laag en de tijd naar guild en vrienden met Revenge Book. Hun waarnemingen komen bij jou. Verder gaat er niets uit."
 end)

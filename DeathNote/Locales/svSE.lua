@@ -1098,7 +1098,7 @@ L.SCENE_TIP_SIGHT = "Här såg {by} {name}"
 L.SCENE_TIP_ATTACKER = "Angripare: {name}"
 L.SCENE_LEG_CALL = "hjälprop"  -- [max 32]
 L.SCENE_LEG_SIGHT = "iakttagelse"  -- [max 32]
-L.OPT_G_LAYERSIGHT = "Dela var mina mördare synts"  -- [max 44]
+L.OPT_G_LAYERSIGHT = "Dela mina mördare sedda med guild och vänner"  -- [max 44]
 L.PROBE_NET = "Nätsond: egen kanal och skrik testade en gång; resultat om två minuter (/dn probe)."
 -- 1.6.0 deaths
 L.FATE_VIEW_PLAYERS = "Spelare"
@@ -1189,7 +1189,8 @@ L.GLOG_EV_CALL = "{by} ropade på hjälp: {zone}"
 L.GLOG_EV_CALL_BY = "{by} ropade på hjälp: {zone}, angripare {name}"
 L.GLOG_EV_SIGHT = "{by} såg {name}: {zone}"
 L.GLOG_EV_SIGHT_N = "{name} sedd {count}×, senast av {by}: {zone}"
-L.CHAT_NEWS_160 = "Nytt i 1.6.0: fliken {log} sparar nu alla dina dödsfall, även genom varelser och omgivning. Gillets krönika ligger bakom det röda bandet i fliken {guild}; ett rop på hjälp kallar gille och vänner till dig (tangent: Esc > Options > Key Bindings > Revenge Book). Iakttagelser av dina mördare går nu till gille och vänner ({rules}, {sheet}: {switch})."
+L.CHAT_NEWS_160 = "Nytt i 1.6.0: fliken {log} sparar nu alla dina dödsfall, även genom varelser och omgivning. Gillets krönika ligger bakom det röda bandet i fliken {guild}; ett rop på hjälp kallar gille och vänner till dig (tangent: Esc > Options > Key Bindings > Revenge Book). Iakttagelser av dina mördare går nu till gille och vänner (stäng av: {rules}, {sheet}: {switch})."
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Dödsstöt från omgivningen: {name}."
+L.OPT_G_LAYERSIGHT_TIP = "Ser du en spelare som har dödat dig, en guildmedlem eller en vän de senaste 30 dagarna, står på jaktlistan eller har en belöning, går hans namn, din plats med lager och tiden till guild och vänner med Revenge Book. Deras observationer kommer till dig. Inget annat skickas."
 end)
