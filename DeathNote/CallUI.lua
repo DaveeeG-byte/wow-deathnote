@@ -18,7 +18,7 @@ ns.CallUI = CU
 
 CU.W, CU.PAD, CU.SHOW = 320, 10, 20
 CU.POINT = { "TOP", "TOP", 0, -150 }     -- below the raid warning, above the middle of the screen
-CU.FIT_HEAD = { sizes = { 13, 11, 10 }, lines = 2 }
+CU.FIT_HEAD = { sizes = { 13, 11, 10 }, lines = 3 }
 CU.FIT_HINT = { sizes = { 10, 9 } }
 CU.BTN_W, CU.BTN_H = 54, 15
 
