@@ -40,7 +40,7 @@ GL.FIELD_MAX = 64
 GL.SAME = 120               -- one kill reported as V and as E counts once (Sync's BAG_DEDUPE)
 GL.VICTIMS_SHOWN = 1        -- names of avenged victims in a sentence, the rest is "and n more"
 
-local function G(n) return rawget(_G, n) end
+local function G(n) return _G[n] end   -- (the client's globals; a test client's environment reads through)
 local function num(v) return type(v) == "number" and not IsSecret(v) and v == v and v > -math.huge and v < math.huge end
 local function plain(s, max)
   return type(s) == "string" and not IsSecret(s) and s ~= "" and #s <= (max or GL.FIELD_MAX) and not s:find("[%c|]")
