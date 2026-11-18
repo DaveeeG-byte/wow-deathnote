@@ -162,7 +162,8 @@ local function shownName(key, disp)
     local n, s = GP.ValidKey(key)
     if not n then return nil end
     if disp ~= n and disp ~= n .. " " .. s then disp = n .. " " .. s end
-    return disp
+    -- 1.6.0 fix: within NAME_MAX like every shown name (a long name built from the key would not survive loading)
+    return GP.CutUTF8(disp, C.NAME_MAX)
   end
   return disp
 end
