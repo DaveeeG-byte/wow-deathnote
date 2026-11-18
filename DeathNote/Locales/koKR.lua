@@ -1216,4 +1216,5 @@ L.CLAIM_HEAD = "{name}에게 {gold}"
 L.CLAIM_FOR = "{target} 건"
 L.CLAIM_NOTE = "책이 직접 지급하지 않는다: 거래나 우편으로."
 L.FEUD_SHEET_HEAD = "길드"
+L.FATE_LAST = "최근 {time}"
 end)

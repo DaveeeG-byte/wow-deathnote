@@ -1216,4 +1216,5 @@ L.CLAIM_HEAD = "付给{name} {gold}"
 L.CLAIM_FOR = "目标：{target}"
 L.CLAIM_NOTE = "本书不会代付：请交易或邮寄。"
 L.FEUD_SHEET_HEAD = "公会"
+L.FATE_LAST = "最近 {time}"
 end)

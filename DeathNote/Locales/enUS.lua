@@ -1164,9 +1164,9 @@ L.SHARE_WEEK_BEAST = "deadliest creature: {name} {times}"  -- week line: the cre
 L.FEUD_EXPIRED_CHAT = "{count} old suspicions filed away (Unsolved, Filed)."  -- chat, once after login: entries with only suspicions or only attacks and no news for 30 play days were filed away; {count} = how many; where to find them (tab Unsolved, view Filed)
 L.VIEW_PLAYERS = "Players"  -- word switch at the bottom left of Wanted: the list of players (as before)
 L.VIEW_GUILDS = "Guilds"  -- word switch at the bottom left of Wanted: the page 'Which guilds kill you'
-L.VIEW_OPEN = "Open"  -- word switch at the bottom left of Unsolved: open cases and suspects (as before)
+L.VIEW_OPEN = "Cases"  -- word switch at the bottom left of Unsolved: open cases and suspects (as before)
 L.VIEW_CLAIMS = "Claims"  -- word switch at the bottom left of Unsolved: claims on your own bounties (a number may follow)
-L.VIEW_FILED = "Filed"  -- word switch at the bottom left of Unsolved: old suspicions filed away (a number may follow)
+L.VIEW_FILED = "Filed away"  -- word switch at the bottom left of Unsolved: old suspicions filed away (a number may follow)
 L.FEUD_MEMBERS = "{count} in book"  -- guild row, right, and tooltip: how many of this guild are in your book; {count} = number
 L.FEUD_KILLED_YOU = "killed you {times}"  -- guild row sub line: how often players of this guild killed you; {times} = '3×'
 L.FEUD_DECLARE = "Declare feud"  -- small word on a guild row and button: declare a feud on this guild (quiet alarm when its members show up)
@@ -1223,4 +1223,5 @@ L.CLAIM_HEAD = "{gold} to {name}"  -- big line of a claim's sheet: what you owe 
 L.CLAIM_FOR = "for {target}"  -- under it: for which of your targets; {target} = the target's name
 L.CLAIM_NOTE = "The book pays nothing itself: by trade or mail."  -- small line on an open claim's sheet: the book moves no money
 L.FEUD_SHEET_HEAD = "Guild"  -- head of the sheet on the right page for an enemy guild (tab Wanted, view Guilds), big like CASE_HEAD
+L.FATE_LAST = "last {time}"  -- date at the top right of a cause's file: the latest death by it; {time} = date and time
 end)

@@ -1215,4 +1215,5 @@ L.CLAIM_HEAD = "{gold} pro {name}"
 L.CLAIM_FOR = "za {target}"
 L.CLAIM_NOTE = "Kniha sama neplatí: obchodem nebo poštou."
 L.FEUD_SHEET_HEAD = "Guilda"
+L.FATE_LAST = "naposledy {time}"
 end)

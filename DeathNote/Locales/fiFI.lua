@@ -1209,4 +1209,5 @@ L.CLAIM_HEAD = "{gold}: {name}"
 L.CLAIM_FOR = "kohteesta {target}"
 L.CLAIM_NOTE = "Kirja ei maksa itse: kaupalla tai postilla."
 L.FEUD_SHEET_HEAD = "Kilta"
+L.FATE_LAST = "viimeksi {time}"
 end)

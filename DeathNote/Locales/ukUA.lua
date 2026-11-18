@@ -1215,4 +1215,5 @@ L.CLAIM_HEAD = "{gold}: {name}"
 L.CLAIM_FOR = "за {target}"
 L.CLAIM_NOTE = "Книга сама не платить: обміном або поштою."
 L.FEUD_SHEET_HEAD = "Гільдія"
+L.FATE_LAST = "востаннє {time}"
 end)

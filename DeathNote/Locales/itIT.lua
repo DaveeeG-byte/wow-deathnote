@@ -1202,4 +1202,5 @@ L.CLAIM_HEAD = "{gold} a {name}"
 L.CLAIM_FOR = "per {target}"
 L.CLAIM_NOTE = "Il libro non paga: con scambio o posta."
 L.FEUD_SHEET_HEAD = "Gilda"
+L.FATE_LAST = "ultima {time}"
 end)

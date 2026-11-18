@@ -380,10 +380,18 @@ function FU.FillDeath(D, d, nInfo)
     local place = (D.info:GetText() or ""):match("^[^\n]*") or ""
     local info = { place, Fmt(L.FATE_KILLED, { times = Look.Times(d.n) }) }
     if d.spell then info[#info + 1] = Fmt(L.TIP_CAUSE, { spell = tostring(d.spell) }) end
-    if d.npc then info[#info + 1] = Fmt(L.FATE_NPC, { id = d.npc }) end
+    -- design fix 1.6.0: no NPC id on the file (technique without use for the player; it stays in the data), and
+    -- no line that explains the list: the foot says what the book does not do, the list below what it knows
     D.info:SetText(table.concat(info, "\n"))
     lines = #info
-    D.note:SetText(L.FATE_NOTE_FOE)
+    D.note:SetText("")
+    -- the date on the right is the latest death by this cause
+    if d.t then D.when:SetText(Fmt(L.FATE_LAST, { time = Look.When(d.t) })) end
+    local ww = Look.TextW(D.when)
+    if type(ww) == "number" and not Look.Secret(ww) then
+      h:SetWidth(math.max(140, math.min(FU.HEAD_W, 304 - math.ceil(ww) - 10)))
+      Look.FitText(h, L.FATE_HEAD, FU.FIT_HEAD)
+    end
   else
     D.note:SetText("")
   end

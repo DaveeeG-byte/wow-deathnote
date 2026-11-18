@@ -588,7 +588,6 @@ function GLUI.FillAvengers()
   local sp = JK and JK.Spaced or function(x) return x end
   v.head:SetText(sp(L.GLOG_AV_HEAD))
   Look.FitText(v.week, GLd.CardTexts(w).week, GLUI.FIT_ONE)
-  local rank = GLd.OwnRank()
   local rows, meIn = {}, false
   for i = 1, math.min(#w.avengers, GLUI.AV_ROWS) do
     rows[#rows + 1] = w.avengers[i]
@@ -606,7 +605,8 @@ function GLUI.FillAvengers()
     local x = rows[i]
     if x and (x.n > 0 or x.me) then
       local nm = first(x.char)
-      local label = x.me and (rank and Fmt(L.GLOG_ME_RANK, { name = nm, rank = rank }) or Fmt(L.GLOG_ME, { name = nm }))
+      -- design fix 1.6.0: the own row says only "(you)"; the rank title in the bracket read like an insult
+      local label = x.me and Fmt(L.GLOG_ME, { name = nm })
         or nm
       local pos = x.own and "" or (i .. ".  ")
       Look.FitText(r.name, pos .. label, GLUI.FIT_ONE)

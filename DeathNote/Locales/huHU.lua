@@ -1217,4 +1217,5 @@ L.CLAIM_HEAD = "{gold}: {name}"
 L.CLAIM_FOR = "ezért: {target}"
 L.CLAIM_NOTE = "A könyv nem fizet: kereskedéssel vagy postán."
 L.FEUD_SHEET_HEAD = "Céh"
+L.FATE_LAST = "utoljára {time}"
 end)

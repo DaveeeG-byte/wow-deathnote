@@ -1218,4 +1218,5 @@ L.CLAIM_HEAD = "{name}: {gold}"
 L.CLAIM_FOR = "{target} için"
 L.CLAIM_NOTE = "Kitap kendisi ödemez: takas ya da posta ile."
 L.FEUD_SHEET_HEAD = "Lonca"
+L.FATE_LAST = "son {time}"
 end)

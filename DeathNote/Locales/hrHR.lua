@@ -1215,4 +1215,5 @@ L.CLAIM_HEAD = "{gold} za {name}"
 L.CLAIM_FOR = "za {target}"
 L.CLAIM_NOTE = "Knjiga sama ne plaća: trgovinom ili poštom."
 L.FEUD_SHEET_HEAD = "Ceh"
+L.FATE_LAST = "zadnji {time}"
 end)

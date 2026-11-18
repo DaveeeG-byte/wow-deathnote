@@ -1208,4 +1208,5 @@ L.CLAIM_HEAD = "{gold} aan {name}"
 L.CLAIM_FOR = "voor {target}"
 L.CLAIM_NOTE = "Het boek betaalt niet zelf: via handel of post."
 L.FEUD_SHEET_HEAD = "Guild"
+L.FATE_LAST = "laatst {time}"
 end)
