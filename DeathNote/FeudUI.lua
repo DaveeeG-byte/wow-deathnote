@@ -136,9 +136,10 @@ local function BindHead(r, h)
     r.name:SetPoint("TOPLEFT", 40, -2)
     r.name:SetPoint("RIGHT", -inset, 0)
   end
-  local killed, stand, seen = GuildFacts(g)
+  -- design fix 1.6.0: "seen ..." stays in the tooltip and on the sheet; the row says deaths and score whole
+  local killed, stand = GuildFacts(g)
   local word = g.feud and L.FEUD_END or L.FEUD_DECLARE
-  k.SetRow(r, g.name, { Look.Join(killed, stand, seen), Look.Join(killed, stand), killed or stand }, word,
+  k.SetRow(r, g.name, { Look.Join(killed, stand), killed or stand }, word,
     g.feud and "red" or "normal", true)
   Word(r, word)
   r.tri:SetShown(g.n > 0)
@@ -280,12 +281,12 @@ local function SheetOf()
   S:SetAllPoints()
   S.head = Look.Text(S, "head", 26, Look.INK)
   S.head:SetPoint("TOPLEFT", 24, -16)
-  S.head:SetWidth(220)
+  S.head:SetWidth(170)
   S.head:SetJustifyH("LEFT")
   S.head:SetWordWrap(false)
   S.when = Look.Text(S, "type", 11, Look.INK)
   S.when:SetPoint("TOPRIGHT", -24, -28)
-  S.when:SetWidth(90)
+  S.when:SetWidth(140)
   S.when:SetJustifyH("RIGHT")
   S.when:SetWordWrap(false)
   local rule = S:CreateTexture(nil, "ARTWORK")
@@ -385,7 +386,7 @@ function FD.ShowRight()
     if killed then lines[#lines + 1] = killed end
     lines[#lines + 1] = stand
     lines[#lines + 1] = Fmt(L.FEUD_MEMBERS, { count = g.n })
-    Page(L.FEUD_SHEET_HEAD, g.seen and Look.Ago(g.seen) or "", g.name, table.concat(lines, "\n"),
+    Page(L.FEUD_SHEET_HEAD, g.seen and Fmt(L.ROW_SEEN, { time = Look.Ago(g.seen) }) or "", g.name, table.concat(lines, "\n"),
       g.feud and L.FEUD_TIP_ON or nil, g.feud and L.FEUD_END or L.FEUD_DECLARE, function() ToggleFeud(g.name) end)
     return true
   end
