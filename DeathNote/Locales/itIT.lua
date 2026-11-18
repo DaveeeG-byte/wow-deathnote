@@ -1187,4 +1187,7 @@ L.CHAT_NEWS_160 = "Novità 1.6.0: la scheda {log} tiene ora tutte le tue morti, 
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Colpo mortale dall'ambiente: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Quando vedi un giocatore che negli ultimi 30 giorni ha ucciso te, un membro della gilda o un amico, è nella lista nera o ha una taglia, il suo nome, il tuo luogo con il layer e l'ora vanno a gilda e amici con Revenge Book. I loro avvistamenti arrivano a te. Nient'altro esce."
+L.EMPTY_WANTED_FATES = "Le morti per creature e ambiente sono in «{log}»."
+L.EMPTY_JPLAYERS_HEAD = "Ancora nessuna morte per mano di un giocatore."
+L.EMPTY_JPLAYERS_SUB = "Altre morti: vista {all}."
 end)

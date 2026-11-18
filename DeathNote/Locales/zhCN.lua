@@ -1201,4 +1201,7 @@ L.CHAT_NEWS_160 = "1.6.0 新功能：{log} 现在记录你的所有死亡，包�
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "环境给了致命一击：{name}。"
 L.OPT_G_LAYERSIGHT_TIP = "当你看到最近 30 天内杀过你、公会成员或好友，在追杀名单上或身负悬赏的玩家时，他的名字、你所在的位置（含位面）和时间会发给装有 Revenge Book 的公会和好友。他们的目击也会发给你。不会发送其他内容。"
+L.EMPTY_WANTED_FATES = "被生物和环境杀死的记录在“{log}”中。"
+L.EMPTY_JPLAYERS_HEAD = "还没有被玩家杀死过。"
+L.EMPTY_JPLAYERS_SUB = "其他死亡：{all} 视图。"
 end)

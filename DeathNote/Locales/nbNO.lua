@@ -1193,4 +1193,7 @@ L.CHAT_NEWS_160 = "Nytt i 1.6.0: fanen {log} tar nå vare på alle dødsfall, og
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Dødsstøt fra omgivelsene: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Ser du en spiller som har drept deg, et guildmedlem eller en venn de siste 30 dagene, står på jaktlisten eller har en dusør, går navnet hans, stedet ditt med lag og tiden til guild og venner med Revenge Book. Deres meldinger kommer til deg. Ingenting annet sendes."
+L.EMPTY_WANTED_FATES = "Dødsfall fra skapninger og omgivelser står under «{log}»."
+L.EMPTY_JPLAYERS_HEAD = "Ennå ingen død ved en spiller."
+L.EMPTY_JPLAYERS_SUB = "Andre dødsfall: visning {all}."
 end)

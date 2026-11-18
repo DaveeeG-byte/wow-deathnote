@@ -1200,4 +1200,7 @@ L.CHAT_NEWS_160 = "Novinka 1.6.0: karta {log} teď zapisuje všechny tvé smrti,
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Smrtící úder od prostředí: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Když uvidíš hráče, který za posledních 30 dní zabil tebe, člena guildy nebo přítele, je na seznamu na odstřel nebo má odměnu, odejde jeho jméno, tvé místo s vrstvou a čas guildě a přátelům s Revenge Book. Jejich hlášení dostáváš ty. Nic jiného neodchází."
+L.EMPTY_WANTED_FATES = "Smrti od stvoření a prostředí najdeš v záložce „{log}“."
+L.EMPTY_JPLAYERS_HEAD = "Zatím žádná smrt od hráče."
+L.EMPTY_JPLAYERS_SUB = "Ostatní smrti: pohled {all}."
 end)

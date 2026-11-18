@@ -1200,4 +1200,7 @@ L.CHAT_NEWS_160 = "Nowość w 1.6.0: karta {log} zapisuje teraz wszystkie twoje 
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Cios kończący zadało otoczenie: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Gdy widzisz gracza, który w ostatnich 30 dniach zabił ciebie, członka gildii lub znajomego, jest na liście do odstrzału albo ma nagrodę, jego imię, twoje miejsce z warstwą i czas idą do gildii i znajomych z Revenge Book. Ich zgłoszenia trafiają do ciebie. Nic więcej nie wychodzi."
+L.EMPTY_WANTED_FATES = "Śmierci od stworzeń i otoczenia są w zakładce „{log}”."
+L.EMPTY_JPLAYERS_HEAD = "Jeszcze żadnej śmierci z rąk gracza."
+L.EMPTY_JPLAYERS_SUB = "Pozostałe śmierci: widok {all}."
 end)

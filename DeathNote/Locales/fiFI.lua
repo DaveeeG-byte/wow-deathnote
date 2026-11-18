@@ -1194,4 +1194,7 @@ L.CHAT_NEWS_160 = "Uutta 1.6.0:ssa: {log}-välilehti tallentaa nyt kaikki kuolem
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Kuoliniskun antoi ympäristö: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Kun näet pelaajan, joka on 30 päivän sisällä tappanut sinut, kiltalaisen tai ystävän, on tappolistalla tai jolla on palkkio, hänen nimensä, paikkasi kerroksineen ja aika menevät killalle ja ystäville, joilla on Revenge Book. Heidän havaintonsa tulevat sinulle. Muuta ei lähetetä."
+L.EMPTY_WANTED_FATES = "Olentojen ja ympäristön aiheuttamat kuolemat ovat välilehdellä ”{log}”."
+L.EMPTY_JPLAYERS_HEAD = "Ei vielä kuolemaa pelaajan kädestä."
+L.EMPTY_JPLAYERS_SUB = "Muut kuolemat: näkymä {all}."
 end)

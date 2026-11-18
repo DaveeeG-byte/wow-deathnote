@@ -1193,4 +1193,7 @@ L.CHAT_NEWS_160 = "Nieuw in 1.6.0: het tabblad {log} houdt nu al je doden bij, o
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Doodsklap door de omgeving: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Zie je een speler die jou, een guildgenoot of een vriend de afgelopen 30 dagen doodde, op de dodenlijst staat of een premie draagt, dan gaan zijn naam, jouw plek met laag en de tijd naar guild en vrienden met Revenge Book. Hun waarnemingen komen bij jou. Verder gaat er niets uit."
+L.EMPTY_WANTED_FATES = "Doden door wezens en de omgeving staan onder ‘{log}’."
+L.EMPTY_JPLAYERS_HEAD = "Nog geen dood door een speler."
+L.EMPTY_JPLAYERS_SUB = "Andere doden: weergave {all}."
 end)

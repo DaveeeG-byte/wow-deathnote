@@ -1201,4 +1201,7 @@ L.CHAT_NEWS_160 = "1.6.0 새 기능: {log} 탭에 이제 생물과 환경에 의
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "환경의 결정타: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "최근 30일 안에 나, 길드원 또는 친구를 죽였거나 척살 명단에 있거나 현상금이 걸린 플레이어를 보면, 그의 이름, 레이어를 포함한 내 위치와 시각이 Revenge Book을 쓰는 길드와 친구에게 갑니다. 그들의 목격도 나에게 옵니다. 그 밖에는 아무것도 보내지 않습니다."
+L.EMPTY_WANTED_FATES = "생물과 환경으로 인한 죽음은 '{log}'에 있습니다."
+L.EMPTY_JPLAYERS_HEAD = "아직 플레이어에게 죽은 적 없음."
+L.EMPTY_JPLAYERS_SUB = "다른 죽음: {all} 보기."
 end)

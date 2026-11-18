@@ -1193,4 +1193,7 @@ L.CHAT_NEWS_160 = "Nytt i 1.6.0: fliken {log} sparar nu alla dina dödsfall, äv
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Dödsstöt från omgivningen: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Ser du en spelare som har dödat dig, en guildmedlem eller en vän de senaste 30 dagarna, står på jaktlistan eller har en belöning, går hans namn, din plats med lager och tiden till guild och vänner med Revenge Book. Deras observationer kommer till dig. Inget annat skickas."
+L.EMPTY_WANTED_FATES = "Dödsfall från varelser och omgivningen står under ”{log}”."
+L.EMPTY_JPLAYERS_HEAD = "Ännu ingen död genom en spelare."
+L.EMPTY_JPLAYERS_SUB = "Andra dödsfall: vy {all}."
 end)

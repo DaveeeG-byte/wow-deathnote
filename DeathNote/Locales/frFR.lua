@@ -1187,4 +1187,7 @@ L.CHAT_NEWS_160 = "Nouveau en 1.6.0 : l'onglet {log} note maintenant toutes tes 
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Coup fatal de l'environnement : {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Quand tu vois un joueur qui t'a tué, toi, un membre de ta guilde ou un ami ces 30 derniers jours, qui est sur la liste de chasse ou porte une prime, son nom, ton lieu avec sa couche et l'heure partent vers guilde et amis avec Revenge Book. Leurs repérages te parviennent. Rien d'autre ne part."
+L.EMPTY_WANTED_FATES = "Les morts dues aux créatures et à l'environnement sont dans « {log} »."
+L.EMPTY_JPLAYERS_HEAD = "Encore aucune mort due à un joueur."
+L.EMPTY_JPLAYERS_SUB = "Autres morts : vue {all}."
 end)

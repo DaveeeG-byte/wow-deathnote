@@ -1208,4 +1208,7 @@ L.CHAT_NEWS_160 = "New in 1.6.0: the {log} tab keeps every death now, also by cr
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Killing blow by the world: {name}."  -- file of an unclear death: a player hurt you, the world dealt the killing blow (a fall after a knockback, lava, drowning); {name} = the cause word (Falling, Lava ...)
 L.OPT_G_LAYERSIGHT_TIP = "When you see a player who killed you, a guildmate or a friend in the last 30 days, is on the hit list or carries a bounty, his name, your place with its layer and the time go to guild and friends with Revenge Book. Their sightings come to you. Nothing else goes out."  -- tooltip of the check box OPT_G_LAYERSIGHT: exactly what goes out, when and to whom; 30 days = Call.lua SIGHT_DAYS
+L.EMPTY_WANTED_FATES = "Deaths by creatures and the world are in the {log}."  -- tab Wanted, empty, once the Death Log holds deaths by creatures or the world: where they are; {log} = the tab's name
+L.EMPTY_JPLAYERS_HEAD = "No death by a player yet."  -- Death Log, view Players, empty while other deaths (creatures, the world) are there: big line
+L.EMPTY_JPLAYERS_SUB = "So far creatures and the world see to that (view {all})."  -- under it, dry joke; {all} = the view word All (FATE_VIEW_ALL), where the other deaths are
 end)

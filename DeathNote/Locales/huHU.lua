@@ -1202,4 +1202,7 @@ L.CHAT_NEWS_160 = "Új az 1.6.0-ban: a(z) {log} fül most minden halálodat meg�
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "A halálos csapást a környezet mérte: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Ha olyan játékost látsz, aki az elmúlt 30 napban megölt téged, egy céhtársat vagy barátot, a halállistán van vagy vérdíj van rajta, a neve, a helyed a réteggel és az idő a céhnek és a Revenge Bookot használó barátoknak megy. Az ő észleléseik hozzád jönnek. Más nem megy ki."
+L.EMPTY_WANTED_FATES = "A lények és a környezet okozta halálok a(z) „{log}” lapon vannak."
+L.EMPTY_JPLAYERS_HEAD = "Még nem ölt meg játékos."
+L.EMPTY_JPLAYERS_SUB = "A többi halál: {all} nézet."
 end)

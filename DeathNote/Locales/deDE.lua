@@ -1188,4 +1188,7 @@ L.CHAT_NEWS_160 = "Neu in 1.6.0: Im Reiter {log} stehen jetzt alle Tode, auch du
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Todesstoß durch die Umwelt: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Siehst du einen Spieler, der in den letzten 30 Tagen dich, einen Gildie oder Freund getötet hat, zur Jagd freigegeben ist oder ein Kopfgeld trägt, gehen sein Name, dein Ort samt Layer und die Zeit an Gilde und Freunde mit Revenge Book. Ihre Sichtungen kommen bei dir an. Sonst geht nichts hinaus."
+L.EMPTY_WANTED_FATES = "Tode durch Kreaturen und Umwelt stehen im {log}."
+L.EMPTY_JPLAYERS_HEAD = "Noch kein Tod durch Spieler."
+L.EMPTY_JPLAYERS_SUB = "Bisher erledigen das Kreaturen und die Welt (Ansicht {all})."
 end)

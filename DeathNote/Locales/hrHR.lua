@@ -1200,4 +1200,7 @@ L.CHAT_NEWS_160 = "Novo u 1.6.0: kartica {log} sada bilježi sve tvoje smrti, i 
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Smrtni udarac okoline: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Kad vidiš igrača koji je u zadnjih 30 dana ubio tebe, člana ceha ili prijatelja, na popisu je za odstrel ili nosi ucjenu, njegovo ime, tvoje mjesto sa slojem i vrijeme idu cehu i prijateljima s Revenge Book. Njihova viđenja stižu tebi. Ništa drugo ne odlazi."
+L.EMPTY_WANTED_FATES = "Smrti od stvorenja i okoline su na kartici „{log}”."
+L.EMPTY_JPLAYERS_HEAD = "Još nema smrti od igrača."
+L.EMPTY_JPLAYERS_SUB = "Ostale smrti: prikaz {all}."
 end)

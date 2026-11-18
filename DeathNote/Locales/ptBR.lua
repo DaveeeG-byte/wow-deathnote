@@ -1188,4 +1188,7 @@ L.CHAT_NEWS_160 = "Novo na 1.6.0: a aba {log} guarda agora todas as suas mortes,
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Golpe fatal do ambiente: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Quando você vê um jogador que nos últimos 30 dias matou você, alguém da guilda ou um amigo, está na lista de caça ou tem recompensa, o nome dele, o seu lugar com a camada e a hora vão para guilda e amigos com Revenge Book. Os avistamentos deles chegam a você. Nada mais sai."
+L.EMPTY_WANTED_FATES = "Mortes por criaturas e pelo ambiente estão em “{log}”."
+L.EMPTY_JPLAYERS_HEAD = "Nenhuma morte por jogador ainda."
+L.EMPTY_JPLAYERS_SUB = "Outras mortes: visão {all}."
 end)

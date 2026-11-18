@@ -1203,4 +1203,7 @@ L.CHAT_NEWS_160 = "1.6.0'da yeni: {log} sekmesi artık yaratıklar ve çevre dah
 -- 1.6.0 fixer
 L.FATE_NOTE_ENV = "Öldürücü darbeyi çevre vurdu: {name}."
 L.OPT_G_LAYERSIGHT_TIP = "Son 30 günde seni, bir lonca üyesini ya da bir arkadaşını öldüren, av listesinde olan veya başına ödül konmuş bir oyuncuyu gördüğünde, adı, katmanıyla birlikte senin yerin ve zaman Revenge Book kullanan lonca ve arkadaşlara gider. Onların gördükleri sana gelir. Başka hiçbir şey gitmez."
+L.EMPTY_WANTED_FATES = "Yaratıkların ve çevrenin neden olduğu ölümler “{log}” sekmesinde."
+L.EMPTY_JPLAYERS_HEAD = "Henüz bir oyuncu tarafından ölmedin."
+L.EMPTY_JPLAYERS_SUB = "Diğer ölümler: {all} görünümü."
 end)

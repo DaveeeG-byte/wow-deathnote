@@ -63,6 +63,8 @@ local EMPTY = {
   filtered = { "EMPTY_FILTERED", 2 }, alltaken = { "EMPTY_ALLTAKEN", 2 },
   -- 1.4.0 fixer: the search finds only entries the filter hides; it finds a name that is not on this page
   hidden = { "EMPTY_HIDDEN", 2 }, searchhas = { "EMPTY_SEARCHHAS", 2 },
+  -- 1.6.0 fix: the Death Log's view Players while there are other deaths (creatures, the world)
+  journalplayers = { "EMPTY_JPLAYERS", 2 },
 }
 local EXPORT_WARN = 100 * 1024     -- above this, "Back up the book" gets sluggish in the EditBox
 -- Guild book: only entries a guildmate (1.2.0: or friend) took part in; per source
@@ -2117,6 +2119,14 @@ function UX.BuildPoster()
   xs:SetVertexColor(C(Look.COLOR.skullFaint))
 end
 
+-- 1.6.0 fix: the number of deaths by creatures or the world (Fates.lua), 0 without it
+function UX.FatesCount()
+  local Fa = ns.Fates
+  if not (Fa and Fa.Rows) then return 0 end
+  local ok, rows = pcall(Fa.Rows)
+  return ok and type(rows) == "table" and #rows or 0
+end
+
 -- empty state of the right page: one pattern for all tabs
 local function ShowEmpty(kind)
   local t = EMPTY[kind] or EMPTY.wanted
@@ -2124,6 +2134,14 @@ local function ShowEmpty(kind)
   RP.empty.small:SetText(t[2] >= 2 and L[t[1] .. "_SUB"] or "")
   RP.empty.tiny:SetText(t[2] >= 3 and L[t[1] .. "_HINT"] or "")
   if kind == "wanted" and ns.Humor then pcall(ns.Humor.EmptyWanted, RP.empty) end -- Humor: empty book, 1 April
+  -- 1.6.0 fix (first impression): the view Players names the view All; an empty Wanted names the Death Log when it
+  -- holds deaths by creatures or the world
+  if kind == "journalplayers" then
+    RP.empty.small:SetText(Fmt(L.EMPTY_JPLAYERS_SUB, { all = L.FATE_VIEW_ALL }))
+  elseif kind == "wanted" and UX.FatesCount() > 0 then
+    local hint = RP.empty.tiny:GetText() or ""
+    RP.empty.tiny:SetText((hint ~= "" and (hint .. "\n") or "") .. Fmt(L.EMPTY_WANTED_FATES, { log = L.TAB_DEATHLOG }))
+  end
   P:Hide()
   RP.empty:Show()
 end
@@ -2982,6 +3000,11 @@ local function EmptyKind()
     if GF.HuntView() then return "hunt" end
     if MemberCount() == 0 then return "sharednil" end
     return "sharedquiet"
+  end
+  -- 1.6.0 fix: the view Players of the Death Log is empty, but other deaths are there
+  if state.filter == "journal" and UX.FatesCount() > 0 and ns.FatesUI and ns.FatesUI.Mode
+    and ns.FatesUI.Mode() == "players" then
+    return "journalplayers"
   end
   return state.filter
 end
@@ -6582,6 +6605,11 @@ local function Build()
   F:SetScript("OnShow", function()
     Look.Sound("open")
     UX.StartPlatePoll()
+    -- 1.6.0 fix (first impression): an empty Wanted while the Death Log holds deaths opens the Death Log
+    if state.filter == "wanted" and state.query == "" and not state.panel then
+      local ok, w, _, p = pcall(Counts)
+      if ok and (w or 0) + (p or 0) == 0 and UX.TabCount("journal") > 0 then pcall(SetFilter, "journal") end
+    end
     if dirty then Refresh() end
   end)
   F:SetScript("OnHide", function()
