@@ -1115,4 +1115,49 @@ L.SCENE_LEG_CALL = "call for help"  -- [max 32] legend in the tooltip of the map
 L.SCENE_LEG_SIGHT = "sighting"  -- [max 32] legend in the tooltip of the map's switch: the amber pin = a sighting of a killer by a guildmate or friend
 L.OPT_G_LAYERSIGHT = "Share sightings of my killers"  -- [max 44] check box (House Rules, sheet Guild, group SHARE): sightings of my killers go to guild and friends with place and layer, and theirs come in
 L.PROBE_NET = "Net probe: own channel and yell tried once; results in two minutes (/dn probe)."  -- chat after '/dn probe net': the one-time test of an own chat channel and of yell has started
+-- 1.6.0 deaths
+L.FATE_VIEW_PLAYERS = "Players"  -- [max 12] Death Log, view word at the top right: only deaths by players (as before)
+L.FATE_VIEW_ALL = "All"  -- [max 12] Death Log, view word: all deaths (players, creatures, the world) mixed by time; the default
+L.FATE_VIEW_CAUSES = "Causes"  -- [max 12] Death Log, view word: the ranking of the creatures and the world that killed you
+L.FATE_HEAD = "What else kills you"  -- [max 24] head of the right page in the view Causes (big handwriting)
+L.FATE_CREATURE = "Unknown creature"  -- a creature whose name the game did not give
+L.FATE_PET = "Pet without owner"  -- a pet (hunter pet, demon) whose owner is unknown, when the game gave no name
+L.FATE_UNKNOWN = "Unknown"  -- a cause nobody can tell
+L.FATE_ENV_FALL = "Falling"  -- cause of death: falling (environmental damage)
+L.FATE_ENV_DROWN = "Drowning"  -- cause of death: drowning
+L.FATE_ENV_FIRE = "Fire"  -- cause of death: fire on the ground
+L.FATE_ENV_LAVA = "Lava"  -- cause of death: lava
+L.FATE_ENV_FATIGUE = "Fatigue"  -- cause of death: fatigue (swimming too far out into deep water)
+L.FATE_ENV_SLIME = "Slime"  -- cause of death: slime
+L.FATE_ENV_OTHER = "The world"  -- cause of death: something of the world the game does not name
+L.FATE_ART_CREATURE = "Creature"  -- [max 14] kind of cause (row mark, label above the name): a creature
+L.FATE_ART_PET = "Pet"  -- [max 14] kind of cause: a pet without a known owner
+L.FATE_ART_ENV = "Environment"  -- [max 14] kind of cause: the world (falling, drowning, fire ...)
+L.FATE_SPELL = "last: {spell}"  -- row of the view Causes, after the place: the last spell; {spell} = spell name from the game
+L.FATE_KILLED = "Killed you {times}"  -- file of a cause: how often it killed you; {times} = '3x'
+L.FATE_NPC = "NPC ID {id}"  -- file of a creature: its NPC id; {id} = a number
+L.FATE_NOTE = "No player. No alarm, nothing is shared."  -- file of a death by a creature or the world, under the name: what the book does with it
+L.FATE_NOTE_FOE = "Creatures and the world, ranked. No alarm, no hunt."  -- file of a cause in the view Causes, under the name
+L.FATE_NOTE_PET = "Killing blow by a pet whose owner is unknown: {name}."  -- file of an unclear death: a pet without a known owner dealt the killing blow; {name} = the pet's name
+L.FATE_STAMP = "NEMESIS"  -- [max 18] stamp on the cause that killed you most often (from 3 deaths on), capitals
+L.FATE_AWARDS = "FOR DYING"  -- [max 14] small label over the row of awards for dying on the rap sheet (letter-spaced, capitals)
+L.FATE_AW_FALL = "Gravity Check"  -- award name: died from a fall
+L.FATE_AW_FALL_COND = "Died from a fall."  -- award condition
+L.FATE_AW_DROWN = "Deep End"  -- award name: drowned
+L.FATE_AW_DROWN_COND = "Drowned."  -- award condition
+L.FATE_AW_FIRE = "Well Done"  -- award name: burned (fire or lava)
+L.FATE_AW_FIRE_COND = "Burned to death by fire or lava."  -- award condition
+L.FATE_AW_FATIGUE = "Too Far Out"  -- award name: fatigue in deep water
+L.FATE_AW_FATIGUE_COND = "Swam out too far and died of fatigue."  -- award condition
+L.FATE_AW_BEAST3 = "Favourite Snack"  -- award name: the same creature killed you 3 times
+L.FATE_AW_BEAST3_COND = "Killed three times by the same creature."  -- award condition
+L.FATE_AW_BEAST10 = "On the Menu"  -- award name: the same creature killed you 10 times
+L.FATE_AW_BEAST10_COND = "Killed ten times by the same creature."  -- award condition
+L.FATE_AW_STREAK = "Bad Streak"  -- award name: three deaths in ten minutes
+L.FATE_AW_STREAK_COND = "Three deaths by creatures or the world within ten minutes."  -- award condition
+L.FATE_AW_ZOO = "Field Guide"  -- award name: killed by ten different creatures
+L.FATE_AW_ZOO_COND = "Killed by ten different creatures."  -- award condition
+L.OPT_FATES = "Also record deaths by creatures and the world"  -- check box in the foot of the file of a death by a creature or the world (Death Log): also record deaths by creatures and the world (default on; off = nothing new, what is there stays)
+L.SHARE_WEEK_OTHERS = "other deaths: {count}"  -- week line: deaths by creatures and the world this week
+L.SHARE_WEEK_BEAST = "deadliest creature: {name} {times}"  -- week line: the creature that killed you most this week; {name} = its name, {times} = '3x'
 end)

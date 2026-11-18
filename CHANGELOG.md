@@ -17,6 +17,14 @@
 - Receiving a call: your alarm sound and a slip at the top of the screen, "Anna calls for help: Ashenvale (other zone), attacker Grimm"; a click opens the world map there (out of combat), a right click closes it. A red pin pulses there for 3 minutes. Only from guild, group and friends; at most one call per sender per 30 seconds and five per minute. With the alarm off (/dn quiet) only the chat line.
 - **Sightings with place and layer:** when you see an enemy who killed you or a guildmate or friend in the last 30 days, a target of the hit list or of a bounty, your guild and friends with the book get a quiet chat line "Grimm seen by Anna: Ashenvale, 1 min ago." (with "other layer" when he stands on another layer than you), a pin on the map for 10 minutes and his "last seen". At most once per enemy every 2 minutes, after a short random wait, and not when someone else just reported him. On by default for sending and receiving (House Rules, sheet Guild: "Share sightings of my killers"). The old switch "Share sightings with guild and friends" keeps sending the plain zone line to older versions.
 - `/dn probe net` tries once whether an own chat channel and yell carry addon messages (for a test with two clients); `/dn probe` keeps the result codes of calls and sightings.
+<!-- deaths -->
+### Added
+- **Every death with its cause:** the book now also keeps your deaths by creatures and the world, each with time, place (a link to the map), the creature's name and NPC id, the spell, or the kind of the world: falling, drowning, fire, lava, fatigue, slime. A death by a player gets no second row; the feud stays the heart of the book. No alarm, nothing is shared. At most 300 such deaths and 150 causes are kept (the oldest go first).
+- The Death Log has three views at the top right: **Players** (as before), **All** (the default: every death by time, a small sign for each kind: the skull for players, a beast, a paw, an arrow, a drop, a flame, an hourglass) and **Causes** ("What else kills you": creatures and the world ranked by deaths, with last place and last spell; number one carries a NEMESIS stamp from three deaths on). The search finds creatures by name.
+- Eight awards for dying on the rap sheet's file, in every language (first fall, drowned, burned, fatigue, three and ten times by the same creature, three deaths in ten minutes, ten different creatures).
+- Dry remarks per kind of death in German and English ("Trockene Bemerkungen"); a creature that gets you for the third time gets a line of its own.
+- My week names the other deaths of the week and the deadliest creature, when there were any.
+- "Also record deaths by creatures and the world" in the foot of the file of such a death (on by default; off records nothing new, what is there stays). `/dn probe` writes `probe.pve` (per kind, names secret or empty, NPC ids missing).
 
 ## 1.5.0 (2026-11-18)
 

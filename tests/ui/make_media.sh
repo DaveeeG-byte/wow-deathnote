@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Rebuilds DeathNote's own textures (ImageMagick 7, `magick`).
 # Output: <addon folder>/Media/*.tga (DeathNote/, or the old Staatsfeind/), 32-bit RGBA, uncompressed, edges a power of two.
-# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade|grip|griprim|scene|scenefix]
+# Deterministic (fixed seeds). Usage: tests/ui/make_media.sh [all|base|kit|harbor|trade|grip|griprim|scene|scenefix|fates]
 #   all (default) = everything; base = the black book's files; kit = the shared grey parts of the themes (g_*.tga);
 #   harbor, trade = the kit plus the files of that theme only (<id>_*.tga). The header check runs over every file.
 set -euo pipefail
@@ -421,8 +421,24 @@ plate_rim_media() {
   tga "$TMP/plate_rim.png" "$OUT/plate_rim.tga"
 }
 
+# 1.6.0 deaths: the small signs of the causes in the death log (FatesUI.lua), one strip of eight 32x32 cells, white
+# (the row tints them like the skull): creature (wolf), pet (paw), falling (arrow down), drowning (drop), fire, fatigue
+# (hourglass), the world otherwise (biohazard: slime and the rest), unknown (question mark)
+fates_media() {
+  local glyphs=( $'\U0001F43A' $'\U0001F43E' $'\u2B07' $'\U0001F4A7' $'\U0001F525' $'\u231B' $'\u2623' '?' )
+  local args=() i=0
+  for g in "${glyphs[@]}"; do
+    magick -size 32x32 xc:none -font "$SYMFONT" -pointsize 26 -gravity center -fill white -stroke white -strokewidth 1.2 -annotate +0+0 "$g" \
+      "$TMP/fate_$i.png"
+    args+=( "$TMP/fate_$i.png" ); i=$((i + 1))
+  done
+  magick "${args[@]}" +append "$TMP/fates.png"
+  tga "$TMP/fates.png" "$OUT/fates.tga"
+}
+
 case "$WHAT" in
-  all) base_media; kit_media; theme_harbor; theme_trade; grip_media; plate_rim_media; scene_media; scene_fix_media ;;
+  all) base_media; kit_media; theme_harbor; theme_trade; grip_media; plate_rim_media; scene_media; scene_fix_media; fates_media ;;
+  fates) fates_media ;;
   griprim) plate_rim_media ;;
   scenefix) scene_fix_media ;;
   grip) grip_media ;;
@@ -431,7 +447,7 @@ case "$WHAT" in
   kit) kit_media ;;
   harbor) kit_media; theme_harbor ;;
   trade) kit_media; theme_trade ;;
-  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip, griprim, scene, scenefix)" >&2; exit 2 ;;
+  *) echo "unknown part: $WHAT (all, base, kit, harbor, trade, grip, griprim, scene, scenefix, fates)" >&2; exit 2 ;;
 esac
 
 # Check the headers: type 2 (uncompressed), 32 bpp, descriptor 0x08, edges a power of two

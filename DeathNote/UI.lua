@@ -1045,6 +1045,7 @@ end
 
 -- switch the row kind (only on change: set anchors and font anew)
 local function SetRowMode(r, mode)
+  if r.fateSign then r.fateSign:Hide() end   -- 1.6.0 deaths: the small sign of a cause (FatesUI.lua)
   if r.mode == mode then return end
   r.mode = mode
   r.nameInset = nil
@@ -1186,6 +1187,8 @@ function UX.BindCaseRow(r, d)
 end
 
 function UX.BindDeathRow(r, d, index)
+  -- 1.6.0 deaths: a death by a creature or the world, a cause of the ranking (FatesUI.lua)
+  if (d.art or d.foe or d.cause) and ns.FatesUI and ns.FatesUI.BindRow and ns.FatesUI.BindRow(r, d, index) then return end
   SetRowMode(r, "normal")
   SetRank(r, nil)
   r.skull:Show()
@@ -2919,6 +2922,11 @@ local function FillDeath(d, index)
   if nc > 0 then y = y + 14 + 12 + 6 + math.ceil(math.min(nc, GF.CAND_MAX) / 2) * 28
   elseif na > 0 then y = y + 14 + 12 + 2 + math.min(na, GF.ASSIST_MAX) * 20 end
   D.page:Layout(math.ceil(y + 6 - 54))
+  -- 1.6.0 deaths: a death by a creature or the world, or a cause of the ranking: its own lines (FatesUI.lua)
+  if ns.FatesUI and ns.FatesUI.FillDeath then
+    local ok, err = pcall(ns.FatesUI.FillDeath, D, d, #info)
+    if not ok then ns.ReportError(err) end
+  end
   if D.ref ~= d then D.ref = d; D.page:Top() end
 end
 
@@ -3579,6 +3587,11 @@ function RS.FillFile()
     F.awardCount:SetPoint("TOPRIGHT", F.sheet, "TOPRIGHT", -24, -(y + 2))
     F.awardCount:SetText(got .. "/" .. #AW)
     y = y + 20 + 20
+  end
+  -- 1.6.0 deaths: the awards for dying (every language), a row of their own (FatesUI.lua)
+  if ns.FatesUI and ns.FatesUI.Awards then
+    local ok, ny = pcall(ns.FatesUI.Awards, F, y)
+    if ok and type(ny) == "number" then y = ny elseif not ok then ns.ReportError(ny) end
   end
   F.right:SetText("")
   F.page:Layout(math.ceil(y + 6 - 54))
@@ -4425,6 +4438,7 @@ BuildSettings = function()
       -- 1.5.0 grip: the section NAMEPLATE (the mark on the plates of the book's enemies: off, small, medium, large)
       if ns.GripUI then RR.bottom = ns.GripUI.Plate(S, RR, y - 22 - 14, section, Stepper) or RR.bottom end
     end
+
   end
 
   local back = InkButton(S, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
@@ -5025,7 +5039,7 @@ end -- house rules
 -- number on the tab: only when there is something; "Unsolved" in red
 function UX.TabCount(id)
   if id == "record" then return 0 end     -- 1.3.0: the rap sheet's tab carries no number (it stays calm and narrow)
-  if id == "journal" then return #UX.Journal() end
+  if id == "journal" then return #UX.Journal(true) end
   if id == "guild" then return UX.GuildCount() end
   local w, s, _, o = Counts()
   if id == "open" then return s + o end
@@ -5083,6 +5097,11 @@ function UX.UpdateTabs()
   -- 1.2.0: never below the view words (their width depends on the language)
   local vw = views and (three and LP.views.width or LP.views.width2)
   if vw then sw = math.max(60, math.min(sw, PAGE_W - 14 - vw - 46 - 8)) end
+  -- 1.6.0 deaths: the view words of the journal (FatesUI.lua) at the top right, the search field gives way
+  if ns.FatesUI and ns.FatesUI.Layout then
+    local ok, w = pcall(ns.FatesUI.Layout, LP, state.filter == "journal", sw, PAGE_W)
+    if ok and type(w) == "number" then sw = w end
+  end
   if LP.search.w ~= sw then LP.search.w = sw; LP.search:SetWidth(sw) end
   -- all open/closed: double triangle left of the search field
   local member = MemberView()
@@ -5182,6 +5201,7 @@ end
 local function DeathMatches(d, q)
   local name = d.killerKey and NameOfKey(d.killerKey, d.killerName) or d.killerName
   if Matches(name, q) or Matches(d.zone, q) or Matches(d.subzone, q) then return true end
+  if (d.art or d.cause) and ns.Fates and Matches(ns.Fates.Name(d.cause or d), q) then return true end   -- 1.6.0 deaths
   if not d.killerKey and type(d.candidates) == "table" then
     for i = 1, #d.candidates do if Matches((NameOfKey(d.candidates[i])), q) then return true end end
   end
@@ -5189,13 +5209,21 @@ local function DeathMatches(d, q)
 end
 
 -- Death Log: only deaths by players (pvp and unclear), not monsters and environment (1.2.0)
-function UX.Journal()
+-- 1.6.0 deaths: FatesUI.lua turns it into the chosen view (players, all deaths, causes); count = for the tab's number
+function UX.Journal(count)
   local S = Store()
+  local list
   if S.Journal then
-    local ok, list = pcall(S.Journal)
-    if ok and type(list) == "table" then return list end
+    local ok, l = pcall(S.Journal)
+    if ok and type(l) == "table" then list = l end
   end
-  return S.Deaths() or {}
+  list = list or S.Deaths() or {}
+  local FU = ns.FatesUI
+  if FU and FU.Journal then
+    local ok, l = pcall(FU.Journal, list, count)
+    if ok and type(l) == "table" then return l end
+  end
+  return list
 end
 
 function UX.ApplyQuery(list)
@@ -6981,3 +7009,9 @@ ns:On("SETTINGS_CHANGED", function(path)
   if type(path) == "string" and path:find("^guild%.") then RequestRefresh() end
   if F and F:IsShown() and state.panel == "settings" then UI.FillSettings() end
 end)
+
+-- 1.6.0 deaths: the journal's views (FatesUI.lua) use the book's own row and page kit
+UI.JK = { state = state, SetRow = SetRow, SetRank = SetRank, SetRowMode = SetRowMode, InkWidth = InkWidth,
+  PlaceText = PlaceText, Spaced = Spaced, Tip = Tip, TextWidth = TextWidth, Label = Label, WordTab = WordTab, GF = GF,
+  InkCheck = UX.InkCheck,
+  Refresh = function() Refresh() end, FIT_NAME26 = GF.FIT_NAME26 }

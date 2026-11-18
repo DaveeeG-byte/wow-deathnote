@@ -42,6 +42,7 @@ local TEXTS = {
       nr1_trade  = "Der beste Kunde ist bedient. Die Kartei sucht einen neuen Stammgast.",
       d100     = "Hundert Tode. Das Buch gratuliert nicht, aber es hat mitgezählt.",
       clean30  = "30 Tage ohne Tod. Das Buch macht sich langsam Sorgen.",
+      nemesis  = "{name} hat dich zum dritten Mal erwischt. Das Buch legt eine Akte an.",   -- 1.6.0 deaths
     },
     POOL = {
       regular = {
@@ -67,11 +68,36 @@ local TEXTS = {
         "Um diese Uhrzeit. Das Buch hätte geschlafen.",
         "Nachtschicht. Zuschläge gibt es keine.",
       },
+      -- 1.6.0 deaths: one pot per kind of cause (Fates.lua); "pve" is the fallback
       pve = {
-        "Kein Fall für das Buch. Die Schwerkraft hat keine Seite.",
-        "Kein Täter, kein Eintrag. Die Welt kommt wieder davon.",
-        "Ein Monster. Das Buch führt keine Tierakten.",
         "Natürliche Ursachen. Im weitesten Sinn.",
+        "Kein Spieler. Das Buch notiert es trotzdem.",
+      },
+      pve_creature = {
+        "Ein Monster. Das Buch führt jetzt auch Tierakten.",
+        "Die Wildnis schreibt mit. In Krallenschrift.",
+        "Kein Kopfgeld möglich. Es hat keine Taschen.",
+        "Das Buch notiert: gefressen. Vermutlich.",
+      },
+      pve_fall = {
+        "Die Schwerkraft bekommt eine eigene Seite.",
+        "Der Boden war schneller.",
+        "Fallhöhe unterschätzt. Aufprall nicht.",
+      },
+      pve_drown = {
+        "Luft holen wird überschätzt. Offenbar nicht.",
+        "Das Wasser gewinnt. Wie immer.",
+      },
+      pve_fire = {
+        "Gut durch. Das Buch riecht es bis hier.",
+        "Wer mit Feuer spielt, steht im Buch.",
+      },
+      pve_fatigue = {
+        "Zu weit rausgeschwommen. Das Meer hat keinen Rand, aber ein Ende.",
+        "Erschöpfung. Das Buch hätte umgedreht.",
+      },
+      pve_pet = {
+        "Ein Begleiter ohne Herrchen. Das Buch hat einen Verdacht, aber keinen Namen.",
       },
       bagged = {
         "Freigegeben, gejagt, erledigt. Bürokratie kann so schön sein.",
@@ -142,6 +168,7 @@ local TEXTS = {
       nr1_trade  = "Your best customer has been served. The file needs a new regular.",
       d100     = "One hundred deaths. The book won't congratulate you, but it did keep count.",
       clean30  = "30 days without dying. The book is starting to worry.",
+      nemesis  = "{name} got you for the third time. The book opens a file.",   -- 1.6.0 deaths
     },
     POOL = {
       regular = {
@@ -168,10 +195,34 @@ local TEXTS = {
         "Night shift. No overtime pay.",
       },
       pve = {
-        "Not a case for the book. Gravity doesn't get a page.",
-        "No killer, no entry. The world gets away with it again.",
-        "A monster. The book does not keep files on wildlife.",
         "Natural causes. Broadly speaking.",
+        "No player. The book writes it down anyway.",
+      },
+      pve_creature = {
+        "A monster. The book keeps files on wildlife now.",
+        "The wild writes along. In claw marks.",
+        "No bounty possible. It has no pockets.",
+        "The book notes: eaten. Probably.",
+      },
+      pve_fall = {
+        "Gravity gets a page of its own.",
+        "The ground was faster.",
+        "Underestimated the height. Not the landing.",
+      },
+      pve_drown = {
+        "Breathing is overrated. Apparently not.",
+        "The water wins. As always.",
+      },
+      pve_fire = {
+        "Well done. The book can smell it from here.",
+        "Play with fire, end up in the book.",
+      },
+      pve_fatigue = {
+        "Swam out too far. The sea has no edge, but it has an end.",
+        "Fatigue. The book would have turned back.",
+      },
+      pve_pet = {
+        "A pet without an owner. The book has a suspicion, but no name.",
       },
       bagged = {
         "Called, hunted, done. Paperwork has never been this satisfying.",
@@ -538,9 +589,20 @@ function Humor.OnDeath(death, key)
       local d = DeathQuip(e, death, h)
       if d then Deliver("death", key, d) end
     end
-  elseif death.kind ~= "pvp" and death.counted and not key and Roll("pve") then
-    Say(Pick("pve"))
-    Hush()
+  elseif death.kind ~= "pvp" and death.counted and not key then
+    -- 1.6.0 deaths: a creature on its third death gets a fixed line; otherwise one pot per kind of cause
+    local f = type(death.fate) == "table" and death.fate or nil
+    local nem = ns.Fates and ns.Fates.NEMESIS
+    if f and f.art == "creature" and type(f.name) == "string" and nem and death.fateN == nem then
+      Say(Fmt(T().MILESTONE.nemesis, { name = f.name }))
+    elseif Roll("pve") then
+      local art = f and f.art or (type(death.cause) == "table" and death.cause.art)
+      local env = f and f.env
+      local pool = (art == "env" and ((env == "lava" and "pve_fire") or (env and T().POOL["pve_" .. env] and "pve_" .. env)))
+        or (art and art ~= "env" and T().POOL["pve_" .. art] and "pve_" .. art) or "pve"
+      Say(Pick(pool))
+      Hush()
+    end
   end
   if h.deaths >= 100 and not h.m.d100 then
     h.m.d100 = now()

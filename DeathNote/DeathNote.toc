@@ -78,6 +78,8 @@ Chronicle.lua
 GuildLog.lua
 # 1.6.0 call: the help call (own prefix) and sightings with place and layer (message T); data only, the screen is CallUI.lua
 Call.lua
+# 1.6.0 deaths: every own death with its cause (creatures, the world); data and words only, the views are FatesUI.lua
+Fates.lua
 Alert.lua
 UI.lua
 # 1.3.0: the first-start window (language and cover), only on a new installation; /dn start
@@ -96,4 +98,6 @@ SceneMap.lua
 GuildLogUI.lua
 # 1.6.0 call: the help call's notice, the button on the grudge notice, the chat links, the map's way
 CallUI.lua
+# 1.6.0 deaths: the journal's views "Players | All | Causes", the cause file, the awards for dying
+FatesUI.lua
 Humor.lua

@@ -18,7 +18,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          "$adir"/Grudge.lua "$adir"/GrudgeCard.lua tests/ui/grudge_card.lua \
          "$adir"/Grip.lua "$adir"/Plate.lua tests/ui/grip.lua \
          "$adir"/Share.lua "$adir"/ShareUI.lua tests/ui/share.lua \
-         "$adir"/SceneMap.lua tests/ui/scene_map.lua tests/ui/scene.lua tests/ui/_ju.lua tests/ui/_jukarte.lua tests/ui/fix150_*.lua tests/ui/fix160_*.lua \
+         "$adir"/SceneMap.lua tests/ui/scene_map.lua tests/ui/scene.lua tests/ui/_ju.lua tests/ui/_jukarte.lua tests/ui/fix150_*.lua tests/ui/fix160_*.lua tests/ui/to160_*.lua \
          "$adir"/GuildLog.lua "$adir"/GuildLogUI.lua tests/ui/gc160_*.lua \
          "$adir"/CallUI.lua tests/ui/ca160_*.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
@@ -112,6 +112,8 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     for t in tests/ui/gc160_*.lua; do luajit "$t" . || status=1; done
     # 1.6.0 call: the help call's slip, the map's pins, the button on the grudge notice, the links, the switch, 21 languages
     for t in tests/ui/ca160_*.lua; do luajit "$t" . || status=1; done
+    # 1.6.0 deaths: the death log's views, deaths by creatures and the world, the cause's file, the awards for dying
+    luajit tests/ui/to160_todesjournal.lua . || status=1
     # 1.5.0 fixer: proofs of the two hunts (copies of dev/berichte/150/jagd-tests/ui) and the fixes after them
     for t in tests/ui/fix150_*.lua tests/ui/fix160_*.lua; do
       out=$(luajit "$t" . 2>&1) || { status=1; printf '%s\n' "$out" | grep "^ROT"; }

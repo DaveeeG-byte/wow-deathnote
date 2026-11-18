@@ -21,7 +21,7 @@ M.FILES = { "Locale.lua", "Locales/enUS.lua", "Locales/deDE.lua", "Locales/Theme
   "Friends.lua", "Bounty.lua", "Grudge.lua", "Scene.lua", "Chronicle.lua",
   "GuildLog.lua",   -- 1.6.0 guildlog: the guild chronicle's data (Sync.lua's hook feeds it on every guild message)
   -- 1.6.0 call: the help call and the sighting T (logic only; CallUI.lua is UI)
-  "Call.lua" }
+  "Call.lua", "Fates.lua" }
 M.locale = os.getenv("DN_LANG") or "deDE"
 
 -- the file list for the active M.locale (its file is added after deDE when it is another one)

@@ -263,6 +263,12 @@ function Probe.Run(verbose, opts)
     local okg, gl = pcall(ns.GuildLog.ProbeSnapshot)
     if okg and type(gl) == "table" then out.glog = S(gl) end
   end
+  -- 1.6.0 deaths: deaths by creatures and the world (Fates.lua): per kind, name secret or empty, NPC id missing
+  local keepPve = db and type(db.probe) == "table" and type(db.probe.pve) == "table" and db.probe.pve or nil
+  if ns.Fates and ns.Fates.ProbeSnapshot then
+    local okf, fp = pcall(ns.Fates.ProbeSnapshot, keepPve)
+    if okf and type(fp) == "table" then out.pve = fp end
+  end
   if db then
     local keep = db.probe and db.probe.deaths
     db.probe = out
@@ -275,6 +281,7 @@ function Probe.Run(verbose, opts)
       local okc, live = pcall(ns.Call.ProbeLive)
       if okc and type(live) == "table" then out.call = out.call or {}; out.call.live = live end
     end
+    if not out.pve and keepPve then out.pve = keepPve end
   end
   if verbose then
     -- 1.2.0: framing words from the language table; the values (codes, numbers) stay technical

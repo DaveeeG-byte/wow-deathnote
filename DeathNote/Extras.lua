@@ -746,6 +746,8 @@ end
 local function OnAward(id)
   if not ready or not (ns.Humor and ns.Humor.Award) then return end
   local name, cond = ns.Humor.Award(id)
+  -- 1.6.0 deaths: the awards for dying have their words in every language (Fates.lua)
+  if not name and ns.Fates and ns.Fates.AwardText then name, cond = ns.Fates.AwardText(id) end
   if name then local a = Batch().awards; a[#a + 1] = { name, cond } end
 end
 
