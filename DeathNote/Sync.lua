@@ -7,6 +7,9 @@
 -- each field percent-escaped for '%', '|' and control bytes):
 --   1 K key display class level zone t victim   a kill, just happened
 --   1 R key display class level zone t victim   a kill, sent as answer to H
+--   1 L key t victim map x y                    1.5.0 scene: the spot of that kill (after its K or R): map ID, x and y in
+--                                               tenths of a percent (0..1000). Older clients drop L as "type" (K and R
+--                                               take no extra field: 1.4.0 and older drop a K with ten fields whole)
 --   1 H since version                           hello after login: "send me your kills newer than since"
 --   1 S key zone t                              a listed guild enemy was seen (only when sightings are on)
 --   1 M key display class level t char          on my list by hand (1.1.0), live and in answers to H
@@ -56,6 +59,9 @@ local C = {
   SEND_GAP = 0.3,           -- seconds between two sent messages
   BACKOFF = 1.5,            -- seconds after a throttled or failed send
   REPLY_MAX = 30,           -- R messages per answer to a hello
+  -- 1.5.0 scene: L (the spot of a death) in an answer only for kills of the last PLACE_REPLY_AGE seconds, at most
+  -- PLACE_REPLY of them (the newest): the map is about helping where it just happened, the queue keeps its room
+  PLACE_REPLY = 10, PLACE_REPLY_AGE = 7 * 86400, PLACE_MAP_MAX = 100000,
   QUEUE_MAX = 140,          -- 1.2.1: room for an answer with bounties next to a friend's answer
   QUEUE_TTL = 600,          -- a queued message older than this is dropped
   TRIES = 5,                -- send attempts per message
@@ -279,6 +285,33 @@ function P.EncodeKill(k, kind)
   return msg
 end
 
+-- 1.5.0 scene: the spot of a kill on me. k = { key, t, victim, mapID, x, y } (x, y in percent as Util.Zone stores them).
+-- Returns the text or nil when there is no valid spot.
+function P.ValidPlace(mapID, x, y)
+  return type(mapID) == "number" and mapID == math.floor(mapID) and mapID >= 1 and mapID <= C.PLACE_MAP_MAX
+    and P.Finite(x) and P.Finite(y) and x >= 0 and x <= 100 and y >= 0 and y <= 100
+end
+function P.EncodePlace(k)
+  if type(k) ~= "table" or type(k.key) ~= "string" or type(k.t) ~= "number" then return nil end
+  if not P.ValidPlace(k.mapID, k.x, k.y) then return nil end
+  local key, victim = plain(k.key), plain(k.victim)
+  if key ~= k.key or victim == "" then return nil end
+  local msg = table.concat({ PROTO, "L", P.Escape(key), tostring(math.floor(k.t)), P.Escape(victim), tostring(k.mapID),
+    tostring(math.floor(k.x * 10 + 0.5)), tostring(math.floor(k.y * 10 + 0.5)) }, "\t")
+  if #msg > C.MAX_MSG then return nil end
+  return msg
+end
+-- the probe counts places dropped before they reach a list (reason only, never a name)
+function P.PlaceDropped(text, why)
+  if type(text) ~= "string" or not text:find("^%d+\tL\t") then return end
+  local Sc = ns.Scene
+  if Sc and Sc.Count then
+    Sc.Count("placeDropped")
+    local r = Sc.counts.placeReasons
+    r[tostring(why)] = (r[tostring(why)] or 0) + 1
+  end
+end
+
 -- guid (optional, 1.2.0): only in hellos to friends; the guild hello keeps the four fields of 1.1.0
 function P.ValidGUID(g)
   if IsSecret(g) then return false end
@@ -456,7 +489,7 @@ local function int(s, lo, hi)
   return v
 end
 
-local FIELDS = { K = 9, R = 9, H = 4, S = 5, J = 9, A = 4, E = 5, Z = 4, B = 6, Y = 4, V = 6, M = 8, X = 4 }
+local FIELDS = { K = 9, R = 9, H = 4, S = 5, J = 9, A = 4, E = 5, Z = 4, B = 6, Y = 4, V = 6, L = 8, M = 8, X = 4 }
 -- types with one optional last field: GUID of a hello, book id of J, Z, B, Y
 local OPTIONAL = { H = true, Z = true, J = true, B = true, Y = true }
 
@@ -497,6 +530,16 @@ function P.Decode(text, now, out)
   local name, surname = P.ValidKey(key)
   if not name then return nil, "key" end
   out.key, out.name, out.surname = key, name, surname
+  if kind == "L" then
+    -- 1.5.0 scene: whole numbers only (no sign, no point), map ID plausible, x and y within the map
+    out.t = int(F[4], now - C.MAX_AGE, now + C.FUTURE)
+    if not out.t then return nil, "time" end
+    out.victim = P.Unescape(F[5])
+    if not out.victim or out.victim == "" then return nil, "victim" end
+    out.mapID, out.px, out.py = int(F[6], 1, C.PLACE_MAP_MAX), int(F[7], 0, 1000), int(F[8], 0, 1000)
+    if not (out.mapID and out.px and out.py) then return nil, "place" end
+    return out
+  end
   if kind == "S" then
     out.zone = P.Unescape(F[4])
     out.t = int(F[5], now - C.MAX_AGE, now + C.FUTURE)
@@ -779,6 +822,8 @@ function P.Sanitize(store, now)
         local d = deeds[i]
         if type(d) ~= "table" or type(d.t) ~= "number" or d.t < now - C.MAX_AGE or type(d.victim) ~= "string" then
           table.remove(deeds, i)
+        elseif d.mapID ~= nil and not P.ValidPlace(d.mapID, d.x, d.y) then
+          d.mapID, d.x, d.y = nil, nil, nil   -- 1.5.0 scene: a broken spot goes, the deed stays
         end
       end
       table.sort(deeds, function(a, b) return a.t > b.t end)
@@ -1183,7 +1228,9 @@ local DEFAULTS = { share = true, receive = true, alert = true, announce = true, 
   shareManual = true, alertListed = false, friends = true, alertHunt = true,
   -- announceHunt: the notice "taken down" / "new targets" (fix: the window had no switch);
   -- huntExpire: days after which releases expire, 0 = never
-  announceHunt = true, huntExpire = 0 }
+  announceHunt = true, huntExpire = 0,
+  -- 1.5.0 scene: the spot of an own death goes with it (message L)
+  sendPlace = true }
 -- settings.guild.<name> without Store.Setting's path parsing (read on every message)
 local function setting(name)
   local db = ns.Store and ns.Store.DB()
@@ -1434,7 +1481,7 @@ local function ownKills(since, limit)
         and d.t <= t0 + C.FUTURE and d.me == mine then
         out[#out + 1] = { key = key, display = Util.Display(e), class = e.class,
           level = type(d.theirLevel) == "number" and d.theirLevel or (type(e.level) == "number" and e.level or nil),
-          zone = d.zone, t = d.t, victim = d.me }
+          zone = d.zone, t = d.t, victim = d.me, mapID = d.mapID, x = d.x, y = d.y }
       end
     end
   end
@@ -2052,6 +2099,7 @@ end
 local function answer(ctx, since, send)
   local list = ownKills(since, C.REPLY_MAX)
   for i = 1, #list do send(P.EncodeKill(list[i], "R"), "R") end
+  Guild.SendPlaces(list, send)
   local mine = myFullName()
   if setting("shareManual") == true then
     -- names listed by hand (all of them, not only newer than since: there are few)
@@ -2311,6 +2359,8 @@ local function apply(ctx, m, short, full, t, known)
     if kind == "K" and t - m.t <= C.FRESH and setting("announce") == true and mayAnnounce(full, t) then
       ns:Fire("GUILD_KILL", deed, e.key, ctx.src)
     end
+  elseif kind == "L" then
+    Guild.ApplyPlace(ctx, m, short, known)
   elseif kind == "M" or kind == "X" then
     local isM = kind == "M"
     if isM then st.listReceived = st.listReceived + 1 else st.unlistReceived = st.unlistReceived + 1 end
@@ -2425,6 +2475,7 @@ function Guild.OnAddonMessage(_, prefix, text, channel, sender)
   local m, why = P.Decode(text, t, scratch)
   if not m then
     stats.dropped = stats.dropped + 1; stats.lastReason = why
+    P.PlaceDropped(text, why)
     local k = text:match("^1\t([MX])\t")
     if k == "M" then stats.listDropped = stats.listDropped + 1
     elseif k == "X" then stats.unlistDropped = stats.unlistDropped + 1 end
@@ -2480,8 +2531,58 @@ function Guild.OnDeath(journal, key)
   if inGuild() then
     bind()
     if addOwn(k) == "new" then setHook(); updated() end
-    if canSend() then enqueue(P.EncodeKill(k, "K")) end
+    if canSend() then
+      enqueue(P.EncodeKill(k, "K"))
+      Guild.SendPlaces({ { key = key, t = journal.t, victim = journal.me, mapID = journal.mapID, x = journal.x,
+        y = journal.y } }, enqueue)
+    end
   end
+end
+
+-- 1.5.0 scene: the spot of own deaths after their K or R (setting "sendPlace", on by default: the map of guild and
+-- friends is its whole point; the House Rules switch it off). list = { { key, t, victim, mapID, x, y } }, newest
+-- first; send(text, kind). Only kills of the last PLACE_REPLY_AGE seconds, at most PLACE_REPLY. Never an attack, a
+-- suspicion, a note or anything taken over: only what goes out as K or R gets its spot.
+function Guild.SendPlaces(list, send)
+  if setting("sendPlace") == false or type(list) ~= "table" then return 0 end
+  local n, t0 = 0, now()
+  for i = 1, #list do
+    local k = list[i]
+    if n >= C.PLACE_REPLY then break end
+    if type(k) == "table" and type(k.t) == "number" and k.t >= t0 - C.PLACE_REPLY_AGE then
+      local text = P.EncodePlace(k)
+      if text then
+        send(text, "L")
+        n = n + 1
+        if ns.Scene then ns.Scene.Count("placeSent") end
+      end
+    end
+  end
+  return n
+end
+
+-- 1.5.0 scene: an L from a guildmate or friend: the spot goes onto the deed its K or R brought (same key, time and
+-- victim); the victim must be the sender (as for K). Without that deed (K dropped, older list) the L goes.
+function Guild.ApplyPlace(ctx, m, short, known)
+  local st = ctx.stats
+  local function drop(why)
+    st.dropped = st.dropped + 1; st.lastReason = why
+    P.PlaceDropped("1\tL\t", why)
+  end
+  if not owns(m.victim, short, known) then return drop("victim") end
+  local e = ctx.store.enemies[m.key]
+  local deed
+  for i = 1, #(e and e.deeds or {}) do
+    local d = e.deeds[i]
+    if d.t == m.t and d.victim == m.victim then deed = d; break end
+  end
+  if not deed then return drop("nodeed") end
+  local x, y = m.px / 10, m.py / 10
+  if deed.mapID == m.mapID and deed.x == x and deed.y == y then return end
+  deed.mapID, deed.x, deed.y = m.mapID, x, y
+  if ns.Scene then ns.Scene.Count("placeReceived") end
+  updated()
+  ns:Fire("SCENE_PLACE", deed, m.key, ctx.src)
 end
 
 -- Tracker hook (set only while the guild list has entries): a hostile player is in sight.

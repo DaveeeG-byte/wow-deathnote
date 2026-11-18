@@ -744,7 +744,11 @@ local function heard(x, text, short, full, channel)
   local t = now()
   if not P.Flood(flood, x.name, t) then stats.dropped = stats.dropped + 1; stats.lastReason = "flood"; return end
   local m, why = P.Decode(text, t, scratch)
-  if not m then stats.dropped = stats.dropped + 1; stats.lastReason = why; return end
+  if not m then
+    stats.dropped = stats.dropped + 1; stats.lastReason = why
+    if P.PlaceDropped then P.PlaceDropped(text, why) end   -- 1.5.0 scene: the probe's reason
+    return
+  end
   if mate and not MATE_KINDS[m.kind] then stats.mates = stats.mates + 1; return end
   local tie = tieOf(x.name)
   -- a friend listed without surname: the full name behind him (1.2.0; Battle.net names are given
@@ -950,6 +954,11 @@ function Friends.OnDeath(journal, key)
     zone = journal.zone, t = journal.t, victim = journal.me }
   if B.addOwn(k, fstore) == "new" then B.setHook(); B.updated() end
   Friends.Broadcast(P.EncodeKill(k, "K"), "K")
+  -- 1.5.0 scene: the spot after the kill (Guild.SendPlaces: setting, age, valid spot)
+  if Guild.SendPlaces then
+    Guild.SendPlaces({ { key = key, t = journal.t, victim = journal.me, mapID = journal.mapID, x = journal.x,
+      y = journal.y } }, function(text, kind) Friends.Broadcast(text, kind) end)
+  end
 end
 
 function Friends.OnListed(key)

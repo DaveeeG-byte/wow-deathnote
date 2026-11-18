@@ -787,7 +787,7 @@ end
 ------------------------------------------------------------------------
 local GUILD_DEFAULTS = { share = true, receive = true, alert = true, announce = true, sightings = false, minKills = 1,
                          shareManual = true, alertListed = false, friends = true, alertHunt = true,
-                         announceHunt = true, huntExpire = 0 }
+                         announceHunt = true, huntExpire = 0, sendPlace = true }   -- 1.5.0 scene: sendPlace
 
 function Look.HasGuild() return type(ns.Guild) == "table" end
 
