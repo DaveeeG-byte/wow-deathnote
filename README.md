@@ -177,7 +177,37 @@ guild chat, at most every 30 minutes), the avengers and the most wanted of the l
 the week's card with "Post" (guild chat) and "Copy for Discord". A dot on the guild tab says that something happened
 since you last looked. Own deaths only while they are shared. Data: `DeathNoteDB.glog` (holders: 500, 30 days; a ring of
 200 events the books do not keep, e.g. a hit list target taken down after the call-off). Other parts add events with
-`ns.GuildLog.Add(kind, data)`.
+`ns.GuildLog.Add(kind, data)` (with `mapID`, `x`, `y` the place is a link to the map; `merge` = seconds joins events of
+the same kind and key into one line with a count). Calls for help and sightings (see below) come in this way: a call of
+the guild or a friend (of the group only from a guildmate) and every sighting, sightings of the same enemy within ten
+minutes of the line's first as one line ("Grimm seen 3×, last by Bert"); sightings light no dot on the tab. Their pins
+in the margin are the map's pins of a call and a sighting.
+
+## Call for help and sightings (1.6.0)
+Call for help: a key (Esc > Options > Key Bindings > Revenge Book) or the "Help" button on the grudge notice sends your
+position and the attacker (hostile target, else the first attacker of the fight) to guild, party or raid and friends
+with the book, at once and also in combat (never in instances, battlegrounds, arenas or a chat lockdown; one call per
+30 seconds). The receiver gets the alarm sound, a slip at the top ("Anna calls for help: Ashenvale (other zone),
+attacker Grimm", a click opens the map there) and a red pin with an exclamation mark that pulses for 3 minutes; at most
+one call per sender per 30 seconds, five per minute; the last 20 calls are kept (`DeathNoteDB.call.calls`).
+Sightings: an enemy who killed you or a guildmate or friend in the last 30 days, a hit list or bounty target, seen in the
+open world goes with place and layer (read from creature GUIDs) to guild and friends, at most once per enemy every 2
+minutes after a random wait of 2 to 6 s, and not when someone else just reported him. The receiver (only for enemies in
+his own, the guild's or friends' book or on a hit list) gets his "last seen", a quiet chat line once per enemy every 5
+minutes and an amber eye pin for 10 minutes. Switch: House Rules, sheet Guild, "Share sightings of my killers" (on by
+default). `/dn probe` writes `probe.call` (result codes per channel, in and out of combat); `/dn probe net` tries an own
+chat channel and yell once.
+
+## Enemy guilds, feuds, claims, filing (1.6.0)
+Every deed keeps the guild the killer wore at that moment (`deed.guild`), revenge the guild of the avenged kill. Wanted >
+"Guilds" lists enemy guilds (deaths, standing, members in the book, last seen); "Declare feud" (at most 50,
+`DeathNoteDB.feuds`) makes members of that guild who are not in the book give a quiet alarm when seen (once per guild
+every 5 minutes, open world only; nothing is sent). Claims: a `V` also goes out when another's bounty lies on the target;
+the bounty's owner gets a claim under Unsolved > Claims (`DeathNoteDB.claims`, 50, 30 days; Paid, Declined, open
+again). Filing: entries with only suspicions or attacks, not by hand, no revenge, no hit list, no bounty, no feud guild,
+not marked "Keep", silent for 30 play days, go to Unsolved > Filed at login (`DeathNoteDB.expired`, 200; "Take back"
+marks them Keep); the book with the filed holds at most 3000 entries (deaths never go). Switch: House Rules, sheet Book,
+"File away old suspicions". The game's options have a page "Revenge Book" with a button to the House Rules.
 
 ## Friends' book (1.2.0)
 The same silent messages as in the guild (protocol version 1), but as whispers to character friends on the friend
@@ -420,11 +450,14 @@ waiting for; `/dn probe` records the result of the first attempt in an instance 
 refusal (`probe.guild.instanceSend`: kind, ok, throttle or refused, code, route, time). The book itself stays quiet in
 instances as before (no alarm, no enemy names).
 
-## Death Log (1.2.0)
-The third tab lists your own deaths to players: confirmed PvP deaths and deaths with an unclear killer. Deaths to
-monsters and the environment (`pve`) are not in it, do not count on the tab and not in the search; they are only
-counted (`DeathNoteDB.tally`, for the dry remarks and `/dn beichte`). Old `pve` rows from 1.1.0 stay in the file (1.1.0
-shows them again), they are just not shown.
+## Death Log (1.2.0, every death since 1.6.0)
+The third tab lists your own deaths to players: confirmed PvP deaths and deaths with an unclear killer. Up to 1.5.0
+deaths to monsters and the environment (`pve`) were only counted (`DeathNoteDB.tally`, for the dry remarks and
+`/dn beichte`). Since 1.6.0 they are kept in `DeathNoteDB.fates` (300 deaths, 150 causes; creature name, NPC id, spell,
+kind of the world, place) and the tab has three views: Players, All (default, a sign per kind) and Causes (ranked, a
+NEMESIS stamp from three deaths). They never ring the alarm and are never sent; the switch "Also record deaths by
+creatures and the world" stands in the foot of such a file. `/dn probe` writes `probe.pve`. Old `pve` rows from 1.1.0
+stay in the file (1.1.0 shows them again), they are just not shown.
 
 ## Dry remarks (1.2.0, German and English only)
 Switch "Dry remarks" (House Rules, sheet Book, on by default): now and then a line under a message, milestones (the same
@@ -439,7 +472,7 @@ Sheets Book, Alert, Guild, Rap Sheet (1.3.0). Sheet Book: language and, under it
 one hint line and one reload button). Sheet Alert: sound (No sound, Raid warning, Bell, Gong, Heartbeat, Quill, Siren; the
 addon's own sounds are in `Media/Sounds/`), volume 1 to 5, channel (Master, Effects, Dialog), cooldown per killer,
 threshold "Alarm at this many deaths by them" (counts kills plus assists), alarm size, test alarm.
-Sheet Guild: two groups, SHARING (with the guild, with friends, sightings, the spot of your death) and ALERTS (killers from guild and friends,
+Sheet Guild: two groups, SHARING (with the guild, with friends, sightings, sightings of my killers (1.6.0), the spot of your death) and ALERTS (killers from guild and friends,
 hit list targets); everything rarely used sits behind "More" at the bottom right (sharing entries added by hand,
 receiving the guild book, "Calls last", warning about entries added by hand, messages, threshold, status, emptying the
 books). The state of "More" is remembered. Sheet Rap Sheet: keep a rap sheet, report own kills in the chat, the
@@ -474,6 +507,10 @@ Settings added in 1.3.0 (`DeathNoteDB.settings`): `ledger.enabled` (true), `ledg
 | `Chronicle.lua` | the feud's chronicle in sentences (1.5.0) |
 | `SceneMap.lua` | pins on the world map, the map's switch, the way from the book to the map (1.5.0) |
 | `Humor.lua` | dry remarks, milestones, hidden commands, names of the awards (German and English only) |
+| `Fates.lua`, `FatesUI.lua` | deaths by creatures and the world, the Death Log's views All and Causes, awards for dying (1.6.0) |
+| `GuildLog.lua`, `GuildLogUI.lua` | the guild chronicle, who has the book, the week (1.6.0) |
+| `Call.lua`, `CallUI.lua` | call for help (prefix `DeathNoteSOS`), sightings with place and layer (`T`), their slip and pins (1.6.0) |
+| `Feud.lua`, `FeudUI.lua` | guild per deed, enemy guilds, feuds, claims, filing and the cap, the options page (1.6.0) |
 | `Libs/` | embedded LibStub, CallbackHandler, LibDataBroker and LibDBIcon for the minimap button (1.2.2) |
 
 ## Embedded libraries (1.2.2)
@@ -574,6 +611,12 @@ Details: `DeathNote/Libs/README.txt`. The release zip contains the folder with i
     `R` get a spot: never an attack, a suspicion, a note or anything copied. `K` and `R` keep their nine fields (1.4.0
     and older drop a `K` with a tenth field whole); 1.4.0, 1.2.0 and 1.1.0 drop `L` as an unknown kind. Switch: House
     Rules, sheet Guild, "Send the spot of my death" (on by default).
+23. (1.6.0) `T` = sighting with place and layer (killer key, map ID, x and y in tenths of a percent, time, layer mark
+    `server-instance-zone` or empty), to guild (while sharing with the guild) and friends, never to the group; the old
+    `S` stays and is still read. The call for help has a prefix of its own, `DeathNoteSOS`, message `P` (map ID, x, y,
+    time, attacker key and name, both may be empty), to guild, party or raid and friends (whisper or Battle.net). `V`
+    also goes out when another's bounty lies on the target, even without a deed. No other new message and no new field;
+    1.5.0 drops `T` as an unknown kind and never reads `DeathNoteSOS` (mixed-version tests).
 
 ## Client limits
 No combat log for addons, no detection of stealthed players, no distance or direction. Only players visible as a
