@@ -87,6 +87,7 @@ local function build()
     if not tip then return end
     tip:SetOwner(self, "ANCHOR_BOTTOM")
     tip:SetText(self.full or "", 1, 1, 1, 1, true)
+    for i = 1, #(self.kept or {}) do tip:AddLine(self.kept[i], 1, 1, 1, true) end   -- 1.6.2: the calls before it
     tip:AddLine(L.CALL_TIP, 0.85, 0.82, 0.75, true)
     tip:Show()
   end)
@@ -106,6 +107,7 @@ end
 -- above it (the bounty slip and the remark use the room below), below it only when there is no room above; when the
 -- alarm goes, the slip goes back. Alert.lua calls this after placing its popup; the popup's OnHide is hooked here.
 CU.GAP = 4
+CU.KEPT = 4   -- 1.6.2: earlier calls a slip keeps for its tooltip
 local hooked
 function CU.Place()
   if not slip then return end
@@ -153,10 +155,25 @@ end
 function CU.Show(rec)
   L, Fmt = ns.L, ns.F
   if not slip then build() end
+  -- 1.6.2: a call that replaces a slip still shown: the kicker counts the calls ("+1"), the tooltip keeps the lines
+  -- of the earlier ones (newest first, at most CU.KEPT); the next slip after a pause starts anew
+  local was = slip:IsShown() and slip.rec ~= nil and slip.rec ~= rec
+  local kept = slip.kept or {}
+  slip.kept = kept
+  if was then
+    table.insert(kept, 1, slip.full)
+    while #kept > CU.KEPT do table.remove(kept) end
+    slip.more = (slip.more or 0) + 1
+  else
+    for i = #kept, 1, -1 do kept[i] = nil end
+    slip.more = 0
+  end
   slip.rec = rec
   slip.full = ns.Call.InLine(rec)
   local Ex = ns.Extras
-  Look.FitText(slip.kicker, Ex and Ex.Spaced and Ex.Spaced(L.CALL_SLIP_HEAD) or L.CALL_SLIP_HEAD, CU.FIT_KICKER)
+  local kick = Ex and Ex.Spaced and Ex.Spaced(L.CALL_SLIP_HEAD) or L.CALL_SLIP_HEAD
+  if slip.more > 0 then kick = kick .. "   +" .. slip.more end
+  Look.FitText(slip.kicker, kick, CU.FIT_KICKER)
   Look.FitText(slip.name, tostring(rec.by or "?"), CU.FIT_NAME)
   Look.FitText(slip.line, CU.Where(rec), CU.FIT_LINE)
   Look.FitText(slip.hint, L.CALL_TIP, CU.FIT_HINT)

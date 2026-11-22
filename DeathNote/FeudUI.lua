@@ -391,7 +391,7 @@ function FD.ShowRight()
     lines[#lines + 1] = stand
     lines[#lines + 1] = Fmt(L.FEUD_MEMBERS, { count = g.n })
     Page(L.FEUD_SHEET_HEAD, g.seen and Fmt(L.ROW_SEEN, { time = Look.Ago(g.seen) }) or "", g.name, table.concat(lines, "\n"),
-      g.feud and L.FEUD_TIP_ON or nil, g.feud and L.FEUD_END or L.FEUD_DECLARE, function() ToggleFeud(g.name) end)
+      L.FEUD_TIP_ON, g.feud and L.FEUD_END or L.FEUD_DECLARE, function() ToggleFeud(g.name) end)   -- 1.6.2: also before the feud
     return true
   end
   if not OpenView() then return nil end

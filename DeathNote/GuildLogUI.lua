@@ -183,9 +183,12 @@ end
 local function Dot(t)
   if t.glogDot then return t.glogDot end
   local d = t:CreateTexture(nil, "OVERLAY")
-  d:SetSize(7, 7)
+  -- 1.6.2: a round dot (the map's badge disc, tinted) instead of a 7 px square that read as a pixel fault
+  d:SetSize(10, 10)
   d:SetPoint("CENTER", t, "TOPRIGHT", -4, 0)
-  d:SetColorTexture(C(Look.RED_ON_BLACK or Look.RED, 1))
+  local red = Look.RED_ON_BLACK or Look.RED
+  Look.Tex(d, Look.MEDIA .. "scene_badge.tga", red[1], red[2], red[3], 1)
+  if not d.dnFlat then d:SetVertexColor(C(red, 1)) end
   d:Hide()
   t.glogDot = d
   return d

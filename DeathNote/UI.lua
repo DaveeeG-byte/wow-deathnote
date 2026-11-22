@@ -4412,7 +4412,14 @@ BuildSettings = function()
   -- sheet 1: book (display, size, passing on)
   local A = sheet()
   S.pageA = A
-  local y = checks(A, ns.Humor and ns.Humor.BookOptions(BOOK_OPTIONS) or BOOK_OPTIONS) -- Humor: switch, de/en only
+  -- 1.6.2: "File old suspicions" stands with the book's own switches (it stood under MAP and read as a map switch)
+  local bookOpts = BOOK_OPTIONS
+  if ns.Feud then
+    bookOpts = {}
+    for i = 1, #BOOK_OPTIONS do bookOpts[i] = BOOK_OPTIONS[i] end
+    bookOpts[#bookOpts + 1] = GF.FEUD_OPTIONS[1]
+  end
+  local y = checks(A, ns.Humor and ns.Humor.BookOptions(bookOpts) or bookOpts) -- Humor: switch, de/en only
   S.size = Stepper(A, y, L.SET_BOOK_SIZE, function(d)
     local steps = UI.ScaleSteps()
     Set("ui.scale", Step(steps, ClampScale(tonumber(Look.Setting("ui.scale", 1)) or 1), d))
@@ -4449,17 +4456,11 @@ BuildSettings = function()
   A.bottom = -(y - 4) + 22
   -- 1.5.0 scene: section MAP
   if ns.Scene then
-    y = section(A, y - 4 - 22 - 10, L.SET_SEC_MAP)
+    y = section(A, y - 4 - 22 - 6, L.SET_SEC_MAP)   -- 1.6.2: 4 px closer, the room the moved switch needs
     -- one switch only: the sheet is full (a stepper more made it scroll in German); the period, only open debts and
     -- the kinds are in the map's own switch (SceneMap.lua)
     y = checks(A, GF.SCENE_OPTIONS, nil, y)
     A.bottom = -y - 2
-  end
-  if ns.Feud then
-    -- 1.6.0 feud: one row below MAP (a section label of its own made the sheet scroll in seven languages)
-    local y0 = y + 4
-    y = checks(A, GF.FEUD_OPTIONS, nil, y0)
-    A.bottom = -y0 + 20 + 2          -- the row is 20 px high; the sheet ends 2 px below it (German fits without scrolling)
   end
   hint(A, L.SET_HINT_BOOK)
 

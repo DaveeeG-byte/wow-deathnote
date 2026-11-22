@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.6.2 (2026-11-22)
+
+### Changed
+- A second call for help while the slip of the first still stands: the slip's head counts the calls ("+1") and its tooltip keeps the earlier ones. Before, the second call replaced the first without a trace.
+- Guild chronicle: a line under "Yesterday" or a date says the time of day instead of "2 days ago" once more.
+- The page of an enemy guild says what a feud does before you declare it, not only afterwards.
+- A single cause of death carries no rank number "1." in the Death Log's view Causes.
+- The dot on the tab Guild is round (it was a small square that read as a pixel fault).
+- House Rules, sheet Book: "File old suspicions" stands with the book's own switches at the top; it stood below the section MAP and read as a map switch.
+
 ## 1.6.1 (2026-11-22)
 
 ### Added

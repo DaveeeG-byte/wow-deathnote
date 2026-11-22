@@ -369,7 +369,8 @@ function Fates.Ranked()
     if at ~= bt then return at > bt end
     return a.key < b.key
   end)
-  for i, it in ipairs(list) do it.rank = i end
+  -- 1.6.2: a single cause is no ranking (solo: the row shows no "1.")
+  for i, it in ipairs(list) do it.rank = i; it.solo = (#list == 1) or nil end
   rankCache, rankVer = list, Fates.version
   return list
 end

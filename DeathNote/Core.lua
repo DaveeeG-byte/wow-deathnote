@@ -315,6 +315,14 @@ function Util.When(t)
   return fmtDate(sameYear(t) and "TIME_FMT_WHEN" or "TIME_FMT_WHEN_YEAR", t)
 end
 
+-- 1.6.2: the time of day alone ("21:04"), for a line that stands under its date already (the guild chronicle)
+function Util.Clock(t)
+  if type(t) ~= "number" or t ~= t then return "?" end
+  if not dateFn then return "?" end
+  local ok, s = pcall(dateFn, "%H:%M", t)
+  return ok and type(s) == "string" and s or "?"
+end
+
 function Util.Ago(t)
   if type(t) ~= "number" or t ~= t then return L.TIME_NEVER end
   local d = time() - t

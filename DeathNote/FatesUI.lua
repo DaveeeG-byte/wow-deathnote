@@ -158,7 +158,7 @@ function FU.BindRow(r, d, index)
   k.SetRowMode(r, "normal")
   r.skull:Hide(); r.icon:Hide(); r.coin:Hide(); r.strike:Hide()
   if d.foe then
-    k.SetRank(r, d.rank)
+    k.SetRank(r, not d.solo and d.rank or nil)
     local spell = d.spell and Fmt(L.FATE_SPELL, { spell = tostring(d.spell) }) or nil
     k.SetRow(r, Fa.Name(d), Look.Join(Look.Place(d.zone, d.subzone), spell), Look.Times(d.n), "normal", true)
     sign(r, d, true)

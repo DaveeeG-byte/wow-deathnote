@@ -821,6 +821,8 @@ function GL.Rows(src)
     local day = GL.DayWord(e.t, t0)
     if day ~= last then out[#out + 1] = { head = day }; last = day end
     local say, ago = GL.Parts(e)
+    -- 1.6.2: under "Yesterday" or a date the line says the time of day ("2 days ago" under "08.11." said it twice)
+    if day ~= L.GLOG_TODAY and Util.Clock then ago = Util.Clock(e.t) end
     out[#out + 1] = { event = e, text = GL.Line(e), say = say, ago = ago }
   end
   return out
