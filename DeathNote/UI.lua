@@ -3063,6 +3063,7 @@ end
 RS.SORTS = { "recent", "state", "points", "count", "name" }
 RS.LOG_LINES = 60          -- Ledger.LOG_MAX: one line per kill of the log
 RS.KILL_LINES = 8          -- kill lines on a victim sheet
+RS.DEED_LINES = 5          -- 1.6.1: lines of his own deeds below them
 RS.FIT_TITLE = { sizes = { 26, 22, 19 }, lines = 2, wrapFirst = 3 }
 RS.FIT_LINE = { sizes = { 11, 10 }, lines = 2, wrapFirst = true }
 RS.FIT_ONE = { sizes = { 11, 10 } }
@@ -3148,6 +3149,9 @@ function RS.RowTip(v)
   local m, h, score = Look.Stand(v.key)
   if m then t[#t + 1] = Look.Join(Fmt(L.STAND_LINE, { score = score }), Fmt(L.STAND_TIP, { mine = m, his = h })) end
   t[#t + 1] = Fmt(L.VICTIM_POINTS, { points = tonumber(v.pts) or 0 })
+  -- 1.6.1: why he is an enemy at all: his newest killing blow (me, another char of mine, a guildmate or friend)
+  local ok, d = pcall(RS.LastKill, v)
+  if ok and d then t[#t + 1] = Fmt(L.VICTIM_DEED_TIP, { name = Look.First(d.victim or d.me), time = Look.When(d.t) }) end
   return t
 end
 
@@ -3222,6 +3226,7 @@ function RS.Line(parent, y)
   return b
 end
 RS.FIT_KILL = { sizes = { 13, 11 } }
+RS.FIT_KILL_SMALL = { sizes = { 11 } }   -- 1.6.1: the deeds of a victim sheet in one size
 function RS.SetLine(b, text, tag, row, tipFn)
   b.tag:SetText(tag or "")
   local w = tag and math.floor(312 - TextWidth(b.tag, 60) - 10) or 312
@@ -3446,7 +3451,11 @@ function RS.Build()
   local V = RS.Card(R)
   R.vic = V
   V.head:SetWidth(230)
-  V.headHit:SetScript("OnClick", function(self) if self.key and Store().Get(self.key) then UI.ShowEnemy(self.key) end end)
+  V.headHit:SetScript("OnClick", function(self)
+    if not self.key then return end
+    if Store().Get(self.key) then UI.ShowEnemy(self.key)
+    elseif self.shared then UI.ShowGuildEnemy(self.key) end   -- 1.6.1: known from guild or friends alone
+  end)
   V.score = Look.Text(V, "hand", 26, Look.INK)
   V.score:SetPoint("TOPRIGHT", -24, -16)
   V.score:SetJustifyH("RIGHT")
@@ -3474,6 +3483,16 @@ function RS.Build()
   V.rule:SetWidth(312)
   V.lines = {}
   for i = 1, RS.KILL_LINES do V.lines[i] = RS.Line(VS, 0) end
+  -- 1.6.1: his deeds (whom he killed and when), below the own kills; shown only when there are any
+  V.dlabel = Label(VS, L.VICTIM_DEEDS_LABEL)
+  V.drule = VS:CreateTexture(nil, "ARTWORK")
+  V.drule:SetHeight(1)
+  V.drule:SetColorTexture(C(Look.INK, 0.45))
+  V.drule:SetPoint("TOPLEFT", V.dlabel, "BOTTOMLEFT", -4, -2)
+  V.drule:SetWidth(312)
+  V.deeds = {}
+  for i = 1, RS.DEED_LINES do V.deeds[i] = RS.Line(VS, 0) end
+  RS.HideDeeds(V)
   V.strike = InkButton(V.page.foot, "", 132, 22, function(self)
     local v = self.key and ns.Ledger.Victim(self.key)
     if v then Confirm("DEATHNOTE_VICTIM_STRIKE", RS.Name(v), self.key) end
@@ -3686,10 +3705,113 @@ function RS.FillLog()
   G.page:Layout(math.ceil(62 + math.max(n, 1) * 16 + 6 - 54))
 end
 
+------------------------------------------------------------------------
+-- 1.6.1 his deeds on the victim sheet: whom he killed and when. The sheet of a victim showed only the own side (the
+-- kills on him); why he is an enemy stood on his poster alone. Sources: the deeds of the own book (every own char,
+-- with their role) and the deeds guild and friends sent. An own killing blow stands in the shared list too (same time,
+-- same victim): it shows once.
+------------------------------------------------------------------------
+function RS.DeedOrder(a, b) return a.t > b.t end
+function RS.Deeds(v)
+  local list, seen = RS.deedList or {}, RS.deedSeen or {}
+  RS.deedList, RS.deedSeen = list, seen
+  wipe(list); wipe(seen)
+  local key = type(v) == "table" and v.key
+  if type(key) ~= "string" or key:find("#", 1, true) then return list end   -- a key of the rap sheet alone
+  local e = Store().Get(key)
+  local own = type(e) == "table" and e.deaths
+  if type(own) == "table" then
+    for i = 1, #own do
+      local d = own[i]
+      if type(d) == "table" and type(d.t) == "number" then
+        list[#list + 1] = d
+        if type(d.me) == "string" then seen[d.t .. "\t" .. d.me] = true end
+      end
+    end
+  end
+  local g = GCall("Get", key, "all")
+  local sent = type(g) == "table" and g.deeds
+  if type(sent) == "table" then
+    for i = 1, #sent do
+      local d = sent[i]
+      if type(d) == "table" and type(d.t) == "number" and type(d.victim) == "string" and not seen[d.t .. "\t" .. d.victim] then
+        list[#list + 1] = d
+      end
+    end
+  end
+  table.sort(list, RS.DeedOrder)
+  return list
+end
+-- his newest killing blow (a shared deed is always one; an own one by its role), nil for none
+function RS.LastKill(v)
+  local list = RS.Deeds(v)
+  for i = 1, #list do
+    local d = list[i]
+    if d.victim ~= nil or (Look.Role(d) == "kill" and type(d.me) == "string") then return d end
+  end
+end
+-- "11.11. 00:15 · Anna · Blutsauger · Schlingendorntal" (the place gives way first), the role at the right as on the
+-- poster; a shared deed: "12.11. 21:04 · Bert · Grom'gol"
+function RS.DeedLine(d)
+  if d.victim ~= nil then
+    return Look.Join(Look.When(d.t), Look.First(d.victim), Look.Place(d.zone)), nil, UX.GuildDeedTip
+  end
+  local tag = UX.ROLE_TAG[Look.Role(d)]
+  return Look.Join(Look.When(d.t), type(d.me) == "string" and Look.First(d.me) or nil,
+    (type(d.spell) == "string" and d.spell ~= "") and d.spell or nil, Look.Place(d.zone, d.subzone)), tag and L[tag], UX.DeathTip
+end
+function RS.HideDeeds(V)
+  V.dlabel:Hide(); V.drule:Hide()
+  for i = 1, RS.DEED_LINES do V.deeds[i]:Hide() end
+end
+-- places the deeds from y (card coordinates) on; returns the y below them (y itself without deeds)
+function RS.FillDeeds(V, v, y)
+  local list = RS.Deeds(v)
+  local n = #list
+  if n == 0 then RS.HideDeeds(V); return y end
+  y = y + 12
+  V.dlabel:ClearAllPoints()
+  V.dlabel:SetPoint("TOPLEFT", 24, -y)
+  V.dlabel:Show(); V.drule:Show()
+  y = y + 16
+  local shown = math.min(n, RS.DEED_LINES)
+  for i = 1, RS.DEED_LINES do
+    local b = V.deeds[i]
+    if i > shown then
+      b:Hide()
+    else
+      b:ClearAllPoints()
+      b:SetPoint("TOPLEFT", 20, -(y + (i - 1) * 16))
+      if i == RS.DEED_LINES and n > RS.DEED_LINES then
+        -- the last line names the rest (his poster shows more)
+        RS.SetLine(b, Fmt(L.MORE_LINE, { count = n - RS.DEED_LINES + 1 }), nil, nil, nil)
+      else
+        local d = list[i]
+        local text, tag, tipFn = RS.DeedLine(d)
+        RS.SetLine(b, text, tag, d, tipFn)
+        GF.LinkPin(b, GF.PlaceOf(d), GF.DeedKind(d), d)
+      end
+    end
+  end
+  -- one size for the whole list: when one line had to go down to 11 pt, all do (a list in two sizes looks torn)
+  local small = false
+  for i = 1, shown do if (V.deeds[i].text.fontSize or 13) < 13 then small = true end end
+  if small then
+    for i = 1, shown do
+      local fs = V.deeds[i].text
+      if (fs.fontSize or 13) >= 13 then Look.FitText(fs, fs.full or fs:GetText() or "", RS.FIT_KILL_SMALL) end
+    end
+  end
+  return y + shown * 16
+end
+
 function RS.FillVictim(v)
   local V = P.record.vic
   local e = RS.Book(v)
-  V.headHit.key = e and v.key or nil
+  -- 1.6.1: he never killed me but a guildmate or friend: the name opens his poster in the guild book
+  local shared = not e and type(v.key) == "string" and not v.key:find("#", 1, true) and GCall("Get", v.key, GF.Src()) ~= nil
+  V.headHit.key = (e or shared) and v.key or nil
+  V.headHit.shared = shared or nil
   Look.FitText(V.head, RS.Name(v), GF.FIT_NAME26)
   local m, h, score = Look.Stand(v.key)
   local st = (e and m) and Look.ScoreState(m, h, e.status) or "victim"
@@ -3703,7 +3825,7 @@ function RS.FillVictim(v)
   V.state:SetPoint("TOPLEFT", 24, -y)
   V.state:SetText(Spaced(L[Look.STATE_WORD[st]] or ""))
   y = y + 14
-  y = RS.Put(V.note, y, e and L.CASE_CLICK_NAME or nil)
+  y = RS.Put(V.note, y, (e or shared) and L.CASE_CLICK_NAME or nil)
   y = y + 6
   y = RS.Put(V.sum, y, Look.Join(Fmt(L.VICTIM_KILLED, { times = Look.Times(v.n) }), Fmt(L.VICTIM_POINTS, { points = tonumber(v.pts) or 0 })))
   y = RS.Put(V.scene, y, (type(v.zone) == "string" and v.zone ~= "") and Fmt(L.VICTIM_SCENE, { zone = v.zone, time = Look.Ago(v.last) or "?" }) or nil)
@@ -3745,7 +3867,15 @@ function RS.FillVictim(v)
   for i = shown + 1, RS.KILL_LINES do V.lines[i]:Hide() end
   V.strike.key = v.key
   V.right:SetText("")
-  V.page:Layout(math.ceil(y + math.max(shown, 1) * 16 + 6 - 54))
+  -- 1.6.1: his deeds below the own kills (a fault there never breaks the sheet)
+  local bottom = y + math.max(shown, 1) * 16
+  local okD, ny = pcall(RS.FillDeeds, V, v, bottom)
+  if okD and type(ny) == "number" then bottom = ny
+  else
+    RS.HideDeeds(V)
+    if not okD and ns.ReportError then ns.ReportError(ny) end
+  end
+  V.page:Layout(math.ceil(bottom + 6 - 54))
   if V.ref ~= v.key then V.ref = v.key; V.page:Top() end
 end
 

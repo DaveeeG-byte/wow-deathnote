@@ -1204,4 +1204,7 @@ L.CLAIM_FOR = "por {target}"
 L.CLAIM_NOTE = "El libro no paga: por comercio o correo."
 L.FEUD_SHEET_HEAD = "Hermandad"
 L.FATE_LAST = "última {time}"
+-- 1.6.1 deeds
+L.VICTIM_DEEDS_LABEL = "SUS FECHORÍAS"
+L.VICTIM_DEED_TIP = "Su última víctima: {name}, {time}"
 end)

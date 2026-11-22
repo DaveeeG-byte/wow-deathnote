@@ -1,4 +1,4 @@
-# Revenge Book 1.6.0
+# Revenge Book 1.6.1
 
 An addon for WoW Forever (Interface 16001). In open-world PvP it writes down who killed you, shows your killers as a
 book and warns you when one of them is in sight again. Confirmed kills are shared silently with your guildmates (the
@@ -382,6 +382,12 @@ always says "With your group."), a notice for a new rank or an
 award (after combat), the score in list, poster, tooltip, alarm line and revenge notice, the game tooltip "RAP SHEET:"
 over a victim. Clearing the rap sheet removes victims and kill list; rank, points and awards stay. Switched off ("Keep
 a rap sheet"), nothing is booked, tab and score disappear and the book ranks as in 1.2.x; the data stays.
+
+(1.6.1) The sheet of a victim also lists his deeds below the own kills (`RS.Deeds`, `RS.FillDeeds` in `UI.lua`): the
+deeds of the own book (every own character, with their role) joined with what guild and friends sent, newest first,
+the same deed once (an own killing blow stands in the shared list with the same time and victim), five lines, the last
+one naming the rest. Nothing new is stored or sent. The row's tooltip names his latest victim; a victim known from the
+guild book alone opens that poster by the click on his name. Test: `tests/ui/fix161_opferblatt_taten.lua`.
 
 **Victim alarm** (`alert.victims`, off by default): a player you killed more often than they killed you, your last
 kill on them at most 14 days ago, not pardoned, shows up: a quiet popup with the score and a soft sound, once per 10

@@ -1215,4 +1215,7 @@ L.CLAIM_FOR = "за {target}"
 L.CLAIM_NOTE = "Книга сама не платит: обменом или почтой."
 L.FEUD_SHEET_HEAD = "Гильдия"
 L.FATE_LAST = "последний {time}"
+-- 1.6.1 deeds
+L.VICTIM_DEEDS_LABEL = "ЕГО ЗЛОДЕЯНИЯ"
+L.VICTIM_DEED_TIP = "Последняя жертва: {name}, {time}"
 end)

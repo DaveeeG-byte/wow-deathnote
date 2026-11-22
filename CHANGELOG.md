@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.1 (2026-11-22)
+
+### Added
+- **The sheet of a victim names his deeds too.** In the Rap Sheet, the sheet of someone you killed now lists below your own kills whom he killed and when: you, your other characters, guildmates and friends, newest first, with spell and place, the role at the right as on his poster. Up to five lines; the last one names the rest. The list only shows when there is a deed. Before, the sheet showed only your side of the score, and why the alarm rang for him stood on his poster alone.
+- The tooltip of a victim's row names his latest victim and when.
+- A victim who never killed you but a guildmate or friend: the click on his name opens his poster in the guild book.
+
 ## 1.6.0 (2026-11-18)
 
 ### Changed

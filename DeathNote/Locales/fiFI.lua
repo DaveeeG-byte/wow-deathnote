@@ -1210,4 +1210,7 @@ L.CLAIM_FOR = "kohteesta {target}"
 L.CLAIM_NOTE = "Kirja ei maksa itse: kaupalla tai postilla."
 L.FEUD_SHEET_HEAD = "Kilta"
 L.FATE_LAST = "viimeksi {time}"
+-- 1.6.1 deeds
+L.VICTIM_DEEDS_LABEL = "HÄNEN TEKONSA"
+L.VICTIM_DEED_TIP = "Viimeisin uhri: {name}, {time}"
 end)

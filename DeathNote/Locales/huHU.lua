@@ -1218,4 +1218,7 @@ L.CLAIM_FOR = "ezért: {target}"
 L.CLAIM_NOTE = "A könyv nem fizet: kereskedéssel vagy postán."
 L.FEUD_SHEET_HEAD = "Céh"
 L.FATE_LAST = "utoljára {time}"
+-- 1.6.1 deeds
+L.VICTIM_DEEDS_LABEL = "AZ Ő TETTEI"
+L.VICTIM_DEED_TIP = "Legutóbbi áldozata: {name}, {time}"
 end)

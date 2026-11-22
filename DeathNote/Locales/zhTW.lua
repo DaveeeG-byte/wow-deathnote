@@ -1217,4 +1217,7 @@ L.CLAIM_FOR = "目標：{target}"
 L.CLAIM_NOTE = "本書不會代付：請交易或郵寄。"
 L.FEUD_SHEET_HEAD = "公會"
 L.FATE_LAST = "最近 {time}"
+-- 1.6.1 deeds
+L.VICTIM_DEEDS_LABEL = "對方罪行"
+L.VICTIM_DEED_TIP = "最近受害者：{name}，{time}"
 end)

@@ -1216,4 +1216,7 @@ L.CLAIM_FOR = "za {target}"
 L.CLAIM_NOTE = "Knjiga sama ne plaća: trgovinom ili poštom."
 L.FEUD_SHEET_HEAD = "Ceh"
 L.FATE_LAST = "zadnji {time}"
+-- 1.6.1 deeds
+L.VICTIM_DEEDS_LABEL = "NJEGOVA DJELA"
+L.VICTIM_DEED_TIP = "Posljednja žrtva: {name}, {time}"
 end)

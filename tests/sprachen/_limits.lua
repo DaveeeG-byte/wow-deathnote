@@ -301,6 +301,7 @@ return {
   CONFIRM_RECORD_CLEAR_OK = { max = 14, field = "dialog button" },
   ACT_VICTIM_STRIKE = { max = 26, field = "button on the victim sheet (asks first)" },
   VICTIM_KILLS_LABEL = { max = 14, field = "small label over the kill lines of a victim (letter-spaced)" },
+  VICTIM_DEEDS_LABEL = { max = 14, field = "small label over the deeds of a victim (letter-spaced)" },
   KILL_TAG_REVENGE = { max = 14, field = "tag at the right of a kill line: they had killed you more often" },
   KILL_TAG_KICK = { max = 14, field = "tag at the right of a kill line: the same player again within 10 minutes (no points)" },
   KILL_TAG_GROUP = { max = 14, field = "tag at the right of a kill line: killed in a group (half honour and hunt)" },

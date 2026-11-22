@@ -1219,4 +1219,7 @@ L.CLAIM_FOR = "{target} için"
 L.CLAIM_NOTE = "Kitap kendisi ödemez: takas ya da posta ile."
 L.FEUD_SHEET_HEAD = "Lonca"
 L.FATE_LAST = "son {time}"
+-- 1.6.1 deeds
+L.VICTIM_DEEDS_LABEL = "ONUN SUÇLARI"
+L.VICTIM_DEED_TIP = "Son kurbanı: {name}, {time}"
 end)

@@ -1209,4 +1209,7 @@ L.CLAIM_FOR = "for {target}"
 L.CLAIM_NOTE = "Bogen betaler ikke selv: via handel eller post."
 L.FEUD_SHEET_HEAD = "Guild"
 L.FATE_LAST = "senest {time}"
+-- 1.6.1 deeds
+L.VICTIM_DEEDS_LABEL = "HANS DRAB"
+L.VICTIM_DEED_TIP = "Seneste offer: {name}, {time}"
 end)
