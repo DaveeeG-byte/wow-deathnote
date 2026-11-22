@@ -1221,4 +1221,6 @@ L.FATE_LAST = "utoljára {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "AZ Ő TETTEI"
 L.VICTIM_DEED_TIP = "Legutóbbi áldozata: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "A 30 játéknapja hír nélküli gyanúk és támadások az „Archívum” nézetbe kerülnek. Jobb klikk egy bejegyzésre, „Megtartás”: soha nem kerül archívumba."
 end)

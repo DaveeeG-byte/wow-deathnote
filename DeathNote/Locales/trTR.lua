@@ -1222,4 +1222,6 @@ L.FATE_LAST = "son {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "ONUN SUÇLARI"
 L.VICTIM_DEED_TIP = "Son kurbanı: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "30 oyun günü boyunca haber olmayan şüpheler ve saldırılar \"Arşiv\" görünümüne taşınır. Bir kayda sağ tıkla ve \"Sakla\"yı seç: asla arşivlenmez."
 end)

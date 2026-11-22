@@ -1207,4 +1207,6 @@ L.FATE_LAST = "última {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "SUS FECHORÍAS"
 L.VICTIM_DEED_TIP = "Su última víctima: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Las sospechas y ataques sin novedades en 30 días de juego pasan a «Archivados». Clic derecho en una entrada, «Conservar»: nunca se archiva."
 end)

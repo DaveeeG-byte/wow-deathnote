@@ -1219,4 +1219,6 @@ L.FATE_LAST = "ostatnio {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "JEGO CZYNY"
 L.VICTIM_DEED_TIP = "Ostatnia ofiara: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Podejrzenia i ataki bez nowin od 30 dni gry trafiają do widoku „Archiwum”. Kliknij wpis prawym przyciskiem i wybierz „Zachowaj”: nigdy nie trafi do archiwum."
 end)

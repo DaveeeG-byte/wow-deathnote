@@ -1219,4 +1219,6 @@ L.FATE_LAST = "naposledy {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "JEHO ČINY"
 L.VICTIM_DEED_TIP = "Poslední oběť: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Podezření a útoky bez novinek za 30 herních dní se přesunou do záložky „Archiv“. Pravým tlačítkem na záznam a „Ponechat“: nikdy se neodloží."
 end)

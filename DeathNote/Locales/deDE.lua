@@ -1207,4 +1207,6 @@ L.FATE_LAST = "zuletzt {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "SEINE TATEN"  -- [max 14]
 L.VICTIM_DEED_TIP = "Sein letztes Opfer: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Verdacht und Angriffe ohne Neues seit 30 Spieltagen wandern nach Zu klären, „Abgelegt“. Rechtsklick auf einen Eintrag, „Behalten“: er wird nie abgelegt."
 end)

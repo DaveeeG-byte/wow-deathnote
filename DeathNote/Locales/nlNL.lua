@@ -1212,4 +1212,6 @@ L.FATE_LAST = "laatst {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "ZIJN DADEN"
 L.VICTIM_DEED_TIP = "Laatste slachtoffer: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Verdenkingen en aanvallen zonder nieuws in 30 speeldagen gaan naar „Gearchiveerd”. Rechtsklik op een vermelding en kies „Houden”: die wordt nooit gearchiveerd."
 end)

@@ -1207,4 +1207,6 @@ L.FATE_LAST = "última {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "CRIMES DELE"
 L.VICTIM_DEED_TIP = "Última vítima: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Suspeitas e ataques sem novidade há 30 dias de jogo vão para \"Arquivados\". Clique com o botão direito em um registro e escolha \"Manter\": ele nunca é arquivado."
 end)

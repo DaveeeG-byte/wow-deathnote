@@ -1220,4 +1220,6 @@ L.FATE_LAST = "最近 {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "對方罪行"
 L.VICTIM_DEED_TIP = "最近受害者：{name}，{time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "30 個遊戲日沒有新動靜的嫌疑和襲擊會移到「已歸檔」。右鍵點擊條目並選擇「保留」：它永遠不會被歸檔。"
 end)

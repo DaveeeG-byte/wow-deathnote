@@ -1206,4 +1206,6 @@ L.FATE_LAST = "dernière {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "SES MÉFAITS"
 L.VICTIM_DEED_TIP = "Sa dernière victime : {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Les soupçons et attaques sans nouvelles depuis 30 jours de jeu passent dans « Classés ». Clic droit sur une entrée, « Garder » : elle n'est jamais classée."
 end)

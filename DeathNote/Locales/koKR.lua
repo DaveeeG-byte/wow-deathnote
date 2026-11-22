@@ -1220,4 +1220,6 @@ L.FATE_LAST = "최근 {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "그의 범행"
 L.VICTIM_DEED_TIP = "최근 피해자: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "30 플레이일 동안 소식 없는 의심과 공격은 \"보관\"으로 옮겨진다. 항목을 우클릭하고 \"보존\"을 고르면 보관되지 않는다."
 end)

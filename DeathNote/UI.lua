@@ -2503,6 +2503,8 @@ local function FillEnemy(e)
   if bline then info[#info + 1] = bline; bidx = #info; opt[#info] = true end
   local aline, arows = GF.AvengedLine(e.key)
   if aline then info[#info + 1] = aline; aidx = #info; opt[#info] = true end
+  -- 1.6.3: an entry the player holds back from filing says so (the menu word; it gives way first when room is short)
+  if e.keep == true then info[#info + 1] = L.ACT_KEEP; opt[#info] = true end
   -- 1.3.0: "Last seen: Stranglethorn Vale, 2 hrs ago"; when that is wider than the line, the line of 1.2.2
   local seen, short = RS.LastSeen(e)
   local full
@@ -4123,7 +4125,7 @@ GF.SCENE_OPTIONS = {
 }
 -- 1.6.0 feud: section ORDER on sheet Book (old suspicions go to the archive after 30 play days, Feud.lua)
 GF.FEUD_OPTIONS = {
-  { "book.expire", "OPT_BOOK_EXPIRE", true },
+  { "book.expire", "OPT_BOOK_EXPIRE", true, tip = "OPT_BOOK_EXPIRE_TIP" },   -- 1.6.3: the tip names "Keep"
 }
 GF.MORE_WARN = {
   { "alertListed", "OPT_G_ALERTLISTED" },

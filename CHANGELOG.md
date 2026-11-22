@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.3 (2026-11-22)
+
+### Changed
+- "Keep" is easier to find: the switch "File away old suspicions" (House Rules, sheet Book) has a tooltip that says where filed entries go and that a right-click on an entry, "Keep", holds it back for good. The poster of an entry you keep says so.
+
 ## 1.6.2 (2026-11-22)
 
 ### Changed

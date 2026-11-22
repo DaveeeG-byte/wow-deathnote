@@ -1212,4 +1212,6 @@ L.FATE_LAST = "senest {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "HANS DRAB"
 L.VICTIM_DEED_TIP = "Seneste offer: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Mistanker og angreb uden nyt i 30 spilledage flyttes til „Arkiveret“. Højreklik på en post og vælg „Behold“: den arkiveres aldrig."
 end)

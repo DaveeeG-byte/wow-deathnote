@@ -1227,4 +1227,6 @@ L.FATE_LAST = "last {time}"  -- date at the top right of a cause's file: the lat
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "THEIR DEEDS"  -- [max 14] small label on the sheet of one of your victims (rap sheet), over the list of what HE did: whom he killed and when (you, your other characters, guildmates, friends); letter-spaced, below the label VICTIM_KILLS_LABEL
 L.VICTIM_DEED_TIP = "Their last victim: {name}, {time}"  -- tooltip line of a victim's row in the rap sheet: his newest killing blow; {name} = first name of the one he killed, {time} = date and time
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Suspicions and attacks with no news for 30 play days move to Unsolved, \"Filed away\". Right-click an entry and choose \"Keep\": it is never filed away."  -- tooltip of the check box OPT_BOOK_EXPIRE (House Rules, sheet Book): what is filed away and where it goes (tab Unsolved, view VIEW_FILED), and how to hold an entry back: the menu word ACT_KEEP; quote both words exactly as your language file has them
 end)

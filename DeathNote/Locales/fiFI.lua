@@ -1213,4 +1213,6 @@ L.FATE_LAST = "viimeksi {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "HÄNEN TEKONSA"
 L.VICTIM_DEED_TIP = "Viimeisin uhri: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Epäilyt ja hyökkäykset ilman uutta 30 pelipäivään siirtyvät näkymään ”Arkisto”. Napsauta merkintää oikealla ja valitse ”Säilytä”: sitä ei koskaan arkistoida."
 end)

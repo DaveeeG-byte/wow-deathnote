@@ -1219,4 +1219,6 @@ L.FATE_LAST = "zadnji {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "NJEGOVA DJELA"
 L.VICTIM_DEED_TIP = "Posljednja žrtva: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Sumnje i napadi bez novosti 30 dana igre sele se u „Arhiva“. Desni klik na unos i „Zadrži“: nikad se ne arhivira."
 end)

@@ -1212,4 +1212,6 @@ L.FATE_LAST = "sist {time}"
 -- 1.6.1 deeds
 L.VICTIM_DEEDS_LABEL = "HANS UDÅDER"
 L.VICTIM_DEED_TIP = "Siste offer: {name}, {time}"
+-- 1.6.3 keep
+L.OPT_BOOK_EXPIRE_TIP = "Mistanker og angrep uten nytt på 30 spilledager flyttes til «Arkivert». Høyreklikk på en oppføring og velg «Behold»: den arkiveres aldri."
 end)
