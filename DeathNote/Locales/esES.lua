@@ -1209,4 +1209,19 @@ L.VICTIM_DEEDS_LABEL = "SUS FECHORÍAS"
 L.VICTIM_DEED_TIP = "Su última víctima: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Las sospechas y ataques sin novedades en 30 días de juego pasan a «Archivados». Clic derecho en una entrada, «Conservar»: nunca se archiva."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  mover la alarma y los mensajes (/dn move reset: posiciones por defecto)"
+L.SET_MOVE = "Mover alarma"  -- [max 24]
+L.MOVE_HEAD = "Mover"  -- [max 24]
+L.MOVE_HOW = "Arrastra la alarma y los mensajes con el botón izquierdo. Clic derecho, Esc o /dn move: listo."
+L.MOVE_DRAG = "Arrastra para mover"  -- [max 24]
+L.MOVE_RESET = "Restablecer posiciones"  -- [max 24]
+L.MOVE_DONE = "Listo"  -- [max 17]
+L.MOVE_COMBAT = "No en combate: la alarma y los mensajes se pueden mover tras el combate."
+L.MOVE_RESET_DONE = "La alarma y los mensajes vuelven a sus posiciones por defecto."
+L.CHAT_TEST_MOVE = "Para mover la alarma: /dn move (o {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Novedad en 1.6.4: /dn move muestra la alarma y los mensajes, arrástralos adonde quieras (también {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Mover terminado. /dn move lo vuelve a iniciar."
+L.MOVE_NAME_NOTICE = "Mensaje"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Aviso de rencor"  -- [max 24]
 end)

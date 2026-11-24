@@ -466,7 +466,8 @@ end
 -- 1.2.0: the lines come from the language table (HELP_*), in the active language; ns.HELP is built
 -- at activation. The German subcommands stay valid forever, the English ones work in every language.
 -- 1.4.0: HELP_GRUDGE after HELP_TEST
-local HELP_KEYS = { "HELP_TOGGLE", "HELP_ADD", "HELP_DEL", "HELP_QUIET", "HELP_TEST", "HELP_GRUDGE", "HELP_GUILD", "HELP_FRIENDS",
+-- 1.6.4 move: HELP_MOVE after HELP_TEST
+local HELP_KEYS = { "HELP_TOGGLE", "HELP_ADD", "HELP_DEL", "HELP_QUIET", "HELP_TEST", "HELP_MOVE", "HELP_GRUDGE", "HELP_GUILD", "HELP_FRIENDS",
   "HELP_SYNC", "HELP_HUNT", "HELP_CALLOFF", "HELP_BOUNTY", "HELP_LANG", "HELP_THEME", "HELP_START", "HELP_PROBE", "HELP_PROBE_COMBATLOG", "HELP_DEBUG",
   "HELP_HELP", "HELP_ALIASES", "HELP_SILENT_ZONES" }
 ns.HELP_KEYS = HELP_KEYS
@@ -654,6 +655,11 @@ function ns.HandleSlash(msg)
     Util.Print(Fmt(L.CHAT_DEBUG, { state = onOff(on) }))
   elseif cmd == "test" then
     ns:Fire("TEST_ALERT")
+    -- 1.6.4 move: how to move it (the command and the button in the book's own words)
+    Util.Print(Fmt(L.CHAT_TEST_MOVE, { rules = L.HEAD_RULES, sheet = L.SHEET_ALERT, button = L.SET_MOVE }))
+  elseif cmd == "move" or cmd == "unlock" or cmd == "verschieben" or cmd == "anchors" or cmd == "anchor" or cmd == "anker" then
+    -- 1.6.4 move: the placing mode on/off; "reset": every place back to its default (Place.lua)
+    if ns.Place and ns.Place.Slash then ns.Place.Slash(rest) end
   elseif cmd == "gilde" or cmd == "guild" then
     local G = ns.Guild
     if not G then Util.Print(L.CHAT_GUILD_NOT_LOADED); return end

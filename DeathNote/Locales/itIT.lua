@@ -1208,4 +1208,19 @@ L.VICTIM_DEEDS_LABEL = "SUOI MISFATTI"
 L.VICTIM_DEED_TIP = "Ultima vittima: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Sospetti e attacchi senza novità da 30 giorni di gioco passano in «Archiviati». Clic destro su una voce, «Tieni»: non viene mai archiviata."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  sposta l'allarme e i messaggi (/dn move reset: posizioni predefinite)"
+L.SET_MOVE = "Sposta allarme"  -- [max 24]
+L.MOVE_HEAD = "Sposta"  -- [max 24]
+L.MOVE_HOW = "Trascina l'allarme e i messaggi con il tasto sinistro. Clic destro, Esc o /dn move: fatto."
+L.MOVE_DRAG = "Trascina per spostare"  -- [max 24]
+L.MOVE_RESET = "Ripristina posizioni"  -- [max 24]
+L.MOVE_DONE = "Fatto"  -- [max 17]
+L.MOVE_COMBAT = "Non in combattimento: allarme e messaggi si spostano dopo il combattimento."
+L.MOVE_RESET_DONE = "Allarme e messaggi sono tornati alle posizioni predefinite."
+L.CHAT_TEST_MOVE = "Per spostare l'allarme: /dn move (o {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Novità 1.6.4: /dn move mostra l'allarme e i messaggi, trascinali dove vuoi (anche {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Spostamento terminato. /dn move lo riavvia."
+L.MOVE_NAME_NOTICE = "Messaggio"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Avviso di rancore"  -- [max 24]
 end)

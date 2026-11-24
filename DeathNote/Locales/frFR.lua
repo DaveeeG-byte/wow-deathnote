@@ -1208,4 +1208,19 @@ L.VICTIM_DEEDS_LABEL = "SES MÉFAITS"
 L.VICTIM_DEED_TIP = "Sa dernière victime : {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Les soupçons et attaques sans nouvelles depuis 30 jours de jeu passent dans « Classés ». Clic droit sur une entrée, « Garder » : elle n'est jamais classée."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  déplacer l'alerte et les messages (/dn move reset : places par défaut)"
+L.SET_MOVE = "Déplacer l'alerte"  -- [max 24]
+L.MOVE_HEAD = "Déplacement"  -- [max 24]
+L.MOVE_HOW = "Glisse l'alerte et les messages avec le bouton gauche. Clic droit, Échap ou /dn move : terminé."
+L.MOVE_DRAG = "Glisser pour déplacer"  -- [max 24]
+L.MOVE_RESET = "Remettre en place"  -- [max 24]
+L.MOVE_DONE = "Terminé"  -- [max 17]
+L.MOVE_COMBAT = "Pas en combat : l'alerte et les messages se déplacent après le combat."
+L.MOVE_RESET_DONE = "L'alerte et les messages sont revenus à leur place par défaut."
+L.CHAT_TEST_MOVE = "Pour déplacer l'alerte : /dn move (ou {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Nouveau en 1.6.4 : /dn move affiche l'alerte et les messages, glisse-les où tu veux (aussi {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Déplacement terminé. /dn move le relance."
+L.MOVE_NAME_NOTICE = "Message"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Avis de rancune"  -- [max 24]
 end)

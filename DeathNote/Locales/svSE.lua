@@ -1214,4 +1214,19 @@ L.VICTIM_DEEDS_LABEL = "HANS DÅD"
 L.VICTIM_DEED_TIP = "Senaste offer: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Misstankar och attacker utan nytt på 30 speldagar flyttas till ”Arkiverat”. Högerklicka på en post och välj ”Behåll”: den arkiveras aldrig."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  flytta larmet och meddelandena (/dn move reset: standardplatser)"
+L.SET_MOVE = "Flytta larm"  -- [max 24]
+L.MOVE_HEAD = "Flytta"  -- [max 24]
+L.MOVE_HOW = "Dra larmet och meddelandena med vänster musknapp. Högerklick, Esc eller /dn move: klart."
+L.MOVE_DRAG = "Dra för att flytta"  -- [max 24]
+L.MOVE_RESET = "Återställ platser"  -- [max 24]
+L.MOVE_DONE = "Klart"  -- [max 17]
+L.MOVE_COMBAT = "Inte i strid: larmet och meddelandena kan flyttas efter striden."
+L.MOVE_RESET_DONE = "Larmet och meddelandena är tillbaka på sina standardplatser."
+L.CHAT_TEST_MOVE = "Flytta larmet: /dn move (eller {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Nytt i 1.6.4: /dn move visar larmet och meddelandena, dra dem dit du vill (även {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Flytta avslutat. /dn move startar det igen."
+L.MOVE_NAME_NOTICE = "Meddelande"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Agg-meddelande"  -- [max 24]
 end)

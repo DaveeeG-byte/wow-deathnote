@@ -4538,6 +4538,15 @@ BuildSettings = function()
   y = y - OPT_H - 6
   local test = InkButton(AL, L.SET_TEST_ALERT, 104, 22, function() ns:Fire("TEST_ALERT") end)
   test:SetPoint("TOPLEFT", 30, y - 4)
+  -- 1.6.4 move: the placing mode next to the test alarm (same row, the sheet does not grow). Place.Start closes the
+  -- book itself, and only when the mode starts: in combat the book stays open and one chat line says why
+  S.move = InkButton(AL, "", 132, 22, function()
+    if ns.Place and ns.Place.Start then ns.Place.Start() end
+  end)
+  S.move:SetPoint("LEFT", test, "RIGHT", 8, 0)
+  S.move:SetWidth(math.max(132, math.min(180, math.ceil((GF.MeasureAt(S.move.text, L.SET_MOVE, 10) or 120) + 16))))
+  S.move:SetLabel(L.SET_MOVE)
+  S.alertButtons = { test, S.move }
   AL.bottom = -(y - 4) + 22
   S.soundHint = hint(AL, "")
 
@@ -6764,6 +6773,8 @@ local function Build()
     UX.SavePoint()
   end)
   F:SetScript("OnShow", function()
+    -- 1.6.4 move: the book on the screen ends the placing mode (it lies on the samples' layer)
+    if ns.Place and ns.Place.Active and ns.Place.Active() then pcall(ns.Place.Stop, "book") end
     Look.Sound("open")
     UX.StartPlatePoll()
     -- 1.6.0 fix (first impression): an empty Wanted while the Death Log holds deaths opens the Death Log

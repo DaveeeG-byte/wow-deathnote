@@ -1221,4 +1221,19 @@ L.VICTIM_DEEDS_LABEL = "NJEGOVA DJELA"
 L.VICTIM_DEED_TIP = "Posljednja žrtva: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Sumnje i napadi bez novosti 30 dana igre sele se u „Arhiva“. Desni klik na unos i „Zadrži“: nikad se ne arhivira."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  premjesti uzbunu i poruke (/dn move reset: zadana mjesta)"
+L.SET_MOVE = "Premjesti uzbunu"  -- [max 24]
+L.MOVE_HEAD = "Premještanje"  -- [max 24]
+L.MOVE_HOW = "Povuci uzbunu i poruke lijevom tipkom miša. Desni klik, Esc ili /dn move: gotovo."
+L.MOVE_DRAG = "Povuci za pomicanje"  -- [max 24]
+L.MOVE_RESET = "Vrati mjesta"  -- [max 24]
+L.MOVE_DONE = "Gotovo"  -- [max 17]
+L.MOVE_COMBAT = "Ne u borbi: uzbunu i poruke možeš premjestiti nakon borbe."
+L.MOVE_RESET_DONE = "Uzbuna i poruke vraćene su na zadana mjesta."
+L.CHAT_TEST_MOVE = "Premještanje uzbune: /dn move (ili {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Novo u 1.6.4: /dn move prikazuje uzbunu i poruke, povuci ih kamo želiš (također {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Premještanje završeno. /dn move ga ponovno pokreće."
+L.MOVE_NAME_NOTICE = "Poruka"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Poruka kivnosti"  -- [max 24]
 end)

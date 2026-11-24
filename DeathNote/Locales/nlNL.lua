@@ -1214,4 +1214,19 @@ L.VICTIM_DEEDS_LABEL = "ZIJN DADEN"
 L.VICTIM_DEED_TIP = "Laatste slachtoffer: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Verdenkingen en aanvallen zonder nieuws in 30 speeldagen gaan naar „Gearchiveerd”. Rechtsklik op een vermelding en kies „Houden”: die wordt nooit gearchiveerd."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  alarm en meldingen verplaatsen (/dn move reset: standaardplaatsen)"
+L.SET_MOVE = "Alarm verplaatsen"  -- [max 24]
+L.MOVE_HEAD = "Verplaatsen"  -- [max 24]
+L.MOVE_HOW = "Sleep het alarm en de meldingen met de linkermuisknop. Rechtsklik, Esc of /dn move: klaar."
+L.MOVE_DRAG = "Sleep om te verplaatsen"  -- [max 24]
+L.MOVE_RESET = "Plaatsen herstellen"  -- [max 24]
+L.MOVE_DONE = "Klaar"  -- [max 17]
+L.MOVE_COMBAT = "Niet in gevecht: alarm en meldingen kun je na het gevecht verplaatsen."
+L.MOVE_RESET_DONE = "Alarm en meldingen staan weer op hun standaardplaats."
+L.CHAT_TEST_MOVE = "Alarm verplaatsen: /dn move (of {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Nieuw in 1.6.4: /dn move toont het alarm en de meldingen, sleep ze waar je wilt (ook {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Verplaatsen beëindigd. /dn move start het opnieuw."
+L.MOVE_NAME_NOTICE = "Melding"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Wrokmelding"  -- [max 24]
 end)

@@ -1209,4 +1209,19 @@ L.VICTIM_DEEDS_LABEL = "CRIMES DELE"
 L.VICTIM_DEED_TIP = "Última vítima: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Suspeitas e ataques sem novidade há 30 dias de jogo vão para \"Arquivados\". Clique com o botão direito em um registro e escolha \"Manter\": ele nunca é arquivado."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  mover o alarme e as mensagens (/dn move reset: posições padrão)"
+L.SET_MOVE = "Mover alarme"  -- [max 24]
+L.MOVE_HEAD = "Mover"  -- [max 24]
+L.MOVE_HOW = "Arraste o alarme e as mensagens com o botão esquerdo. Botão direito, Esc ou /dn move: pronto."
+L.MOVE_DRAG = "Arraste para mover"  -- [max 24]
+L.MOVE_RESET = "Redefinir posições"  -- [max 24]
+L.MOVE_DONE = "Pronto"  -- [max 17]
+L.MOVE_COMBAT = "Não em combate: o alarme e as mensagens podem ser movidos depois da luta."
+L.MOVE_RESET_DONE = "O alarme e as mensagens voltaram às posições padrão."
+L.CHAT_TEST_MOVE = "Para mover o alarme: /dn move (ou {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Novo na 1.6.4: /dn move mostra o alarme e as mensagens, arraste-os para onde quiser (também {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Mover encerrado. /dn move inicia de novo."
+L.MOVE_NAME_NOTICE = "Mensagem"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Aviso de rancor"  -- [max 24]
 end)

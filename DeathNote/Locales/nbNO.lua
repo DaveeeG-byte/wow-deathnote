@@ -1214,4 +1214,19 @@ L.VICTIM_DEEDS_LABEL = "HANS UDÅDER"
 L.VICTIM_DEED_TIP = "Siste offer: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Mistanker og angrep uten nytt på 30 spilledager flyttes til «Arkivert». Høyreklikk på en oppføring og velg «Behold»: den arkiveres aldri."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  flytt alarmen og meldingene (/dn move reset: standardplasser)"
+L.SET_MOVE = "Flytt alarm"  -- [max 24]
+L.MOVE_HEAD = "Flytt"  -- [max 24]
+L.MOVE_HOW = "Dra alarmen og meldingene med venstre museknapp. Høyreklikk, Esc eller /dn move: ferdig."
+L.MOVE_DRAG = "Dra for å flytte"  -- [max 24]
+L.MOVE_RESET = "Tilbakestill plasser"  -- [max 24]
+L.MOVE_DONE = "Ferdig"  -- [max 17]
+L.MOVE_COMBAT = "Ikke i kamp: alarmen og meldingene kan flyttes etter kampen."
+L.MOVE_RESET_DONE = "Alarmen og meldingene er tilbake på standardplassene."
+L.CHAT_TEST_MOVE = "Flytt alarmen: /dn move (eller {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Nytt i 1.6.4: /dn move viser alarmen og meldingene, dra dem dit du vil (også {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Flytt avsluttet. /dn move starter det igjen."
+L.MOVE_NAME_NOTICE = "Melding"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Nag-melding"  -- [max 24]
 end)

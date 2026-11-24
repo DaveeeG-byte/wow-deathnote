@@ -1221,4 +1221,19 @@ L.VICTIM_DEEDS_LABEL = "JEHO ČINY"
 L.VICTIM_DEED_TIP = "Poslední oběť: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Podezření a útoky bez novinek za 30 herních dní se přesunou do záložky „Archiv“. Pravým tlačítkem na záznam a „Ponechat“: nikdy se neodloží."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  přesunout poplach a zprávy (/dn move reset: výchozí místa)"
+L.SET_MOVE = "Přesunout poplach"  -- [max 24]
+L.MOVE_HEAD = "Přesun"  -- [max 24]
+L.MOVE_HOW = "Přetáhni poplach a zprávy levým tlačítkem myši. Pravý klik, Esc nebo /dn move: hotovo."
+L.MOVE_DRAG = "Přesuň tažením"  -- [max 24]
+L.MOVE_RESET = "Obnovit místa"  -- [max 24]
+L.MOVE_DONE = "Hotovo"  -- [max 17]
+L.MOVE_COMBAT = "Ne v boji: poplach a zprávy lze přesunout po boji."
+L.MOVE_RESET_DONE = "Poplach a zprávy jsou zpět na výchozích místech."
+L.CHAT_TEST_MOVE = "Přesun poplachu: /dn move (nebo {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Novinka v 1.6.4: /dn move ukáže poplach a zprávy, přetáhni je, kam chceš (také {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Přesun ukončen. /dn move ho spustí znovu."
+L.MOVE_NAME_NOTICE = "Zpráva"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Hlášení zášti"  -- [max 24]
 end)

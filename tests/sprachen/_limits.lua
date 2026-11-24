@@ -373,4 +373,12 @@ return {
   FATE_ART_PET = { max = 14, field = "row mark (Nimrod 10) and letter-spaced label above the name" },
   FATE_ART_ENV = { max = 14, field = "row mark (Nimrod 10) and letter-spaced label above the name" },
   FATE_AWARDS = { max = 14, field = "letter-spaced label over the awards for dying, rap sheet" },
+  -- 1.6.4 move: the placing mode
+  SET_MOVE = { max = 24, field = "button 132 to 180 px (grows with the word), Friz 10, House Rules sheet Alert" },
+  MOVE_HEAD = { max = 24, field = "letter-spaced head of the placing bar, 320 px, Friz 10/9" },
+  MOVE_DRAG = { max = 24, field = "hint on each sample: alarm hint (up to 278 px), grudge notice line (180 px, Friz 10/9)" },
+  MOVE_RESET = { max = 24, field = "button 132 to 180 px on the placing bar, Friz 10" },
+  MOVE_DONE = { max = 17, field = "button 96 to 140 px on the placing bar, Friz 10" },
+  MOVE_NAME_NOTICE = { max = 24, field = "letter-spaced head of the notice's sample, 300 px, Friz 10/9" },
+  MOVE_NAME_GRUDGE = { max = 24, field = "letter-spaced head of the grudge notice's sample, 194 px, Friz 10/9" },
 }

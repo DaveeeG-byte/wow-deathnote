@@ -1223,4 +1223,19 @@ L.VICTIM_DEEDS_LABEL = "AZ Ő TETTEI"
 L.VICTIM_DEED_TIP = "Legutóbbi áldozata: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "A 30 játéknapja hír nélküli gyanúk és támadások az „Archívum” nézetbe kerülnek. Jobb klikk egy bejegyzésre, „Megtartás”: soha nem kerül archívumba."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  a riasztás és az üzenetek áthelyezése (/dn move reset: alaphelyek)"
+L.SET_MOVE = "Riasztás áthelyezése"  -- [max 24]
+L.MOVE_HEAD = "Áthelyezés"  -- [max 24]
+L.MOVE_HOW = "Húzd a riasztást és az üzeneteket a bal egérgombbal. Jobb klikk, Esc vagy /dn move: kész."
+L.MOVE_DRAG = "Húzd az áthelyezéshez"  -- [max 24]
+L.MOVE_RESET = "Helyek visszaállítása"  -- [max 24]
+L.MOVE_DONE = "Kész"  -- [max 17]
+L.MOVE_COMBAT = "Harcban nem: a riasztás és az üzenetek a harc után helyezhetők át."
+L.MOVE_RESET_DONE = "A riasztás és az üzenetek visszakerültek az alaphelyükre."
+L.CHAT_TEST_MOVE = "A riasztás áthelyezése: /dn move (vagy {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Újdonság az 1.6.4-ben: a /dn move megmutatja a riasztást és az üzeneteket, húzd őket, ahová szeretnéd (vagy {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Áthelyezés vége. A /dn move újraindítja."
+L.MOVE_NAME_NOTICE = "Üzenet"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Harag-üzenet"  -- [max 24]
 end)

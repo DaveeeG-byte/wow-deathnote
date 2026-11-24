@@ -1222,4 +1222,19 @@ L.VICTIM_DEEDS_LABEL = "對方罪行"
 L.VICTIM_DEED_TIP = "最近受害者：{name}，{time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "30 個遊戲日沒有新動靜的嫌疑和襲擊會移到「已歸檔」。右鍵點擊條目並選擇「保留」：它永遠不會被歸檔。"
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  移動警報和訊息（/dn move reset：恢復預設位置）"
+L.SET_MOVE = "移動警報"  -- [max 24]
+L.MOVE_HEAD = "移動位置"  -- [max 24]
+L.MOVE_HOW = "用滑鼠左鍵拖曳警報和訊息。右鍵、Esc 或 /dn move：完成。"
+L.MOVE_DRAG = "拖曳以移動"  -- [max 24]
+L.MOVE_RESET = "重設位置"  -- [max 24]
+L.MOVE_DONE = "完成"  -- [max 17]
+L.MOVE_COMBAT = "戰鬥中無法使用：戰鬥結束後才能移動警報和訊息。"
+L.MOVE_RESET_DONE = "警報和訊息已回到預設位置。"
+L.CHAT_TEST_MOVE = "移動警報：/dn move（或 {rules} > {sheet} > {button}）。"
+L.CHAT_NEWS_164 = "1.6.4 新增：/dn move 會顯示警報和訊息，可拖到任何位置（也可在 {rules} > {sheet} > {button}）。"
+L.MOVE_ENDED = "移動位置已結束。輸入 /dn move 重新開始。"
+L.MOVE_NAME_NOTICE = "訊息"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "記恨提示"  -- [max 24]
 end)

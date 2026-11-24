@@ -265,6 +265,7 @@ function Probe.Run(verbose, opts)
   end
   -- 1.6.0 deaths: deaths by creatures and the world (Fates.lua): per kind, name secret or empty, NPC id missing
   local keepPve = db and type(db.probe) == "table" and type(db.probe.pve) == "table" and db.probe.pve or nil
+  local keepMove = db and type(db.probe) == "table" and type(db.probe.move) == "table" and db.probe.move or nil
   if ns.Fates and ns.Fates.ProbeSnapshot then
     local okf, fp = pcall(ns.Fates.ProbeSnapshot, keepPve)
     if okf and type(fp) == "table" then out.pve = fp end
@@ -289,6 +290,8 @@ function Probe.Run(verbose, opts)
       if okc and type(live) == "table" then out.call = out.call or {}; out.call.live = live end
     end
     if not out.pve and keepPve then out.pve = keepPve end
+    -- 1.6.4 move: the placing mode's counters (Place.lua) stay as they are
+    if keepMove then out.move = keepMove end
   end
   if verbose then
     -- 1.2.0: framing words from the language table; the values (codes, numbers) stay technical

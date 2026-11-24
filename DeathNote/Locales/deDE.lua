@@ -1209,4 +1209,19 @@ L.VICTIM_DEEDS_LABEL = "SEINE TATEN"  -- [max 14]
 L.VICTIM_DEED_TIP = "Sein letztes Opfer: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Verdacht und Angriffe ohne Neues seit 30 Spieltagen wandern nach Zu klären, „Abgelegt“. Rechtsklick auf einen Eintrag, „Behalten“: er wird nie abgelegt."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn verschieben  Alarm und Meldungen verschieben (/dn verschieben reset: Standardplätze)"
+L.SET_MOVE = "Alarm verschieben"  -- [max 24]
+L.MOVE_HEAD = "Verschieben"  -- [max 24]
+L.MOVE_HOW = "Alarm und Meldungen mit der linken Maustaste ziehen. Rechtsklick, Esc oder /dn verschieben: fertig."
+L.MOVE_DRAG = "Zum Verschieben ziehen"  -- [max 24]
+L.MOVE_RESET = "Plätze zurücksetzen"  -- [max 24]
+L.MOVE_DONE = "Fertig"  -- [max 17]
+L.MOVE_COMBAT = "Nicht im Kampf: Alarm und Meldungen lassen sich nach dem Kampf verschieben."
+L.MOVE_RESET_DONE = "Alarm und Meldungen stehen wieder an ihren Standardplätzen."
+L.CHAT_TEST_MOVE = "Alarm verschieben: /dn verschieben (oder {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Neu in 1.6.4: /dn verschieben zeigt Alarm und Meldungen, zieh sie dahin, wo du sie haben willst (auch {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Verschieben beendet. /dn verschieben startet es neu."
+L.MOVE_NAME_NOTICE = "Meldung"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Rachsucht-Meldung"  -- [max 24]
 end)

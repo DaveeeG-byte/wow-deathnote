@@ -21,6 +21,7 @@ for f in "$src"/Alert.lua "$src"/UI.lua "$src"/Extras.lua "$adir"/Humor.lua test
          "$adir"/SceneMap.lua tests/ui/scene_map.lua tests/ui/scene.lua tests/ui/_ju.lua tests/ui/_ju160.lua tests/ui/_jukarte.lua tests/ui/fix150_*.lua tests/ui/fix160_*.lua tests/ui/fix161_*.lua tests/ui/fix162_*.lua tests/ui/fix163_*.lua tests/ui/to160_*.lua \
          "$adir"/GuildLog.lua "$adir"/GuildLogUI.lua tests/ui/gc160_*.lua \
          "$adir"/CallUI.lua tests/ui/ca160_*.lua \
+         "$adir"/Place.lua tests/ui/_mv164.lua tests/ui/mv164_*.lua \
          "$adir"/FeudUI.lua tests/ui/_fe160.lua tests/ui/fe160_*.lua tests/ui/dr160_*.lua tests/ui/fd160_*.lua tests/ui/_fdwelt.lua \
          tests/belege/_kopf_ui.lua tests/belege/_kopf_hu.lua tests/belege/beleg_ui_*.lua tests/belege/beleg_hu_*.lua; do
   if ! luajit -bl "$f" > /dev/null; then echo "SYNTAX RED: $f"; status=1; fi
@@ -121,7 +122,8 @@ if [ -z "$1" ] && [ -f "$adir/Core.lua" ] && [ -f tests/mock_wow.lua ]; then
     # 1.6.0 feud: guild page of Wanted, claims and filed entries in Unsolved, options page, typing in another script
     # 1.6.0 design fixer: the help call's slip, the chronicle, the files and the pages of the new views
     # 1.6.1: the victim sheet names his deeds (whom he killed and when)
-    for t in tests/ui/fix150_*.lua tests/ui/fix160_*.lua tests/ui/fix161_*.lua tests/ui/fix162_*.lua tests/ui/fix163_*.lua tests/ui/fe160_*.lua tests/ui/fd160_*.lua; do
+    # 1.6.4 move: the placing mode (ways in and out, real events, kept places, the notice as in 1.6.3, finding it)
+    for t in tests/ui/fix150_*.lua tests/ui/fix160_*.lua tests/ui/fix161_*.lua tests/ui/fix162_*.lua tests/ui/fix163_*.lua tests/ui/fe160_*.lua tests/ui/fd160_*.lua tests/ui/mv164_*.lua; do
       out=$(luajit "$t" . 2>&1) || { status=1; printf '%s\n' "$out" | grep "^ROT"; }
       printf '%s: %s\n' "$(basename "$t" .lua)" "$(printf '%s\n' "$out" | tail -1)"
     done

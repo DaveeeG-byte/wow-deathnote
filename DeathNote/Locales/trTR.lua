@@ -1224,4 +1224,19 @@ L.VICTIM_DEEDS_LABEL = "ONUN SUÇLARI"
 L.VICTIM_DEED_TIP = "Son kurbanı: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "30 oyun günü boyunca haber olmayan şüpheler ve saldırılar \"Arşiv\" görünümüne taşınır. Bir kayda sağ tıkla ve \"Sakla\"yı seç: asla arşivlenmez."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  alarmı ve mesajları taşı (/dn move reset: varsayılan yerler)"
+L.SET_MOVE = "Alarmı taşı"  -- [max 24]
+L.MOVE_HEAD = "Taşıma"  -- [max 24]
+L.MOVE_HOW = "Alarmı ve mesajları sol fare tuşuyla sürükle. Sağ tık, Esc veya /dn move: bitti."
+L.MOVE_DRAG = "Taşımak için sürükle"  -- [max 24]
+L.MOVE_RESET = "Yerleri sıfırla"  -- [max 24]
+L.MOVE_DONE = "Bitti"  -- [max 17]
+L.MOVE_COMBAT = "Savaşta olmaz: alarm ve mesajlar savaştan sonra taşınabilir."
+L.MOVE_RESET_DONE = "Alarm ve mesajlar varsayılan yerlerine döndü."
+L.CHAT_TEST_MOVE = "Alarmı taşımak için: /dn move (veya {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "1.6.4'te yeni: /dn move alarmı ve mesajları gösterir, onları istediğin yere sürükle (ayrıca {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Taşıma bitti. /dn move yeniden başlatır."
+L.MOVE_NAME_NOTICE = "Mesaj"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Kin bildirimi"  -- [max 24]
 end)

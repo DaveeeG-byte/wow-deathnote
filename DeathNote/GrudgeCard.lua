@@ -58,13 +58,16 @@ end
 function Card.Place()
   if not card then return end
   card:ClearAllPoints()
-  local pt = Setting("grudge.point")
-  if type(pt) == "table" and type(pt[1]) == "string" and tonumber(pt[3]) and tonumber(pt[4]) then
-    card:SetPoint(pt[1], UIParent, type(pt[2]) == "string" and pt[2] or pt[1], tonumber(pt[3]), tonumber(pt[4]))
-  else
-    local d = Card.DEFAULT
-    card:SetPoint(d[1], UIParent, d[2], d[3], d[4])
+  -- 1.6.4 move: the kept place checked field by field (an unknown anchor name no longer reaches SetPoint); off the
+  -- screen it falls back to the default
+  local p, rp, x, y = Look.Point(Setting("grudge.point"))
+  if p then
+    card:SetPoint(p, UIParent, rp, x, y)
+    if Look.OnScreen(card) ~= false then return end
+    card:ClearAllPoints()
   end
+  local d = Card.DEFAULT
+  card:SetPoint(d[1], UIParent, d[2], d[3], d[4])
 end
 
 -- House Rules: back to the default place
@@ -210,7 +213,12 @@ local function Build()
   card.bar:SetColorTexture(C(Look.RED_INK, 0.7))
   card.barW = Card.W - 2 * Card.PAD
 
-  card:SetScript("OnMouseUp", function(_, mouse)
+  card:SetScript("OnMouseUp", function(self, mouse)
+    -- 1.6.4 move: on the sample of the placing mode a right click ends the mode
+    if self.sample then
+      if mouse == "RightButton" then Card.SampleDone("click") end
+      return
+    end
     if mouse == "RightButton" and ns.Grudge then ns.Grudge.Close("click") end
   end)
   card:SetScript("OnDragStart", function(self)
@@ -223,6 +231,7 @@ local function Build()
     self:StopMovingOrSizing()
     if self.SetUserPlaced then pcall(self.SetUserPlaced, self, false) end
     SavePoint()
+    if self.sample and ns.Place and ns.Place.Moved then pcall(ns.Place.Moved, "grudge") end
   end)
   -- 1.4.0 fixer: the last line says how to turn it off (command, House Rules and sheet in the words of the cover)
   card:SetScript("OnEnter", function(self)
@@ -367,6 +376,7 @@ end
 
 -- the bar, and the end of the time (only while shown)
 function Card.Tick(dt)
+  if card.sample then return end   -- 1.6.4 move: the sample has no episode and no time
   local e = ns.Grudge and ns.Grudge.Current()
   if not e or e.id ~= shownId then card:Hide(); return end
   if doneAt then
@@ -409,6 +419,11 @@ end
 -- the episode changed (GRUDGE_UPDATE)
 Update = function(e)
   if not card then Build() end
+  -- 1.6.4 move: a real episode ends the placing mode first (the sample goes, the notice comes as always)
+  if card.sample then
+    if not e or e.closed then return end
+    Card.SampleDone(e.test and "test" or "grudge")
+  end
   if not e or e.closed then card:Hide(); return end
   local mine = e.id == shownId
   -- nothing to ask (everybody in the book by my death, or answered lately): no notice
@@ -441,6 +456,56 @@ Update = function(e)
   card:Show()
 end
 Card.Update = Update
+
+---------------------------------------------------------------------------
+-- 1.6.4 move: the sample of the placing mode (Place.lua): the head and one answered made-up row, "Drag to move"
+-- below it; no episode, no time, no buttons. Only when no real notice stands (that one is dragged as it is).
+---------------------------------------------------------------------------
+Card.SAMPLE_ROW = { key = "Grimmzahn-Probe", name = "Grimmzahn", class = "ROGUE", level = 60, state = "yes", kb = true }
+function Card.ShowSample()
+  if not card then Build() end
+  if card:IsShown() and not card.sample then return false end
+  card.sample = true
+  shownId = nil
+  FillRow(card.rows[1], Card.SAMPLE_ROW)
+  for i = 2, Card.ROWS do card.rows[i]:Hide(); card.rows[i].row = nil end
+  if card.dnCall then card.dnCall:Hide() end
+  card.head:SetWidth(Card.W - 2 * Card.PAD - 2)
+  -- the anchor's name in its head
+  Look.FitText(card.head, ns.Extras and ns.Extras.Spaced and ns.Extras.Spaced(L.MOVE_NAME_GRUDGE) or L.MOVE_NAME_GRUDGE, Card.FIT_HEAD)
+  card.more:ClearAllPoints()
+  card.more:SetPoint("TOPLEFT", Card.PAD + Card.MARK_W, -(Card.HEAD_H + Card.ROW_H) - 3)
+  Look.FitText(card.more, L.MOVE_DRAG, Card.FIT_STATE)
+  card.more:Show()
+  card:SetHeight(Card.HEAD_H + 2 * Card.ROW_H + Card.FOOT)
+  card.bar:SetWidth(card.barW)
+  card.bar:SetAlpha(0.3)
+  card:Show()
+  return true
+end
+
+function Card.EndSample()
+  if not (card and card.sample) then return end
+  if card.moving then
+    card.moving = nil
+    card:StopMovingOrSizing()
+    if card.SetUserPlaced then pcall(card.SetUserPlaced, card, false) end
+    SavePoint()
+  end
+  card.sample = nil
+  card.rows[1]:Hide(); card.rows[1].row = nil
+  card.more:Hide()
+  card:Hide()
+  TipHide()
+end
+
+function Card.SampleShown() return card ~= nil and card.sample == true and card:IsShown() end
+
+function Card.SampleDone(why)
+  local P = ns.Place
+  if P and P.Stop then pcall(P.Stop, why) end
+  if card and card.sample then Card.EndSample() end
+end
 
 -- does the notice show the episode e right now (Grudge.lua leaves the end to the notice then)?
 function Card.Holds(e)

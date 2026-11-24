@@ -1215,4 +1215,19 @@ L.VICTIM_DEEDS_LABEL = "HÄNEN TEKONSA"
 L.VICTIM_DEED_TIP = "Viimeisin uhri: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Epäilyt ja hyökkäykset ilman uutta 30 pelipäivään siirtyvät näkymään ”Arkisto”. Napsauta merkintää oikealla ja valitse ”Säilytä”: sitä ei koskaan arkistoida."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  siirrä hälytystä ja ilmoituksia (/dn move reset: oletuspaikat)"
+L.SET_MOVE = "Siirrä hälytystä"  -- [max 24]
+L.MOVE_HEAD = "Siirto"  -- [max 24]
+L.MOVE_HOW = "Vedä hälytystä ja ilmoituksia hiiren vasemmalla painikkeella. Oikea klikkaus, Esc tai /dn move: valmis."
+L.MOVE_DRAG = "Siirrä vetämällä"  -- [max 24]
+L.MOVE_RESET = "Palauta paikat"  -- [max 24]
+L.MOVE_DONE = "Valmis"  -- [max 17]
+L.MOVE_COMBAT = "Ei taistelussa: hälytystä ja ilmoituksia voi siirtää taistelun jälkeen."
+L.MOVE_RESET_DONE = "Hälytys ja ilmoitukset ovat taas oletuspaikoillaan."
+L.CHAT_TEST_MOVE = "Hälytyksen siirto: /dn move (tai {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Uutta versiossa 1.6.4: /dn move näyttää hälytyksen ja ilmoitukset, vedä ne minne haluat (myös {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Siirto päättyi. /dn move aloittaa sen uudelleen."
+L.MOVE_NAME_NOTICE = "Ilmoitus"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Kauna-ilmoitus"  -- [max 24]
 end)

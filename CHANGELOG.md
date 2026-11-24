@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.6.4 (unreleased)
+
+### Added
+- **Moving the alarm is easy to find now.** `/dn move` (also `/dn anchors`, `/dn unlock`, German `/dn verschieben`, `/dn anker`) or the new button "Move alarm" in the House Rules, sheet Alert, starts a placing mode with an anchor for everything that pops up by itself, each named in its head and saying "Drag to move": **Alert**, **Notice**, **Call for help** and **Grudge notice**, and a bar with "Reset positions" and "Done". Drag them with the left mouse button; the places are kept. Done: right-click, Esc, "Done" or the command again. `/dn move reset` puts every place back; `/dn move on` and `/dn move off` work too.
+- The notice after a death, a revenge or a guild death and the slip of a help call can be moved now (only in the placing mode); until you move them they stand where 1.6.3 put them.
+- The window "Show" and the guest poster from a chat link keep the place you drag them to.
+- `/dn help` names the command; `/dn test` says in one chat line how to move the alarm; one chat line after the update says what is new.
+
+### Changed
+- The mode ends cleanly when combat starts, you die, a loading screen comes, the book opens or a new real alarm, notice, call or grudge notice comes (one chat line then says so), and never starts in combat. Alarms on the screen or waiting when it starts give way and ring again at the next sighting. The alarm's target button stays hidden while it runs.
+- A moved notice stays on the screen with its stamp and the remark's strip.
+- A changed alarm size keeps the alarm's kept place, also before the first alarm of a session (before, a moved alarm shifted with its size).
+- A broken saved place of the alarm or the grudge notice falls back to the default place instead of reaching the game unchecked.
+
+### Not measured in the game yet
+- Dragging the samples, Esc through the game's list of special frames, and how the client anchors a dragged frame were only tested against the stand-in of the client. Counters in the saved data under `probe.move` will tell (`/dn probe` keeps them, it does not print them).
+
 ## 1.6.3 (2026-11-22)
 
 ### Changed

@@ -77,6 +77,11 @@ local function build()
   slip.hint:SetWidth(CU.LINE_W)
   slip.hint:SetWordWrap(false)
   slip:SetScript("OnMouseUp", function(self, mouse)
+    -- 1.6.4 move: on the sample of the placing mode a right click ends the mode, a left click does nothing
+    if self.sample then
+      if mouse == "RightButton" then CU.SampleDone("click") end
+      return
+    end
     if mouse == "RightButton" then hide(); return end
     local rec = self.rec
     hide()
@@ -92,6 +97,19 @@ local function build()
     tip:Show()
   end)
   slip:SetScript("OnLeave", function() local tip = G("GameTooltip"); if tip then tip:Hide() end end)
+  -- 1.6.4 move: dragged only as the sample of the placing mode; the place is kept in call.point
+  slip:SetMovable(true)
+  slip:RegisterForDrag("LeftButton")
+  slip:SetScript("OnDragStart", function(self)
+    if not self.sample or (InCombatLockdown and InCombatLockdown()) then return end
+    self.moving = true
+    self:StartMoving()
+  end)
+  slip:SetScript("OnDragStop", function(self)
+    if not self.moving then return end
+    CU.EndDrag()
+    if ns.Place and ns.Place.Moved then pcall(ns.Place.Moved, "call") end
+  end)
 end
 
 -- the slip's third line: "Ashenvale (same zone) · attacker Grimm" (the words of Call.InLine without the caller)
@@ -109,28 +127,44 @@ end
 CU.GAP = 4
 CU.KEPT = 4   -- 1.6.2: earlier calls a slip keeps for its tooltip
 local hooked
+-- 1.6.4 move: the place the player dragged the slip to (call.point): its top, left and right edge in UIParent units,
+-- true alone when it is kept but cannot be measured (it stays as anchored), nil without one or off the screen
+local function held()
+  local hp, hrp, hx, hy = Look.Point(Look.Setting("call.point"))
+  if not hp then return nil end
+  slip:ClearAllPoints()
+  slip:SetPoint(hp, UIParent, hrp, hx, hy)
+  if Look.OnScreen(slip) == false then return nil end
+  local l, _, r, t = Look.Rect(slip)
+  if not l then return true end
+  return t, l, r
+end
+
 function CU.Place()
-  if not slip then return end
+  if not slip or slip.moving then return end
   local p = CU.POINT
   local l, b, r, t
   if slip:IsShown() and ns.Alert and ns.Alert.Rect then l, b, r, t = ns.Alert.Rect() end
   local W, H = UIParent:GetWidth(), UIParent:GetHeight()
   local sh = slip:GetHeight()
   local where
+  local kt, kl, kr = held()
+  if kt == true then return end
   if l and type(W) == "number" and type(H) == "number" and type(sh) == "number"
     and not (Look.Secret(W) or Look.Secret(H) or Look.Secret(sh)) then
-    local st = H + p[4]
-    local sb, sl, sr = st - sh, W / 2 - CU.W / 2, W / 2 + CU.W / 2
+    local st = kt or (H + p[4])
+    local sb, sl, sr = st - sh, kl or (W / 2 - CU.W / 2), kr or (W / 2 + CU.W / 2)
     if sl < r and sr > l and sb < t + CU.GAP and st > b - CU.GAP then
       -- design fix 1.6.0: below the alarm (above it would be the client's error band), above only without room below
       if b - CU.GAP - sh >= 0 then where = { "TOP", (l + r) / 2, b - CU.GAP }
       else where = { "BOTTOM", (l + r) / 2, t + CU.GAP } end
     end
   end
-  slip:ClearAllPoints()
   if where then
+    slip:ClearAllPoints()
     slip:SetPoint(where[1], UIParent, "BOTTOMLEFT", where[2], where[3])
-  else
+  elseif not kt then
+    slip:ClearAllPoints()
     slip:SetPoint(p[1], UIParent, p[2], p[3], p[4])
   end
   if not hooked then
@@ -155,6 +189,8 @@ end
 function CU.Show(rec)
   L, Fmt = ns.L, ns.F
   if not slip then build() end
+  -- 1.6.4 move: a real call ends the placing mode first (the sample goes, the slip comes as always)
+  if slip.sample then CU.SampleDone("call") end
   -- 1.6.2: a call that replaces a slip still shown: the kicker counts the calls ("+1"), the tooltip keeps the lines
   -- of the earlier ones (newest first, at most CU.KEPT); the next slip after a pause starts anew
   local was = slip:IsShown() and slip.rec ~= nil and slip.rec ~= rec
@@ -194,6 +230,69 @@ function CU.Show(rec)
   return slip
 end
 function CU.Slip() return slip end
+
+---------------------------------------------------------------------------
+-- 1.6.4 move: the sample of the placing mode (Place.lua): a made-up call that stays until the mode ends, "Drag to
+-- move" in place of the hint. A real slip on the screen gives way (its call stays in the chat line).
+---------------------------------------------------------------------------
+CU.SAMPLE = { by = "Liora", display = "Grimmzahn", same = true }
+function CU.EndDrag()
+  if not (slip and slip.moving) then return end
+  slip.moving = nil
+  slip:StopMovingOrSizing()
+  if slip.SetUserPlaced then pcall(slip.SetUserPlaced, slip, false) end
+  local p, _, rp, x, y = slip:GetPoint(1)
+  if p and ns.Store and ns.Store.Setting then ns.Store.Setting("call.point", { p, rp, x, y }) end
+  pcall(CU.Place)
+end
+
+function CU.ShowSample()
+  L, Fmt = ns.L, ns.F
+  if not slip then build() end
+  slip.token = nil              -- the timer of a real slip no longer hides it
+  slip.rec, slip.more, slip.full = nil, 0, nil
+  if slip.kept then for i = #slip.kept, 1, -1 do slip.kept[i] = nil end end
+  slip.sample = true
+  local Ex = ns.Extras
+  Look.FitText(slip.kicker, Ex and Ex.Spaced and Ex.Spaced(L.CALL_SLIP_HEAD) or L.CALL_SLIP_HEAD, CU.FIT_KICKER)
+  Look.FitText(slip.name, CU.SAMPLE.by, CU.FIT_NAME)
+  local rec = { zone = L.SAMPLE_ZONE, same = CU.SAMPLE.same, display = CU.SAMPLE.display }
+  Look.FitText(slip.line, CU.Where(rec), CU.FIT_LINE)
+  Look.FitText(slip.hint, L.MOVE_DRAG, CU.FIT_HINT)
+  local function h(fs, n, d)
+    local v = Look.TextH and Look.TextH(fs, n) or (fs.GetStringHeight and fs:GetStringHeight())
+    if type(v) ~= "number" or Look.Secret(v) or v <= 0 then v = d end
+    return math.ceil(v)
+  end
+  slip:SetHeight(7 + h(slip.kicker, 1, 12) + 1 + h(slip.name, 1, 22) + 2 + h(slip.line, 2, 13) + 3
+    + h(slip.hint, 1, 11) + 7)
+  slip:Show()
+  pcall(CU.Place)
+  return true
+end
+
+function CU.EndSample()
+  if not (slip and slip.sample) then return end
+  CU.EndDrag()
+  slip.sample = nil
+  local tip = G("GameTooltip")
+  if tip and tip.IsOwned and tip:IsOwned(slip) then tip:Hide() end
+  hide()
+  pcall(CU.Place)
+end
+
+function CU.SampleShown() return slip ~= nil and slip.sample == true and slip:IsShown() end
+
+function CU.SampleDone(why)
+  local P = ns.Place
+  if P and P.Stop then pcall(P.Stop, why) end
+  if slip and slip.sample then CU.EndSample() end
+end
+
+function CU.ResetPosition()
+  if ns.Store and ns.Store.Setting then ns.Store.Setting("call.point", nil) end
+  pcall(CU.Place)
+end
 
 -- a received call: loud (the alarm's sound and the slip) unless the alarm is off or the player stands in an
 -- instance (rec.quiet: only the chat line there)

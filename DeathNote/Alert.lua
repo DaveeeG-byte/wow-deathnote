@@ -947,6 +947,34 @@ function Look.Rect(f)
   return l * s, b * s, r * s, t * s
 end
 
+-- 1.6.4 move: a kept place { point, relativePoint, x, y [, scale] } from the saved data, checked field by field
+-- (no table, a missing field, text instead of a number, an unknown anchor, a far-off number): nil = use the default.
+-- Returns point, relativePoint, x, y and the scale it was saved at (nil when it carries none).
+Look.ANCHORS = { TOPLEFT = true, TOP = true, TOPRIGHT = true, LEFT = true, CENTER = true, RIGHT = true,
+  BOTTOMLEFT = true, BOTTOM = true, BOTTOMRIGHT = true }
+Look.POINT_MAX = 10000
+function Look.Point(pt)
+  if type(pt) ~= "table" then return nil end
+  local p, rp = pt[1], pt[2]
+  if type(p) ~= "string" or not Look.ANCHORS[p] then return nil end
+  if type(rp) ~= "string" or not Look.ANCHORS[rp] then rp = p end
+  local x, y = tonumber(pt[3]), tonumber(pt[4])
+  if not x or not y or x ~= x or y ~= y or math.abs(x) > Look.POINT_MAX or math.abs(y) > Look.POINT_MAX then return nil end
+  local s = tonumber(pt[5])
+  if s and (s ~= s or s <= 0.05 or s > 20) then s = nil end
+  return p, rp, x, y, s
+end
+
+-- 1.6.4 move: does at least a corner of f lie on the screen (UIParent)? nil when it cannot be measured (then the
+-- client's SetClampedToScreen has the last word)
+function Look.OnScreen(f, edge)
+  local l, b, r, t = Look.Rect(f)
+  local W, H = UIParent:GetWidth(), UIParent:GetHeight()
+  if not l or type(W) ~= "number" or type(H) ~= "number" or Look.Secret(W) or Look.Secret(H) then return nil end
+  edge = edge or 16
+  return r > edge and l < W - edge and t > edge and b < H - edge
+end
+
 -- own name ("Name Surname"), nil for a secret
 local myName
 function Look.Me()
@@ -1072,27 +1100,36 @@ local function EligibleGuild(g, hunt)
   return (g.kills or 0) >= (tonumber(Look.GuildSetting("minKills")) or 1)
 end
 
-local function SavePoint()
-  local p, _, rp, x, y = popup:GetPoint(1)
-  if p and ns.Store and ns.Store.Setting then
-    ns.Store.Setting("alert.point", { p, rp, x, y })
-  end
-end
-
 local function Scale()
   local s = popup and popup:GetScale()
   if type(s) ~= "number" or Look.Secret(s) or s <= 0 then return 1 end
   return s
 end
 
+-- 1.6.4 move: the offset is in the popup's own units; the fifth field keeps the scale it was saved at, so a later
+-- alert.scale leaves the place on the screen where it was (1.6.3 points without it: as saved, see PlacePopup)
+local function SavePoint()
+  local p, _, rp, x, y = popup:GetPoint(1)
+  if p and ns.Store and ns.Store.Setting then
+    ns.Store.Setting("alert.point", { p, rp, x, y, Scale() })
+  end
+end
+
+local function PlaceDefault()
+  -- below the client's red error text; offset in screen units, independent of alert.scale
+  popup:SetPoint("TOP", UIParent, "TOP", 0, -190 / Scale())
+end
+
 local function PlacePopup()
   popup:ClearAllPoints()
-  local pt = Look.Setting("alert.point")
-  if type(pt) == "table" and pt[1] then
-    popup:SetPoint(pt[1], UIParent, pt[2] or pt[1], pt[3] or 0, pt[4] or 0)
+  -- 1.6.4 move: a broken kept place (Look.Point) or one off the screen falls back to the default
+  local p, rp, x, y, s = Look.Point(Look.Setting("alert.point"))
+  if p then
+    local k = s and s / Scale() or 1
+    popup:SetPoint(p, UIParent, rp, x * k, y * k)
+    if Look.OnScreen(popup) == false then popup:ClearAllPoints(); PlaceDefault() end
   else
-    -- below the client's red error text; offset in screen units, independent of alert.scale
-    popup:SetPoint("TOP", UIParent, "TOP", 0, -190 / Scale())
+    PlaceDefault()
   end
 end
 
@@ -1222,11 +1259,24 @@ local function SetEdge(nr1)
   EdgeIdle()
 end
 
-function Alert.ApplyScale()
-  if not popup then return end
+-- first: while the popup is built (a 1.6.3 point without its scale was saved at the current alert.scale)
+-- 1.6.4 move: a kept point is converted to the new size and stored in it (fields 3 and 4 in the units of the current
+-- size, as 1.6.3 reads them, the fifth field names that size), also before the popup is built: the alarm keeps its
+-- place on the screen, and an older client after a downgrade finds it at the same spot as long as the size is not
+-- changed there (1.6.3 neither converts nor clears the fifth field; back on 1.6.4 the alarm then stands where it
+-- stood before the downgrade until it is dragged again).
+function Alert.ApplyScale(first)
   local s = tonumber(Look.Setting("alert.scale", 1)) or 1
+  local pt = Look.Setting("alert.point")
+  local p, _, x, y, ps = Look.Point(pt)
+  if p and s > 0 then
+    ps = ps or (popup and not first and Scale()) or s
+    if math.abs(ps - s) > 1e-9 then pt[3], pt[4] = x * ps / s, y * ps / s end
+    pt[5] = s
+  end
+  if not popup then return end
   popup:SetScale(s)
-  if type(Look.Setting("alert.point")) ~= "table" then PlacePopup() end
+  PlacePopup()
   if popup:IsShown() and not InCombat() then ArmButton() end
 end
 
@@ -1339,7 +1389,9 @@ local function Build()
   popup.outAnim = oa
 
   popup:SetScript("OnMouseUp", function(_, mouse)
-    if mouse == "RightButton" then Dismiss() end
+    if mouse ~= "RightButton" then return end
+    -- 1.6.4 move: on the sample a right click ends the placing mode
+    if popup.sample then Alert.SampleDone("click") else Dismiss() end
   end)
   popup:SetScript("OnDragStart", function(self)
     if InCombat() then return end
@@ -1353,12 +1405,13 @@ local function Build()
     NotUserPlaced(self)
     SavePoint()
     ArmButton()
+    -- 1.6.4 move: in the placing mode the notice and the slip make room at once, as they would for a real alarm
+    if self.sample and ns.Place and ns.Place.Moved then pcall(ns.Place.Moved, "alert") end
   end)
   popup:SetScript("OnEnter", function() EdgeColor(Look.COLOR.edgeHot) end)
   popup:SetScript("OnLeave", EdgeIdle)
 
-  PlacePopup()
-  Alert.ApplyScale()
+  Alert.ApplyScale(true)
 end
 
 -- Invisible secure button, built only when it is needed out of combat
@@ -1644,6 +1697,8 @@ local currentHunt = false   -- 1.2.0: the popup shows a hit list target
 -- quiet (1.3.0): no edge pulse and the soft sound (Look.Alarm("quiet")); always so for a victim (guild = "victim")
 local function Show(e, unit, how, silent, guild, quiet)
   if not popup then Build() end
+  -- 1.6.4 move: a real alarm ends the placing mode first (the sample goes, the alarm comes as always)
+  if popup.sample then Alert.SampleDone(how == "test" and "test" or "alert") end
   currentVictim = guild == "victim"
   if currentVictim then quiet = true end
   current, currentEntry, currentGuild = e.key, e, (guild and not currentVictim) and true or false
@@ -1878,12 +1933,101 @@ function Alert.Test()
 end
 
 ------------------------------------------------------------------------
+-- 1.6.4 move: the sample of the placing mode (Place.lua). The made-up alarm of /dn test, without sound, flash, timer
+-- or secure button (nothing to target: the button stays hidden, so it never lies anywhere without the alarm), with
+-- "Drag to move" as its hint. It is dragged like the real alarm and keeps its place in alert.point.
+------------------------------------------------------------------------
+function Alert.ShowSample()
+  if InCombat() then return false end
+  if not popup then Build() end
+  -- the alarm on the screen and the waiting ones give way: the queue is emptied, so none of them ends the mode a
+  -- moment later. The waiting ones (only a "+n" on the alarm so far) are not shown afterwards; they ring at the next
+  -- sighting after the mode. Their cooldowns run on during the mode (a player still in sight does not end it at once)
+  -- and are given back when it ends (Alert.EndSample), each of its own kind (alarm or victim alarm), and only the marks
+  -- older than the start of the mode: an alarm that ends the mode keeps the cooldown it has just set.
+  local gone = popup.swallowed or {}
+  for i = #queue, 1, -1 do gone[#gone + 1] = { key = queue[i].key, victim = queue[i].victim and true or false }; queue[i] = nil end
+  if popup:IsShown() and not popup.sample then
+    if current then gone[#gone + 1] = { key = current, victim = currentVictim and true or false } end
+    if hideTimer then hideTimer:Cancel(); hideTimer = nil end
+    popup.inAnim:Stop(); popup.outAnim:Stop()
+    Finish()
+  end
+  popup.swallowed = gone
+  if not popup.sampleAt then popup.sampleAt = GetTime() end
+  DisarmButton()
+  popup.sample = true
+  SAMPLE.lastKill = time() - 2 * 86400
+  SAMPLE.deaths[1].zone = L.SAMPLE_ZONE
+  current, currentEntry, currentGuild, currentHunt, currentVictim = nil, nil, false, false, false
+  Fill(SAMPLE, nil, "test", nil)
+  -- the anchor's name in its head (the word of the House Rules' sheet), "Drag to move" below
+  Look.FitText(popup.title, L.SHEET_ALERT, Look.FIT_TITLE)
+  popup.more:SetText("")
+  popup.hint:SetText(L.MOVE_DRAG)
+  popup.outAnim:Stop()
+  popup.inAnim:Stop()
+  popup:SetAlpha(1)
+  popup:Show()
+  Guard()
+  return true
+end
+
+-- the sample goes (the place stays where it was dropped); a drag still running is finished and kept
+function Alert.EndSample()
+  if not (popup and popup.sample) then return end
+  popup.sample = nil
+  if popup.moving then
+    popup.moving = nil
+    popup:StopMovingOrSizing()
+    NotUserPlaced(popup)
+    SavePoint()
+  end
+  popup:Hide()
+  popup:SetAlpha(1)
+  popup.model:ClearModel()
+  popup.hint:SetText("")
+  -- the cooldowns of the alarms the mode put aside are given back (see Alert.ShowSample)
+  local since = popup.sampleAt or GetTime()
+  for _, g in ipairs(popup.swallowed or {}) do
+    local marks = g.victim and lastVictim or lastAlert
+    local t = marks[g.key]
+    if t and t < since then marks[g.key] = nil end
+  end
+  popup.swallowed, popup.sampleAt = nil, nil
+  DisarmButton()
+  Guard()
+end
+
+function Alert.SampleShown() return popup ~= nil and popup.sample == true and popup:IsShown() end
+
+-- the sample's own way out (right click, a real alarm): the whole mode ends; without Place.lua only the sample
+function Alert.SampleDone(why)
+  local P = ns.Place
+  if P and P.Stop then pcall(P.Stop, why) end
+  if popup and popup.sample then Alert.EndSample() end
+end
+
+-- back to the default place (Place.Reset, /dn move reset)
+function Alert.ResetPosition()
+  if ns.Store and ns.Store.Setting then ns.Store.Setting("alert.point", nil) end
+  if popup and not popup.moving then
+    PlacePopup()
+    if popup:IsShown() and not InCombat() then ArmButton() end
+  end
+end
+
+------------------------------------------------------------------------
 -- Bus and combat changes
 ------------------------------------------------------------------------
 ns:On("READY", function()
   ready = true
   wipe(lastAlert)
   wipe(lastVictim)
+  -- 1.6.4 move: a kept point of 1.6.3 (four fields) was saved at the size it is shown with now: it gets that size as
+  -- its fifth field at once, so a change of size before the first alarm keeps the place too
+  local pt = Look.Setting("alert.point")
+  if Look.Point(pt) and tonumber(pt[5]) == nil then pt[5] = tonumber(Look.Setting("alert.scale", 1)) or 1 end
 end)
 
 ns:On("ENEMY_SPOTTED", function(key, unit, how) Alert.Spotted(key, unit, how) end)

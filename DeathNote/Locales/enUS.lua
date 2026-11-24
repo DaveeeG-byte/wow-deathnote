@@ -1229,4 +1229,19 @@ L.VICTIM_DEEDS_LABEL = "THEIR DEEDS"  -- [max 14] small label on the sheet of on
 L.VICTIM_DEED_TIP = "Their last victim: {name}, {time}"  -- tooltip line of a victim's row in the rap sheet: his newest killing blow; {name} = first name of the one he killed, {time} = date and time
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Suspicions and attacks with no news for 30 play days move to Unsolved, \"Filed away\". Right-click an entry and choose \"Keep\": it is never filed away."  -- tooltip of the check box OPT_BOOK_EXPIRE (House Rules, sheet Book): what is filed away and where it goes (tab Unsolved, view VIEW_FILED), and how to hold an entry back: the menu word ACT_KEEP; quote both words exactly as your language file has them
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  move the alarm and the notices (/dn move reset: default places)"  -- /dn help line after HELP_TEST: the placing mode; "/dn move reset" puts every place back
+L.SET_MOVE = "Move alarm"  -- [max 24] button on the House Rules, sheet Alert, next to SET_TEST_ALERT (132 to 180 px): starts the placing mode, the book closes
+L.MOVE_HEAD = "Move mode"  -- [max 24] letter-spaced head of the bar above the action bars while the placing mode runs (320 px, 10/9 pt)
+L.MOVE_HOW = "Drag the alarm and the notices with the left mouse button. Right-click, Esc or /dn move: done."  -- line of that bar (up to two lines, 320 px, 11/10 pt): how to move and how to finish; name the left mouse button, right-click, Esc and the command
+L.MOVE_DRAG = "Drag to move"  -- [max 24] on each sample of the placing mode (alarm hint, notice line, help call slip, grudge notice): what to do with it
+L.MOVE_RESET = "Reset positions"  -- [max 24] button on that bar (132 to 180 px): every place back to its default
+L.MOVE_DONE = "Done"  -- [max 17] button on that bar (96 to 140 px): ends the placing mode
+L.MOVE_COMBAT = "Not in combat: the alarm and the notices can be moved after the fight."  -- chat: /dn move (or the button) in combat; nothing else happens
+L.MOVE_RESET_DONE = "The alarm and the notices are back in their default places."  -- chat after Reset positions or /dn move reset
+L.CHAT_TEST_MOVE = "To move the alarm: /dn move (or {rules} > {sheet} > {button})."  -- chat after /dn test: how to move the alarm; {rules} = House Rules, {sheet} = the sheet Alert, {button} = SET_MOVE
+L.CHAT_NEWS_164 = "New in 1.6.4: /dn move shows the alarm and the notices, drag them where you want them (also {rules} > {sheet} > {button})."  -- chat, once per account after the update to 1.6.4 for players who had the book before; {rules}, {sheet}, {button} as in CHAT_TEST_MOVE
+L.MOVE_ENDED = "Move mode ended. /dn move starts it again."  -- chat when something ended the placing mode by itself (a new alarm, a notice, a help call, a grudge notice, combat, death, a loading screen): only that it ended and how to start it again, no list of causes
+L.MOVE_NAME_NOTICE = "Notice"  -- [max 24] name on the sample of the notice in the placing mode (its letter-spaced red head, 300 px, 10/9 pt): the notice after a death, a revenge, a guild death; the alarm's sample is named SHEET_ALERT, the help call's CALL_SLIP_HEAD
+L.MOVE_NAME_GRUDGE = "Grudge notice"  -- [max 24] name on the sample of the grudge notice in the placing mode (its letter-spaced head, 194 px, 10/9 pt): the small notice on the right after an attack; take the word of SET_SEC_GRUDGE
 end)

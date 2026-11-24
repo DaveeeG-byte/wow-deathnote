@@ -1222,4 +1222,19 @@ L.VICTIM_DEEDS_LABEL = "그의 범행"
 L.VICTIM_DEED_TIP = "최근 피해자: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "30 플레이일 동안 소식 없는 의심과 공격은 \"보관\"으로 옮겨진다. 항목을 우클릭하고 \"보존\"을 고르면 보관되지 않는다."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  경보와 메시지 위치 옮기기 (/dn move reset: 기본 위치)"
+L.SET_MOVE = "경보 옮기기"  -- [max 24]
+L.MOVE_HEAD = "위치 옮기기"  -- [max 24]
+L.MOVE_HOW = "경보와 메시지를 마우스 왼쪽 버튼으로 끌어 옮기세요. 오른쪽 클릭, Esc 또는 /dn move: 완료."
+L.MOVE_DRAG = "끌어서 옮기기"  -- [max 24]
+L.MOVE_RESET = "위치 초기화"  -- [max 24]
+L.MOVE_DONE = "완료"  -- [max 17]
+L.MOVE_COMBAT = "전투 중에는 안 됩니다: 경보와 메시지는 전투 후에 옮길 수 있습니다."
+L.MOVE_RESET_DONE = "경보와 메시지가 기본 위치로 돌아갔습니다."
+L.CHAT_TEST_MOVE = "경보 옮기기: /dn move (또는 {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "1.6.4 새 기능: /dn move로 경보와 메시지가 나타나니 원하는 곳으로 끌어 두세요 (또는 {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "위치 옮기기가 끝났습니다. /dn move로 다시 시작하세요."
+L.MOVE_NAME_NOTICE = "메시지"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "앙심 알림"  -- [max 24]
 end)

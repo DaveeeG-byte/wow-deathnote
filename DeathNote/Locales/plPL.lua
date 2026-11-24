@@ -1221,4 +1221,19 @@ L.VICTIM_DEEDS_LABEL = "JEGO CZYNY"
 L.VICTIM_DEED_TIP = "Ostatnia ofiara: {name}, {time}"
 -- 1.6.3 keep
 L.OPT_BOOK_EXPIRE_TIP = "Podejrzenia i ataki bez nowin od 30 dni gry trafiają do widoku „Archiwum”. Kliknij wpis prawym przyciskiem i wybierz „Zachowaj”: nigdy nie trafi do archiwum."
+-- 1.6.4 move
+L.HELP_MOVE = "/dn move  przesuń alarm i komunikaty (/dn move reset: domyślne miejsca)"
+L.SET_MOVE = "Przesuń alarm"  -- [max 24]
+L.MOVE_HEAD = "Przesuwanie"  -- [max 24]
+L.MOVE_HOW = "Przeciągnij alarm i komunikaty lewym przyciskiem myszy. Prawy klik, Esc lub /dn move: gotowe."
+L.MOVE_DRAG = "Przeciągnij i upuść"  -- [max 24]
+L.MOVE_RESET = "Przywróć miejsca"  -- [max 24]
+L.MOVE_DONE = "Gotowe"  -- [max 17]
+L.MOVE_COMBAT = "Nie w walce: alarm i komunikaty można przesunąć po walce."
+L.MOVE_RESET_DONE = "Alarm i komunikaty wróciły na domyślne miejsca."
+L.CHAT_TEST_MOVE = "Przesuwanie alarmu: /dn move (lub {rules} > {sheet} > {button})."
+L.CHAT_NEWS_164 = "Nowość w 1.6.4: /dn move pokazuje alarm i komunikaty, przeciągnij je, gdzie chcesz (także {rules} > {sheet} > {button})."
+L.MOVE_ENDED = "Przesuwanie zakończone. /dn move uruchamia je ponownie."
+L.MOVE_NAME_NOTICE = "Komunikat"  -- [max 24]
+L.MOVE_NAME_GRUDGE = "Komunikat urazy"  -- [max 24]
 end)

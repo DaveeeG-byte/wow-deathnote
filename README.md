@@ -1,4 +1,4 @@
-# Revenge Book 1.6.3
+# Revenge Book 1.6.4
 
 An addon for WoW Forever (Interface 16001). In open-world PvP it writes down who killed you, shows your killers as a
 book and warns you when one of them is in sight again. Confirmed kills are shared silently with your guildmates (the
@@ -38,7 +38,8 @@ same as `/dn`. Who had the book before gets one chat line after the update (once
 
 ## Commands
 `/dn` open/close the book · `/dn add <Name [Surname]>` add a killer by hand · `/dn del <Name [Surname]>` strike them ·
-`/dn quiet` alarm off/on · `/dn test` test alarm · `/dn guild` guild book status · `/dn friends` friends' book status ·
+`/dn quiet` alarm off/on · `/dn test` test alarm · `/dn move` move the alarm and the notices (`/dn move reset`: back
+to the default places; also `/dn unlock`, `/dn anchors`, German `/dn verschieben`, `/dn anker`) · `/dn guild` guild book status · `/dn friends` friends' book status ·
 `/dn sync` sync guild and friends now · `/dn hunt <Name [Surname]>` put on the hit list (no name: show the hit list) ·
 `/dn calloff <Name [Surname]>` call off your own hunt · `/dn bounty <Name [Surname]> <gold>` post your own bounty (no
 gold or 0: take it back; nothing at all: list your own) · `/dn lang <code|auto>` language of the book (after `/reload`)
@@ -435,6 +436,31 @@ default cover. Members of the guild known to `Humor.lua` find The Workshop picke
 window again. Players with data from before get one chat line instead (the book now comes in other covers), once.
 Marker: `firstRun` in the settings (`"new"` = the window is due, `"done"` = asked or told; absent = data from before
 1.3.0).
+
+## Moving the alarm and the notices (1.6.4)
+The alarm stands at the top in the middle by default (190 units below the top edge). To put it elsewhere, type
+`/dn move` (or `/dn anchors`) or press "Move alarm" in the book (House Rules, sheet Alert, next to "Test alarm"; the
+book closes). The placing mode shows an anchor for each piece that appears on its own, each a sample with its name in
+its head and "Drag to move" on it: **Alert** (the alarm), **Notice** (after a death, a revenge, a guild death, a rank;
+with the room of its stamp and, with Humor on, of the remark's strip), **Call for help** (the slip of a help call) and
+**Grudge notice** (the small notice on the right after an attack, where you tick who goes into the book); and a bar
+with "Reset positions" and "Done". Windows you open yourself (the book, the window "Show", the guest poster from a
+chat link) are dragged directly and keep their place too. `/dn move on`, `/dn move off` and `/dn move reset` do what
+they say; any other word only shows the help line. Drag a sample with the left mouse button; its place is kept when you let go
+(`alert.point`, `notice.point`, `call.point`, `grudge.point` in the saved data, never in `layout-local.txt`). Done:
+right-click a sample or the bar, Esc, "Done", or `/dn move` again. The mode never starts in combat (one chat line says
+so) and ends at once, before anything else, when combat starts, you die, a loading screen comes, the book opens, or a
+new real alarm, notice, help call or grudge notice comes; that one then shows as always, at its kept place, and one chat
+line says the mode ended. Alarms standing or waiting when you start it give way; they ring again at the next sighting
+after the mode. During the mode the alarm's invisible
+target button stays hidden. A notice you never moved behaves as in 1.6.3 (it goes below the alarm and the slip when
+they meet, above them without room below); a moved notice and slip make room the same way. The size of the alarm
+stays under House Rules, sheet Alert, "Alarm size"; a changed size keeps the alarm's kept place (the place is stored
+in the units of the current size, so 1.6.3 finds it too, as long as the size is not changed in 1.6.3). Out of combat the
+real alarm can still be dragged as before (in combat dragging stays locked: the target button cannot follow then).
+Broken saved places (wrong type, missing field, text for a number, unknown anchor, off the screen) fall back to the
+default place; a kept notice stays on the screen with its stamp and strip. Counters in `DeathNoteDB.probe.move`
+(numbers only; `/dn probe` keeps them, it does not print them).
 
 ## Notice (1.3.0)
 The notice in the middle of the screen (death, revenge, guild deaths, hit list, rank, award) is a slip torn from a page

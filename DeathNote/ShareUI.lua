@@ -82,18 +82,40 @@ local function SendTo(ch)
   end
 end
 
+-- 1.6.4 move: both windows keep the place they were dragged to (share.point, share.guestPoint; never in
+-- layout-local.txt); a broken or off-screen place falls back to the default of 1.6.3
+ShareUI.POINT, ShareUI.GUEST_POINT = { "CENTER", "CENTER", 0, 140 }, { "CENTER", "CENTER", 0, 60 }
+local function KeptPlace(f, path, def)
+  -- a place an older version left in layout-local.txt never comes back over the kept one
+  if f.SetUserPlaced then pcall(f.SetUserPlaced, f, false) end
+  f:ClearAllPoints()
+  local p, rp, x, y = Look.Point(Look.Setting(path))
+  if p then
+    f:SetPoint(p, UIParent, rp, x, y)
+    if Look.OnScreen(f) ~= false then return end
+    f:ClearAllPoints()
+  end
+  f:SetPoint(def[1], UIParent, def[2], def[3], def[4])
+end
+local function SaveKept(f, path)
+  f:StopMovingOrSizing()
+  if f.SetUserPlaced then pcall(f.SetUserPlaced, f, false) end
+  local p, _, rp, x, y = f:GetPoint(1)
+  if p and ns.Store and ns.Store.Setting then ns.Store.Setting(path, { p, rp, x, y }) end
+end
+
 local function Build()
   local Kit = K()
   W = CreateFrame("Frame", "DeathNoteShare", UIParent)
   W:SetSize(ShareUI.W, ShareUI.H)
-  W:SetPoint("CENTER", 0, 140)
+  KeptPlace(W, "share.point", ShareUI.POINT)
   W:SetFrameStrata("DIALOG")
   W:SetClampedToScreen(true)
   W:EnableMouse(true)
   W:SetMovable(true)
   W:RegisterForDrag("LeftButton")
   W:SetScript("OnDragStart", function(self) self:StartMoving() end)
-  W:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+  W:SetScript("OnDragStop", function(self) SaveKept(self, "share.point") end)
   W:Hide()
   local bg = W:CreateTexture(nil, "BACKGROUND")
   bg:SetAllPoints()
@@ -275,14 +297,14 @@ local function BuildGuest()
   local Kit = K()
   GP = CreateFrame("Frame", "DeathNoteShareGuest", UIParent)
   GP:SetSize(ShareUI.GW, ShareUI.GH)
-  GP:SetPoint("CENTER", 0, 60)
+  KeptPlace(GP, "share.guestPoint", ShareUI.GUEST_POINT)
   GP:SetFrameStrata("DIALOG")
   GP:SetClampedToScreen(true)
   GP:EnableMouse(true)
   GP:SetMovable(true)
   GP:RegisterForDrag("LeftButton")
   GP:SetScript("OnDragStart", function(self) self:StartMoving() end)
-  GP:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+  GP:SetScript("OnDragStop", function(self) SaveKept(self, "share.guestPoint") end)
   GP:Hide()
   local bg = GP:CreateTexture(nil, "BACKGROUND")
   bg:SetAllPoints()
@@ -384,6 +406,16 @@ function ShareUI.Guest(rec)
 end
 
 function ShareUI.GuestFrame() return GP end
+
+-- /dn move reset and "Reset positions" (Place.Reset): both windows back to their default places
+function ShareUI.ResetPosition()
+  if ns.Store and ns.Store.Setting then
+    ns.Store.Setting("share.point", nil)
+    ns.Store.Setting("share.guestPoint", nil)
+  end
+  if W then KeptPlace(W, "share.point", ShareUI.POINT) end
+  if GP then KeptPlace(GP, "share.guestPoint", ShareUI.GUEST_POINT) end
+end
 
 -- "Copy to my book": a hand entry marked as copied from the sender (never shared on, like every copied entry)
 function ShareUI.Adopt(rec)

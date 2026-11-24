@@ -239,6 +239,11 @@ local function BuildBanner()
     if Waiting() then C_Timer.After(0.4, NextGuild) end
   end
   banner:SetScript("OnMouseUp", function(self, mouse)
+    -- 1.6.4 move: on the sample of the placing mode a right click ends the mode
+    if self.sample then
+      if mouse == "RightButton" then Extras.SampleDone("click") end
+      return
+    end
     if not self.open then return end
     local open = self.open
     Dismiss(self)
@@ -318,6 +323,21 @@ local function BuildBanner()
   end)
   banner.inAnim, banner.anim = gi, g
 
+  -- 1.6.4 move: dragged only as the sample of the placing mode (the notice itself stays click-through); the place
+  -- is kept in notice.point
+  banner:SetMovable(true)
+  banner:RegisterForDrag("LeftButton")
+  banner:SetScript("OnDragStart", function(self)
+    if not self.sample or (InCombatLockdown and InCombatLockdown()) then return end
+    self.moving = true
+    self:StartMoving()
+  end)
+  banner:SetScript("OnDragStop", function(self)
+    if not self.moving then return end
+    Extras.EndBannerDrag()
+    if ns.Place and ns.Place.Moved then pcall(ns.Place.Moved, "notice") end
+  end)
+
   -- Name: keep it invisible for a moment, then fade in (alpha jumps back to 1 afterwards)
   local ng = banner.name:CreateAnimationGroup()
   Look.AlphaAnim(ng, 0, 0, 0.2, 1)
@@ -350,12 +370,46 @@ Extras.BuildBanner = function() if not banner then BuildBanner() end return bann
 -- moves below the popup, and when there is no room there, above it.
 -- All in UIParent units; both hang on UIParent, so its scale (e.g. 0.6) cancels out.
 local GAP, STAMP_TOP = 10, STAMP_Y
+
+-- 1.6.4 move: the place the player dragged the notice to (notice.point), computed from the kept point and the known
+-- size (never measured: the notice is still hidden when it is placed, and a client may not measure hidden frames).
+-- It is kept on the screen together with what belongs to it: the stamp over the top right corner, and with Humor on
+-- the remark's strip below (wider than the slip). Returns the offset of its top centre from the top centre of the
+-- screen (x, y), nil when there is none or it lies off the screen (then the default place of 1.6.3).
+local ANCHOR = { TOPLEFT = { 0, 1 }, TOP = { 0.5, 1 }, TOPRIGHT = { 1, 1 }, LEFT = { 0, 0.5 }, CENTER = { 0.5, 0.5 },
+  RIGHT = { 1, 0.5 }, BOTTOMLEFT = { 0, 0 }, BOTTOM = { 0.5, 0 }, BOTTOMRIGHT = { 1, 0 } }
+Extras.EDGE = 16    -- less of the slip than this on the screen: off the screen
+function Extras.HeldRect(W, H)
+  local p, rp, hx, hy = Look.Point(Look.Setting("notice.point"))
+  if not p then return nil end
+  local a, q = ANCHOR[rp], ANCHOR[p]
+  local l = W * a[1] + hx - BANNER_W * q[1]
+  local b = H * a[2] + hy - BANNER_H * q[2]
+  local e = Extras.EDGE
+  if l + BANNER_W < e or l > W - e or b + BANNER_H < e or b > H - e then return nil end
+  local strip = (ns.Humor and ns.Humor.On and ns.Humor.On()) and (QUIP_GAP + QUIP_H) or 0
+  local side = strip > 0 and (QUIP_W - BANNER_W) / 2 or 0
+  l = math.max(side, math.min(l, W - BANNER_W - math.max(side, STAMP_X)))
+  b = math.max(strip, math.min(b, H - BANNER_H - STAMP_TOP))
+  return l, b
+end
+local function HeldPlace(W, H)
+  local l, b = Extras.HeldRect(W, H)
+  if not l then return nil end
+  return l + BANNER_W / 2 - W / 2, b + BANNER_H - H
+end
+
 function Extras.PlaceBanner()
-  if not banner then return end
+  if not banner or banner.moving then return end
   local W, H = UIParent:GetWidth(), UIParent:GetHeight()
   local y = BANNER_Y
+  local hx
   if type(W) == "number" and type(H) == "number" and not Look.Secret(W) and not Look.Secret(H) then
-    local bl, br = W / 2 - BANNER_W / 2, W / 2 + BANNER_W / 2
+    local hy
+    hx, hy = HeldPlace(W, H)
+    if hx then y = hy end
+    local cx = W / 2 + (hx or 0)
+    local bl, br = cx - BANNER_W / 2, cx + BANNER_W / 2
     -- the strip of a dry remark hangs below the message
     local strip = (ns.Humor and ns.Humor.On and ns.Humor.On()) and (QUIP_GAP + QUIP_H) or 0
     -- design fix 1.6.0: the alarm, then the slip of a help call (it hangs below the alarm): the notice goes below
@@ -377,6 +431,13 @@ function Extras.PlaceBanner()
       end
     end
   end
+  if hx then
+    -- a kept place: anchored at its top centre (the same spot, moved below or above the alarm when they meet)
+    banner.y = nil
+    banner:ClearAllPoints()
+    banner:SetPoint("TOP", UIParent, "TOP", hx, y)
+    return
+  end
   if banner.y ~= y then
     banner.y = y
     banner:ClearAllPoints()
@@ -386,12 +447,99 @@ end
 
 -- 1.4.0 grudge: is the notice on the screen (whoever it shows)? The grudge notice waits for it after a death
 function Extras.BannerBusy()
-  return banner ~= nil and banner:IsShown() and true or false
+  return banner ~= nil and banner:IsShown() and not banner.sample and true or false
 end
 
 -- does the notice show this player right now?
 function Extras.BannerShows(key)
   return banner ~= nil and banner:IsShown() and banner.key ~= nil and banner.key == key
+end
+
+---------------------------------------------------------------------------
+-- 1.6.4 move: the sample of the placing mode (Place.lua): a notice with a made-up name that stays until the mode
+-- ends, takes the mouse only for the drag and the right click, and says "Drag to move" on its own line
+---------------------------------------------------------------------------
+Extras.SAMPLE_NAME = "Grimmzahn"
+Extras.SAMPLE_STAMP_ALPHA, Extras.SAMPLE_STRIP_ALPHA = 0.35, 0.6
+function Extras.EndBannerDrag()
+  if not (banner and banner.moving) then return end
+  banner.moving = nil
+  banner:StopMovingOrSizing()
+  if banner.SetUserPlaced then pcall(banner.SetUserPlaced, banner, false) end
+  local p, _, rp, x, y = banner:GetPoint(1)
+  if p and ns.Store and ns.Store.Setting then ns.Store.Setting("notice.point", { p, rp, x, y }) end
+  Extras.PlaceBanner()
+end
+
+function Extras.ShowSample()
+  if not banner then BuildBanner() end
+  -- a real notice on the screen gives way (waiting ones follow after the mode; a real one ends the mode)
+  banner.inAnim:Stop(); banner.anim:Stop(); banner.stampAnim:Stop(); banner.stampTextAnim:Stop()
+  if GameTooltip and GameTooltip.IsOwned and GameTooltip:IsOwned(banner) then GameTooltip:Hide() end
+  banner.sample = true
+  banner.open, banner.key, banner.guild, banner.kind, banner.tip = nil, nil, false, nil, nil
+  if banner.dnShare then banner.dnShare:Hide() end
+  if banner.dnQuip then banner.dnQuip:Hide() end
+  banner.line:ClearAllPoints()
+  banner.line:SetPoint("BOTTOM", 0, 7)
+  banner.line:SetWidth(LINE_W)
+  local kc, nc = Colours()
+  banner.kicker:SetTextColor(kc[1], kc[2], kc[3], 1)
+  -- the anchor's name in its head (a sample of the notice and one of the help call's slip look alike otherwise)
+  Look.FitText(banner.kicker, Spaced(L.MOVE_NAME_NOTICE), Extras.FIT_KICKER)
+  Extras.NameBesideStamp(banner, false)
+  Look.FitText(banner.name, Extras.SAMPLE_NAME, Extras.FIT_NAME)
+  banner.name:SetTextColor(nc[1], nc[2], nc[3], 1)
+  Look.FitText(banner.line, L.MOVE_DRAG, Extras.FIT_LINE)
+  -- the room the real notice needs: its stamp (faint, the frame without words) and, with Humor on, the remark's strip
+  banner.stampText:Hide()
+  local tex = StampImage("rache")
+  if tex then
+    Look.StampSkin(banner.stamp, Look.StampTex(STAMPS.rache.img, true) or tex, "stampNotice")
+    banner.stamp:SetAlpha(Extras.SAMPLE_STAMP_ALPHA)
+    banner.stamp:Show()
+  else
+    banner.stamp:Hide()
+  end
+  local q = banner.dnQuip
+  if q and ns.Humor and ns.Humor.On and ns.Humor.On() then
+    if q.text then q.text:SetText("") end
+    q:SetAlpha(Extras.SAMPLE_STRIP_ALPHA)
+    q:Show()
+  end
+  banner:EnableMouse(true)
+  banner:SetAlpha(1)
+  Extras.PlaceBanner()
+  banner:Show()
+  return true
+end
+
+function Extras.EndSample()
+  if not (banner and banner.sample) then return end
+  Extras.EndBannerDrag()
+  banner.sample = nil
+  banner.stamp:Hide()
+  banner.stamp:SetAlpha(0.95)
+  if banner.dnQuip then banner.dnQuip:Hide(); banner.dnQuip:SetAlpha(1) end
+  banner:Hide()
+  banner:SetAlpha(0)
+  banner:EnableMouse(false)
+  banner.open, banner.key, banner.guild = nil, nil, false
+  if GameTooltip and GameTooltip.IsOwned and GameTooltip:IsOwned(banner) then GameTooltip:Hide() end
+  if Waiting() then C_Timer.After(0.4, NextGuild) end
+end
+
+function Extras.SampleShown() return banner ~= nil and banner.sample == true and banner:IsShown() end
+
+function Extras.SampleDone(why)
+  local P = ns.Place
+  if P and P.Stop then pcall(P.Stop, why) end
+  if banner and banner.sample then Extras.EndSample() end
+end
+
+function Extras.ResetPosition()
+  if ns.Store and ns.Store.Setting then ns.Store.Setting("notice.point", nil) end
+  if banner then banner.y = nil; Extras.PlaceBanner() end
 end
 
 local function Silence(key)
@@ -415,6 +563,8 @@ local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   local stampTex, stampText, st = StampImage(stamp)
   kicker = Spaced(kicker)
   if not banner then BuildBanner() end
+  -- 1.6.4 move: a real notice ends the placing mode first (the sample goes, the notice comes as always)
+  if banner.sample then Extras.SampleDone("notice") end
   -- the frame waits invisible: alpha 0 before it is shown, the fade brings it to 1
   banner.inAnim:Stop()
   banner.anim:Stop()
@@ -580,22 +730,24 @@ end
 -- rap sheet notices wait in combat and while the first-start dialog of a new installation is unanswered
 local function Holding() return ns.Start and ns.Start.Holding and ns.Start.Holding() end
 local function SheetHeld() return (InCombatLockdown and InCombatLockdown()) or Holding() end
+-- 1.6.4 move: the sample of the placing mode is no notice: a real one does not wait for it (it ends the mode)
+local function Busy() return banner ~= nil and banner:IsShown() and not banner.sample end
 local function NextSheet()
-  if #sheetQueue == 0 or (banner and banner:IsShown()) or SheetHeld() then return end
+  if #sheetQueue == 0 or Busy() or SheetHeld() then return end
   local n = table.remove(sheetQueue, 1)
   Banner(n[1], n[2], nil, n[3] or "", nil, false, nil, nil)
 end
 
 -- waiting notices: { function, arguments ... }; guild notices first, then the rap sheet's
 NextGuild = function()
-  if banner and banner:IsShown() then return end
+  if Busy() then return end
   local q = table.remove(guildQueue, 1)
   if q then q[1](q[2], q[3], q[4], q[5], q[6]); return end
   NextSheet()
 end
 
 local function Later(fn, a, b, c, d, e)
-  if banner and banner:IsShown() then
+  if Busy() then
     if #guildQueue < GUILD_QUEUE_MAX then guildQueue[#guildQueue + 1] = { fn, a, b, c, d, e } end
     return
   end

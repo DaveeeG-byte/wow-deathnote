@@ -147,7 +147,11 @@ end
 -- guild and friends and where their switch is) under settings.news160. Whoever has not seen the line of 1.5.0 yet (it
 -- was never published: an update from 1.4.x) gets that one first, because it tells the new name; both markers before
 -- are set with it, so an older client after a downgrade stays quiet.
-Start.NEWS = "news160"
+-- 1.6.4 move: the line of 1.6.4 (/dn move and the button on the sheet Alert) under settings.news164. Whoever has not
+-- seen the line of 1.6.0 yet (an update from 1.5.x or 1.4.x) gets it first, and before it the one of 1.5.0 when that
+-- is unseen too, exactly as 1.6.3 did; every older marker is set with it.
+Start.NEWS = "news164"
+Start.NEWS_160 = "news160"
 Start.NEWS_PREV = "news150"
 Start.NEWS_OLD = "news140"
 function Start.NewsLine()
@@ -155,6 +159,10 @@ function Start.NewsLine()
   local F = ns.F
   return F(L.CHAT_NEWS_160, { log = L.TAB_DEATHLOG, guild = L.TAB_GUILD, rules = L.HEAD_RULES, sheet = L.SHEET_GUILD,
     switch = L.OPT_G_LAYERSIGHT })
+end
+function Start.NewsLine164()
+  local L = ns.L
+  return ns.F(L.CHAT_NEWS_164, { rules = L.HEAD_RULES, sheet = L.SHEET_ALERT, button = L.SET_MOVE })
 end
 function Start.News()
   local st = Settings()
@@ -165,9 +173,13 @@ function Start.News()
     return
   end
   state.newsWait = false
-  if st[Start.NEWS_PREV] == nil then Print(ns.L.CHAT_NEWS_150) end
-  Print(Start.NewsLine())
+  if st[Start.NEWS_160] == nil then
+    if st[Start.NEWS_PREV] == nil then Print(ns.L.CHAT_NEWS_150) end
+    Print(Start.NewsLine())
+  end
+  Print(Start.NewsLine164())
   Set(Start.NEWS, true)
+  if st[Start.NEWS_160] == nil then Set(Start.NEWS_160, true) end
   if st[Start.NEWS_PREV] == nil then Set(Start.NEWS_PREV, true) end
   if st[Start.NEWS_OLD] == nil then Set(Start.NEWS_OLD, true) end
 end
@@ -230,6 +242,7 @@ ns:On("READY", function()
     state.armed = "dialog"
     -- a new installation knows 1.6.0 from the start: no news line, now or later (the first-start window greets)
     if st[Start.NEWS] == nil then st[Start.NEWS] = true end
+    if st[Start.NEWS_160] == nil then st[Start.NEWS_160] = true end
     if st[Start.NEWS_PREV] == nil then st[Start.NEWS_PREV] = true end
     if st[Start.NEWS_OLD] == nil then st[Start.NEWS_OLD] = true end
   elseif st[Start.SETTING] == nil then
