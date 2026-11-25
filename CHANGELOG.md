@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.6.4 (unreleased)
+## 1.6.4 (2026-11-25)
 
 ### Added
 - **Moving the alarm is easy to find now.** `/dn move` (also `/dn anchors`, `/dn unlock`, German `/dn verschieben`, `/dn anker`) or the new button "Move alarm" in the House Rules, sheet Alert, starts a placing mode with an anchor for everything that pops up by itself, each named in its head and saying "Drag to move": **Alert**, **Notice**, **Call for help** and **Grudge notice**, and a bar with "Reset positions" and "Done". Drag them with the left mouse button; the places are kept. Done: right-click, Esc, "Done" or the command again. `/dn move reset` puts every place back; `/dn move on` and `/dn move off` work too.
