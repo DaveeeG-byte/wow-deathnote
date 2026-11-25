@@ -167,7 +167,9 @@ local GUILD_QUEUE_MAX = 3
 -- one kill gives at most two of them (see the end of the file)
 local sheetQueue = {}
 local NextGuild -- forward declaration
-local function Waiting() return #guildQueue > 0 or #sheetQueue > 0 end
+-- fixer 2 1.7.0 (JN-7): a slip pushed away waits in a place of its own, never in one of the guild queue's places
+local pendingSlip
+local function Waiting() return #guildQueue > 0 or #sheetQueue > 0 or pendingSlip ~= nil end
 
 -- The class colour as ink on the slip: 30 % class colour in 70 % ink keeps a hint of the hue and stays readable
 -- on paper even at 13 pt (the white of a priest becomes a dark grey; contrast guard in tests/ui/gesamtschau.lua)
@@ -559,10 +561,21 @@ Extras.FIT_STAMP_LAST = { sizes = { 9 }, lines = 3 }
 function Extras.FitStamp(fs, text)
   return Look.FitText(fs, text, Extras.FIT_STAMP) or Look.FitText(fs, text, Extras.FIT_STAMP_LAST)
 end
+local slipArgs                -- fixer 1.7.0: set by Extras.Slip for the one Banner call it makes
 local function Banner(kicker, name, nameRGB, line, stamp, guild, key, open)
   local stampTex, stampText, st = StampImage(stamp)
   kicker = Spaced(kicker)
   if not banner then BuildBanner() end
+  -- fixer 1.7.0 (JU-13): a slip (Extras.Slip) that stood for less than Extras.SLIP_KEEP seconds and is pushed away by a
+  -- notice that does not wait (an own death, a revenge) goes back to the front of the queue and comes again after it.
+  -- Only slips: every other notice behaves as in 1.6.4.
+  local again = banner:IsShown() and not banner.sample and banner.slip
+  if again and GetTime() - (banner.slipAt or 0) < Extras.SLIP_KEEP then
+    -- one place: a second slip pushed away while one waits there is dropped (its chat line and list entry stay)
+    if not pendingSlip then pendingSlip = banner.slip end
+  end
+  banner.slip, banner.slipAt = slipArgs, slipArgs and GetTime() or nil
+  slipArgs = nil
   -- 1.6.4 move: a real notice ends the placing mode first (the sample goes, the notice comes as always)
   if banner.sample then Extras.SampleDone("notice") end
   -- the frame waits invisible: alpha 0 before it is shown, the fade brings it to 1
@@ -741,6 +754,12 @@ end
 -- waiting notices: { function, arguments ... }; guild notices first, then the rap sheet's
 NextGuild = function()
   if Busy() then return end
+  if pendingSlip then
+    local a = pendingSlip
+    pendingSlip = nil
+    Extras.SlipNow(a[1], a[2], a[3], a[4], a[5], a[6])
+    return
+  end
   local q = table.remove(guildQueue, 1)
   if q then q[1](q[2], q[3], q[4], q[5], q[6]); return end
   NextSheet()
@@ -756,9 +775,14 @@ end
 
 -- 1.6.0 feud: a notice on the slip for another file (FeudUI.lua: a claim on an own bounty); waits like a guild notice.
 -- open: function for a click on it, or nil
+Extras.SLIP_KEEP = 2
+function Extras.SlipNow(k, n, c, l, ky, open)
+  slipArgs = { k, n, c, l, ky, open }
+  Banner(k, n, c, l, nil, true, ky, open)
+end
 function Extras.Slip(kicker, name, rgb, line, key, open)
   if not ready then return end
-  Later(function(k, n, c, l, ky) Banner(k, n, c, l, nil, true, ky, open) end, kicker, name, rgb, line, key)
+  Later(function(k, n, c, l, ky) Extras.SlipNow(k, n, c, l, ky, open) end, kicker, name, rgb, line, key)
 end
 
 local function OnGuildKill(tat, key, src)

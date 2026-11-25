@@ -1,6 +1,7 @@
 -- DeathNote - Share.lua (1.5.0 share)
 -- "Show": one plain chat line per click that anybody can read, and that a reader with the addon gets as a link.
 --   [Revenge Book: Grimwald Ashbrand] WANTED · Score 2 : 5 · 131g bounty · last seen Stranglethorn Vale
+--   (1.7.0 claim: the bounty segment only for a posted bounty, never the book's own value)
 -- The bracket is the pattern: the brand from Share.BRAND (the rename sets it here and only here) and the name. The rest
 -- are segments in the sender's language, joined by " · ": a reader without the addon reads his guild's language, a
 -- reader with it gets the name as a link (the click opens the own poster, else the guild's or friends', else a guest
@@ -207,18 +208,10 @@ local function posted(key)
   return ok and tonumber(sum) or 0
 end
 
--- the book's own bounty without the suspicion part (gold), else 0
-local function ownBounty(e)
-  local S = ns.Store
-  if not (S and S.Bounty) then return 0 end
-  local proxy = { key = e.key, kills = e.kills, assists = e.assists, revenge = e.revenge, level = e.level, suspected = 0 }
-  local ok, v = pcall(S.Bounty, proxy)
-  return ok and math.floor((tonumber(v) or 0) / 10000) or 0
-end
-
-local function bountySeg(key, e)
+-- 1.7.0 claim: only a posted bounty goes into a line (the word "bounty" means one somebody posted); the book's own
+-- value (Store.Bounty) is no bounty and stays out of the chat line, the payback line and the Discord block
+local function bountySeg(key)
   local g = posted(key)
-  if g <= 0 and e then g = ownBounty(e) end
   if g <= 0 then return nil end
   return Fmt(L.SHARE_BOUNTY, { gold = gold(g) })
 end
@@ -270,7 +263,7 @@ end
 -- own book entry; nil when it may not be shown
 function Share.LineFor(e)
   if not Share.Offer(e) then return nil end
-  return Share.Build(display(e), { kindOf(e), (scoreSeg(e)), bountySeg(e.key, e), placeSeg(e) })
+  return Share.Build(display(e), { kindOf(e), (scoreSeg(e)), bountySeg(e.key), placeSeg(e) })
 end
 
 -- payback just taken: "[Brand: name] PAYBACK · now 3 : 5 · <where I am>"
@@ -279,7 +272,7 @@ function Share.RevengeLine(e)
   local m, h = standing(e.key)
   local seg = m and Fmt(L.SHARE_REVENGE_NOW, { score = m .. " : " .. h }) or nil
   local z, sz = Util.Zone()
-  return Share.Build(display(e), { W("BANNER_REVENGE"), seg, bountySeg(e.key, e), place(z, sz) })
+  return Share.Build(display(e), { W("BANNER_REVENGE"), seg, bountySeg(e.key), place(z, sz) })
 end
 
 -- guild or friends' book entry (src: "guild" | "friends" | "both" | nil)
@@ -424,7 +417,7 @@ function Share.Discord(item, kind, src)
   elseif kind == "hunt" then
     lines[#lines + 1] = md(join(Fmt(L.POSTER_RELEASED_N, { times = times(tonumber(item.n) or 0) }), bountySeg(item.key)))
   else
-    lines[#lines + 1] = md(join((scoreSeg(item)), bountySeg(item.key, item)))
+    lines[#lines + 1] = md(join((scoreSeg(item)), bountySeg(item.key)))
     local d = Share.LastOwnDeed(item)
     local p = d and place(d.zone, d.subzone)
     if p then lines[#lines + 1] = md(Fmt(L.SHARE_DC_LAST, { place = p, time = whenOf(d.t) or "?" })) end

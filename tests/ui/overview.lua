@@ -244,7 +244,7 @@ sortBy(L.SORT_LEVEL)
 check("Stufe: Berta (55) zuerst", names():find("^Berta") ~= nil, names())
 sortBy(L.SORT_NAME)
 check("Name: Anton zuerst", names():find("^Anton,") ~= nil, names())
-sortBy(L.SORT_BOUNTY)
+sortBy(L.SORT_BOOK_VALUE)
 check("Kopfgeld: Anton zuerst", names():find("^Anton") ~= nil, names())
 sortBy(L.SORT_CLASS)
 check("Klasse: Begnadigte bleiben am Ende", rows()[#rows()].item.name == "Emil", rows()[#rows()].item.name)
@@ -310,7 +310,7 @@ UI.SetFilter("wanted"); tick(); settle()
 local worst, worstSort = 0, nil
 for _, k in ipairs({ "rank", "kills", "seen", "recent", "name", "level", "class", "bounty" }) do
   sortBy(L[({ rank = "SORT_RANK", kills = "SORT_KILLS", seen = "SORT_SEEN", recent = "SORT_RECENT", name = "SORT_NAME",
-    level = "SORT_LEVEL", class = "SORT_CLASS", bounty = "SORT_BOUNTY" })[k]])
+    level = "SORT_LEVEL", class = "SORT_CLASS", bounty = "SORT_BOOK_VALUE" })[k]])
   local c0 = os.clock()
   for _ = 1, 5 do UI.Refresh() end
   local ms = (os.clock() - c0) / 5 * 1000

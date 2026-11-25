@@ -269,6 +269,14 @@ function Tracker.OnUnit(unit, how)
   if targetsMe(unit) then r.targetedMe = t end
   if unit == "target" then r.iTargeted = t end
   if listed then spotted(key, unit, how or "other", r) end
+  -- 1.7.0 claim (Alert.lua): a player with a bounty of others whose book alarm does not ring (fixer: also when he is in
+  -- the own book, and only now, so the record with class and level is there); set only while such bounties exist and
+  -- the hit list alarm is on. Never for a namesake (a bounty belongs to the full name).
+  local bountyHook = Tracker.bountyHook
+  if bountyHook and not namesake then
+    local ok, err = pcall(bountyHook, key, unit, how or "other")
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
   -- 1.6.0 feud (Feud.lua): a member of a feud guild who is not in the book; set only while there is a feud
   local fh = Tracker.feudHook
   if fh and not listed and hostile then

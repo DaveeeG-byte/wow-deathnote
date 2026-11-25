@@ -1,4 +1,4 @@
-# Revenge Book 1.6.4
+# Revenge Book 1.7.0
 
 An addon for WoW Forever (Interface 16001). In open-world PvP it writes down who killed you, shows your killers as a
 book and warns you when one of them is in sight again. Confirmed kills are shared silently with your guildmates (the
@@ -258,7 +258,15 @@ higher than yours, in warning colour with the gap ("Level 63 (+3)", skull: "Leve
 Friends") the hit list is the first view as soon as there is a call (without calls the view does not exist); the source
 (All, Guild, Friends) can be picked as soon as there is a guild and a friend with Revenge Book. New targets from others
 arrive as one chat line; every new target that is in sight right now gets the alarm (own switch "Warn about hit list
-targets", even when the news switch is off). "Hide for me" (row menu) takes a target out of the alarm and moves it,
+targets", even when the news switch is off). Since 1.7.0 the same switch also covers a player known only by a bounty
+another one posted whose other alarms stay silent (in no book, or listed by hand, guild alarm off, a suspect, under
+the threshold): the alarm "Bounty on him" names the bounty, with the usual cooldown, open world only, never for your own
+characters or guildmates, a pardoned one, a hidden hit list target, a bounty of your own alone or one of a muted friend,
+nor for a player of your own book while the alarm is off (`/dn quiet`);
+when he comes onto the guild book or the hit list while it stands, it becomes that alarm. Every alarm names a bounty of
+others at the end of its line ("50g bounty from Anna"; several: the total and "Bert +1"; when the line is too long,
+first the hit list part goes, then the "+1"), and the line follows a bounty that comes or goes while it stands.
+"Hide for me" (row menu) takes a target out of the alarm and moves it,
 faded, to the end; nothing is sent. "Call off all mine" in the row menu of one of your own calls (from two on) takes
 back all your calls. "Empty guild book" and "Empty friends' book" (House Rules, sheet Guild, More) also remove the other
 players' calls on that list; the same call does not come back with the next sync (a new call by the same player does).
@@ -285,6 +293,43 @@ their characters, or guildmates and friends they have heard with Revenge Book un
 expire like calls ("Calls last"); someone who leaves the guild loses their bounties in the guild book just like their
 calls. The addon pays nothing and checks nothing: it is an announcement, you settle it among yourselves. The book's
 automatic value (kills, assists, level, revenge) stays as it was and applies as long as nobody has posted a bounty.
+
+Since 1.7.0 the poster keeps the two apart: the book's automatic value stands under its own word **BOOK VALUE**
+(German BUCHWERT; the trade cover's INVOICE is this word now), its tooltip says that nobody can claim it and that a click
+posts a bounty of your own; the word **BOUNTY** only stands over a posted bounty (large, red ink). "Show" (chat line,
+payback line, Discord block) names only a posted bounty; the book's value never goes into a line. The sort "Book value"
+(formerly "Bounty") sorts by the book's value as before.
+
+## Claiming a bounty (1.7.0)
+Only a posted bounty can be claimed, never the book's value. When your own killing blow (open world, no duel) takes
+down a target on which a guildmate or friend posted a bounty, the chat says "Bounty earned: 50g from Anna for …" at
+once and, a moment later, the slip "Bounty earned" shows the target, the gold and the poster; a click on it opens
+Unsolved > Claims. When a notice of the same kill stands (payback, taken down), it stays and the slip follows it; several
+posters of one kill give one slip ("100g from Cora +1") and one chat line each. The poster gets the slip "Bounty due" as
+in 1.6.0. A chat line tells the shooter when the poster marks it paid, declines it, has no such bounty (taken back,
+expired, already paid to someone else, killed before it was posted), or opens it again; unconfirmed to open is silent.
+A slip that a notice without a queue (an own death, a payback) pushes away within two seconds comes back after it.
+
+One bounty, one paid claim: several claims may stand open on the same bounty (every valid kill, also a later one, also
+on the bounties of several of your characters). The poster decides: marking one paid declines the other open ones on
+that bounty by itself and takes the bounty back; while one is paid, a further kill on it gets "no bounty". Declining
+changes nothing for the others. A kill counts when the bounty stood at the time of the kill, even if it has expired or
+was taken back by the time the claim arrives. The shooter's book sends the claim again by itself (also after the poster
+was offline or on another character) as soon as it hears the poster online, for up to 30 days.
+
+Unsolved > Claims shows both ways, each under its own head once something is owed to you: **You owe** (claims on your
+bounties: Paid, Decline, Open again; the sheet of an open one says that Paid also takes your bounty back, names further
+open claims on the same bounty, and a chat line confirms it afterwards; a bounty of another of your characters is taken
+back by guild and friends only once that character is online, and sheet and chat say so; a claim whose bounty is paid
+to someone else shows no Paid or Open again, only to whom it is paid) and **Owed to you** (bounties you earned, with
+their state: unconfirmed, open, paid, declined, no bounty). "Unconfirmed" means the poster has not confirmed yet (not
+online, on another character, or an older version); the claim goes out from the character that made the kill, and the
+sheet names him and says what to do next. "Remove from list" takes one of
+yours out once it is settled, or after 30 days unconfirmed. After a click on the sheet its buttons wait half a second
+(a double click never hits the button that took the place of the first). The switch Open | Claims | Filed comes as soon
+as there is something either way; the number on "Claims" counts the open claims on your bounties. The red number on
+the tab counts suspicions and open cases only, never claims: a claim on your bounty shows as the slip "Bounty due" and
+under Claims. Data and messages: see the guild protocol below.
 
 ## Revenge (1.2.1)
 "Note revenge" counts one revenge by hand; for about 8 seconds afterwards the same button reads "Undo" and takes back
@@ -547,6 +592,7 @@ Settings added in 1.3.0 (`DeathNoteDB.settings`): `ledger.enabled` (true), `ledg
 | `GuildLog.lua`, `GuildLogUI.lua` | the guild chronicle, who has the book, the week (1.6.0) |
 | `Call.lua`, `CallUI.lua` | call for help (prefix `DeathNoteSOS`), sightings with place and layer (`T`), their slip and pins (1.6.0) |
 | `Feud.lua`, `FeudUI.lua` | guild per deed, enemy guilds, feuds, claims, filing and the cap, the options page (1.6.0) |
+| `Claim.lua` | cashing in a bounty: the killer's records and the claim sent again, `C` and `Q`, one bounty one paid claim, tombstones of ended own bounties, Paid takes it back (also for another own char), `probe.claim` (1.7.0) |
 | `Libs/` | embedded LibStub, CallbackHandler, LibDataBroker and LibDBIcon for the minimap button (1.2.2) |
 
 ## Embedded libraries (1.2.2)
@@ -653,6 +699,40 @@ Details: `DeathNote/Libs/README.txt`. The release zip contains the folder with i
     time, attacker key and name, both may be empty), to guild, party or raid and friends (whisper or Battle.net). `V`
     also goes out when another's bounty lies on the target, even without a deed. No other new message and no new field;
     1.5.0 drops `T` as an unknown kind and never reads `DeathNoteSOS` (mixed-version tests).
+24. (1.7.0) Cashing in a bounty. Only a bounty posted on purpose (`B`) can be claimed, never the book's own value.
+    With your own killing blow (as for `V`) on a target whose key is sure by the GUID (tracker or your own book, never
+    a first name alone), the book keeps one record per poster of a bounty of others (`DeathNoteDB.earned`: target,
+    poster, own char, kill time, gold, guild or friends, state; 50, 30 days); a bounty posted more than 5 minutes after
+    the kill does not count, and an earlier record covers a later kill only while the poster's bounty did not change
+    after it. `V` goes out unchanged. `C` = claim (key, killer, kill time, poster, gold as the killer knows it), only
+    while the record is unconfirmed or open, of the char logged in, and not older than 30 days: first in the answer to
+    the poster's own hello; on its own when the book hears any message of the poster (guild or friends; a new record
+    waits 90 seconds for the receipt of its `V`, an open one goes once per session); at most 10 at a time. The throttle
+    lives on the record and holds over reloads and logins: 10 minutes apart, 4 hours once the kill is a day old, at
+    most 6 a day per record. On GUILD only the named poster takes it, to a friend by whisper. `Q` = receipt of the
+    poster (key, killer, kill time, poster, state `0` open, `1` paid, `2` declined, `3` no bounty, gold): at once on a
+    valid `V` or `C` of the logged-in char's bounty, on every change (Paid, Declined, Reopen; to a friend by whisper
+    too), and as the answer to a repeated `C` (one per kill per minute); it reaches the record of the same kill also
+    with a time less than 60 seconds off. The sender of a `C` must be the killer, of a `Q` the poster (same check as for
+    every message; friends by their GUID). At most 20 `C` and 20 `Q` per sender in 10 minutes. One bounty, one PAID
+    claim: a bounty is target, own char and the time it was first posted (a new amount keeps it); a kill counts when the
+    bounty stood: from 5 minutes before its first posting (two clocks) to its end, and after the end (taken back,
+    expired, paid: heard by all at once) only one more minute; also when its `C` comes after the bounty ended (the book
+    keeps a small tombstone of its own ended bounties, marked when paid: 50, 30 days, never sent). Of an own char's
+    bounties the live one counts when it stood at the kill, else the tombstone that held it, never by gold; a `V` gives
+    a claim on every own bounty on the target, on any own char. Claims stand open side by side; Paid for one declines
+    the other open claims on that bounty (receipt `3`), and while one is paid a further kill gets `3`; Declined changes
+    nothing for the others. Over the cap of 50 claims declined ones go first, paid ones last. Paid takes exactly that
+    bounty back (the logged-in char's with `B` gold `0` to guild and friends; another own char's quietly in the own
+    book, and that char sends the `B` gold `0`, with the time of the payment, at its next login); Reopen posts nothing
+    again and is refused while another claim on the bounty is paid. Two kills of the same target by the same killer
+    less than 60 seconds apart are one kill. 1.6.x drops `C` and `Q` as an unknown kind: a 1.6.x poster still gets his
+    claim from `V` (no receipt, the record stays unconfirmed), a 1.6.x killer still makes a claim at a 1.7.0 poster; a
+    paid 1.6.x claim holds the bounty when its kill came after the first posting. Known limit: a new amount set under
+    1.6.x writes the bounty without its first posting, so back under 1.7.0 its open claims no longer find it (Paid
+    takes nothing back, a new kill is a claim on a "new" bounty); taking back, expiry and Paid under 1.6.x leave no
+    tombstone. Answers to friends wait for room for up to 123 messages (queue 140). Nothing of it goes into "Back up
+    book".
 
 ## Client limits
 No combat log for addons, no detection of stealthed players, no distance or direction. Only players visible as a

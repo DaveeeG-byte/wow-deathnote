@@ -1,5 +1,58 @@
 # Changelog
 
+## 1.7.0 (unreleased)
+
+### Added
+- **A bounty earned shows itself.** When your own killing blow takes down a target with a bounty a guildmate or friend
+  posted, the chat says "Bounty earned: 50g from Anna for …" at once and a slip "Bounty earned" (target, gold, poster)
+  follows; a click on it opens Unsolved > Claims. A notice of the same kill (payback, taken down) stays first and the
+  slip follows it, never both at once; several posters of one kill give one slip; a slip pushed away within two seconds
+  by a notice that does not wait (an own death, a payback) comes back after it. A click on it shows its own sheet. Chat
+  lines tell you when the poster marks it paid, declines it, has no such bounty, or opens it again.
+- **Unsolved > Claims shows both ways:** "You owe" (claims on your bounties, as before) and "Owed to you" (bounties you
+  earned, each with its state: unconfirmed, open, paid, declined, no bounty, and a sheet that says what to do next).
+  "Remove from list" takes one out once it is settled, or after 30 days unconfirmed. After a click on a sheet its
+  buttons wait half a second, so a double click never hits the button that took the place of the first.
+- **The alarm names a bounty of others** at the end of its line ("50g bounty from Anna"; several: the total and the
+  biggest poster). A player known only by such a bounty (in no book, not on the hit list) now gives an alarm "Bounty on
+  him" under the existing switch "Warn about hit list targets", with the usual cooldown, open world only, never for your
+  own characters or guildmates, never for a pardoned one or a bounty of a muted friend, and never for a player of your own
+  book while the alarm is switched off (`/dn quiet`). It also rings for a player a
+  book knows whose own alarm stays silent (listed by hand, guild alarm off, a suspect), and turns into the guild or hit
+  list alarm when he comes onto those lists while it stands.
+- The sheet of an open claim on your bounty says before the click that "Mark as paid" takes your bounty back and how
+  many other claims are open on it (they are declined then); a chat line confirms it afterwards. A claim whose bounty is
+  paid to someone else shows no "Mark as paid" or "Open again", only to whom it is paid.
+- **The claim reaches a poster who was offline.** Your book keeps the bounty you earned and sends the claim again by
+  itself (new message `C`) as soon as it hears the poster online, also when he was offline or on another character at
+  the time of the kill, for up to 30 days; it goes out from the character that made the kill, so the sheet of an
+  unconfirmed entry names that character; the poster's book answers with a receipt (new message `Q`: open, paid,
+  declined, or no bounty). 1.6.x drops both messages: a 1.6.x poster still gets the claim from the live message as
+  before, without a receipt, and your entry stays "unconfirmed".
+- **One bounty, one paid claim.** Several claims may stand open on one bounty (every valid kill, also a later one). The
+  poster decides: "Mark as paid" for one declines the other open claims on that bounty and takes exactly that bounty
+  back, also in the books of guild and friends; a bounty another of your characters posted goes there only once that
+  character is online again, and the sheet and the chat line say so. While one claim is paid, a further kill on that
+  bounty gets "no bounty". A kill counts when the bounty stood at the time of the kill (clocks may differ by 5 minutes),
+  even if it expired or was taken back before the claim arrived; a kill before the bounty was posted gets "no bounty".
+- A bounty is earned only by your own killing blow in the open world (not a duel, not a group kill without your blow),
+  and only when the victim's full name is sure (known by the GUID, never by a first name alone).
+- One chat line after the update says what is new.
+
+### Changed
+- **BOOK VALUE and BOUNTY are two words now.** The value the book works out by itself stands under BOOK VALUE (German
+  BUCHWERT) with a tooltip that nobody can claim it; BOUNTY only stands over a bounty somebody posted. In the trade cover
+  INVOICE is the word for the book's value. Only posted bounties can be claimed.
+- "Show" (chat line, payback line, Discord block) names only a posted bounty; the book's value no longer goes into the
+  line. The sort "Bounty" is called "Book value" (it always sorted by the book's value).
+
+### Not measured in the game yet
+- The slip's order against the payback notice of the same kill, the alarm for a player known only by a bounty, and the
+  views of Claims were only tested against the stand-in of the client (with the real new messages between several
+  stand-in clients). How often the alarm for such a player rings in the open world is unmeasured.
+- When the claim goes out again in the game (the shooter's book hearing the poster), and whether half a second of deaf
+  buttons on the sheet of Claims is enough against a double click, were only tested against the stand-in of the client.
+
 ## 1.6.4 (2026-11-25)
 
 ### Added

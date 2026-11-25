@@ -35,6 +35,15 @@ function J.world(code, opt)
   local files = {}
   for _, f in ipairs(AM.Files()) do files[#files + 1] = f end
   files[#files + 1] = "Share.lua"
+  -- an older folder (opt.dir) lacks the logic files of later versions (1.7.0: Claim.lua): only what it has
+  if opt.dir then
+    local have = {}
+    for _, f in ipairs(files) do
+      local h = io.open(ADDON .. "/" .. f, "r")
+      if h then h:close(); have[#have + 1] = f end
+    end
+    files = have
+  end
   rawset(BM.G, "time", function() return math.floor(AM.epoch + AM.now) end)
   _G.DeathNoteDB = opt.db   -- without saved data: a new installation (never the data of the world before)
   local ns

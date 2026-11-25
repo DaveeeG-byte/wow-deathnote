@@ -43,8 +43,10 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   W.click(paid)
   J.check(code .. ": bezahlt", c.state == "paid")
   J.check(code .. ": danach Wieder offen", W.find(L.ACT_REOPEN) ~= nil and W.find(L.ACT_PAID) == nil)
+  W.tick(0.6)   -- fixer 1.7.0: the sheet's buttons are deaf for half a second after a change
   W.click(W.find(L.ACT_REOPEN))
   J.check(code .. ": wieder offen", c.state == "open")
+  W.tick(0.6)   -- fixer 1.7.0: the sheet's buttons are deaf for half a second after a change
   W.click(W.find(L.ACT_DECLINE))
   J.check(code .. ": abgelehnt", c.state == "declined")
   -- filed

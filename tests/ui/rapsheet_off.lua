@@ -68,6 +68,15 @@ local function run(addon, code)
   local L = ns.L
   local seenPrefix = (L.POSTER_LAST_SEEN:match("^(.-){") or L.POSTER_LAST_SEEN)
   local seenPrefix2 = L.POSTER_LAST_SEEN_IN and (L.POSTER_LAST_SEEN_IN:match("^(.-){") or L.POSTER_LAST_SEEN_IN)
+  -- 1.7.0 claim: the word over the book's own value is BOOK VALUE now (BOUNTY only over a posted one): both words are
+  -- the same label of the poster here (wording, not the rap sheet), compared without text and place
+  local function spaced(s)
+    local o = {}
+    for ch in tostring(s):gmatch("[%z\1-\127\194-\244][\128-\191]*") do o[#o + 1] = ch == " " and "  " or ch end
+    return table.concat(o, " ")
+  end
+  local valueWord = { [spaced(L.POSTER_BOUNTY)] = true }
+  if L.POSTER_BOOK_VALUE then valueWord[spaced(L.POSTER_BOOK_VALUE)] = true end
   local out = {}
   local function under(f, anc) local o = f; while o do if o == anc then return true end o = o._parent end return false end
   -- 1.4.0 overview: the head of the list (search, filter, sorting) and the foot hint are laid out anew, and the
@@ -94,6 +103,7 @@ local function run(addon, code)
         elseif f._kind == "FontString" and type(f._text) == "string" and f._text ~= "" then
           local txt = f._text
           if txt:find(seenPrefix, 1, true) == 1 or (seenPrefix2 and txt:find(seenPrefix2, 1, true) == 1) then txt = "(last seen)"; rect = "-" end
+          if valueWord[txt] then txt = "(value label)"; rect = "-" end
           list[#list + 1] = ("T %s|%s|%s"):format(txt, rect, tostring(f._fontSize))
         elseif f._kind == "Texture" and (f._tex or f._color) then
           list[#list + 1] = ("X %s|%s"):format(tostring(f._tex), rect)

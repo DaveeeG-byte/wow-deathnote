@@ -77,7 +77,10 @@ function H.relog(W, c, opts)
   opts = opts or {}
   local o = { db = db, friends = opts.friends or c.friendNames, bn = opts.bn or c.bnNames, fullSender = c.fullSender,
     lang = opts.lang }
-  return W.client(opts.name or c.name, opts.surname or c.surname, opts.noGuild and nil or (opts.guild or c.guild), o)
+  -- (1.7.0 fixer: "noGuild and nil or x" always gave x; noGuild = true now really comes back without a guild)
+  local guild = opts.guild or c.guild
+  if opts.noGuild then guild = nil end
+  return W.client(opts.name or c.name, opts.surname or c.surname, guild, o)
 end
 
 function H.tiefe_kopie(t, seen)

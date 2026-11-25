@@ -4,7 +4,9 @@
 -- char), V (a char killed a killer of others). 1.2.0 and 1.1.0 drop all three as "type" and keep their data as it is.
 --
 -- Data, all additive and language-neutral (no DB version):
---   DeathNoteDB.bounty   = { [key] = { [own char] = { g = whole gold, t = time set, b = book id } } }
+--   DeathNoteDB.bounty   = { [key] = { [own char] = { g = whole gold, t = time set, b = book id, t0 = first set } } }
+--                        (1.7.0: t0 = the time the bounty was first posted, kept when the amount changes: the bounty's
+--                        identity for claims; never sent)
 --   <guild list>.bounty  = { [key] = { [char] = { g, t, b, via } } }   bounties others set in that guild
 --   DeathNoteDB.friends.bounty                                          the same from friends
 --   DeathNoteDB.avenged  = { [key] = { by = { [char] = n }, log = { { by, t } }, t = last } }
@@ -77,6 +79,8 @@ function X.Sanitize(tbl, t, maxAge, own)
         else
           if r.t > t + C.FUTURE then r.t = t end
           if r.b ~= nil and not P.ValidBook(r.b) then r.b = nil end
+          -- 1.7.0 claim: the first posting, never after the last change
+          if r.t0 ~= nil and not (P.Finite(r.t0) and r.t0 <= r.t) then r.t0 = nil end
           if r.via ~= nil and not plainName(r.via) then r.via = nil end
         end
       end
@@ -143,6 +147,19 @@ local function share(key, char, g, t)
   if F and F.Broadcast then F.Broadcast(text, "B") end
 end
 
+-- 1.7.0 claim: an own bounty ended (taken back, expired, paid): Claim.lua keeps a tombstone for the kills before
+local function ended(key, char, r, t)
+  local Cl = ns.Claim
+  if Cl and Cl.BountyEnded then
+    local ok, err = pcall(Cl.BountyEnded, key, char, r, t)
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
+end
+X.Ended = ended
+
+-- 1.7.0 claim: sends the taking back of an own bounty of char (B with gold 0) to guild and friends
+function X.SendBack(key, char, t) share(key, char, 0, t) end
+
 -- Sets the own bounty of the logged-in char on `key` (whole gold 1..BOUNTY_GOLD_MAX); nil or 0 takes it back.
 -- Returns true | nil, reason ("key" | "me" | "gold" | "ours" | "cap" | "none").
 function X.Set(key, gold)
@@ -161,6 +178,7 @@ function X.Set(key, gold)
   if gold == 0 then
     if not r then return nil, "none" end
     x[mine] = nil
+    ended(key, mine, r, t)
     if next(x) == nil then own[key] = nil end
     share(key, mine, 0, t)
   else
@@ -169,7 +187,8 @@ function X.Set(key, gold)
     if not r and ownCount(mine) >= C.BOUNTY_PER_SENDER then return nil, "cap" end
     if r and r.g == gold then return true end
     if not x then x = {}; own[key] = x end
-    x[mine] = { g = gold, t = t, b = B.book() }
+    -- 1.7.0 claim: a new amount keeps the first posting (t0), the bounty stays the same for its claims
+    x[mine] = { g = gold, t = t, b = B.book(), t0 = r and math.floor(r.t0 or r.t) or t }
     share(key, mine, gold, t)
   end
   B.updated()
@@ -242,6 +261,46 @@ function X.Has(key)
 end
 
 Guild.SetBounty, Guild.Bounties, Guild.HasBounty, Guild.OwnBounty = X.Set, X.Rows, X.Has, X.Own
+
+-- 1.7.0 claim (the alarm): the bounties of others on key, never of an own char: gold sum and rows { char, g, t } (the
+-- newest per char, biggest first). Without any: 0 and a shared empty table (no new table; the alarm asks per sighting).
+function X.Others(key)
+  if not X.Has(key) then return 0, EMPTY end
+  local gb = B.inGuild() and B.gctx.bounty
+  local fc = fctx()
+  local gx = gb and gb[key]
+  local fx = fc and fc.bounty and fc.bounty[key]
+  if not gx and not fx then return 0, EMPTY end
+  local age = Guild.ExpireAge and Guild.ExpireAge()
+  local t0 = age and now() - age or nil
+  local mine = B.myFullName()
+  local out, seen, sum
+  for pass = 1, 2 do
+    local x
+    if pass == 1 then x = gx else x = fx end
+    if x then
+      for c, r in pairs(x) do
+        if not (t0 and r.t < t0) and c ~= mine and not Guild.IsOwnChar(c) then
+          out = out or {}
+          seen = seen or {}
+          local have = seen[c]
+          if not have then
+            have = { char = c, g = r.g, t = r.t }
+            seen[c] = have
+            out[#out + 1] = have
+          elseif r.t > have.t then
+            have.g, have.t = r.g, r.t
+          end
+        end
+      end
+    end
+  end
+  if not out then return 0, EMPTY end
+  table.sort(out, function(a, b) if a.g ~= b.g then return a.g > b.g end return a.char < b.char end)
+  sum = 0
+  for i = 1, #out do sum = sum + out[i].g end
+  return sum, out
+end
 
 -- the own bounties of the logged-in char, newest first: { { key, g, t } } (/dn kopfgeld without anything)
 function X.OwnList()
@@ -490,13 +549,23 @@ local function applyV(ctx, m, short, full, t)
   local mineHit = type(own) == "table" and ((tonumber(own.kills) or 0) > 0 or (tonumber(own.assists) or 0) > 0)
   -- 1.6.0 feud: an own bounty on him (any own char), taken down by somebody else: a claim (Feud.lua)
   local claim = X.ClaimOf(m.key, m.by)
+  -- 1.7.0 claim: also a bounty that stood at the kill and has ended since (a tombstone of Claim.lua)
+  local Cl0 = ns.Claim
+  if not claim and Cl0 and Cl0.EndedOn then
+    local okc, x = pcall(Cl0.EndedOn, m.key, m.by)
+    if okc and x then claim = x end
+  end
   -- a target nobody here knows as a killer: not kept (no poster would show it)
   if not ((e and #e.deeds > 0) or mineHit or claim) then return end
   if not mayAv(ctx, full, t) then drop(st, "flood"); return end
   if not X.Record(m.key, m.by, m.t) then return end
   if claim and ns.Feud and ns.Feud.AddClaim then
     local name = (type(own) == "table" and Util.Display(own)) or (e and (e.display or e.name)) or nil
-    local okc, err = pcall(ns.Feud.AddClaim, m.key, name, m.by, m.t, claim.g, claim.char)
+    -- 1.7.0 claim: one bounty, one claim; the killer gets a receipt (Claim.lua)
+    local Cl = ns.Claim
+    local okc, err
+    if Cl and Cl.OnAvenged then okc, err = pcall(Cl.OnAvenged, ctx, m, short, name)
+    else okc, err = pcall(ns.Feud.AddClaim, m.key, name, m.by, m.t, claim.g, claim.char) end
     if not okc and ns.ReportError then ns.ReportError(err) end
   end
   local s = ctx.fresh[full]
@@ -572,10 +641,12 @@ local function inBooks(k)
   return nil
 end
 
--- key of the killed player in the guild or friends' book: tracker, own book, else a unique first name there
+-- key of the killed player in the guild or friends' book: tracker, own book, else a unique first name there.
+-- Second value (1.7.0 claim): true when the key is sure (tracker or own book by the GUID), never by a first name.
 local function keyFor(guid)
   local k, sure = Guild.KeyOfGUID(guid, inBooks)
-  if k or sure then return k end
+  if k then return k, true end
+  if sure then return nil end
   local _, _, _, _, _, name = Call(_G.GetPlayerInfoByGUID, guid)
   name = Str(name)
   if not name then return nil end
@@ -626,7 +697,13 @@ local function othersBounty(x, mine)
 end
 
 function Ext.partyKill(guid, t, mine, bagG, bagF)
-  local key = keyFor(guid)
+  local key, sure = keyFor(guid)
+  -- 1.7.0 claim: the killer's own record of bounties of others he earned (only with a sure key; Claim.lua)
+  local Cl = ns.Claim
+  if Cl and Cl.OnKill then
+    local okc, err = pcall(Cl.OnKill, key, sure == true, t, mine)
+    if not okc and ns.ReportError then ns.ReportError(err) end
+  end
   if not key then return end
   local g = B.gctx.store.enemies[key]
   local fc = fctx()
@@ -703,6 +780,7 @@ local function expire()
     for c, r in pairs(x) do
       if type(r) == "table" and P.Finite(r.t) and r.t < t - age then
         x[c] = nil
+        ended(key, c, r, r.t + age)
         if c == mine then share(key, c, 0, t) end
       end
     end
@@ -728,6 +806,7 @@ ns:On("READY", function()
         table.sort(l, function(a, b) return a[2] > b[2] end)
         for i = C.BOUNTY_PER_SENDER + 1, #l do
           local x = d.bounty[l[i][1]]
+          ended(l[i][1], c, x[c], t)
           x[c] = nil
           if next(x) == nil then d.bounty[l[i][1]] = nil end
         end

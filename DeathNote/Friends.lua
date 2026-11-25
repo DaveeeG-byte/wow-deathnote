@@ -54,7 +54,9 @@ local FC = {
   ONLINE_MIN = 25, ONLINE_MAX = 40,       -- a friend came online: after his own guild hello (8 to 20 s)
   HELLO_RETRY = 15, HELLO_TRIES = 12,     -- a hello that found the queue full is tried again
   -- an answer waits until the shared queue has room for a whole one (R + M + X + J + A, 1.2.1: H, Z, B, Y; 1.5.0: L)
-  REPLY_ROOM = C.REPLY_MAX + (C.PLACE_REPLY or 0) + C.LISTED_REPLY + C.UNLISTED_REPLY + C.HUNT_REPLY + C.HUNTOFF_REPLY + C.BOUNTY_REPLY + 3,
+  -- (1.7.0: C)
+  REPLY_ROOM = C.REPLY_MAX + (C.PLACE_REPLY or 0) + C.LISTED_REPLY + C.UNLISTED_REPLY + C.HUNT_REPLY + C.HUNTOFF_REPLY + C.BOUNTY_REPLY
+    + (C.CLAIM_REPLY or 0) + 3,
   REPLY_WAIT = 10, REPLY_TRIES = 12,
   FAIL_MAX = 3,            -- refused whispers in a row to one friend: that friend rests for the session
   SCAN_DELAY = 1,          -- friend list events come in bursts: one scan
@@ -586,7 +588,11 @@ local function sendAnswer(name)
   -- the answer begins with the own hello (with GUID): the friend can check who sends before the data comes
   -- (a hello he answered already within HELLO_PER_SENDER is not answered again: no loop)
   sendTo(x, Friends.HelloText(x), "H")
-  B.answer(FCTX, r.since, function(text, kind) return sendTo(x, text, kind) end)
+  -- 1.7.0 claim: the friend who asked is this one (his name, his surname from the list or the bound name)
+  local short = x.name:match("^([^%-]+)") or x.name
+  local sur = surnameOf(x)
+  B.answer(FCTX, r.since, function(text, kind) return sendTo(x, text, kind) end,
+    function(owner) return P.Owns(owner, short, sur) end)
 end
 
 -- 1.2.1 fix: the own hello to a friend really went out (the queue tells): his answer window starts now
@@ -791,10 +797,17 @@ local function heard(x, text, short, full, channel)
   tie.seen, tie.seenDay = t, d
   if x.bn then tie.bn, tie.bnDay = t, d end
   if not mate then notePeer(x, short, m.version) end
-  if m.kind == "H" then answerLater(x, m.since); return end
+  if m.kind == "H" then
+    answerLater(x, m.since)
+    -- 1.7.0 claim (fix JL-1/2): own claims waiting for this friend go out (Claim.lua)
+    if Guild.claimWait then Guild.ClaimHeard(FCTX, short, full, not short:find(" ", 1, true) and surnameOf(x) or nil) end
+    return
+  end
   FCTX.helloAt = helloAt[x.name]
   local z = m.kind == "Z" and Guild.AnswerWindow(FCTX, full) ~= nil
-  B.apply(FCTX, m, short, full, t, not short:find(" ", 1, true) and surnameOf(x) or nil)
+  local known = not short:find(" ", 1, true) and surnameOf(x) or nil
+  B.apply(FCTX, m, short, full, t, known)
+  if Guild.claimWait then Guild.ClaimHeard(FCTX, short, full, known) end
   -- 1.2.0: this char heard from this friend (since of the next hello) only once his ANSWER to the own hello
   -- came in full (it ends with Z); his hello alone does not count
   local mine = B.myFullName()

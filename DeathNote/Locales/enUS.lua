@@ -806,7 +806,6 @@ L.HELP_GRUDGE = "/dn grudge  notice after attacks on/off (/dn grudge test: test 
 L.SORT_KILLS = "Kills on me"  -- sort menu: how often he killed you
 L.SORT_LEVEL = "Level"  -- sort menu
 L.SORT_CLASS = "Class"  -- sort menu
-L.SORT_BOUNTY = "Bounty"  -- sort menu
 L.SORT_ONLY_NEW = "Only what I lack"  -- guild sort menu: show only killers not yet in your own book
 L.SORT_ALL_ROWS = "Show all"  -- guild sort menu: show all again
 L.FILTER_WORD = "Filter"  -- word left of the sorting in Wanted (opens the filter menu)
@@ -1244,4 +1243,45 @@ L.CHAT_NEWS_164 = "New in 1.6.4: /dn move shows the alarm and the notices, drag 
 L.MOVE_ENDED = "Move mode ended. /dn move starts it again."  -- chat when something ended the placing mode by itself (a new alarm, a notice, a help call, a grudge notice, combat, death, a loading screen): only that it ended and how to start it again, no list of causes
 L.MOVE_NAME_NOTICE = "Notice"  -- [max 24] name on the sample of the notice in the placing mode (its letter-spaced red head, 300 px, 10/9 pt): the notice after a death, a revenge, a guild death; the alarm's sample is named SHEET_ALERT, the help call's CALL_SLIP_HEAD
 L.MOVE_NAME_GRUDGE = "Grudge notice"  -- [max 24] name on the sample of the grudge notice in the placing mode (its letter-spaced head, 194 px, 10/9 pt): the small notice on the right after an attack; take the word of SET_SEC_GRUDGE
+-- 1.7.0 claim
+L.POSTER_BOOK_VALUE = "BOOK VALUE"  -- [max 12] label above the book's own value on the poster (letter-spaced, like POSTER_BOUNTY): the value the book works out by itself, NOT a bounty anybody posted; take the words your BOUNTY_TIP_RULES uses for "the book's value"
+L.BOOK_VALUE_TIP = "What the book works out by itself, not a posted bounty: nobody can claim it."  -- tooltip under POSTER_BOOK_VALUE on the poster: one sentence, what it is and that nobody can claim it
+L.SORT_BOOK_VALUE = "Book value"  -- sort menu: sorts by the book's own value (the word of POSTER_BOOK_VALUE in normal case)
+L.ALERT_BOUNTY_BY = "{gold} bounty from {name}"  -- alarm line: a bounty somebody else posted on the one in sight; {gold} = '50g', {name} = first name of the biggest poster, with several 'Anna +1'
+L.ALERT_LINE_BOUNTY = "{text} · {bounty}"  -- alarm line: the line as before ({text}) and ALERT_BOUNTY_BY ({bounty}) at its end
+L.ALERT_TITLE_BOUNTY = "BOUNTY ON HIM"  -- [max 30] alarm title: a player you know only from somebody else's bounty (not in any book, not on the hit list)
+L.BANNER_EARNED = "Bounty earned"  -- [max 24] kicker of the notice (letter-spaced): your killing blow earned a bounty a guildmate or friend posted
+L.EARNED_SLIP_LINE = "{gold} from {name}"  -- line of that notice under the target's name; {gold} = '50g', {name} = first name of the poster ('Anna +1' with several)
+L.CHAT_EARNED = "Bounty earned: {gold} from {name} for {target}. You find it under {where}."  -- chat after your killing blow on a target with a bounty of somebody else; {where} = 'Unsolved > Claims' (TAB_UNSOLVED > VIEW_CLAIMS)
+L.CHAT_EARNED_PAID = "{name} marked your bounty for {target} as paid ({gold})."  -- chat: the poster ticked your claim off as paid; {name} = his first name, {target} = the target, {gold} = '50g'
+L.CHAT_EARNED_DECLINED = "{name} declined your claim to the bounty for {target}."  -- chat: the poster declined your claim
+L.CHAT_EARNED_GONE = "{name} has no bounty for {target} (any more): taken back, expired, earned by someone else first, or killed before it was posted."  -- chat: the poster has no such bounty (taken back, expired, somebody else's claim came first, or the kill came before the bounty)
+L.CHAT_CLAIM_SETTLED = "Bounty on {target} settled: {gold} to {name}, your bounty is taken back."  -- chat for the poster after 'Mark as paid': the claim is settled and his own bounty taken back; {name} = first name of the one who earned it
+L.CHAT_CLAIM_SETTLED_KEPT = "Bounty on {target} marked as paid: {gold} to {name}."  -- chat for the poster after 'Mark as paid' when there was no bounty left to take back
+L.SECTION_OWE = "You owe"  -- head row in Unsolved > Claims over the claims on your bounties (what you owe), letter-spaced
+L.SECTION_OWE_SUB = "bounties of yours that others earned"  -- under it
+L.SECTION_EARNED = "Owed to you"  -- head row in Unsolved > Claims over the bounties you earned (what others owe you), letter-spaced
+L.SECTION_EARNED_SUB = "bounties of others that you earned"  -- under it
+L.EARNED_SENT = "unconfirmed"  -- mark of a bounty you earned: the poster has not answered yet (not online since, or an older version)
+L.EARNED_GONE = "no bounty"  -- mark of a bounty you earned: the poster has no such bounty
+L.SHEET_EARNED = "Earned"  -- head of the sheet on the right page for a bounty you earned
+L.EARNED_HEAD = "{gold} from {name}"  -- big line on that sheet: how much from whom; {gold} = '50g', {name} = first name of the poster
+L.EARNED_KILLED_BY = "Killing blow: {name}"  -- line on that sheet: your char that took the target down; {name} = his first name
+L.EARNED_NOTE_SENT = "Unconfirmed: {name} has not confirmed yet (not online, on another character, or an older version of the book). The claim goes out by itself as soon as your book on {char} hears {name} online."  -- small text on that sheet, state unconfirmed; {name} = the poster
+L.EARNED_NOTE_OPEN = "{name} has your claim. The book pays nothing itself: ask {name}, by trade or mail."  -- small text on that sheet, state open: the book moves no money
+L.EARNED_NOTE_PAID = "{name} marked it as paid."  -- small text on that sheet, state paid
+L.EARNED_NOTE_DECLINED = "{name} declined it. Asking is always allowed."  -- small text on that sheet, state declined
+L.EARNED_NOTE_GONE = "{name} has no bounty for it: taken back, expired, earned by someone else first, or killed before it was posted."  -- small text on that sheet, no bounty
+L.ACT_EARNED_REMOVE = "Remove from list"  -- button on that sheet: take the entry out of your list (once it is settled, or unconfirmed for more than a day)
+L.CLAIM_PAID_TAKES = "\"{button}\" also takes your bounty on him back."  -- small line on an open claim's sheet (your bounty): {button} = ACT_PAID; marking it paid takes your bounty back
+L.CHAT_NEWS_170 = "New in 1.7.0: kill a target with a bounty a guildmate or friend posted and you see \"Bounty earned\"; both of you find it under {where}. On the poster the book's own value is now called {value}: a bounty is only what somebody posts."  -- chat, once per account after the update to 1.7.0; {where} = 'Unsolved > Claims', {value} = POSTER_BOOK_VALUE
+L.CLAIM_RIVAL_PAID = "This bounty is marked paid to {name}."  -- sheet of a claim on your bounty, and chat: this bounty is already marked paid to another; {name} = his first name
+L.CLAIM_RIVAL_OPEN = "This bounty is held by the claim of {name}."  -- the same when another claim holds the bounty open (a book that was under 1.6.4 meanwhile); {name} = first name
+L.CLAIM_RIVALS = "More open claims on this bounty: {count}. \"{button}\" declines them."  -- sheet of an open claim: more open claims on the same bounty; {count} = how many (a number, no plural forms), {button} = ACT_PAID
+L.CHAT_CLAIM_UNCHANGED = "Not changed: another claim holds this bounty."  -- chat: a claim could not be changed (another claim holds the bounty)
+L.CHAT_EARNED_REOPENED = "{name} opened your claim to the bounty for {target} again ({gold}): the last word on it no longer holds."  -- chat for the shooter: the poster opened his claim again after paid, declined or no bounty; the last line about it no longer holds; {name}, {target}, {gold} as in CHAT_EARNED_PAID
+L.CLAIM_PAID_TAKES_LATER = "\"{button}\" takes your bounty on him back; guild and friends drop it as soon as {char} is online."  -- small line on an open claim's sheet when the bounty belongs to another of your characters: {button} = ACT_PAID, {char} = that character's full name; guild and friends drop it at his next login
+L.CHAT_CLAIM_SETTLED_LATER = "Bounty on {target} settled: {gold} to {name}. Your bounty is taken back here; guild and friends drop it as soon as {char} is online."  -- chat after 'Mark as paid' for a bounty of another of your characters; {char} = that character's full name, the rest as CHAT_CLAIM_SETTLED
+L.EMPTY_FPICK_HEAD = "Nothing picked."  -- right page, Unsolved > Claims after the last entry owed to you was removed: nothing picked
+L.EMPTY_FPICK_SUB = "Pick a claim on the left."  -- under it: pick an entry on the left
 end)

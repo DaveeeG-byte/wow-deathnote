@@ -549,6 +549,7 @@ local function wipe(t) for k in pairs(t) do t[k] = nil end return t end
 ---------------------------------------------------------------------------
 Locale.THEME_KEYS = {
   BOOK_TITLE = true, POSTER_HEAD = true, POSTER_DOA = true, POSTER_BOUNTY = true,
+  POSTER_BOOK_VALUE = true,   -- 1.7.0 claim: the word over the book's own value (the bounty word is only for posted ones)
   TAB_WANTED = true, TAB_DEATHLOG = true, TAB_GUILD = true, TAB_GUILD_FRIENDS = true, TAB_RECORD = true,
   HEAD_RULES = true, HEAD_HELP = true,
   STAMP_NR1 = true, STAMP_GUILD_NR1 = true, STAMP_REVENGE = true, STAMP_PARDONED = true, STAMP_HUNT = true,

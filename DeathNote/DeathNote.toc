@@ -12,7 +12,7 @@
 ## Notes-zhCN: 野外PvP记仇本：记住谁杀了你，并在他们靠近时提醒你。
 ## Notes-zhTW: 野外PvP記仇本：記住誰殺了你，並在他們靠近時提醒你。
 ## Author: DaveeeG
-## Version: 1.6.4
+## Version: 1.7.0
 ## X-Curse-Project-ID: 1797508
 ## SavedVariables: DeathNoteDB
 ## IconTexture: Interface\AddOns\DeathNote\Media\icon.tga
@@ -69,6 +69,8 @@ Friends.lua
 Bounty.lua
 # 1.6.0 feud: the guilds behind the killers, feuds, claims on a bounty, expiry and cap of the book (data only)
 Feud.lua
+# 1.7.0 claim: cashing in a bounty (the killer's record, C and Q, one bounty one claim); data only
+Claim.lua
 # 1.4.0: attacked without dying: the episode and the book entry (role "attack"); the notice is GrudgeCard.lua
 Grudge.lua
 # 1.5.0 share: the shown chat line, the chat filter, the Discord block, the week (data only; the window is ShareUI.lua)

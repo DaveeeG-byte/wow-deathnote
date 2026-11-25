@@ -150,7 +150,11 @@ end
 -- 1.6.4 move: the line of 1.6.4 (/dn move and the button on the sheet Alert) under settings.news164. Whoever has not
 -- seen the line of 1.6.0 yet (an update from 1.5.x or 1.4.x) gets it first, and before it the one of 1.5.0 when that
 -- is unseen too, exactly as 1.6.3 did; every older marker is set with it.
-Start.NEWS = "news164"
+-- 1.7.0 claim: the line of 1.7.0 (a bounty earned shows itself, Unsolved > Claims both ways, BOOK VALUE on the poster)
+-- under settings.news170. Whoever has not seen the line of 1.6.4 yet gets the chain of 1.6.4 first (with the lines of
+-- 1.6.0 and 1.5.0 when those are unseen too), then this one; every older marker is set with it.
+Start.NEWS = "news170"
+Start.NEWS_164 = "news164"
 Start.NEWS_160 = "news160"
 Start.NEWS_PREV = "news150"
 Start.NEWS_OLD = "news140"
@@ -164,6 +168,10 @@ function Start.NewsLine164()
   local L = ns.L
   return ns.F(L.CHAT_NEWS_164, { rules = L.HEAD_RULES, sheet = L.SHEET_ALERT, button = L.SET_MOVE })
 end
+function Start.NewsLine170()
+  local L = ns.L
+  return ns.F(L.CHAT_NEWS_170, { where = L.TAB_UNSOLVED .. " > " .. L.VIEW_CLAIMS, value = L.POSTER_BOOK_VALUE })
+end
 function Start.News()
   local st = Settings()
   if not st or st[Start.NEWS] ~= nil then return end
@@ -173,12 +181,16 @@ function Start.News()
     return
   end
   state.newsWait = false
-  if st[Start.NEWS_160] == nil then
-    if st[Start.NEWS_PREV] == nil then Print(ns.L.CHAT_NEWS_150) end
-    Print(Start.NewsLine())
+  if st[Start.NEWS_164] == nil then
+    if st[Start.NEWS_160] == nil then
+      if st[Start.NEWS_PREV] == nil then Print(ns.L.CHAT_NEWS_150) end
+      Print(Start.NewsLine())
+    end
+    Print(Start.NewsLine164())
   end
-  Print(Start.NewsLine164())
+  Print(Start.NewsLine170())
   Set(Start.NEWS, true)
+  if st[Start.NEWS_164] == nil then Set(Start.NEWS_164, true) end
   if st[Start.NEWS_160] == nil then Set(Start.NEWS_160, true) end
   if st[Start.NEWS_PREV] == nil then Set(Start.NEWS_PREV, true) end
   if st[Start.NEWS_OLD] == nil then Set(Start.NEWS_OLD, true) end
@@ -242,6 +254,7 @@ ns:On("READY", function()
     state.armed = "dialog"
     -- a new installation knows 1.6.0 from the start: no news line, now or later (the first-start window greets)
     if st[Start.NEWS] == nil then st[Start.NEWS] = true end
+    if st[Start.NEWS_164] == nil then st[Start.NEWS_164] = true end
     if st[Start.NEWS_160] == nil then st[Start.NEWS_160] = true end
     if st[Start.NEWS_PREV] == nil then st[Start.NEWS_PREV] = true end
     if st[Start.NEWS_OLD] == nil then st[Start.NEWS_OLD] = true end

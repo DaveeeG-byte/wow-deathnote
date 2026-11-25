@@ -48,7 +48,7 @@ UX.SORTS = { "rank", "kills", "seen", "recent", "name", "level", "class", "bount
 UX.GSORTS = { "rank", "recent", "name" }
 local SORT_LABEL = { rank = "SORT_RANK", recent = "SORT_RECENT", name = "SORT_NAME", seen = "SORT_SEEN",
   state = "SORT_STATE", points = "SORT_POINTS", count = "SORT_COUNT",   -- locale keys (these three: rap sheet)
-  kills = "SORT_KILLS", level = "SORT_LEVEL", class = "SORT_CLASS", bounty = "SORT_BOUNTY" }   -- 1.4.0 overview
+  kills = "SORT_KILLS", level = "SORT_LEVEL", class = "SORT_CLASS", bounty = "SORT_BOOK_VALUE" }   -- 1.4.0 overview
 -- Empty states: large, small, very small (only the first tab explains what the book does)
 -- per state: key stem and number of lines (STEM_HEAD, _SUB, _HINT in the locale table)
 local EMPTY = {
@@ -1598,6 +1598,14 @@ function GF.BountyTip(rows)
   return t
 end
 
+-- 1.7.0 claim: the tooltip over the book's own value: what it is, that nobody can claim it, how to post a bounty
+-- may (fixer 1.7.0, JU-17): a click posts a bounty here (not on the pardoned: the tooltip without the click line)
+function GF.BookValueTip(may)
+  local t = { Spaced(L.POSTER_BOOK_VALUE), L.BOOK_VALUE_TIP }
+  if may ~= false and GF.CanBounty() then t[#t + 1] = L.BOUNTY_TIP_CLICK end
+  return t
+end
+
 -- "Avenged by Anna 2×" / "Avenged by Anna +2" (all with their counts in the tooltip)
 function GF.AvengedText(rows, cut)
   local first = cut or Look.First(rows[1].char)
@@ -1831,7 +1839,7 @@ function UX.BuildPoster()
   E.bountyHit:SetPoint("TOP", E.bountyLabel, "TOP", 0, 2)
   E.bountyHit:SetScript("OnEnter", CandEnter)
   E.bountyHit:SetScript("OnLeave", CandLeave)
-  E.bountyHit:SetScript("OnClick", function(self) Look.Sound("click"); GF.EditBounty(self.key) end)
+  E.bountyHit:SetScript("OnClick", function(self) if not self.key then return end; Look.Sound("click"); GF.EditBounty(self.key) end)
   E.bountyHit:Hide()
   E.bountyLineHit = CreateFrame("Button", nil, E)
   E.bountyLineHit:SetSize(192, 13)
@@ -2527,20 +2535,26 @@ local function FillEnemy(e)
     local st = Look.ScoreState(m, h)
     second = (st == "open" and "rache") or (st == "even" and "quitt") or "overpaid"
   end
-  E.bountyLabel:SetText(Spaced(L.POSTER_BOUNTY))
   -- 1.2.1: posted: the sum large in red ink; otherwise the book's value as before
+  -- 1.7.0 claim: the word says which one stands there: BOUNTY only over a posted one (the only kind anybody can
+  -- claim), the book's own value under its own word (BOOK VALUE) with a tooltip saying so
   if bsum > 0 then
+    E.bountyLabel:SetText(Spaced(L.POSTER_BOUNTY))
     SetBounty(E, GoldText(bsum * 10000), bsum >= 1000)
     E.bounty:SetTextColor(C(Look.RED_INK))
   else
+    E.bountyLabel:SetText(Spaced(L.POSTER_BOOK_VALUE))
     local bounty = tonumber(S.Bounty and S.Bounty(e)) or 0
     SetBounty(E, GoldText(bounty), bounty >= 1000 * 10000)
     E.bounty:SetTextColor(C(Look.INK))
   end
   PlaceBounty(E, second ~= nil)
   E.bountyHit.key = GF.MayBounty(e) and e.key or nil
-  E.bountyHit.tip = E.bountyHit.key and GF.BountyTip(brows) or nil
-  E.bountyHit:SetShown(E.bountyHit.key ~= nil)
+  E.bountyHit.tip = E.bountyHit.key and (bsum > 0 and GF.BountyTip(brows) or GF.BookValueTip()) or nil
+  -- fixer 1.7.0 (JU-17): the book's value says what it is also where no bounty may be posted (pardoned): the tooltip
+  -- without the click line, a click does nothing
+  if not E.bountyHit.key and bsum <= 0 then E.bountyHit.tip = GF.BookValueTip(false) end
+  E.bountyHit:SetShown(E.bountyHit.tip ~= nil)
   GF.BountySlot(E, e.key)
 
   FillLines(E, e.deaths or {}, UX.DeathLine, UX.DeathTip,

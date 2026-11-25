@@ -27,6 +27,11 @@
 --   1 Y char n [book]                           end of an answer: these n B were ALL bounties of char (1.2.1)
 --   1 V key char t e                            char killed key, a killer of others in the guild or friends' book (1.2.1);
 --                                               e = "1" when an E for the same kill went the same way
+--   1 C key char t owner gold                   1.7.0 claim: char (the sender) killed key at t, where owner's bounty lay
+--                                               (gold as the killer knows it); only in an answer to owner's hello, only
+--                                               owner takes it (Claim.lua)
+--   1 Q key char t owner state gold             1.7.0 receipt of owner (the sender) for char's kill of key at t: state
+--                                               0 open, 1 paid, 2 declined, 3 no bounty; gold as owner knows it
 -- book (optional last field of J and Z, 1.2.0): the book id of the SavedVariables the release was made in;
 -- a Z only takes back releases of that char with the same book id (another device or a lost file never does).
 -- B, Y and V are new types: 1.2.0 and 1.1.0 drop them as "type" without touching their data (Bounty.lua).
@@ -124,6 +129,14 @@ local C = {
   -- avenged (V, 1.2.1): the same limits as E (BAG_FRESH, BAG_DEDUPE, BAGS_MAX, BAGGED_MAX, BAG_WINDOW)
   AVENGE_PER_SENDER = 3,    -- V accepted per sender in BAG_WINDOW
   AVENGED_MAX = 200,        -- targets remembered with "avenged by"
+  -- 1.7.0 claim (C/Q, Claim.lua)
+  CLAIM_REPLY = 10,         -- C per answer to a hello of the bounty's owner
+  CLAIM_AGE = 30 * 86400,   -- a kill older than this is never claimed (and never sent again)
+  CLAIM_SKEW = 300,         -- seconds two clocks may differ: a kill this much "before" the bounty still counts
+  CLAIM_IN = 20, CLAIM_IN_WINDOW = 600,     -- C taken per sender in 10 minutes (fix JL-13: two answers' worth)
+  RECEIPT_IN = 20,          -- Q taken per sender in CLAIM_IN_WINDOW
+  RECEIPT_GAP = 60,         -- one receipt per kill in this many seconds as the answer to a repeated C
+  CLAIM_RESEND = 600,       -- one C per kill in this many seconds (session)
 }
 Guild.PREFIX, Guild.C = PREFIX, C
 
@@ -461,6 +474,31 @@ function P.EncodeAvenged(key, by, t, e)
   return msg
 end
 
+-- 1.7.0 claim: char killed key at t where owner's bounty lay (gold as the killer knows it)
+function P.PlainField(s)
+  return not IsSecret(s) and type(s) == "string" and s ~= "" and plain(s) == s
+end
+function P.EncodeClaim(key, by, t, owner, g)
+  if IsSecret(t) or IsSecret(g) or not P.PlainField(key) or not P.PlainField(by) or not P.PlainField(owner) then return nil end
+  if not P.Finite(t) or type(g) ~= "number" or g ~= math.floor(g) or g < 1 or g > C.BOUNTY_GOLD_MAX then return nil end
+  local msg = table.concat({ PROTO, "C", P.Escape(key), P.Escape(by), tostring(math.floor(t)), P.Escape(owner),
+    tostring(g) }, "\t")
+  if #msg > C.MAX_MSG then return nil end
+  return msg
+end
+-- 1.7.0 claim: owner's receipt for char's kill of key at t (state 0 open, 1 paid, 2 declined, 3 no bounty)
+function P.EncodeReceipt(key, by, t, owner, s, g)
+  if IsSecret(t) or IsSecret(g) or IsSecret(s) or not P.PlainField(key) or not P.PlainField(by) or not P.PlainField(owner) then
+    return nil
+  end
+  if not P.Finite(t) or (s ~= 0 and s ~= 1 and s ~= 2 and s ~= 3) then return nil end
+  if type(g) ~= "number" or g ~= math.floor(g) or g < 0 or g > C.BOUNTY_GOLD_MAX then g = 0 end
+  local msg = table.concat({ PROTO, "Q", P.Escape(key), P.Escape(by), tostring(math.floor(t)), P.Escape(owner),
+    tostring(s), tostring(g) }, "\t")
+  if #msg > C.MAX_MSG then return nil end
+  return msg
+end
+
 -- Canonical key check: "Name-Surname" exactly as Util.KeyFor would build it.
 function P.ValidKey(key)
   if type(key) ~= "string" or #key < 3 or #key > C.MAX_FIELD then return nil end
@@ -493,7 +531,8 @@ local function int(s, lo, hi)
   return v
 end
 
-local FIELDS = { K = 9, R = 9, H = 4, S = 5, J = 9, A = 4, E = 5, Z = 4, B = 6, Y = 4, V = 6, L = 8, T = 8, M = 8, X = 4 }
+local FIELDS = { K = 9, R = 9, H = 4, S = 5, J = 9, A = 4, E = 5, Z = 4, B = 6, Y = 4, V = 6, C = 7, Q = 8,
+  L = 8, T = 8, M = 8, X = 4 }
 -- types with one optional last field: GUID of a hello, book id of J, Z, B, Y
 local OPTIONAL = { H = true, Z = true, J = true, B = true, Y = true }
 
@@ -585,6 +624,25 @@ function P.Decode(text, now, out)
     out.t = int(F[6], now - C.LISTED_MAX_AGE, now + C.FUTURE)
     if not out.t then return nil, "time" end
     if n == 7 and P.ValidBook(F[7]) then out.b = F[7] end
+    return out
+  end
+  if kind == "C" or kind == "Q" then
+    -- 1.7.0 claim: names and numbers only; a kill older than CLAIM_AGE or from the future goes
+    out.by = P.Unescape(F[4])
+    if not out.by or out.by == "" then return nil, "by" end
+    out.t = int(F[5], now - C.CLAIM_AGE - C.FUTURE, now + C.FUTURE)
+    if not out.t then return nil, "time" end
+    out.owner = P.Unescape(F[6])
+    if not out.owner or out.owner == "" then return nil, "owner" end
+    if kind == "C" then
+      out.g = int(F[7], 1, C.BOUNTY_GOLD_MAX)
+      if not out.g then return nil, "gold" end
+    else
+      out.s = int(F[7], 0, 3)
+      if not out.s then return nil, "state" end
+      out.g = int(F[8], 0, C.BOUNTY_GOLD_MAX)
+      if not out.g then return nil, "gold" end
+    end
     return out
   end
   local display = P.Unescape(F[4])
@@ -1952,6 +2010,11 @@ function pump()
   st.lastResult = ok and (res == nil and "nil" or tostring(res)) or "error"
   local outcome = P.SendOutcome(ok, res, enum("Success", 0), enum("AddonMessageThrottle", 3),
     enum("ChannelThrottle", 8), enum("GeneralError", 9), enum("AddOnMessageLockdown", 11))
+  -- 1.7.0 claim: the result of every C and Q for the probe (probe.claim)
+  if m.kind == "C" or m.kind == "Q" then
+    local cx = Guild.ClaimExt
+    if cx and cx.noteSend then pcall(cx.noteSend, m.kind, outcome, m.channel) end
+  end
   -- 1.2.1: in an instance the first refusal holds the queue until the zone changes; the message stays first,
   -- counts no try and no failure (neither the guild's state nor a friend's whispers suffer from it)
   local ik = W4.kind()
@@ -2133,7 +2196,14 @@ end
 -- Answer to a hello on one channel: own sure kills since `since`, own hand entries, missed
 -- removals, own hunt releases and missed call-offs. send(text, kind) puts one message on the way.
 -- ctx = GCTX or the friends' context (own hand entries also join its store).
-local function answer(ctx, since, send)
+local function answer(ctx, since, send, asked)
+  -- 1.7.0 claim: the own claims on bounties of those who asked (asked(owner) -> true) come first (fix JL-13: a full
+  -- queue drops the end of an answer, a claim is worth more than a repeated kill; 1.6.x drops C)
+  local cx = Guild.ClaimExt
+  if asked and cx and cx.answer then
+    local ok, err = pcall(cx.answer, ctx, send, asked)
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
   local list = ownKills(since, C.REPLY_MAX)
   for i = 1, #list do send(P.EncodeKill(list[i], "R"), "R") end
   Guild.SendPlaces(list, send)
@@ -2190,7 +2260,13 @@ local function sendReply()
   end
   lastReplyAt = GetTime()
   GCTX.huntOff = list and list.huntOff or nil
-  answer(GCTX, r.since, sendGuild)
+  -- 1.7.0 claim: who asked (the hellos merged into this answer); a char counts when it is the sender of one
+  local from = r.from
+  local asked = from and function(owner)
+    for _, a in pairs(from) do if owns(owner, a[1], a[2]) then return true end end
+    return false
+  end or nil
+  answer(GCTX, r.since, sendGuild, asked)
 end
 
 ---------------------------------------------------------------------------
@@ -2452,6 +2528,20 @@ local function apply(ctx, m, short, full, t, known)
     if not owns(m.by, short, known) then st.dropped = st.dropped + 1; st.lastReason = "by"; return end
     local ext = Guild.Ext
     if ext and ext.apply then ext.apply(ctx, m, short, full, t) end
+  elseif kind == "C" or kind == "Q" then
+    -- 1.7.0 claim (Claim.lua): a C must come from the killer, a Q from the bounty's owner; an error there never
+    -- breaks receiving
+    if not owns(kind == "C" and m.by or m.owner, short, known) then
+      st.dropped = st.dropped + 1; st.lastReason = "by"
+      local cx = Guild.ClaimExt
+      if cx and cx.count then pcall(cx.count, "drop.sender") end
+      return
+    end
+    local cx = Guild.ClaimExt
+    if cx and cx.apply then
+      local ok, err = pcall(cx.apply, ctx, m, short, full, t)
+      if not ok and ns.ReportError then ns.ReportError(err) end
+    end
   elseif kind == "J" or kind == "A" or kind == "E" then
     local hunts = ctx.hunts
     if not hunts then return end
@@ -2506,6 +2596,17 @@ local function apply(ctx, m, short, full, t, known)
   end
 end
 
+-- 1.7.0 claim (fix JL-1/2): a message of a poster for whom own claims wait: the killer sends them (Claim.lua). Claim.lua
+-- keeps Guild.claimWait (lower first names of those posters) or nil: while nothing waits, one table look per message.
+function Guild.ClaimHeard(ctx, short, full, known)
+  if not Guild.claimWait then return end
+  local cx = Guild.ClaimExt
+  if cx and cx.heard then
+    local ok, err = pcall(cx.heard, ctx, short, full, known)
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
+end
+
 -- Hot path: every addon message of every addon arrives here. Foreign prefixes leave after one
 -- comparison; WHISPER goes to Friends.lua (which drops non-friends before decoding).
 function Guild.OnAddonMessage(_, prefix, text, channel, sender)
@@ -2535,6 +2636,7 @@ function Guild.OnAddonMessage(_, prefix, text, channel, sender)
   if not inGuild() then return end
   if not list then bind() end
   noteMember(short, full, m.version)
+  if Guild.claimWait and m.kind == "H" then Guild.ClaimHeard(GCTX, short, full, nil) end
   if m.kind == "H" then
     -- 1.2.0: the hello of another member no longer opens the answer window (only the own one does)
     if friends and friends.OnMateHello then friends.OnMateHello(short) end
@@ -2545,11 +2647,15 @@ function Guild.OnAddonMessage(_, prefix, text, channel, sender)
     local last = helloFrom[full]
     if last and gt - last < C.HELLO_PER_SENDER then return end
     helloFrom[full] = gt
+    -- 1.7.0 claim: the askers of this answer (sender as the client names him, his surname from the roster)
+    local asker = { short, not short:find(" ", 1, true) and rosterSurname(short) or nil }
     if reply then
       if m.since < reply.since then reply.since = m.since end
+      reply.from = reply.from or {}
+      reply.from[full] = asker
       return
     end
-    reply = { since = m.since }
+    reply = { since = m.since, from = { [full] = asker } }
     local After = _G.C_Timer and _G.C_Timer.After
     local delay = C.REPLY_MIN + math.random() * (C.REPLY_MAX_DELAY - C.REPLY_MIN)
     if lastReplyAt and lastReplyAt + C.REPLY_GAP - gt > delay then delay = lastReplyAt + C.REPLY_GAP - gt end
@@ -2557,7 +2663,9 @@ function Guild.OnAddonMessage(_, prefix, text, channel, sender)
     return
   end
   -- data only into a list bound to a known guild name (else a later bind would mix guilds)
-  apply(GCTX, m, short, full, t, not short:find(" ", 1, true) and rosterSurname(short) or nil)
+  local known = not short:find(" ", 1, true) and rosterSurname(short) or nil
+  apply(GCTX, m, short, full, t, known)
+  if Guild.claimWait then Guild.ClaimHeard(GCTX, short, full, known) end
 end
 
 ---------------------------------------------------------------------------
@@ -3134,6 +3242,16 @@ function Guild.IsGuildmate(short)
   local t = now()
   for _, m in pairs(list.members) do
     if type(m.lastHeard) == "number" and t - m.lastHeard <= C.MATE_RECENT and fullEq(short, m.name) then return true end
+  end
+  return false
+end
+
+-- 1.7.0 claim: heard on GUILD since t (members table: the last message of a member with this name)
+function Guild.HeardSince(short, t)
+  if not list or IsSecret(short) or type(short) ~= "string" or type(t) ~= "number" then return false end
+  local f, s1 = splitName(short)
+  for _, m in pairs(list.members) do
+    if type(m.lastHeard) == "number" and m.lastHeard >= t and sameName(f, s1, m.name) then return true end
   end
   return false
 end

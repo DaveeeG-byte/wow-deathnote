@@ -1620,10 +1620,63 @@ local function OwnLine(e, drop)
   return s
 end
 
--- guild: false (own book), true (guild/friends), "hunt" (hit list target) or "victim" (1.3.0: own victim)
+-- 1.7.0 claim: the bounties of others (never of an own char) on key, from Bounty.lua (ns.Bounty.Others, built by
+-- the wire package). Returns the sum in whole gold and the rows { char, g, ... }; 0 without any, without the function
+-- (an older logic: the alarm as in 1.6.4) or on anything odd. Bounty.Has first: cheap, and no rows built for nothing.
+function Look.OthersBounty(key)
+  local X = ns.Bounty
+  if type(key) ~= "string" or Look.Secret(key) or type(X) ~= "table" or type(X.Others) ~= "function" then return 0 end
+  if type(X.Has) == "function" then
+    local ok, has = pcall(X.Has, key)
+    if ok and has == false then return 0 end
+  end
+  local ok, a, b = pcall(X.Others, key)
+  if not ok or Look.Secret(a) or Look.Secret(b) then return 0 end
+  local sum, rows = a, b
+  if type(a) == "table" then sum, rows = b, a end      -- either order of the two answers
+  sum = tonumber(sum)
+  if not sum or sum ~= sum or sum <= 0 or sum == math.huge or type(rows) ~= "table" then return 0 end
+  return math.floor(sum), rows
+end
+
+-- "50g bounty from Anna"; several: the sum and the biggest poster "+n" (as on the poster). nil without any.
+-- short (fixer 1.7.0): the biggest poster without "+n" (the last step of a line that does not fit)
+-- fixer 2 1.7.0 (JN-6): a muted friend (Friends.Muted: his data stays, it never alarms) counts in no alarm line
+function Look.Muted(char)
+  local F = ns.Friends
+  if not (type(F) == "table" and type(F.AnyMuted) == "function" and type(F.Muted) == "function") then return false end
+  local okA, any = pcall(F.AnyMuted)
+  if not (okA and any) then return false end
+  local ok, m = pcall(F.Muted, char)
+  return ok and m and true or false
+end
+function Look.OthersBountyText(key, short)
+  local sum0, rows = Look.OthersBounty(key)
+  if sum0 <= 0 then return nil end
+  local top, n, sum = nil, 0, 0
+  for i = 1, #rows do
+    local r = rows[i]
+    if type(r) == "table" and type(r.char) == "string" and not Look.Secret(r.char) and not Look.Secret(r.g)
+      and not Look.Muted(r.char) then
+      n = n + 1
+      sum = sum + math.max(0, math.floor(tonumber(r.g) or 0))
+      if not top or (tonumber(r.g) or 0) > (tonumber(top.g) or 0) then top = r end
+    end
+  end
+  if not top or sum <= 0 then return nil end
+  local name = Look.First(top.char)
+  if n > 1 and not short then name = Fmt(L.NAMES_PLUS, { name = name, count = n - 1 }) end
+  local gold = (ns.UI and ns.UI.Kit and ns.UI.Kit.GF and ns.UI.Kit.GF.Gold) and ns.UI.Kit.GF.Gold(sum)
+    or Fmt(L.MONEY_GOLD, { count = sum })
+  return Fmt(L.ALERT_BOUNTY_BY, { gold = gold, name = name })
+end
+
+-- guild: false (own book), true (guild/friends), "hunt" (hit list target), "victim" (1.3.0: own victim) or "bounty"
+-- (1.7.0: known only by a bounty of others)
 local function GuildTitle(e, guild)
   if guild == "victim" then return L.ALERT_TITLE_VICTIM end
   if guild == "hunt" then return L.ALERT_TITLE_HUNT end
+  if guild == "bounty" then return L.ALERT_TITLE_BOUNTY end
   local src = SourceOf(e.key)
   if src == "friends" then return L.ALERT_TITLE_FRIENDS end
   return L.ALERT_TITLE_GUILD
@@ -1651,10 +1704,35 @@ SetLine = function(e, guild)
   -- (the guild line has nothing that gives way: it takes the last step, 10 pt and below, at once)
   -- 1.3.0: the line of the own book has a fourth step (drop 3), the others end at 2
   local top = guild and 2 or 3
-  for drop = 0, top do
-    local s = (guild == "victim" and VictimLineFor(e)) or (guild == "hunt" and HuntLineFor(e, drop))
+  -- 1.7.0 claim: a bounty of others on him is named at the end and never gives way; a target known only by it has
+  -- nothing else to say
+  local bounty = Look.OthersBountyText(e.key)
+  if guild == "bounty" then
+    Look.FitText(popup.line, lead .. (bounty or ""), Look.FIT_LINE_LAST)
+    return
+  end
+  local function base(drop)
+    return (guild == "victim" and VictimLineFor(e)) or (guild == "hunt" and HuntLineFor(e, drop))
       or (guild and GuildLineFor(e)) or OwnLine(e, drop)
-    local last = drop == top or (guild and guild ~= "hunt")
+  end
+  -- the guild and the victim line have nothing that gives way (one step); own book and hit list their steps
+  local steps = (guild and guild ~= "hunt") and 0 or top
+  local cands = {}
+  for drop = 0, steps do
+    local s = base(drop)
+    if bounty then s = Fmt(L.ALERT_LINE_BOUNTY, { text = s, bounty = bounty }) end
+    cands[#cands + 1] = s
+  end
+  -- fixer 1.7.0 (JU-14): with a bounty two more steps before anything is cut: the hit list's part of the own line goes,
+  -- then the "+n" of several posters (the sum and the biggest poster stay)
+  if bounty then
+    local core = guild and base(steps) or LineFor(e, top)
+    cands[#cands + 1] = Fmt(L.ALERT_LINE_BOUNTY, { text = core, bounty = bounty })
+    local short = Look.OthersBountyText(e.key, true)
+    if short and short ~= bounty then cands[#cands + 1] = Fmt(L.ALERT_LINE_BOUNTY, { text = core, bounty = short }) end
+  end
+  for i, s in ipairs(cands) do
+    local last = i == #cands
     if Look.FitText(popup.line, lead .. s, last and Look.FIT_LINE_LAST or Look.FIT_LINE) or last then break end
   end
 end
@@ -1694,6 +1772,7 @@ local function Fill(e, unit, how, guild)
 end
 
 local currentHunt = false   -- 1.2.0: the popup shows a hit list target
+local currentBounty = false -- 1.7.0 claim: the popup shows a target known only by a bounty of others
 -- quiet (1.3.0): no edge pulse and the soft sound (Look.Alarm("quiet")); always so for a victim (guild = "victim")
 local function Show(e, unit, how, silent, guild, quiet)
   if not popup then Build() end
@@ -1702,7 +1781,7 @@ local function Show(e, unit, how, silent, guild, quiet)
   currentVictim = guild == "victim"
   if currentVictim then quiet = true end
   current, currentEntry, currentGuild = e.key, e, (guild and not currentVictim) and true or false
-  currentHunt = guild == "hunt"
+  currentHunt, currentBounty = guild == "hunt", guild == "bounty"
   local nr1 = Fill(e, unit, how, guild)
   popup.outAnim:Stop()
   popup:SetAlpha(1)
@@ -1742,7 +1821,20 @@ local function ShowNext()
   if current then UpdateMore(); return end
   while #queue > 0 do
     local q = table.remove(queue, 1)
-    if q.guild then
+    if q.bounty then
+      local e = Alert.BountyEntry(q.key)
+      if e then
+        Show(e, UnitFor(q.key, nil), "other", false, "bounty")
+        return
+      end
+      -- fixer 1.7.0 (JU-07): meanwhile in a book whose alarm rings: that alarm instead
+      local kind, x, mode = Alert.Ringing(q.key)
+      if kind then
+        Show(x, UnitFor(q.key, nil), "other", false, kind == "hunt" and "hunt" or (kind == "guild" and true or nil),
+          kind == "own" and mode == "quiet")
+        return
+      end
+    elseif q.guild then
       local g = q.hunt and Look.GCall("Hunt", q.key, "all") or Look.GCall("Get", q.key, "all")
       if EligibleGuild(g, q.hunt) then
         Show(g, UnitFor(q.key, nil), "other", false, q.hunt and "hunt" or true)
@@ -1770,7 +1862,7 @@ Finish = function()
   popup:Hide()
   popup:SetAlpha(1)
   popup.model:ClearModel()
-  current, currentEntry, currentGuild, currentHunt, currentVictim = nil, nil, false, false, false
+  current, currentEntry, currentGuild, currentHunt, currentVictim, currentBounty = nil, nil, false, false, false, false
   DisarmButton()
   if #queue > 0 then C_Timer.After(0.4, ShowNext) end
 end
@@ -1810,7 +1902,7 @@ end
 -- 1.3.0: victim alarms wait behind every other alarm. Another alarm goes in front of the first waiting victim and,
 -- when the queue is full, pushes the last waiting victim out (its cooldown is given back); a victim alarm only
 -- takes a free place at the end.
-local function Enqueue(key, guild, hunt, victim)
+local function Enqueue(key, guild, hunt, victim, bounty)
   if #queue >= QUEUE_MAX then
     if victim then return false end
     local last
@@ -1823,7 +1915,7 @@ local function Enqueue(key, guild, hunt, victim)
   if not victim then
     for i = 1, #queue do if queue[i].victim then at = i; break end end
   end
-  table.insert(queue, at, { key = key, guild = guild, hunt = hunt, victim = victim })
+  table.insert(queue, at, { key = key, guild = guild, hunt = hunt, victim = victim, bounty = bounty })
   UpdateMore()
   return true
 end
@@ -1831,7 +1923,15 @@ end
 -- 1.3.0: the popup shows a victim, now another alarm takes the same player: the popup turns into that alarm
 -- (silently, like the guild alarm that becomes the alarm of the book)
 local function TakeOver(e, unit, how, guild)
+  -- fixer 1.7.0 (JU-07): a popup already fading out stays (the new alarm takes it over, with its own hold)
+  if popup.outAnim:IsPlaying() then
+    popup.outAnim:Stop()
+    popup:SetAlpha(1)
+    if hideTimer then hideTimer:Cancel() end
+    hideTimer = C_Timer.NewTimer(HOLD, function() hideTimer = nil; Dismiss() end)
+  end
   currentVictim, currentGuild, currentHunt, currentEntry = false, guild and true or false, guild == "hunt", e
+  currentBounty = false
   Fill(e, UnitFor(e.key, unit), how, guild)
   ArmButton(); Guard(); SetHint()
 end
@@ -1848,7 +1948,7 @@ function Alert.Spotted(key, unit, how)
   end
   local qi = QueueIndex(key)
   if qi then
-    if not queue[qi].victim then queue[qi].guild = false; return end
+    if not queue[qi].victim then queue[qi].guild, queue[qi].bounty = false, nil; return end
     table.remove(queue, qi)       -- a waiting victim alarm gives way to the alarm of the book
   end
   if not Due(key) then return end
@@ -1870,11 +1970,12 @@ function Alert.GuildSpotted(key, unit, how, kind)
   local g = hunt and Look.GCall("Hunt", key, "all") or Look.GCall("Get", key, "all")
   if not EligibleGuild(g, hunt) then return end
   if current == key then
-    if currentVictim then TakeOver(g, unit, how, hunt and "hunt" or true) end
+    if currentVictim or currentBounty then TakeOver(g, unit, how, hunt and "hunt" or true) end
     return
   end
   local qi = QueueIndex(key)
   if qi then
+    if queue[qi].bounty then queue[qi].guild, queue[qi].hunt, queue[qi].bounty = true, hunt, nil; return end
     if not queue[qi].victim then return end
     table.remove(queue, qi)
   end
@@ -1886,6 +1987,119 @@ function Alert.GuildSpotted(key, unit, how, kind)
   end
   Mark(key)
   Show(g, UnitFor(key, unit), how, false, hunt and "hunt" or true)
+end
+
+-- 1.7.0 claim: a target known only by a bounty of others: not in the own book, the guild's or friends' book or on the
+-- hit list (those have their own alarms and switches), not an own char nor a guildmate. Governed by the switch of the
+-- hit list alarm (guild.alertHunt, no new switch). Returns a small entry for the popup, else nil.
+-- fixer 1.7.0 (JU-06): which other alarm rings for key now? "own" (the book's alarm), "hunt", "guild" with its entry,
+-- else nil. A book that only knows him without ringing (listed by hand, guild alarm off, a suspect, under the
+-- threshold) leaves him to the bounty's alarm; pardoned and "hide for me" stay silent (Alert.Quiet).
+function Alert.Ringing(key)
+  local e = ns.Store.Get(key)
+  if e and e.status ~= "pardoned" then
+    local ok, mode = Eligible(e)
+    if ok then return "own", e, mode end
+  end
+  local h = Look.GCall("Hunt", key, "all")
+  if type(h) == "table" and EligibleGuild(h, true) then return "hunt", h end
+  local g = Look.GCall("Get", key, "all")
+  if type(g) == "table" and EligibleGuild(g, false) then return "guild", g end
+  return nil
+end
+function Alert.Quiet(key)
+  local e = ns.Store.Get(key)
+  if e and (e.status == "pardoned" or SettledMode(e) == "off") then return true end
+  -- fixer 2 1.7.0 (JN-11): with the alarm of the book switched off (alert.enabled, /dn quiet) nobody of the own book
+  -- rings through a bounty either; a player known only by a bounty stays under the hit list's switch
+  if e and not Look.Setting("alert.enabled", true) then return true end
+  return Look.GCall("HuntHidden", key) == true
+end
+
+-- the gold of the bounties of others on key, without those of a muted friend (his data stays, it never alarms)
+local function AlarmGold(key)
+  local sum, rows = Look.OthersBounty(key)
+  if sum <= 0 then return 0 end
+  local g = 0
+  for _, r in ipairs(rows) do
+    if type(r) == "table" and type(r.char) == "string" and not Look.Secret(r.char) and not Look.Secret(r.g)
+      and not Look.Muted(r.char) then
+      g = g + (tonumber(r.g) or 0)
+    end
+  end
+  return g
+end
+
+function Alert.BountyEntry(key)
+  if type(key) ~= "string" or Look.Secret(key) or not Look.HasGuild() then return nil end
+  if Look.GuildSetting("alertHunt") ~= true then return nil end
+  if Alert.Quiet(key) or Alert.Ringing(key) then return nil end
+  local spaced = key:gsub("%-", " ")
+  if Look.GCall("IsOwnChar", key) or Look.GCall("IsOwnChar", spaced) or Look.GCall("IsGuildmate", key)
+    or Look.GCall("IsGuildmate", spaced) then return nil end
+  if AlarmGold(key) <= 0 then return nil, "gold" end
+  local T = ns.Tracker
+  local r = T and T.Get and T.Get(key)
+  local first, rest = key:match("^([^%-]+)%-(.+)$")
+  local e = { key = key, name = first or key, surname = rest, status = "bounty" }
+  if type(r) == "table" then
+    if type(r.name) == "string" then e.name = r.name end
+    if type(r.surname) == "string" then e.surname = r.surname end
+    e.class, e.level = r.class, r.level
+  end
+  return e
+end
+
+-- the tracker's hook (Alert.Watch sets it only while bounties of others exist): one sighting of such a target.
+-- Same cooldown, queue and "one key, one popup" as every other alarm; any other alarm for him goes first.
+function Alert.BountySpotted(key, unit, how)
+  if not ready or type(key) ~= "string" or Look.Secret(key) then return end
+  -- the cheap look first (one table look per bounty table, no rows built): most players in sight have none
+  local X = ns.Bounty
+  local okH, has = pcall(X.Has, key)
+  if not okH or has ~= true then return end
+  if current == key or Queued(key) then return end
+  if not Due(key) then return end
+  -- fixer 2 1.7.0 (JN-6): a target whose bounties all count for nothing here (a muted friend's) is not looked at
+  -- again (no rows built) until the cooldown has passed or a bounty changed (GUILD_UPDATED)
+  local no = Alert.noGold[key]
+  if no and GetTime() - no < (Look.Setting("alert.cooldown", 90) or 90) then return end
+  local e, why = Alert.BountyEntry(key)
+  if not e then
+    if why == "gold" then Alert.noGold[key] = GetTime() end
+    return
+  end
+  if OnBanner(key) then Mark(key); return end
+  if current and not currentVictim then
+    if Enqueue(key, true, false, false, true) then Mark(key) end
+    return
+  end
+  Mark(key)
+  Show(e, UnitFor(key, unit), how, false, "bounty")
+end
+
+-- are there bounties of others at all (guild's or friends' table not empty)? Read only, never built
+local function AnyOthersBounty()
+  local G = ns.Guild
+  local B = type(G) == "table" and G.Bridge
+  local gb = type(B) == "table" and type(B.gctx) == "table" and B.gctx.bounty
+  if type(gb) == "table" and next(gb) ~= nil then return true end
+  local F = ns.Friends
+  local fb = type(F) == "table" and type(F.ctx) == "table" and F.ctx.bounty
+  return type(fb) == "table" and next(fb) ~= nil
+end
+
+-- the tracker's hook for such targets only while it can matter: the logic has Bounty.Others, the hit list alarm is on
+-- and somebody else posted a bounty. Without it the sighting path costs nothing more than in 1.6.4.
+function Alert.Watch()
+  local T = ns.Tracker
+  if type(T) ~= "table" then return end
+  local on = false
+  if ready and type(ns.Bounty) == "table" and type(ns.Bounty.Others) == "function" and Look.HasGuild() then
+    local ok, v = pcall(function() return Look.GuildSetting("alertHunt") == true and AnyOthersBounty() end)
+    on = ok and v == true
+  end
+  T.bountyHook = on and Alert.BountySpotted or nil
 end
 
 -- 1.3.0: an own victim in sight (VICTIM_SPOTTED of Ledger.lua; only while alert.victims is on and there are
@@ -1959,7 +2173,7 @@ function Alert.ShowSample()
   popup.sample = true
   SAMPLE.lastKill = time() - 2 * 86400
   SAMPLE.deaths[1].zone = L.SAMPLE_ZONE
-  current, currentEntry, currentGuild, currentHunt, currentVictim = nil, nil, false, false, false
+  current, currentEntry, currentGuild, currentHunt, currentVictim, currentBounty = nil, nil, false, false, false, false
   Fill(SAMPLE, nil, "test", nil)
   -- the anchor's name in its head (the word of the House Rules' sheet), "Drag to move" below
   Look.FitText(popup.title, L.SHEET_ALERT, Look.FIT_TITLE)
@@ -2028,6 +2242,7 @@ ns:On("READY", function()
   -- its fifth field at once, so a change of size before the first alarm keeps the place too
   local pt = Look.Setting("alert.point")
   if Look.Point(pt) and tonumber(pt[5]) == nil then pt[5] = tonumber(Look.Setting("alert.scale", 1)) or 1 end
+  Alert.Watch()
 end)
 
 ns:On("ENEMY_SPOTTED", function(key, unit, how) Alert.Spotted(key, unit, how) end)
@@ -2063,8 +2278,25 @@ ns:On("STANDING_CHANGED", function(key)
   if e then currentEntry = e; SetLine(e, false) end
 end)
 
-ns:On("GUILD_UPDATED", function()
-  if not current or not currentGuild then return end
+Alert.noGold = {}
+ns:On("GUILD_UPDATED", function(why)
+  if why ~= "seen" then Alert.Watch(); wipe(Alert.noGold) end
+  if not current then return end
+  -- fixer 1.7.0 (JU-19): the line of the book's alarm and of the victim alarm follows a bounty that comes or goes
+  if not currentGuild then
+    if why ~= "seen" and currentEntry and popup and popup:IsShown() then SetLine(currentEntry, currentVictim and "victim" or false) end
+    return
+  end
+  if currentBounty then
+    local e = Alert.BountyEntry(current)
+    if e then currentEntry = e; SetLine(e, "bounty"); return end
+    -- fixer 1.7.0 (JU-07): he came into a book whose alarm rings (a deed on a guildmate, the hit list): that alarm
+    -- takes the popup over instead of it going (the shared cooldown is used already)
+    local kind, x = Alert.Ringing(current)
+    if kind then TakeOver(x, nil, popup.how, kind == "hunt" and "hunt" or (kind == "guild" and true or false)); return end
+    Dismiss()
+    return
+  end
   local g = currentHunt and Look.GCall("Hunt", current, "all") or Look.GCall("Get", current, "all")
   if not g then Dismiss(); return end
   currentEntry = g
@@ -2103,6 +2335,7 @@ end)
 
 ns:On("SETTINGS_CHANGED", function(path)
   if path == "alert.scale" then Alert.ApplyScale() end
+  if path == "guild.alertHunt" then Alert.Watch() end
 end)
 
 -- Take the button away before the combat lockdown (else it would stay in combat as an invisible click area).

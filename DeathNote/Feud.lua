@@ -12,8 +12,9 @@
 --   e.day                      play day of his last deed or sighting (expiry); e.keep = true: never expires
 --   DeathNoteDB.feuds          { [guild name] = { t, by, seen } }, at most MAX_FEUDS; seen = last time one of them
 --                              was in sight (the only thing a feud stores: never who, never where)
---   DeathNoteDB.claims         { { key, name, by, t, g, char, state, at } } newest first, at most MAX_CLAIMS, older than
---                              CLAIM_DAYS days go; state "open" | "paid" | "declined"
+--   DeathNoteDB.claims         { { key, name, by, t, g, char, state, at, b } } newest first, at most MAX_CLAIMS, older than
+--                              CLAIM_DAYS days go; state "open" | "paid" | "declined"; b (1.7.0, optional) = the time
+--                              the bounty was set that the claim is for (one bounty, one open or paid claim; Claim.lua)
 --   DeathNoteDB.expired        { [key] = entry with expiredAt } at most MAX_EXPIRED, the oldest go
 --   DeathNoteDB.probe.feud     counters (guild of an enemy readable, empty, secret; expired; feud alarms; start time)
 
@@ -418,26 +419,47 @@ local function sanitizeClaims(d)
       if x.char ~= nil and not plainName(x.char) then x.char = nil end
       if x.name ~= nil and not plainName(x.name) then x.name = nil end
       if x.at ~= nil and not finite(x.at) then x.at = nil end
+      if x.b ~= nil and not finite(x.b) then x.b = nil end
     else
       table.remove(c, i)
     end
   end
   table.sort(c, function(a, b) return a.t > b.t end)
-  while #c > Feud.MAX_CLAIMS do table.remove(c) end
+  -- 1.7.0 fix (JL-9, JN-2): over the cap the oldest declined claim goes first, then the oldest open one, a paid one
+  -- last (it holds its bounty: one bounty, one paid claim)
+  while #c > Feud.MAX_CLAIMS do
+    local drop
+    for _, st in ipairs({ "declined", "open" }) do
+      for i = #c, 1, -1 do if c[i].state == st then drop = i; break end end
+      if drop then break end
+    end
+    table.remove(c, drop or #c)
+  end
 end
 Feud.SanitizeClaims = function() local d = db(); if d then sanitizeClaims(d) end end
 
 -- one claim: key of the target, his shown name, who took him down (char), when, gold of the own bounty, own char
--- that posted it. The same kill once. Fires CLAIM_NEW(claim). Returns the claim or nil.
-function Feud.AddClaim(key, name, by, t, g, char)
+-- that posted it, (1.7.0) the time that bounty was set. The same kill once (1.7.0: per own char). Fires
+-- CLAIM_NEW(claim). Returns the claim or nil.
+function Feud.AddClaim(key, name, by, t, g, char, b)
   if not plainName(key) or not plainName(by) or not finite(t) or not finite(g) then return nil end
   local c = claimTable()
   if not c then return nil end
-  for i = 1, #c do if c[i].key == key and c[i].by == by and math.abs(c[i].t - t) < 60 then return nil end end
+  char = plainName(char) and char or nil
+  for i = 1, #c do
+    local y = c[i]
+    if y.key == key and y.by == by and math.abs(y.t - t) < 60 and (y.char == char or y.char == nil or char == nil) then
+      return nil
+    end
+  end
   local x = { key = key, name = plainName(name) and name or nil, by = by, t = math.floor(t), g = math.floor(g),
-    char = plainName(char) and char or nil, state = "open" }
+    char = char, state = "open", b = finite(b) and math.floor(b) or nil }
   table.insert(c, 1, x)
   sanitizeClaims(db())
+  -- 1.7.0 fix (JL-9): a claim the cap pushed out at once is no claim (no notice, no receipt "open")
+  local kept = false
+  for i = 1, #c do if c[i] == x then kept = true; break end end
+  if not kept then return nil end
   Feud.Count("claims")
   ns:Fire("CLAIM_NEW", x)
   return x
@@ -452,14 +474,53 @@ function Feud.OpenClaims()
   for _, x in ipairs(Feud.Claims()) do if x.state == "open" then n = n + 1 end end
   return n
 end
--- "paid" | "declined" | "open" (back); fires CLAIMS_CHANGED
+-- 1.7.0 fix (new E4): one bounty, one PAID claim. Two claims are on the same bounty when target and own char agree and
+-- their bounty (b = first posting) is the same; a claim of 1.6.x without b is on the bounty when its kill came after
+-- the bounty's first posting (JL-11)
+local function skew() local G = ns.Guild; return G and G.C and G.C.CLAIM_SKEW or 300 end
+local function sameBounty(y, x)
+  if y == x or type(y) ~= "table" or y.key ~= x.key or y.char ~= x.char then return false end
+  if x.b ~= nil and y.b ~= nil then return y.b == x.b end
+  if x.b ~= nil then return finite(y.t) and y.t >= x.b - skew() end
+  if y.b ~= nil then return finite(x.t) and x.t >= y.b - skew() end
+  return false
+end
+Feud.SameBounty = sameBounty
+-- the other claim PAID on the same bounty, or nil
+function Feud.Rival(x)
+  if type(x) ~= "table" then return nil end
+  for _, y in ipairs(Feud.Claims()) do
+    if y.state == "paid" and sameBounty(y, x) then return y end
+  end
+  return nil
+end
+-- the other claims OPEN on the same bounty (a new table, never nil)
+function Feud.Rivals(x)
+  local out = {}
+  if type(x) ~= "table" then return out end
+  for _, y in ipairs(Feud.Claims()) do
+    if y.state == "open" and sameBounty(y, x) then out[#out + 1] = y end
+  end
+  return out
+end
+
+-- "paid" | "declined" | "open" (back); fires CLAIMS_CHANGED. 1.7.0: "paid" and "open" are false while another claim is
+-- paid on the same bounty (Feud.Rival); after the change Feud.ClaimHook(claim, state, old) runs (Claim.lua: after
+-- "paid" the other open claims on the bounty are declined and the bounty is taken back; the receipt to the killer)
 function Feud.SetClaim(x, state)
   if type(x) ~= "table" or not CLAIM_STATES[state] then return false end
   local found = false
   for _, y in ipairs(Feud.Claims()) do if y == x then found = true; break end end
   if not found or x.state == state then return false end
+  if (state == "open" or state == "paid") and Feud.Rival(x) then return false end
+  local old = x.state
   x.state, x.at = state, now()
   ns:Fire("CLAIMS_CHANGED", x)
+  local hook = Feud.ClaimHook
+  if hook then
+    local ok, err = pcall(hook, x, state, old)
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
   return true
 end
 

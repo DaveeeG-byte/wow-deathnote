@@ -381,4 +381,8 @@ return {
   MOVE_DONE = { max = 17, field = "button 96 to 140 px on the placing bar, Friz 10" },
   MOVE_NAME_NOTICE = { max = 24, field = "letter-spaced head of the notice's sample, 300 px, Friz 10/9" },
   MOVE_NAME_GRUDGE = { max = 24, field = "letter-spaced head of the grudge notice's sample, 194 px, Friz 10/9" },
+  -- 1.7.0 claim
+  POSTER_BOOK_VALUE  = { max = 12, field = "poster label, ~140 px, Friz 10, letter-spaced (as POSTER_BOUNTY)" },
+  ALERT_TITLE_BOUNTY = { max = 30, field = "popup title, 288 px, Skurri 13 (11 when longer), no wrap" },
+  BANNER_EARNED      = { max = 24, field = "message head, spaced, 480 px, Friz 11" },
 }

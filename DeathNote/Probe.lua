@@ -277,6 +277,11 @@ function Probe.Run(verbose, opts)
     if okf and type(pf) == "table" then keepFeud = pf end
   end
   if keepFeud then out.feud = keepFeud end
+  -- 1.7.0 claim: C and Q sent and received, dropped per reason, the queue's results, records and claims (Claim.lua)
+  if ns.Claim and ns.Claim.Flush then
+    local okc, pc = pcall(ns.Claim.Flush)
+    if okc and type(pc) == "table" then out.claim = pc end
+  end
   if db then
     local keep = db.probe and db.probe.deaths
     db.probe = out
