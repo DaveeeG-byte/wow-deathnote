@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.7.0 (unreleased)
+## 1.7.0 (2026-11-25)
 
 ### Added
 - **A bounty earned shows itself.** When your own killing blow takes down a target with a bounty a guildmate or friend
