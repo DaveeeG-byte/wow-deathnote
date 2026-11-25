@@ -88,6 +88,31 @@ end)
 - Keep the tone of the cover: the Privateer's Ledger speaks like a ship's log, The Workshop like the customer file of
   a trade business.
 
+## The manual (1.7.1)
+
+The manual behind the button "?" is the block `-- 1.7.1 manual` at the end of every language file. It replaced the
+nine keys `MANUAL_<WORD>` / `MANUAL_<WORD>_HEAD` of 1.3.0.
+
+- **Chapters.** `UI.lua` `UX.MANUAL` lists the 14 chapters in order, each with its id and the number of paragraphs.
+  The keys of a chapter are `MANUAL_<KEY>_TITLE` (page head and row of the contents, `[max 24]`), then for each
+  paragraph `MANUAL_<KEY>_<n>_HEAD` (keyword, capitals, `[max 14]`) and `MANUAL_<KEY>_<n>` (the text). `<KEY>` is the
+  id in capitals (the chapter `alert` keeps its keys `MANUAL_ALARM_*`). Around them: `MANUAL_INTRO_HEAD` and
+  `MANUAL_INTRO` (the way in above the contents), `MANUAL_TOC` and `MANUAL_NEXT` (the two buttons of a chapter),
+  `CHAT_NEWS_171` (the line after the update).
+- **Placeholders.** Words the book shows somewhere else (tabs, buttons, sheets, switches, menu entries, stamps) are
+  never typed out: write `{rules}`, `{claims}`, `{keep}` and so on, the list is `UX.MANUAL_WORDS` in `UI.lua` (key of
+  the word in the language table). They fill from your own table, so the text names exactly the word the surface
+  shows, also under another cover. `{guild}` is the label the fourth tab really carries (Guild or Guild & Friends),
+  `{ch_bounty}` the title of the chapter Bounty. Keep every placeholder of the English text, each where your sentence
+  needs it; an unknown one turns the test red.
+- **Length.** A paragraph has at most three short sentences; German and English at most 115 words per chapter and 60
+  for the way in. Your language stays between 0.25 and 1.35 times the characters of the English chapter (Chinese and
+  Korean are far shorter, that is fine). Write only what the book does; if you are unsure, follow the English text,
+  not the README.
+- **Guards.** The inventory `tests/ui/manual_inventar.lua` names every function with its chapter; `UI.MANUAL_CHECKED`
+  in `UI.lua` is the version the manual was last checked against. Both are kept by whoever changes the book, not by
+  translators (`tests/ui/ma171_stand.lua` turns red on a new version until the manual is brought along).
+
 ## Which test checks what
 
 | Test | Checks |
@@ -96,6 +121,7 @@ end)
 | `luajit tests/test_locale_waechter.lua` | no visible text written into the code outside `Locales/` (also not in `Themes/`), every key the code reads exists in `enUS.lua`. |
 | `luajit tests/ui/sprachen.lua xxXX` | builds the whole book once in your language (every tab, poster, House Rules, help, alarm, notices): red on errors, missing keys or keys read too early. |
 | `luajit tests/ui/layout_guard.lua . xxXX` | the guard per language: every view with the longest data, red on overlapping or cut text without a tooltip and on text that leaves its view. Run it for your language after every change of long words (tabs, House Rules sheets, rap sheet, stamps). |
+| `luajit tests/ui/ma171_platzhalter.lua .` | the manual in all 21 languages and three covers: no placeholder open or unknown, every placeholder word really on the surface, the length per chapter (see "The manual"). |
 | `luajit tests/ui/theme_guard.lua . xxXX` | the same views with a test cover: every show word of the cover reaches the screen, nothing of the black book shows through. |
 
 `bash tests/run.sh` and `bash tests/ui/run.sh` run all of them (the layout guard over all 21 languages).

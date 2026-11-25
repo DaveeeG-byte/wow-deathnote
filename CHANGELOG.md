@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.7.1 (unreleased)
+
+### Changed
+- **The manual ("?") explains the whole book now.** It is a reference in 14 chapters instead of nine short paragraphs
+  from 1.3.0: First steps, Wanted and the poster, Unsolved, Alarm, Grudge and call for help, Death Log, Map and crime
+  scenes, Guild and friends, Hit list, Bounty, Rap Sheet, Post and pass on, House Rules, Limits and commands, in all
+  21 languages. The first page is a short way in and the contents (a row per chapter); a chapter shows its keywords on
+  the left and its paragraphs on the right, with "Contents" and "Next" in the foot. Every change of page starts at the
+  top. The words of buttons, tabs and sheets in the texts are the words the book shows, in your language and cover.
+- "?" opens the chapter of the view that is open (Unsolved, Claims, Death Log, Guild & Friends, the hit list, Rap
+  Sheet, House Rules, Back up book, Import book, Copy all, Wanted in its view Guilds); otherwise the page you read last
+  in this session, at first the contents. Nothing about it is stored.
+- One chat line after the update says what is new.
+
+### For contributors
+- Every visible change of the book brings the manual along in the same update: `tests/ui/manual_inventar.lua` lists
+  every function with its chapter, and `tests/ui/ma171_stand.lua` turns red when the version in the TOC differs from
+  `UI.MANUAL_CHECKED` in `UI.lua`. The guard of 200 words for the whole manual became one per chapter (German and
+  English at most 115 words, at most three sentences per paragraph; every other language within 0.25 to 1.35 times the
+  English length).
+
+### Not measured in the game yet
+- The pages were measured against the stand-in of the client and in rendered pictures in 21 languages, not in the game.
+
 ## 1.7.0 (2026-11-25)
 
 ### Added
