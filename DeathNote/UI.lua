@@ -87,25 +87,55 @@ local OV = { ROLES = { "all", "kill", "assist", "attack", "manual", "adopted" },
              NAMES_MAX = 12, FLASH_SECONDS = 6, total = 0, shown = 0 }
 UI.OV = OV                  -- for tests
 
--- Manual ("?"): every paragraph describes what is really built (acceptance mirror)
-UX.HELP = {
-  { "MANUAL_BOOK_HEAD", "MANUAL_BOOK" },
-  { "MANUAL_WANTED_HEAD", "MANUAL_WANTED" },
-  { "MANUAL_UNSOLVED_HEAD", "MANUAL_UNSOLVED" },
-  { "MANUAL_ALERT_HEAD", "MANUAL_ALERT" },
-  { "MANUAL_ADD_HEAD", "MANUAL_ADD" },
-  { "MANUAL_GUILD_HEAD", "MANUAL_GUILD" },
-  { "MANUAL_SHARE_HEAD", "MANUAL_SHARE" },
-  { "MANUAL_QUIET_HEAD", "MANUAL_QUIET" },
-  { "MANUAL_RECORD_HEAD", "MANUAL_RECORD" },   -- 1.3.0
+-- Manual ("?"), 1.7.1: a reference in chapters (acceptance mirror: every sentence says what is really built).
+-- The first page is a short way in and the contents; a chapter shows keywords on the left and paragraphs on the right.
+-- Keys per chapter: MANUAL_<KEY>_TITLE, MANUAL_<KEY>_<i>_HEAD and MANUAL_<KEY>_<i> for i = 1 .. n (KEY: the field key,
+-- else the id in capitals). Ids are English like the sheet ids ("alert"); the chapter Alert keeps its keys MANUAL_ALARM_*.
+UX.MANUAL = {
+  { id = "start", n = 4 }, { id = "wanted", n = 5 }, { id = "unsolved", n = 4 }, { id = "alert", key = "ALARM", n = 5 },
+  { id = "grudge", n = 4 }, { id = "log", n = 4 }, { id = "map", n = 4 }, { id = "guild", n = 4 },
+  { id = "hunt", n = 3 }, { id = "bounty", n = 4 }, { id = "record", n = 5 }, { id = "post", n = 4 },
+  { id = "rules", n = 4 }, { id = "limits", n = 4 },
 }
--- UI.HELP: the same paragraphs as texts of the active language (filled on activation)
-UI.HELP = {}
-if ns.Locale and ns.Locale.OnActivate then
-  ns.Locale.OnActivate(function()
-    for i, p in ipairs(UX.HELP) do UI.HELP[i] = { L[p[1]], L[p[2]] } end
-  end)
+-- The version of the addon the manual was last checked against, sentence by sentence. Before raising it to a new
+-- version: bring tests/ui/manual_inventar.lua up to date, change the chapters it touches in all 21 languages, then set it.
+UI.MANUAL_CHECKED = "1.7.1"
+for i, c in ipairs(UX.MANUAL) do
+  local K = "MANUAL_" .. (c.key or c.id:upper())
+  c.index, c.title, c.paras = i, K .. "_TITLE", {}
+  for p = 1, c.n do c.paras[p] = { K .. "_" .. p .. "_HEAD", K .. "_" .. p } end
 end
+-- Words of the surface in the texts: placeholder -> language key, never typed out, so the words of the language and
+-- of the cover follow by themselves. {guild} is the word the fourth tab really shows (with friends: Guild & Friends).
+UX.MANUAL_WORDS = {
+  wanted = "TAB_WANTED", unsolved = "TAB_UNSOLVED", log = "TAB_DEATHLOG", record = "TAB_RECORD",
+  rules = "HEAD_RULES", sheet_book = "SHEET_BOOK", sheet_alert = "SHEET_ALERT", sheet_guild = "SHEET_GUILD",
+  sheet_record = "SHEET_RECORD", more = "SET_MORE",
+  players = "VIEW_PLAYERS", guilds = "VIEW_GUILDS", open = "VIEW_OPEN", claims = "VIEW_CLAIMS", filed = "VIEW_FILED",
+  hunt = "VIEW_HUNT", by_killer = "VIEW_BY_KILLER", by_mate = "VIEW_BY_MATE",
+  f_players = "FATE_VIEW_PLAYERS", f_all = "FATE_VIEW_ALL", f_causes = "FATE_VIEW_CAUSES",
+  confirm = "ACT_CONFIRM", dismiss = "ACT_DISMISS", revenge = "ACT_REVENGE", undo = "ACT_UNDO", pardon = "ACT_PARDON",
+  strike = "ACT_STRIKE", keep = "ACT_KEEP", restore = "ACT_RESTORE", release = "ACT_RELEASE", calloff = "ACT_CALLOFF",
+  hide = "ACT_HUNT_HIDE", post_bounty = "ACT_BOUNTY", show = "ACT_SHARE", paid = "ACT_PAID", decline = "ACT_DECLINE",
+  chronicle = "CHRON_OPEN", feud = "FEUD_DECLARE", export = "IO_EXPORT", import = "IO_IMPORT", move = "SET_MOVE",
+  test = "SET_TEST_ALERT", call = "CALL_BUTTON", filter = "FILTER_WORD",
+  deeds = "POSTER_DEEDS", note = "POSTER_NOTE", book_value = "POSTER_BOOK_VALUE", bounty = "POSTER_BOUNTY",
+  nemesis = "FATE_STAMP", stamp_nr1 = "STAMP_NR1", role_assist = "ROLE_ASSIST", role_suspect = "ROLE_SUSPECT", role_attack = "ROLE_ATTACK",
+  t_week = "SHARE_TAB_WEEK", t_discord = "SHARE_TAB_DISCORD", earned_slip = "BANNER_EARNED",
+  chron_guild = "GLOG_HEAD", holders = "GLOG_VIEW_HOLDERS", avengers = "GLOG_VIEW_AVENGERS", card = "GLOG_VIEW_CARD",
+  size = "SET_BOOK_SIZE", language = "SET_LANGUAGE", cover = "SET_THEME", settled = "SET_SETTLED",
+  grudge_sec = "SET_SEC_GRUDGE", opt_scene = "OPT_SCENE", theme_1 = "THEME_NOTEBOOK", theme_2 = "THEME_HARBOR", theme_3 = "THEME_TRADE",
+  k_toggle = "BIND_TOGGLE", k_add = "BIND_ADD", k_hunt = "BIND_HUNT", k_alarm = "BIND_ALARM", k_help = "BIND_HELP",
+  state_open = "STATE_OPEN", state_even = "STATE_EVEN", state_ahead = "STATE_AHEAD",
+  path_r = "PATH_R", path_e = "PATH_E", path_j = "PATH_J", path_s = "PATH_S", awards = "RECORD_AWARDS",
+  settled_sec = "SECTION_SETTLED", pardoned_sec = "SECTION_PARDONED",
+}
+-- placeholders that name a chapter of the manual itself (its title, filled in turn)
+UX.MANUAL_CHAPTER_WORDS = { ch_bounty = "MANUAL_BOUNTY_TITLE" }
+-- the chapter shown for a view (nil: the page last read in this session, at first the contents)
+UX.MANUAL_BY_ID = {}
+for i, c in ipairs(UX.MANUAL) do UX.MANUAL_BY_ID[c.id] = i end
+UI.MANUAL_DATA = { chapters = UX.MANUAL, words = UX.MANUAL_WORDS, chapterWords = UX.MANUAL_CHAPTER_WORDS }   -- tests
 
 local F            -- main window
 local LP, RP       -- left and right page
@@ -4757,15 +4787,83 @@ end
 -- 1.2.2: the head stands still, the paragraphs scroll (mouse wheel, scroll bar only when needed), imprint and button
 -- stand in the foot bar. Before, imprint and button hung on the bottom edge of the same page the paragraphs flowed
 -- down on: in 11 of 21 languages text lay over text (in game, deDE: imprint over RUHE).
+-- 1.7.1: one page, two faces. Page 0 is the way in and the contents (a row per chapter, the imprint and "Back" in the
+-- foot); page i is chapter i (its title as the head, its paragraphs, "Contents" and "Next" in the foot, the last
+-- chapter only "Contents"). Every change of page starts at the top. The page last read is kept for the session only.
 GF.HELP_LABEL_W, GF.HELP_LABEL = 100, { sizes = { 10, 9 }, lines = 2, width = 100 }
 GF.HELP_FOOT = { sizes = { 11, 10 }, lines = 2 }
+GF.HELP_ROW = { sizes = { 13, 11 }, lines = 2 }   -- a title of the contents: hand 13, then 11, then two lines
+GF.HELP_INTRO_HEAD = { sizes = { 10, 9 }, lines = 1 }   -- the way in: its keyword is one line over the full width
+GF.HELP_TEXT_W, GF.HELP_TEXT_X = 232, 116
+GF.manualPage = 0           -- the page last shown in this session (0 = contents); never stored
+
+-- the filled words of the surface for the manual's texts (built on every fill: cover and tab label follow)
+function GF.ManualArgs()
+  local a = {}
+  for k, key in pairs(UX.MANUAL_WORDS) do a[k] = L[key] end
+  a.guild = GF.HasFriends() and L.TAB_GUILD_FRIENDS or L.TAB_GUILD
+  for k, key in pairs(UX.MANUAL_CHAPTER_WORDS) do a[k] = Fmt(L[key], a) end
+  return a
+end
+
+-- UI.Manual(): the manual in the active language, filled: { intro = { head, text }, chapters = { { id, title,
+-- paras = { { head, text }, ... } }, ... } } (the page and the tests read the same texts)
+function UI.Manual()
+  local a = GF.ManualArgs()
+  local out = { intro = { L.MANUAL_INTRO_HEAD, Fmt(L.MANUAL_INTRO, a) }, chapters = {} }
+  for i, c in ipairs(UX.MANUAL) do
+    local ch = { id = c.id, title = Fmt(L[c.title], a), paras = {} }
+    for p, k in ipairs(c.paras) do ch.paras[p] = { Fmt(L[k[1]], a), Fmt(L[k[2]], a) } end
+    out.chapters[i] = ch
+  end
+  return out
+end
+
+-- the chapter that belongs to the view now open (nil: none, the page last read)
+function GF.ManualContext()
+  local id = UX.MANUAL_BY_ID
+  local p = state.panel
+  if p == "settings" then return id.rules end
+  if p == "export" or p == "import" then return id.post end
+  if p == "release" then return id.hunt end
+  if p == "take" then return id.guild end
+  if p then return nil end
+  local f, FD = state.filter, ns.FeudUI
+  if f == "open" then return (FD and FD.oview == "claims") and id.bounty or id.unsolved end
+  if f == "journal" then return id.log end
+  if f == "record" then return id.record end
+  if f == "guild" then return GF.HuntView() and id.hunt or id.guild end
+  if f == "wanted" and FD and FD.On and FD.On() then return id.wanted end
+  return nil
+end
+
+local function HelpPair(parent)
+  local label = Label(parent, "")
+  label:SetJustifyH("RIGHT")
+  label:SetWidth(GF.HELP_LABEL_W)
+  local text = Look.Text(parent, "type", 11, Look.INK)
+  text:SetWidth(GF.HELP_TEXT_W)
+  text:SetJustifyH("LEFT")
+  text:SetSpacing(1)
+  label:SetPoint("TOPRIGHT", text, "TOPLEFT", -10, -1)
+  return { label, text }
+end
+local function SetPair(pair, head, body)
+  -- keyword: 10 pt, otherwise 9 pt, otherwise two lines (nbNO, esES reached into the fold)
+  Look.FitText(pair[1], Spaced(head or ""), GF.HELP_LABEL)
+  pair[2]:SetText(body or "")
+  pair[1]:Show(); pair[2]:Show()
+end
+
 BuildHelp = function()
   local Hp = PageLayer(RP)
   RP.help = Hp
-  SheetHead(Hp, L.HEAD_HELP)
+  Hp.head = SheetHead(Hp, L.HEAD_HELP)
+  Look.TipIfCut(Hp, Hp.head)
   -- foot bar: button at the bottom, the imprint above it in at most two lines (Humor.lua sets UI.HELP_FOOT, de/en only)
   local pg = Look.Page(Hp, { top = 58, foot = 44, w = PAGE_W, h = PAGE_H, bar = 4 })
   Hp.page = pg
+  Hp.footTOC = 44
   if type(UI.HELP_FOOT) == "string" then
     local foot = Look.Text(pg.foot, "type", 11, Look.INK)
     foot:SetTextColor(C(Look.INK, TONE.hint))
@@ -4774,40 +4872,125 @@ BuildHelp = function()
     foot:SetPoint("BOTTOM", pg.foot, "BOTTOM", 0, 40)
     Look.FitText(foot, UI.HELP_FOOT, GF.HELP_FOOT)
     Look.TipIfCut(pg.foot, foot)
-    pg:SetFoot(40 + math.ceil(Look.TextH(foot, 2)) + 6)
+    Hp.footTOC = 40 + math.ceil(Look.TextH(foot, 2)) + 6
     Hp.foot = foot
   end
-  Hp.paras = {}
-  for i, p in ipairs(UI.HELP) do
-    local label = Label(pg.body, p[1])
-    label:SetJustifyH("RIGHT")
-    label:SetWidth(GF.HELP_LABEL_W)
-    -- keyword: 10 pt, otherwise 9 pt, otherwise two lines (nbNO, esES reached into the fold)
-    Look.FitText(label, label:GetText(), GF.HELP_LABEL)
-    local text = Look.Text(pg.body, "type", 11, Look.INK)
-    text:SetWidth(232)
-    text:SetJustifyH("LEFT")
-    text:SetSpacing(1)
-    text:SetText(p[2])
-    label:SetPoint("TOPRIGHT", text, "TOPLEFT", -10, -1)
-    Hp.paras[i] = { label, text }
+  -- page 0: the way in (its keyword as a line of its own, the text over the full width: a long keyword in the narrow
+  -- column broke into letters) and one row per chapter (number in the keyword column, title in the paragraph column)
+  local ih = Label(pg.body, "")
+  ih:SetJustifyH("LEFT")
+  ih:SetWidth(PAGE_W - 60)
+  local it = Look.Text(pg.body, "type", 11, Look.INK)
+  it:SetWidth(PAGE_W - 60)
+  it:SetJustifyH("LEFT")
+  it:SetSpacing(1)
+  it:SetPoint("TOPLEFT", ih, "BOTTOMLEFT", 0, -4)
+  Hp.intro = { ih, it }
+  Hp.rows = {}
+  for i in ipairs(UX.MANUAL) do
+    local r = CreateFrame("Button", nil, pg.body)
+    r:SetSize(GF.HELP_LABEL_W + 10 + GF.HELP_TEXT_W, 22)
+    r.num = Look.Text(r, "type", 11, Look.INK)
+    r.num:SetTextColor(C(Look.INK, TONE.label))
+    r.num:SetJustifyH("RIGHT")
+    r.num:SetWidth(GF.HELP_LABEL_W)
+    r.num:SetPoint("TOPRIGHT", r, "TOPLEFT", GF.HELP_LABEL_W, -3)
+    r.num:SetText(tostring(i))
+    r.title = Look.Text(r, "hand", 13, Look.INK)
+    r.title:SetWidth(GF.HELP_TEXT_W)
+    r.title:SetJustifyH("LEFT")
+    r.title:SetPoint("TOPLEFT", r, "TOPLEFT", GF.HELP_LABEL_W + 10, 0)
+    r.index = i
+    r:SetScript("OnEnter", function(self) self.title:SetTextColor(C(Look.RED)) end)
+    r:SetScript("OnLeave", function(self) self.title:SetTextColor(C(Look.INK)) end)
+    r:SetScript("OnClick", function(self) Look.Sound("click"); GF.ShowManual(self.index) end)
+    Look.TipIfCut(r, r.title)
+    Hp.rows[i] = r
   end
-  local back = InkButton(pg.foot, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
-  back:SetPoint("BOTTOM", 0, 12)
-  Hp.back = back
-  GF.LayoutHelp()
+  -- a chapter: as many keyword/paragraph pairs as the longest chapter has
+  local most = 0
+  for _, c in ipairs(UX.MANUAL) do most = math.max(most, c.n) end
+  Hp.paras = {}
+  for i = 1, most do Hp.paras[i] = HelpPair(pg.body) end
+  Hp.back = InkButton(pg.foot, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
+  Hp.back:SetPoint("BOTTOM", 0, 12)
+  Hp.toc = InkButton(pg.foot, L.MANUAL_TOC, 104, 22, function() GF.ShowManual(0) end)
+  Hp.next = InkButton(pg.foot, L.MANUAL_NEXT, 104, 22, function() GF.ShowManual((Hp.at or 0) + 1) end)
+  Hp.next:SetPoint("BOTTOM", 57, 12)
+  GF.ShowManual(GF.manualPage)
 end
 
--- stack the paragraphs from the top (real heights) and set the height of the scroll area; on build and on every open
+-- shows page i of the manual (0 = contents), filled in the active language, at the top
+function GF.ShowManual(i)
+  local Hp = RP and RP.help
+  if not Hp then return end
+  i = tonumber(i) or 0
+  if i < 0 or i > #UX.MANUAL then i = 0 end
+  i = math.floor(i)
+  Hp.at, GF.manualPage = i, i
+  local M = UI.Manual()
+  local ch = M.chapters[i]
+  Look.FitText(Hp.head, ch and ch.title or L.HEAD_HELP, GF.FIT_NAME26)
+  local toc = ch == nil
+  Look.FitText(Hp.intro[1], Spaced(M.intro[1] or ""), GF.HELP_INTRO_HEAD)
+  Hp.intro[2]:SetText(M.intro[2] or "")
+  Hp.intro[1]:SetShown(toc); Hp.intro[2]:SetShown(toc)
+  for r, row in ipairs(Hp.rows) do
+    Look.FitText(row.title, M.chapters[r].title, GF.HELP_ROW)
+    row:SetShown(toc)
+  end
+  for p, pair in ipairs(Hp.paras) do
+    local x = ch and ch.paras[p]
+    if x then SetPair(pair, x[1], x[2]) else pair[1]:Hide(); pair[2]:Hide() end
+  end
+  -- foot: contents = imprint and "Back"; a chapter = "Contents" and "Next" (the last chapter: "Contents" alone)
+  if Hp.foot then Hp.foot:SetShown(toc) end
+  Hp.back:SetShown(toc)
+  Hp.toc:SetShown(not toc)
+  local last = ch and i == #UX.MANUAL
+  Hp.next:SetShown(ch ~= nil and not last)
+  Hp.toc:ClearAllPoints()
+  Hp.toc:SetPoint("BOTTOM", last and 0 or -57, 12)
+  Hp.page:SetFoot(toc and Hp.footTOC or 44)
+  GF.LayoutHelp()
+  Hp.page:Top()
+end
+
+-- stack what page Hp.at shows from the top (real heights) and set the height of the scroll area; on every show
 function GF.LayoutHelp()
   local Hp = RP.help
   local y = 4
-  for _, p in ipairs(Hp.paras) do
-    p[2]:ClearAllPoints()
-    p[2]:SetPoint("TOPLEFT", 116, -y)
-    y = y + math.max(Look.TextH(p[2]), Look.TextH(p[1]) + 1) + 7
+  local function place(pair)
+    pair[2]:ClearAllPoints()
+    pair[2]:SetPoint("TOPLEFT", GF.HELP_TEXT_X, -y)
+    y = y + math.max(Look.TextH(pair[2]), Look.TextH(pair[1]) + 1) + 7
+  end
+  if (Hp.at or 0) == 0 then
+    local ih, it = Hp.intro[1], Hp.intro[2]
+    ih:ClearAllPoints()
+    ih:SetPoint("TOPLEFT", 30, -y)
+    y = y + Look.TextH(ih) + 4 + Look.TextH(it) + 12
+    for _, r in ipairs(Hp.rows) do
+      local h = math.max(20, math.ceil(Look.TextH(r.title)) + 6)
+      r:SetHeight(h)
+      r:ClearAllPoints()
+      r:SetPoint("TOPLEFT", Hp.page.body, "TOPLEFT", 6, -y)
+      y = y + h
+    end
+    y = y + 7
+  else
+    for _, p in ipairs(Hp.paras) do
+      if p[2]:IsShown() then place(p) end
+    end
   end
   Hp.page:Layout(y - 7)   -- 1.2.2: the gap after the last paragraph is no content
+end
+
+-- "?": the chapter of the view now open, else the page last read in this session (at first the contents)
+function UI.OpenHelp()
+  local want = GF.ManualContext()
+  UI.OpenPanel("help")
+  if want and RP.help then GF.ShowManual(want) end
 end
 
 -- 1.2.0: sheet "Put on hit list": for whom (Guild & Friends, Guild, Friends) and a short reason.
@@ -5143,7 +5326,7 @@ function UI.OpenPanel(which)
   RP.settings:SetShown(which == "settings")
   RP.io:SetShown(which == "export" or which == "import")
   if RP.help then RP.help:SetShown(which == "help") end
-  if which == "help" then GF.LayoutHelp(); RP.help.page:Top() end
+  if which == "help" then GF.ShowManual(GF.manualPage) end   -- 1.7.1: the page last read, at the top
   if which == "settings" then
     if RP.settings.page then RP.settings.sheetKey = nil end   -- 1.2.2: house rules open at the top
     UI.FillSettings()
@@ -6865,7 +7048,7 @@ local function Build()
   help:SetPoint("RIGHT", gear, "LEFT", -8, 0)
   help:SetScript("OnClick", function()
     Look.Sound("click")
-    if state.panel == "help" then UI.ClosePanel() else UI.OpenPanel("help") end
+    if state.panel == "help" then UI.ClosePanel() else UI.OpenHelp() end   -- 1.7.1: the chapter of the open view
   end)
   F.help = help
 

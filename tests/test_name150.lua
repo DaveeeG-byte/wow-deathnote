@@ -64,7 +64,7 @@ end)
 test("die Saetze, die das Addon nennen, nennen Revenge Book (Stichproben je Sprache)", function()
   for _, c in ipairs(CODES) do
     local T = LANG[c]
-    for _, k in ipairs({ "TIP_MATES_WITH", "SYNC_READY", "CHAT_NO_FRIENDS", "IMPORT_NOT_EXPORT", "MANUAL_GUILD" }) do
+    for _, k in ipairs({ "TIP_MATES_WITH", "SYNC_READY", "CHAT_NO_FRIENDS", "IMPORT_NOT_EXPORT", "MANUAL_GUILD_1" }) do
       ok(T[k]:find("Revenge[ %-]Book"), c .. " " .. k .. ": " .. tostring(T[k]))   -- deDE: Revenge-Book-Export
     end
   end

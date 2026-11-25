@@ -1,4 +1,4 @@
-# Revenge Book 1.7.0
+# Revenge Book 1.7.1
 
 An addon for WoW Forever (Interface 16001). In open-world PvP it writes down who killed you, shows your killers as a
 book and warns you when one of them is in sight again. Confirmed kills are shared silently with your guildmates (the
@@ -547,6 +547,22 @@ one random line per 10 minutes (also across `/reload`). The book has moods: a fe
 poster, a different line on the empty book. Members of the guild "Die Fachkräfte" get their own variants and a stamp on
 taken-down targets, plus one line at the foot of "How it works". The other 19 languages get none of this. Only numbers
 and times are stored (`DeathNoteDB.humor`).
+
+## How it works (1.7.1)
+The button "?" left of the gear opens the manual, a reference in 14 chapters in all 21 languages: First steps,
+Wanted and the poster, Unsolved, Alarm, Grudge and call for help, Death Log, Map and crime scenes, Guild and friends,
+Hit list, Bounty, Rap Sheet, Post and pass on, House Rules, Limits and commands. The first page is a short way in and
+the contents, one row per chapter; a chapter has "Contents" and "Next" in its foot. When a view with a chapter of its
+own is open (the tabs Unsolved, Death Log, Guild & Friends, Rap Sheet, the view Claims, the House Rules, Back up
+book and Import book, the sheets Put on hit list and Copy all, or Wanted in its view Guilds), "?" opens that chapter;
+otherwise the page you read last in this session (at first the contents). Nothing about it is stored. The words of the surface in
+the texts (tabs, buttons, sheets, switches) come from the language table, so they follow the language and the cover.
+`/dn help` stays the list of commands.
+
+For contributors: every visible change of the book brings the manual along in the same update (the chapter's texts
+in all 21 languages, the line in `tests/ui/manual_inventar.lua`, then `UI.MANUAL_CHECKED` in `UI.lua`);
+`tests/ui/ma171_stand.lua` turns red on a new version in the TOC until that is done. How the texts are built:
+`TRANSLATING.md`, section "The manual".
 
 ## House Rules
 Sheets Book, Alert, Guild, Rap Sheet (1.3.0). Sheet Book: language and, under it, the cover (both after `/reload`,

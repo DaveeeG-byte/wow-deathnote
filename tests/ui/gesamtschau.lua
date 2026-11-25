@@ -90,11 +90,20 @@ check("a Reiter ohne Zahl, wenn leer", F.tabs[1].text._text == "Gesucht" and F.t
 check("G4 Knopf ? links neben dem Zahnrad", F.help and F.help.text._text == "?" and F.help._points[1][3] == "LEFT")
 W.step("G4 ? oeffnet die Gebrauchsanweisung", function() W.click(F.help) end)
 local UI = ns.UI
-check("G4 Gebrauchsanweisung mit 9 Absaetzen (fix-3: Jagd im Absatz Gilde; 1.3.0: Strafregister)", W.text("Gebrauchsanweisung", true) ~= nil and #UI.HELP == 9)
-local words = 0
-for _, p in ipairs(UI.HELP) do for _ in (p[1] .. " " .. p[2]):gmatch("%S+") do words = words + 1 end end
-check("G4 hoechstens 200 Woerter (1.3.0: 180 plus der Absatz Strafregister)", words <= 200, words)
-for _, p in ipairs(UI.HELP) do check("G4 Absatz sichtbar: " .. p[1], W.text(p[2], true) ~= nil) end
+-- 1.7.1: the manual is a reference in 14 chapters; the first page is the way in and the contents
+local MAN = UI.Manual()
+check("G4 Gebrauchsanweisung: Einstieg und Inhalt mit 14 Kapiteln", W.text("Gebrauchsanweisung", true) ~= nil
+  and #MAN.chapters == 14 and W.text(MAN.intro[2], true) ~= nil, #MAN.chapters)
+local function nwords(s) local n = 0; for _ in s:gmatch("%S+") do n = n + 1 end return n end
+-- 1.7.1: the guard of 200 words for all paragraphs became a guard per chapter (rund 110: at most 115 words of
+-- paragraphs, keywords not counted) and at most 60 words for the way in
+check("G4 Einstieg hoechstens 60 Woerter", nwords(MAN.intro[2]) <= 60, nwords(MAN.intro[2]))
+for _, ch in ipairs(MAN.chapters) do
+  check("G4 Kapitel im Inhalt sichtbar: " .. ch.title, W.text(ch.title, true) ~= nil)
+  local n = 0
+  for _, p in ipairs(ch.paras) do n = n + nwords(p[2]) end
+  check("G4 Kapitel hoechstens 115 Woerter: " .. ch.title, n <= 115, n)
+end
 check("G4 Hover: Tooltip So geht das Buch", (function()
   G.GameTooltip._text = nil
   F.help._scripts.OnEnter(F.help)

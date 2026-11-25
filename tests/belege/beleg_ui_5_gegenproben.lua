@@ -197,18 +197,20 @@ end
 for _, code in ipairs(K.CODES) do
   local W = K.world(code, { humor = true })
   W.ns:Fire("TOGGLE_UI"); W.tick(); W.settle()
+  -- 1.7.1: the manual is a page of contents and 14 chapters; the page scrolls (layout_guard measures it). Here: the
+  -- imprint stands in the foot of the contents for German and English only; every chapter opens (the longest is named,
+  -- it may scroll).
   W.ns.UI.OpenPanel("help"); W.tick()
-  local Hp = W.frameWith(function(f) return f.paras end)
-  local _, _, _, pt = W.frameBox(Hp)
-  local low, lines, maxl = 0, 0, 0
-  for _, p in ipairs(Hp.paras) do
-    local _, b, r, _, n = W.box(p[2])
-    low = pt - b; lines = lines + n; if n > maxl then maxl = n end
-  end
-  local limit = Hp.foot and (490 - 44 - 11) or (490 - 34)
+  local Hp = W.frameWith(function(f) return f.paras and f.rows end)
   local footOk = not Hp.foot or K.estimate(Hp.foot) <= 380 - 40
-  K.check(("4 %s: %d Absaetze, %d Zeilen (hoechstens %d), Luft %d px bis %s"):format(code, #Hp.paras, lines, maxl, limit - low, Hp.foot and "Fusszeile" or "Knopf"),
-    #Hp.paras == 9 and limit - low >= 12 and footOk and ((code == "deDE" or code == "enUS") == (Hp.foot ~= nil)), limit - low)
+  local worst = 0
+  for i = 1, #Hp.rows do
+    Hp.rows[i]._scripts.OnClick(Hp.rows[i], "LeftButton"); W.tick()
+    worst = math.max(worst, Hp.page.used or 0)
+    Hp.toc._scripts.OnClick(Hp.toc, "LeftButton"); W.tick()
+  end
+  K.check(("4 %s: %d Kapitel, laengstes %d px Inhalt, Fenster %d px, %s"):format(code, #Hp.rows, worst, Hp.page.viewH or 0, Hp.foot and "Fusszeile" or "ohne Fusszeile"),
+    #Hp.rows == 14 and footOk and ((code == "deDE" or code == "enUS") == (Hp.foot ~= nil)), worst)
   local n, e = W.errs(); K.check("4 " .. code .. ": keine Fehler", n == 0, e)
 end
 

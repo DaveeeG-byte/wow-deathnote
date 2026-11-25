@@ -243,7 +243,8 @@ local function run(code)
     if math.abs(sf:GetVerticalScroll() - range) > 0.5 then note("PAGE", where, nil, "wheel does not reach the end") end
     if fade and fade:IsShown() then note("PAGE", where, nil, "fade still shown at the end") end
     for _ = 1, 100 do wheel(sf, 1) end
-    if sf:GetVerticalScroll() ~= 0 then note("PAGE", where, nil, "wheel does not reach the start") end
+    -- 1.7.1: a small overhang (Look.PAGE_SLACK) is pinned up on purpose (Alert.lua PageLayout): its start is the pin
+    if sf:GetVerticalScroll() ~= (pg.pin or 0) then note("PAGE", where, nil, "wheel does not reach the start") end
     -- the foot is no child of the scroll frame
     if under(foot, sf) then note("PAGE", where, nil, "foot inside the scroll window") end
   end
@@ -321,11 +322,20 @@ local function run(code)
   ns.UI.ClosePanel(); tick()
   ns.UI.OpenPanel("help"); tick(); scan("manual", F)
   if RP and RP.help then page("manual", RP.help.page) end
+  -- 1.7.1: every chapter of the manual, each one scanned and measured as a page (then back to the contents)
+  if RP and RP.help and RP.help.rows then
+    for i, r in ipairs(RP.help.rows) do
+      r._scripts.OnClick(r, "LeftButton"); tick()
+      scan("manual chapter " .. i, F)
+      page("manual chapter " .. i, RP.help.page)
+    end
+    RP.help.toc._scripts.OnClick(RP.help.toc, "LeftButton"); tick()
+  end
   -- manual: back and in again starts at the top
   if RP and RP.help and RP.help.page then
     RP.help.page.scroll._scripts.OnMouseWheel(RP.help.page.scroll, -3)
     ns.UI.ClosePanel(); ns.UI.OpenPanel("help"); tick()
-    if RP.help.page.scroll:GetVerticalScroll() ~= 0 then note("PAGE", "manual", nil, "reopened, not at the top") end
+    if RP.help.page.scroll:GetVerticalScroll() ~= (RP.help.page.pin or 0) then note("PAGE", "manual", nil, "reopened, not at the top") end
   end
   ns.UI.OpenPanel("settings"); tick(); settle()
   local S = RP and RP.settings

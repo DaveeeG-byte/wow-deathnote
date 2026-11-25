@@ -119,7 +119,7 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   ns.UI.OpenPanel("help"); settle()
   -- fix-3: imprint as one line in the footer, not a paragraph
   check(n .. "Gebrauchsanweisung: Zeile am Fuss", helpHas(T.MANUAL) and ns.UI.HELP_FOOT == T.MANUAL, T.MANUAL)
-  check(n .. "Gebrauchsanweisung: 9 Absaetze (1.3.0: rap sheet)", #ns.UI.HELP == 9, #ns.UI.HELP)
+  check(n .. "Gebrauchsanweisung: 14 Kapitel (1.7.1)", #ns.UI.Manual().chapters == 14, #ns.UI.Manual().chapters)
   ns.UI.ClosePanel(); settle()
   -- Deaths: 5th death regular customer quip (fix-3: no longer the 3rd), 10th death stamp
   local key
@@ -242,7 +242,7 @@ for _, code in ipairs({ "fiFI", "zhCN" }) do
   check(n .. "kein Schalter (en)", checkWith(SRC.enUS.OPT) == nil)
   check(n .. "keine Humor-Texte im Speicher (fix-2)", next(ns.Humor.TEXTS) == nil)
   ns.UI.OpenPanel("help"); settle()
-  check(n .. "Gebrauchsanweisung: 9 Absaetze, keine Fusszeile", #ns.UI.HELP == 9 and ns.UI.HELP_FOOT == nil, #ns.UI.HELP)
+  check(n .. "Gebrauchsanweisung: 14 Kapitel, keine Fusszeile", #ns.UI.Manual().chapters == 14 and ns.UI.HELP_FOOT == nil, #ns.UI.Manual().chapters)
   ns.UI.ClosePanel(); settle()
   local key
   for _ = 1, 10 do key = kill(ns, "Grimm", "Bart", { level = 10 }); check(n .. "Tod: kein Spruch", quip() == nil, quip()); away() end

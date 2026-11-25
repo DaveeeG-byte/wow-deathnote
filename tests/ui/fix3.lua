@@ -276,14 +276,13 @@ ns.UI.ShowEnemy(k); tick()
 check("Trockene Bemerkungen aus: Reisszwecke nicht klickbar", pin and not pin:IsShown())
 ns.Store.Setting("humor", true)
 ns.UI.OpenPanel("help"); tick()
-check("Gebrauchsanweisung: neun Absaetze (1.3.0: rap sheet)", #ns.UI.HELP == 9, #ns.UI.HELP)
+local MAN = ns.UI.Manual()
+check("Gebrauchsanweisung: 14 Kapitel (1.7.1)", #MAN.chapters == 14, #MAN.chapters)
 local heads = {}
-for _, p in ipairs(ns.UI.HELP) do heads[#heads + 1] = p[1] end
-check("kein Absatz JAGD, kein IMPRESSUM", not table.concat(heads, ","):find("JAGD", 1, true) and not table.concat(heads, ","):find("IMPRESSUM", 1, true),
-  table.concat(heads, ","))
-local guildPara
-for _, p in ipairs(ns.UI.HELP) do if p[1] == L.MANUAL_GUILD_HEAD then guildPara = p[2] end end
-check("Absatz Gilde nennt das Freigeben", guildPara and guildPara:find("zur Jagd freigeben", 1, true) ~= nil, guildPara)
+for _, ch in ipairs(MAN.chapters) do for _, p in ipairs(ch.paras) do heads[#heads + 1] = p[1] end end
+check("kein Absatz IMPRESSUM", not table.concat(heads, ","):find("IMPRESSUM", 1, true), table.concat(heads, ","))
+local huntPara = MAN.chapters[9].paras[1][2]
+check("Kapitel Abschussliste nennt das Freigeben", huntPara:find(L.ACT_RELEASE, 1, true) ~= nil, huntPara)
 local foot = vis(ns.UI.HELP_FOOT or "\1")
 -- 1.2.2: in the standing foot bar of the page, above the button, at most two lines (was one line hanging at BOTTOM 44)
 check("Imprint: in the foot bar above the button, at most two lines", foot and foot._points[1][1] == "BOTTOM"

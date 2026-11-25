@@ -440,13 +440,37 @@ for _, code in ipairs({ "enUS", "deDE", "daDK", "fiFI", "nbNO", "svSE", "ruRU", 
   local pg = RP and RP.help and RP.help.page
   K.check(code .. " B13 manual is a scroll page with a fade", pg and pg.fade ~= nil)
   if pg then
-    -- bottom of the last paragraph in the body
+    -- bottom of the last paragraph in the body (1.7.1: of what the page shows; the contents first, below a chapter)
+    local Hp = RP.help
+    local function bottom()
     local last = 0
-    for _, p in ipairs(RP.help.paras) do
-      local _, _, _, _, py = p[2]:GetPoint(1)
-      local y = -(py or 0)
-      last = math.max(last, y + math.max(Look.TextH(p[2]), Look.TextH(p[1]) + 1))
+    local pairs_ = {}
+    for _, p in ipairs(Hp.paras) do pairs_[#pairs_ + 1] = p end
+    for _, p in ipairs(pairs_) do
+      if p[2]:IsShown() then
+        local _, _, _, _, py = p[2]:GetPoint(1)
+        local y = -(py or 0)
+        last = math.max(last, y + math.max(Look.TextH(p[2]), Look.TextH(p[1]) + 1))
+      end
     end
+    if Hp.intro[2]:IsShown() then
+      local _, _, _, _, py = Hp.intro[1]:GetPoint(1)
+      last = math.max(last, -(py or 0) + Look.TextH(Hp.intro[1]) + 4 + Look.TextH(Hp.intro[2]))
+    end
+    for _, r in ipairs(Hp.rows) do
+      if r:IsShown() then
+        local _, _, _, _, py = r:GetPoint(1)
+        last = math.max(last, -(py or 0) + r:GetHeight())
+      end
+    end
+    return last
+    end
+    local last = bottom()
+    Hp.rows[4]._scripts.OnClick(Hp.rows[4], "LeftButton"); K.tick()
+    local lastC = bottom()
+    K.check(code .. " B13 manual, chapter 4: the content ends with its last paragraph", math.abs(pg.used - math.ceil(lastC)) <= 1,
+      ("content %s, last paragraph ends %.1f"):format(tostring(pg.used), lastC))
+    Hp.toc._scripts.OnClick(Hp.toc, "LeftButton"); K.tick()
     K.check(code .. " B13 manual: the content ends with its last paragraph (no gap after it)", math.abs(pg.used - math.ceil(last)) <= 1,
       ("content %s, last paragraph ends %.1f"):format(tostring(pg.used), last))
     local fade = pg.fade or { IsShown = function() return nil end }
