@@ -99,6 +99,8 @@ UX.MANUAL = {
 }
 -- The version of the addon the manual was last checked against, sentence by sentence. Before raising it to a new
 -- version: bring tests/ui/manual_inventar.lua up to date, change the chapters it touches in all 21 languages, then set it.
+-- tests/ui/ma171_stand.lua only reminds (TOC against this value, a line of the inventory for the version); it cannot
+-- see whether the chapters were really read against the code.
 UI.MANUAL_CHECKED = "1.7.1"
 for i, c in ipairs(UX.MANUAL) do
   local K = "MANUAL_" .. (c.key or c.id:upper())
