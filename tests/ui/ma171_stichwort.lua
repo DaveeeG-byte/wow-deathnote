@@ -114,6 +114,39 @@ do
   W.click(Hp.rows[2])
   check("im naechsten Kapitel kein Tooltip mehr an dieser Stelle", not pair.tip:IsShown() and not fs.cut)
 end
+-- B11: the field texts of tests/sprachen/_limits.lua say what the code builds (widths, sizes, lines)
+do
+  local W = J.world("enUS", { db = { version = 5, settings = { welcomed = true, firstRun = "done", news171 = true,
+    news170 = true }, enemies = {}, deaths = {} } })
+  local ns = W.ns
+  local GF = ns.UI.JK.GF
+  ns:Fire("TOGGLE_UI"); W.tick(); W.settle()
+  ns.UI.OpenPanel("help"); W.tick()
+  local RP
+  for _, f in ipairs(W.BM.frames) do if f.help and f.settings then RP = f end end
+  local Hp = RP.help
+  local LIM = dofile(J.WT .. "/tests/sprachen/_limits.lua")
+  local function has(k, ...)
+    local f = LIM[k] and LIM[k].field or ""
+    for _, part in ipairs({ ... }) do if not f:find(part, 1, true) then return false, k .. ": '" .. part .. "' fehlt in '" .. f .. "'" end end
+    return true
+  end
+  local iw = math.floor(Hp.intro[1]:GetWidth() + 0.5)
+  check("_limits MANUAL_INTRO_HEAD: Breite und Zeilen wie im Code", has("MANUAL_INTRO_HEAD", iw .. " px",
+    GF.HELP_INTRO_HEAD.lines == 1 and "one line" or "two lines", "Friz " .. GF.HELP_INTRO_HEAD.sizes[1]))
+  local rs = GF.HELP_ROW.sizes
+  local bad = {}
+  for _, c in ipairs(ns.UI.MANUAL_DATA.chapters) do
+    local ok, why = has(c.title, "Morpheus " .. rs[1] .. ", then " .. rs[2], GF.HELP_TEXT_W .. " px",
+      "Morpheus " .. table.concat(GF.FIT_NAME26.sizes, "/"))
+    if not ok then bad[#bad + 1] = why end
+    for _, p in ipairs(c.paras) do
+      local ok2, why2 = has(p[1], GF.HELP_LABEL_W .. " px", "never broken inside a word", "letter-spaced " .. GF.HELP_LABEL.sizes[1])
+      if not ok2 then bad[#bad + 1] = why2 end
+    end
+  end
+  check("_limits: Titel und Stichwoerter beschrieben wie im Code", #bad == 0, bad[1])
+end
 print(("      Leiter: gesperrt einzeilig %d, zwei Zeilen an der Wortluecke %d, ungesperrt %d, geschnitten mit Tooltip %d")
   :format(steps.spaced1, steps.spaced2, steps.plain, steps.cut))
 J.done("ma171 stichwort")
