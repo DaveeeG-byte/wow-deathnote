@@ -5101,6 +5101,18 @@ end
 -- pressed: Put on hit list, Copy all, the House Rules with their sheet, Back up book, Import book, the guild
 -- chronicle. The sheet is shown again, not opened anew, so what was typed stays (the reason, the pasted text). A tab
 -- or another button drops the way back (UI.OpenPanel, UI.ClosePanel clear GF.helpFrom); nothing is stored.
+-- 1.7.1 fixer 2 (JN-1): every change of the sheet open on the right page goes through here, so the guild chronicle's
+-- ribbon follows it (GuildLogUI.Ribbon decides, in one place, whether the ribbon stands). Before, the ribbon came back
+-- over Put on hit list after the way back from the manual, and stood over Copy all right after opening it.
+function GF.SetPanel(p)
+  state.panel = p
+  local GL = ns.GuildLogUI
+  if GL and type(GL.Ribbon) == "function" then
+    local ok, err = pcall(GL.Ribbon, p)
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
+end
+
 function GF.CloseHelp()
   local from = GF.helpFrom
   GF.helpFrom = nil
@@ -5113,7 +5125,7 @@ function GF.CloseHelp()
   local sheet = (p == "release" and RP.release) or (p == "take" and RP.take) or nil
   if sheet and ((p == "release" and state.release) or (p == "take" and state.take)) then
     UI.ClosePanel(true)
-    state.panel = p
+    GF.SetPanel(p)
     P:Hide(); RP.empty:Hide()
     sheet:Show()
     return
@@ -5274,7 +5286,7 @@ function UI.OpenRelease(key)
   if not RP.release then GF.BuildRelease() end
   HideMenu()
   state.release = { key = key, to = "all" }
-  state.panel = "release"
+  GF.SetPanel("release")
   P:Hide(); RP.empty:Hide()
   RP.settings:Hide(); RP.io:Hide()
   if RP.help then RP.help:Hide() end
@@ -5452,7 +5464,7 @@ function UI.OpenPanel(which)
   if not RP.settings then BuildSettings() end
   if which == "help" and not RP.help then BuildHelp() end
   HideMenu()
-  state.panel = which
+  GF.SetPanel(which)
   P:Hide(); RP.empty:Hide()
   if RP.release then RP.release:Hide() end
   if RP.take then RP.take:Hide() end
@@ -5469,7 +5481,7 @@ function UI.OpenPanel(which)
 end
 
 function UI.ClosePanel(silent)
-  state.panel = nil
+  GF.SetPanel(nil)
   GF.helpFrom = nil
   if RP.release then RP.release:Hide() end
   if RP.take then RP.take:Hide() end
@@ -6608,7 +6620,7 @@ function OV.OpenTake(member)
     if S.Get(list[i].key) then st.have = st.have + 1 else st.new[#st.new + 1] = list[i] end
   end
   state.take = st
-  state.panel = "take"
+  GF.SetPanel("take")
   P:Hide(); RP.empty:Hide()
   RP.settings:Hide(); RP.io:Hide()
   if RP.help then RP.help:Hide() end

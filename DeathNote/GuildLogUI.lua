@@ -941,11 +941,18 @@ function GLUI.UpdateMarks()
   end
 end
 
+-- 1.7.1 fixer 2 (JN-1): the one place that decides whether the ribbon stands: in the fourth tab, with no sheet open
+-- on the right page (manual, house rules, back up, import, put on hit list, copy all). UI.lua calls it on every
+-- change of its open sheet (GF.SetPanel) and GLUI.Update on every refresh of the tabs.
+function GLUI.Ribbon(panel)
+  if R then R:SetShown(state.filter == "guild" and not panel and D() ~= nil) end
+end
+
 -- UI.lua after every refresh of the tabs: the tab, an open panel (help, house rules), the selection
 function GLUI.Update(filter, panel, sig)
   state.filter, state.sig = filter, sig
   local guild = filter == "guild" and not panel
-  if R then R:SetShown(guild and D() ~= nil) end
+  GLUI.Ribbon(panel)
   if state.open and (not guild or (state.openSig ~= nil and sig ~= state.openSig)) then GLUI.Close() end
   if filter == "guild" and D() then D().MarkSeen("seenTab") end
   GLUI.UpdateMarks()
@@ -966,23 +973,15 @@ function GLUI.Attach(F, LP, RP, poster)
   R = BuildRibbon(F)
   PL = BuildLeft(LP)
   PR = BuildRight(RP)
-  -- the manual or the house rules opened over the right page: the chronicle steps aside
+  -- the manual or the house rules opened over the right page: the chronicle steps aside (the ribbon follows the open
+  -- sheet through GLUI.Ribbon, 1.7.1 fixer 2; this wrap no longer touches it)
   local UI = ns.UI
   if UI and type(UI.OpenPanel) == "function" and not GLUI.wrapped then
     GLUI.wrapped = true
     local open = UI.OpenPanel
     UI.OpenPanel = function(...)
       pcall(GLUI.Close)
-      if R then R:Hide() end
       return open(...)
-    end
-    if type(UI.ClosePanel) == "function" then
-      local close = UI.ClosePanel
-      UI.ClosePanel = function(...)
-        local r = close(...)
-        if R then R:SetShown(state.filter == "guild" and D() ~= nil) end
-        return r
-      end
     end
   end
   F:HookScript("OnHide", function() pcall(GLUI.Close) end)
