@@ -157,4 +157,40 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   check(code .. " lang: keine Fehler", n == 0, e)
 end
 
+-- B8: the contents is tight (rows GF.HELP_ROW_H or text plus GF.HELP_ROW_PAD, gap after the way in
+-- GF.HELP_INTRO_GAP); the air under the last row is measured with the image tool (fix-seite.md). In the mock the
+-- contents may roll (its widths are wider than the client's): then it rolls cleanly, the last row comes fully into
+-- view at the end, and back at the top the way in stands at the top.
+for _, code in ipairs({ "deDE", "enUS" }) do
+  local W = J.world(code, { db = db() })
+  local ns = W.ns
+  local GF = ns.UI.JK.GF
+  ns:Fire("TOGGLE_UI"); W.tick(); W.settle()
+  local F = W.frame("DeathNoteFrame")
+  W.click(F.help)
+  local Hp = helpOf(W)
+  local tight = true
+  for i = 1, #Hp.rows - 1 do
+    local a, b = Hp.rows[i], Hp.rows[i + 1]
+    local want = math.max(GF.HELP_ROW_H, math.ceil(ns.Look.TextH(a.title)) + GF.HELP_ROW_PAD)
+    local ya, yb = select(5, a:GetPoint(1)), select(5, b:GetPoint(1))
+    if math.abs((ya - yb) - want) > 0.01 or want > 20 then tight = false end
+  end
+  check(code .. " Inhalt: Zeilen eng (18 oder Text plus 4, hoechstens 20)", tight and GF.HELP_ROW_H == 18 and GF.HELP_ROW_PAD == 4
+    and GF.HELP_INTRO_GAP == 6)
+  local pg = Hp.page
+  print(("      %s Inhalt im Kabel: Hoehe %d, Fenster %d, Rollweg %d"):format(code, pg.used or 0, pg.viewH, pg.range))
+  if pg.range > 0 then
+    scrollDown(Hp)
+    local bottom = -select(5, Hp.rows[14]:GetPoint(1)) + ns.Look.TextH(Hp.rows[14].title)   -- in the body, from its top
+    local seen = pg.offset + (pg.pin or 0) + pg.viewH
+    check(code .. " Inhalt rollt sauber: am Ende steht Zeile 14 ganz im Fenster", pg.offset == pg.range and pg.bar:IsShown()
+      and bottom <= seen + 0.01, ("%.1f > %.1f"):format(bottom, seen))
+    W.click(Hp.rows[2]); W.click(Hp.toc)
+    check(code .. " Inhalt nach dem Rollen: zurueck oben", atTop(Hp))
+  end
+  local n, e = W.errors()
+  check(code .. " Inhalt eng: keine Fehler", n == 0, e)
+end
+
 J.done("ma171 klickwege")

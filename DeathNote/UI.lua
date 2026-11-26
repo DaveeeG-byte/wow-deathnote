@@ -4797,6 +4797,7 @@ GF.HELP_FOOT = { sizes = { 11, 10 }, lines = 2 }
 GF.HELP_ROW = { sizes = { 13, 11 }, lines = 2 }   -- a title of the contents: hand 13, then 11, then two lines
 GF.HELP_INTRO_HEAD = { sizes = { 10, 9 }, lines = 1 }   -- the way in: its keyword is one line over the full width
 GF.HELP_TEXT_W, GF.HELP_TEXT_X = 232, 116
+GF.HELP_INTRO_GAP, GF.HELP_ROW_H, GF.HELP_ROW_PAD = 6, 18, 4   -- 1.7.1 fixer (B8): the contents, see GF.LayoutHelp
 GF.manualPage = 0           -- the page last shown in this session (0 = contents); never stored
 
 -- 1.7.1 fixer (B2): a word of the surface set into a paragraph or the way in stands out in the small red ink of the
@@ -5049,9 +5050,12 @@ function GF.LayoutHelp()
     local ih, it = Hp.intro[1], Hp.intro[2]
     ih:ClearAllPoints()
     ih:SetPoint("TOPLEFT", 30, -y)
-    y = y + Look.TextH(ih) + 4 + Look.TextH(it) + 12
+    -- 1.7.1 fixer (B8): tighter (gap after the way in 6, was 12; a row 18 or its text plus 4, was 20 or plus 6), so
+    -- the contents keeps air under its last row in deDE and enUS (image tool: 10.6 before); should it still roll in
+    -- a language, the page rolls like every other (mouse wheel, bar when needed) and a change of page starts at the top
+    y = y + Look.TextH(ih) + 4 + Look.TextH(it) + GF.HELP_INTRO_GAP
     for _, r in ipairs(Hp.rows) do
-      local h = math.max(20, math.ceil(Look.TextH(r.title)) + 6)
+      local h = math.max(GF.HELP_ROW_H, math.ceil(Look.TextH(r.title)) + GF.HELP_ROW_PAD)
       r:SetHeight(h)
       r:ClearAllPoints()
       r:SetPoint("TOPLEFT", Hp.page.body, "TOPLEFT", 6, -y)
