@@ -1,6 +1,8 @@
 -- 1.7.1 manual (fixer after the hunt "truth and completeness"): the sentences the hunt found wrong stay right, and
 -- what it found missing stays in a chapter. German and English, raw texts of the language files, each tied to the
--- code that makes it true where there is a number or a command. Names made up, nothing measured in the game.
+-- code that makes it true where there is a number or a command: the numbers of the chapters against the values of the
+-- loaded modules (JN-5), the commands and switches against a line of the code. Names made up, nothing measured in
+-- the game.
 -- Usage: luajit tests/ui/ma171_wahrheit.lua <project>
 local J = dofile((arg[0]:match("^(.*)/") or ".") .. "/_mv164.lua")
 local check = J.check
@@ -137,4 +139,56 @@ local readme = read("README.md")
 check("A24 README ohne Shift-drag und ohne Help-Knopf", not has(readme, "Shift-drag") and not has(readme, '"Help" button'))
 check("A24 Kommentare an UX.FILTERS und TAB_RECORD", not has(read("DeathNote/UI.lua"), "only from the first own kill on")
   and not has(SRC.enUS, "appears with your first own kill"))
+-- 1.7.1 fixer 2 (JN-5): every number of a chapter is tied to the value the code uses. The value is read from the
+-- loaded modules (not from a text in the source), and the sentence must name the number that value gives: a changed
+-- constant turns this red. "Rank 1" (MANUAL_RECORD_2) is an ordinal, not a setting, and stays with its text.
+do
+  local ns = W.ns
+  local GC = ns.Guild and ns.Guild.C or {}
+  local ex = {}
+  for _, d in ipairs(GC.EXPIRE_DAYS or {}) do if d ~= 0 then ex[#ex + 1] = tostring(d) end end
+  local gap = ns.GuildLog and ns.GuildLog.RECOMMEND_GAP
+  local NUMS = {
+    { "MANUAL_POST_5", gap and gap % 60 == 0 and gap / 60, "alle %s Minuten", "every %s minutes" },
+    { "MANUAL_UNSOLVED_4", ns.Feud and ns.Feud.EXPIRE_DAYS, "nach %s Spieltagen", "after %s play days" },
+    { "MANUAL_UNSOLVED_4", ns.Feud and ns.Feud.MAX_EXPIRED, "höchstens %s,", "at most %s," },
+    { "MANUAL_GRUDGE_3", ns.Call and ns.Call.C and ns.Call.C.COOLDOWN, "einmal je %s Sekunden", "once per %s seconds" },
+    { "MANUAL_POST_1", ns.Share and ns.Share.COOLDOWN, "höchstens alle %s Sekunden", "at most every %s seconds" },
+    { "MANUAL_BOUNTY_2", GC.BOUNTY_GOLD_MAX, "1 bis %s Gold", "1 to %s gold" },
+    { "MANUAL_BOUNTY_3", ns.Claim and ns.Claim.DAYS, "%s Tage", "%s days" },
+    { "MANUAL_BOUNTY_3", ns.Feud and ns.Feud.CLAIM_DAYS, "%s Tage", "%s days" },
+    { "MANUAL_HUNT_3", GC.EXPIRE_DAYS and GC.EXPIRE_DAYS[1] == 0 and #ex > 0 and table.concat(ex, ", "),
+      "immer oder %s Tage", "forever or %s days" },
+  }
+  for _, n in ipairs(NUMS) do
+    local v = n[2]
+    v = type(v) == "number" and (v == math.floor(v) and string.format("%d", v) or tostring(v)) or v
+    for i, lang in ipairs({ "deDE", "enUS" }) do
+      local want = type(v) == "string" and n[2 + i]:format(v) or nil
+      check("JN-5 " .. lang .. " " .. n[1] .. ": Zahl aus dem Code (" .. tostring(v) .. ")",
+        want ~= nil and has(T(lang, n[1]), want), tostring(want) .. " in: " .. T(lang, n[1]))
+    end
+  end
+  -- 0 takes a bounty back: the command accepts 0 only for an own bounty (Core.lua), the bounty value 1 at least
+  check("JN-5 Code: /dn kopfgeld Name 0 nimmt das eigene Kopfgeld zurueck", has(core, "gold == 0 and G.OwnBounty"))
+  check("JN-5 deDE/enUS: 0 nimmt es zurueck", has(T("deDE", "MANUAL_BOUNTY_2"), "0 nimmt es zurück")
+    and has(T("enUS", "MANUAL_BOUNTY_2"), "0 takes it back"))
+end
+-- 1.7.1 fixer 2 (JN-3): the source switch All | Guild | Friends stands only with a guild and a friend who has the book
+-- (UI.lua UpdateTabs, GF.both); the sentence names that condition
+check("JN-3 Code: der Umschalter Quelle haengt an GF.both", has(read("DeathNote/UI.lua"), "local srcs = guildTab and GF.HasFriends() and GF.both"))
+check("JN-3 deDE/enUS: Bedingung des Umschalters", has(T("deDE", "MANUAL_GUILD_4"), "Hast du Gilde und Freunde mit dem Buch, wählt unten links")
+  and has(T("enUS", "MANUAL_GUILD_4"), "If your guild and friends have the book, {src_all}"))
+-- 1.7.1 fixer 2 (JN-8): the House Rules hold the mark's off and size (Plate.ORDER, GripUI.Plate in the sheet of the
+-- rap sheet); the enemy nameplates are the game's setting (Util.NameplatesOn reads the CVar), not the book's
+do
+  local plate = read("DeathNote/Plate.lua")
+  check("JN-8 Code: Marke aus und Groesse, Feind-Plaketten vom Spiel", has(plate, 'Plate.ORDER = { "off", "small", "medium", "large" }')
+    and has(plate, "if Util.platesOn == false then return false end") and has(core, 'GetCVarBool, "nameplateShowEnemies"')
+    and has(read("DeathNote/UI.lua"), "ns.GripUI.Plate(S, RR,"))
+  check("JN-8 deDE: aus und Groesse in der Hausordnung, Plaketten vom Spiel", has(T("deDE", "MANUAL_ALARM_6"), "aus und Größe: {rules}, {sheet_record}")
+    and has(T("deDE", "MANUAL_ALARM_6"), "wenn das Spiel Feind-Plaketten zeigt") and not has(T("deDE", "MANUAL_ALARM_6"), "Plaketten ({rules}"))
+  check("JN-8 enUS: off and size in the rules, nameplates of the game", has(T("enUS", "MANUAL_ALARM_6"), "off and size: {rules}, {sheet_record}")
+    and has(T("enUS", "MANUAL_ALARM_6"), "while the game shows enemy nameplates") and not has(T("enUS", "MANUAL_ALARM_6"), "nameplates on ({rules}"))
+end
 J.done("ma171 wahrheit")

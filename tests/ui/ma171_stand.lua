@@ -7,8 +7,9 @@
 --     nor an entry in its field `unchanged` (1.7.1 fixer, Seite B6), the explicit note for a version that changes
 --     nothing a player sees. Its format, one entry per version, inside the returned table after the rows:
 --        unchanged = { ["1.7.2"] = "nothing the player sees changes, because only the guild sync was made faster" },
---     The text must begin with "nothing the player sees changes, because " and give a reason (at least 10 more
---     characters). ipairs over the rows does not see this field.
+--     The text must begin with "nothing the player sees changes, because " and give a reason with content: at least
+--     20 letters in at least 3 words of two letters or more (1.7.1 fixer 2, JN-6: spaces, digits or punctuation alone
+--     no longer count). ipairs over the rows does not see this field.
 -- Every line of the instruction begins with ROT, so tests/ui/run.sh (grep "^ROT") shows it whole.
 -- Usage: luajit tests/ui/ma171_stand.lua <project>
 local J = dofile((arg[0]:match("^(.*)/") or ".") .. "/_mv164.lua")
@@ -25,7 +26,15 @@ local BECAUSE = "nothing the player sees changes, because "
 local row, note = false, nil
 for _, r in ipairs(list) do if r[2] == toc then row = true end end
 local u = type(list.unchanged) == "table" and list.unchanged[toc]
-if type(u) == "string" and u:sub(1, #BECAUSE) == BECAUSE and #u >= #BECAUSE + 10 then note = u end
+-- a reason with content: letters, not spaces or signs (JN-6)
+local function reasoned(s)
+  local why = s:sub(#BECAUSE + 1)
+  local letters = select(2, why:gsub("%a", ""))
+  local words = 0
+  for _ in why:gmatch("%a%a+") do words = words + 1 end
+  return letters >= 20 and words >= 3
+end
+if type(u) == "string" and u:sub(1, #BECAUSE) == BECAUSE and reasoned(u) then note = u end
 
 local red = {}
 if not (toc and checked and toc == checked) then

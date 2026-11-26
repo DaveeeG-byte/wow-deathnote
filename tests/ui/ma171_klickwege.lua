@@ -176,6 +176,8 @@ for _, code in ipairs({ "deDE", "enUS" }) do
     local ya, yb = select(5, a:GetPoint(1)), select(5, b:GetPoint(1))
     if math.abs((ya - yb) - want) > 0.01 or want > 20 then tight = false end
   end
+  -- B8: this holds the spacing (the numbers) and, elsewhere in this test, the clean scrolling; the goal "room under
+  -- row 14" itself is measured only in the picture (the image tool), a longer title does not turn this red
   check(code .. " Inhalt: Zeilen eng (18 oder Text plus 4, hoechstens 20)", tight and GF.HELP_ROW_H == 18 and GF.HELP_ROW_PAD == 4
     and GF.HELP_INTRO_GAP == 6)
   local pg = Hp.page

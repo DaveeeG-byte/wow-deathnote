@@ -1,7 +1,7 @@
 -- 1.7.1 manual: the inventory (tests/ui/manual_inventar.lua) against the chapters of the manual (UI.lua UX.MANUAL):
 -- every line names a version, a chapter that exists and the key of the paragraph that says it; that key is a
--- paragraph of that very chapter (or MANUAL_INTRO, the way in) and has a text in English and German. Every chapter
--- explains at least one function.
+-- paragraph of that very chapter and has a text in English and German. MANUAL_INTRO, the way in above the contents,
+-- counts only for a line of the chapter "start" (1.7.1 fixer 2, JN-6). Every chapter explains at least one function.
 -- Usage: luajit tests/ui/ma171_inventar.lua <project>
 local J = dofile((arg[0]:match("^(.*)/") or ".") .. "/_mv164.lua")
 local check = J.check
@@ -27,7 +27,7 @@ for i, row in ipairs(list) do
   if not known[ch] then bad[#bad + 1] = "Zeile " .. i .. ": Kapitel " .. tostring(ch) .. " gibt es nicht"
   else count[ch] = count[ch] + 1 end
   -- 1.7.1 fixer: the fourth field, the paragraph that explains it
-  if type(key) ~= "string" or not (key == "MANUAL_INTRO" or paraOf[key] == ch) then
+  if type(key) ~= "string" or not ((key == "MANUAL_INTRO" and ch == "start") or paraOf[key] == ch) then
     badKey[#badKey + 1] = "Zeile " .. i .. ": " .. tostring(key) .. " ist kein Absatz von " .. tostring(ch)
   elseif not (raw("enUS", key) or ""):find("%S") or not (raw("deDE", key) or ""):find("%S") then
     badKey[#badKey + 1] = "Zeile " .. i .. ": " .. key .. " ohne Text in enUS oder deDE"

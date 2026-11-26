@@ -34,13 +34,29 @@ local ARTICLES = { "der", "die", "das", "den", "dem", "des", "ein", "eine", "ein
   "im", "am", "zum", "zur", "vom", "beim", "ins", "ans", "aufs" }
 local isArt = {}
 for _, a in ipairs(ARTICLES) do isArt[a] = true end
-local bad, seen = {}, 0
-for key, text in src:gmatch('\nL%.(MANUAL_[%w_]+)%s*=%s*"(.-)"') do
-  seen = seen + 1
-  for before, ph in text:gmatch("([%wäöüÄÖÜß]+)%s+{([%w_]+)}") do
-    if themed[ph] and isArt[before:lower()] then bad[#bad + 1] = key .. ": " .. before .. " {" .. ph .. "}" end
+local function scan(s)
+  local bad, seen = {}, 0
+  for key, text in s:gmatch('\nL%.(MANUAL_[%w_]+)%s*=%s*"(.-)"') do
+    seen = seen + 1
+    for before, ph in text:gmatch("([%wäöüÄÖÜß]+)%s+{([%w_]+)}") do
+      if themed[ph] and isArt[before:lower()] then bad[#bad + 1] = key .. ": " .. before .. " {" .. ph .. "}" end
+    end
   end
+  return bad, seen
 end
+local bad, seen = scan(src)
 check("deutsche Texte der Anleitung gelesen", seen > 100, seen)
 check("kein Artikel vor einem Wort, das dem Einband folgt", #bad == 0, table.concat(bad, "; "))
+-- 1.7.1 fixer 2 (JN-4): this test, not the hunter's ja02 (blind since the words carry colour), holds A14/A15. Its own
+-- red probe: the old sentence of the way in ("in der {rules}") put back into a copy of the text must be found.
+do
+  local old = "und unter {rules} schlägt"
+  local i, j = src:find(old, 1, true)
+  check("Rot-Probe: der Einstieg hat die Stelle 'unter {rules}'", i ~= nil)
+  if i then
+    local mutated = src:sub(1, i - 1) .. "und in der {rules} schlägt" .. src:sub(j + 1)
+    local mb = scan(mutated)
+    check("Rot-Probe: 'in der {rules}' im Einstieg wird gefunden", #mb == 1 and mb[1] == "MANUAL_INTRO: der {rules}", table.concat(mb, "; "))
+  end
+end
 J.done("ma171 einband artikel")
