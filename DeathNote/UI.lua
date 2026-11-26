@@ -4799,23 +4799,39 @@ GF.HELP_INTRO_HEAD = { sizes = { 10, 9 }, lines = 1 }   -- the way in: its keywo
 GF.HELP_TEXT_W, GF.HELP_TEXT_X = 232, 116
 GF.manualPage = 0           -- the page last shown in this session (0 = contents); never stored
 
--- the filled words of the surface for the manual's texts (built on every fill: cover and tab label follow)
-function GF.ManualArgs()
+-- 1.7.1 fixer (B2): a word of the surface set into a paragraph or the way in stands out in the small red ink of the
+-- cover (Look.RED_INK, the accent the contrast guard holds at 4.5:1 on the page in every cover). A colour the word
+-- brings along is taken off first (it would end the mark half way).
+function GF.ManualMark(v)
+  if type(v) ~= "string" or v == "" then return v end
+  local c = Look.RED_INK or Look.RED
+  local plain = v:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+  local function hx(x) return math.max(0, math.min(255, math.floor((tonumber(x) or 0) * 255 + 0.5))) end
+  return ("|cff%02x%02x%02x%s|r"):format(hx(c[1]), hx(c[2]), hx(c[3]), plain)
+end
+
+-- the filled words of the surface for the manual's texts (built on every fill: cover and tab label follow).
+-- mark: every word in the red ink (paragraphs and the way in); without: plain (titles, keywords, the tests)
+function GF.ManualArgs(mark)
   local a = {}
   for k, key in pairs(UX.MANUAL_WORDS) do a[k] = L[key] end
   a.guild = GF.HasFriends() and L.TAB_GUILD_FRIENDS or L.TAB_GUILD
   for k, key in pairs(UX.MANUAL_CHAPTER_WORDS) do a[k] = Fmt(L[key], a) end
+  if mark then for k, v in pairs(a) do a[k] = GF.ManualMark(v) end end
   return a
 end
 
--- UI.Manual(): the manual in the active language, filled: { intro = { head, text }, chapters = { { id, title,
--- paras = { { head, text }, ... } }, ... } } (the page and the tests read the same texts)
-function UI.Manual()
+-- UI.Manual(plain): the manual in the active language, filled: { intro = { head, text }, chapters = { { id, title,
+-- paras = { { head, text }, ... } }, ... } }. As the page shows it: the words of the surface in the paragraphs and
+-- the way in carry the colour code of GF.ManualMark; titles and keywords are plain. plain == true: every text
+-- without colour codes (for tests that count or search words).
+function UI.Manual(plain)
   local a = GF.ManualArgs()
-  local out = { intro = { L.MANUAL_INTRO_HEAD, Fmt(L.MANUAL_INTRO, a) }, chapters = {} }
+  local m = plain == true and a or GF.ManualArgs(true)
+  local out = { intro = { L.MANUAL_INTRO_HEAD, Fmt(L.MANUAL_INTRO, m) }, chapters = {} }
   for i, c in ipairs(UX.MANUAL) do
     local ch = { id = c.id, title = Fmt(L[c.title], a), paras = {} }
-    for p, k in ipairs(c.paras) do ch.paras[p] = { Fmt(L[k[1]], a), Fmt(L[k[2]], a) } end
+    for p, k in ipairs(c.paras) do ch.paras[p] = { Fmt(L[k[1]], a), Fmt(L[k[2]], m) } end
     out.chapters[i] = ch
   end
   return out

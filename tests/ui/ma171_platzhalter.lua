@@ -62,7 +62,7 @@ end
 
 -- the first paragraph whose text uses {guild}, filled (wherever the texts put it)
 local function GuildPara(UI, L)
-  local M = UI.Manual()
+  local M = UI.Manual(true)
   for i, c in ipairs(UI.MANUAL_DATA.chapters) do
     for p, k in ipairs(c.paras) do
       if tostring(L[k[2]]):find("{guild}", 1, true) then return M.chapters[i].paras[p][2] end
@@ -104,7 +104,7 @@ for _, cover in ipairs(COVERS) do
     end
     check(name .. " nur bekannte Platzhalter", #unknown == 0, table.concat(unknown, ", "))
     -- filled: nothing open, and the words are those of this language and cover
-    local M = UI.Manual()
+    local M = UI.Manual(true)   -- plain: words and characters without the colour of the marks (B2)
     local open = {}
     local all = { M.intro[1], M.intro[2] }
     for _, ch in ipairs(M.chapters) do
