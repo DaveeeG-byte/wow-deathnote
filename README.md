@@ -95,8 +95,8 @@ Wanted, core line "attacked 2×", stamp GRUDGE when that is all he did, alarm li
 usual; bounty and rank formulas are unchanged). Cross, or letting the notice run out = not entered; who was answered
 or let go is not asked again for 5 minutes. A thin bar counts down 20 s (10/20/30/60 in the House Rules) from the end
 of the fight or from the last new attacker; the mouse over the notice holds it, and rows do not move under the mouse.
-At most 8 rows ("… and n more"); with more attackers the open ones come up as the others are answered. Shift-drag
-moves it (kept), the House Rules put it back, a right click closes it. No sound.
+At most 8 rows ("… and n more"); with more attackers the open ones come up as the others are answered. Dragging
+(since 1.5.0 without Shift) moves it (kept), the House Rules put it back, a right click closes it. No sound.
 Who counts (no combat log on Forever): an enemy player (attackable, not in your group, not your duel partner, not the
 opponent of a duel to the death) who has you targeted and is in combat while you take a hit (`UNIT_COMBAT` or falling
 health, 2 s either way), or who casts a spell while he has you targeted; at your death the Death Recap (killing blow
@@ -185,7 +185,7 @@ minutes of the line's first as one line ("Grimm seen 3×, last by Bert"); sighti
 in the margin are the map's pins of a call and a sighting.
 
 ## Call for help and sightings (1.6.0)
-Call for help: a key (Esc > Options > Key Bindings > Revenge Book) or the "Help" button on the grudge notice sends your
+Call for help: a key (Esc > Options > Key Bindings > Revenge Book) or the "Call" button on the grudge notice sends your
 position and the attacker (hostile target, else the first attacker of the fight) to guild, party or raid and friends
 with the book, at once and also in combat (never in instances, battlegrounds, arenas or a chat lockdown; one call per
 30 seconds). The receiver gets the alarm sound, a slip at the top ("Anna calls for help: Ashenvale (other zone),
@@ -551,7 +551,7 @@ and times are stored (`DeathNoteDB.humor`).
 ## How it works (1.7.1)
 The button "?" left of the gear opens the manual, a reference in 14 chapters in all 21 languages: First steps,
 Wanted and the poster, Unsolved, Alarm, Grudge and call for help, Death Log, Map and crime scenes, Guild and friends,
-Hit list, Bounty, Rap Sheet, Post and pass on, House Rules, Limits and commands. The first page is a short way in and
+Hit list, Bounty, Rap Sheet, Post and back up, House Rules, Limits and commands. The first page is a short way in and
 the contents, one row per chapter; a chapter has "Contents" and "Next" in its foot. When a view with a chapter of its
 own is open (the tabs Unsolved, Death Log, Guild & Friends, Rap Sheet, the view Claims, the House Rules, Back up
 book and Import book, the sheets Put on hit list and Copy all, or Wanted in its view Guilds), "?" opens that chapter;
@@ -560,7 +560,8 @@ the texts (tabs, buttons, sheets, switches) come from the language table, so the
 `/dn help` stays the list of commands.
 
 For contributors: every visible change of the book brings the manual along in the same update (the chapter's texts
-in all 21 languages, the line in `tests/ui/manual_inventar.lua`, then `UI.MANUAL_CHECKED` in `UI.lua`);
+in all 21 languages, the line in `tests/ui/manual_inventar.lua` with the key of the paragraph that explains it, then
+`UI.MANUAL_CHECKED` in `UI.lua`);
 `tests/ui/ma171_stand.lua` turns red on a new version in the TOC until that is done. How the texts are built:
 `TRANSLATING.md`, section "The manual".
 

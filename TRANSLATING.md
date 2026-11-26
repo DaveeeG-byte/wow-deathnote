@@ -105,8 +105,8 @@ nine keys `MANUAL_<WORD>` / `MANUAL_<WORD>_HEAD` of 1.3.0.
   shows, also under another cover. `{guild}` is the label the fourth tab really carries (Guild or Guild & Friends),
   `{ch_bounty}` the title of the chapter Bounty. Keep every placeholder of the English text, each where your sentence
   needs it; an unknown one turns the test red.
-- **Length.** A paragraph has at most three short sentences; German and English at most 115 words per chapter and 60
-  for the way in. Your language stays between 0.25 and 1.35 times the characters of the English chapter (Chinese and
+- **Length.** A paragraph has at most three short sentences; German and English at most 7 paragraphs and 150 words
+  per chapter and 60 for the way in. Your language stays between 0.25 and 1.35 times the characters of the English chapter (Chinese and
   Korean are far shorter, that is fine). Write only what the book does; if you are unsure, follow the English text,
   not the README.
 - **Guards.** The inventory `tests/ui/manual_inventar.lua` names every function with its chapter; `UI.MANUAL_CHECKED`
