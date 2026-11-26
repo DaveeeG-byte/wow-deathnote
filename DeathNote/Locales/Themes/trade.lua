@@ -555,7 +555,7 @@ Locale.RegisterWords("trade", "nlNL", function(T)
   T.ALERT_TITLE_GUILD   = "VASTE KLANT IN DE ZAAK"
   T.ALERT_TITLE_FRIENDS = "KLANT VAN VRIENDEN IN DE ZAAK"
   T.ALERT_TITLE_HUNT    = "KLUS OP LOCATIE"
-  T.WELCOME             = "Klantenboek aangelegd. Wie je in de open wereld doodt, wordt klant. Open het met /dn of de minimapknop."
+  T.WELCOME             = "Klantenboek aangelegd. Wie jou in de open wereld doodt, wordt klant. Open het met /dn of de minimapknop."
   T.EMPTY_WANTED_HEAD   = "Nog geen klandizie."
   T.EMPTY_WANTED_SUB    = "Koude acquisitie is een optie."
   T.EMPTY_JOURNAL_HEAD  = "Nog geen schadegeval."
