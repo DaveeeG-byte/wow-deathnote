@@ -2,7 +2,9 @@
 -- chapter (head = title, its paragraphs, "Contents" and "Next"); "Next" goes on, the last chapter only has
 -- "Contents"; every change of page starts at the top; "?" opens the chapter of the open view (tabs, view Claims, the
 -- House Rules, back up, the hit list sheet), on Wanted the page last read in this session (at first the contents);
--- "?" again closes; a /reload forgets the page (nothing stored). Names made up.
+-- "?" again closes; a /reload forgets the page (nothing stored). 1.7.1 fixer (Seite B5): "?" from Copy all and from
+-- Unsolved > Filed away, the imprint only in the contents, the foot's height per face, and the change of page from a
+-- rolled page in a world where every chapter really rolls (the texts made long in the test). Names made up.
 -- Usage: luajit tests/ui/ma171_klickwege.lua <project>
 local J = dofile((arg[0]:match("^(.*)/") or ".") .. "/_mv164.lua")
 local check = J.check
@@ -42,6 +44,10 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   check(code .. " Inhalt: 14 Kapitel als Zeilen", #M.chapters == 14 and rows == 14, rows)
   check(code .. " Inhalt: Zurueck da, Inhalt/Weiter nicht", Hp.back:IsShown() and not Hp.toc:IsShown() and not Hp.next:IsShown())
   check(code .. " Inhalt: keine Absaetze", visParas(Hp) == 0)
+  -- the foot: imprint (de/en humor) and its height only in the contents
+  check(code .. " Impressum vorhanden (Humor)", Hp.foot ~= nil and Hp.footTOC > 44, Hp.footTOC)
+  check(code .. " Inhalt: Impressum sichtbar, Fuss in Inhaltshoehe", Hp.foot and Hp.foot:IsShown() and Hp.page.footH == Hp.footTOC,
+    Hp.page.footH)
   -- every row, every chapter
   for i, ch in ipairs(M.chapters) do
     W.click(Hp.rows[i])
@@ -51,6 +57,8 @@ for _, code in ipairs({ "deDE", "enUS" }) do
     check(code .. " Kapitel " .. i .. ": Inhalt da, Weiter " .. (i < 14 and "da" or "weg"), Hp.toc:IsShown()
       and Hp.next:IsShown() == (i < 14) and not Hp.back:IsShown() and not Hp.intro[2]:IsShown())
     check(code .. " Kapitel " .. i .. ": oben", atTop(Hp))
+    check(code .. " Kapitel " .. i .. ": kein Impressum, Fuss 44", not (Hp.foot and Hp.foot:IsShown()) and Hp.page.footH == 44,
+      Hp.page.footH)
     W.click(Hp.toc)
     check(code .. " Kapitel " .. i .. ": Inhalt fuehrt zurueck", Hp.at == 0 and Hp.rows[1]:IsShown())
   end
@@ -85,12 +93,18 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   end
   tab("open"); press("Zu klaeren", id.unsolved)
   tab("open"); ns.FeudUI.oview = "claims"; press("Zu klaeren > Ansprueche", id.bounty); ns.FeudUI.oview = "open"
+  tab("open"); ns.FeudUI.oview = "filed"; press("Zu klaeren > Abgelegt", id.unsolved); ns.FeudUI.oview = "open"
   tab("journal"); press("Todesjournal", id.log)
   tab("guild"); UI.JK.state.gview = "enemy"; press("Gilde", id.guild)
   tab("guild"); UI.JK.state.gview = "hunt"; press("Abschussliste", id.hunt); UI.JK.state.gview = "enemy"
+  tab("guild"); UI.OV.OpenTake(); W.tick()
+  check(code .. " Blatt Alle uebernehmen offen", UI.JK.state.panel == "take")
+  press("Alle uebernehmen", id.guild); UI.ClosePanel()
   tab("record"); press("Strafregister", id.record)
   tab("wanted"); ns.FeudUI.view = "guilds"; press("Gesucht > Gilden", id.wanted); ns.FeudUI.view = "players"
-  tab("wanted"); press("Gesucht (zuletzt gelesen)", id.wanted)
+  -- the page last read: read chapter 4 yourself first (before, the probe passed on what Wanted > Guilds left)
+  tab("wanted"); W.click(F.help); W.click(Hp.toc); W.click(Hp.rows[4]); W.click(F.help)
+  press("Gesucht (zuletzt gelesen)", 4)
   UI.OpenPanel("settings"); W.tick(); press("Hausordnung", id.rules)
   UI.OpenIO("export"); W.tick(); press("Buch sichern", id.post)
   UI.OpenIO("import"); W.tick(); press("Buch einlesen", id.post)
@@ -114,6 +128,33 @@ for _, code in ipairs({ "deDE", "enUS" }) do
   check(code .. " keine Fehler", n == 0, e)
   local n1, e1 = W.errors()
   check(code .. " keine Fehler (erste Welt)", n1 == 0, e1)
+end
+
+-- every chapter really rolls (texts four times as long): a change of page from a rolled page starts at the top
+for _, code in ipairs({ "deDE", "enUS" }) do
+  local W = J.world(code, { db = db() })
+  local ns, L = W.ns, W.ns.L
+  for _, c in ipairs(ns.UI.MANUAL_DATA.chapters) do
+    for _, p in ipairs(c.paras) do L[p[2]] = (L[p[2]] .. " "):rep(4) end
+  end
+  ns:Fire("TOGGLE_UI"); W.tick(); W.settle()
+  local F = W.frame("DeathNoteFrame")
+  W.click(F.help)
+  local Hp = helpOf(W)
+  W.click(Hp.rows[1])
+  for i = 2, 14 do
+    scrollDown(Hp)
+    check(code .. " lang: Kapitel " .. (i - 1) .. " rollt wirklich", Hp.page.offset > 0, Hp.page.offset)
+    W.click(Hp.next)
+    check(code .. " lang: Weiter zu Kapitel " .. i .. " beginnt oben", Hp.at == i and atTop(Hp), Hp.page.offset)
+  end
+  scrollDown(Hp)
+  W.click(Hp.toc)
+  check(code .. " lang: aus gerolltem Kapitel zum Inhalt, oben", Hp.at == 0 and atTop(Hp), Hp.page.offset)
+  W.click(Hp.rows[3])
+  check(code .. " lang: Zeile oeffnet Kapitel 3 oben", Hp.at == 3 and atTop(Hp), Hp.page.offset)
+  local n, e = W.errors()
+  check(code .. " lang: keine Fehler", n == 0, e)
 end
 
 J.done("ma171 klickwege")

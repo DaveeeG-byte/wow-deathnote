@@ -4837,6 +4837,59 @@ function GF.ManualContext()
   return nil
 end
 
+-- 1.7.1 fixer (B1): a keyword never breaks inside a word. Before, it was letter-spaced and allowed two lines, and the
+-- client broke at any space, that is between two letters ("A F T E R    A    D E A T / H"). The ladder now: letter-
+-- spaced 10, letter-spaced 9, two lines broken only at a gap between words (10, then 9; the gap with the narrowest
+-- longer line), plain on one line (10, then 9), last plain 9 cut by the client with the whole keyword as a tooltip.
+-- Every line is measured on its own and must fit, so the client never has to break a line itself. No keyword is
+-- renamed for this; the limit in tests/sprachen/_limits.lua stays. Returns false when the keyword is cut.
+function GF.FitKeyword(fs, head)
+  head = tostring(head or "")
+  local width, sizes = GF.HELP_LABEL_W, GF.HELP_LABEL.sizes
+  local kind, flags = fs.fontKind or "body", fs.fontFlags
+  local function at(s) if fs.fontSize ~= s or fs.fontKind ~= kind then Look.Font(fs, kind, s, flags) end end
+  local function wide(s, line)   -- width of one line at size s; 0 when the client cannot say (then it fits)
+    at(s)
+    fs:SetWordWrap(false)
+    fs:SetText(line)
+    return Look.TextW(fs) or 0
+  end
+  local function fits(s, line) return wide(s, line) <= width - 1.5 end
+  local function set(s, text, lines, cut)
+    at(s)
+    if fs.SetMaxLines then fs:SetMaxLines(lines) end
+    fs:SetWordWrap(lines > 1)   -- each line fits on its own: the client only breaks at the "\n"
+    fs:SetText(text)
+    fs.fitText = nil   -- Look.FitText's memo does not hold for what is set here
+    fs.fit, fs.full, fs.cut, fs.keyLines = true, head, cut and true or false, lines
+    return not cut
+  end
+  local spaced = Spaced(head)
+  for _, s in ipairs(sizes) do
+    if fits(s, spaced) then return set(s, spaced, 1) end
+  end
+  local words = {}
+  for w in head:gmatch("%S+") do words[#words + 1] = w end
+  if #words > 1 then
+    for _, s in ipairs(sizes) do
+      local best, bw
+      for g = 1, #words - 1 do
+        local a = Spaced(table.concat(words, " ", 1, g))
+        local b = Spaced(table.concat(words, " ", g + 1))
+        local wa, wb = wide(s, a), wide(s, b)
+        if wa <= width - 1.5 and wb <= width - 1.5 and (not bw or math.max(wa, wb) < bw) then
+          best, bw = a .. "\n" .. b, math.max(wa, wb)
+        end
+      end
+      if best then return set(s, best, 2) end
+    end
+  end
+  for _, s in ipairs(sizes) do
+    if fits(s, head) then return set(s, head, 1) end
+  end
+  return set(sizes[#sizes], head, 1, true)
+end
+
 local function HelpPair(parent)
   local label = Label(parent, "")
   label:SetJustifyH("RIGHT")
@@ -4846,13 +4899,18 @@ local function HelpPair(parent)
   text:SetJustifyH("LEFT")
   text:SetSpacing(1)
   label:SetPoint("TOPRIGHT", text, "TOPLEFT", -10, -1)
-  return { label, text }
+  -- a hit area over the keyword: its tooltip shows the whole keyword when it had to be cut (last step of the ladder)
+  local tip = CreateFrame("Frame", nil, parent)
+  tip:SetPoint("TOPLEFT", label, "TOPLEFT")
+  tip:SetPoint("BOTTOMRIGHT", label, "BOTTOMRIGHT")
+  Look.TipIfCut(tip, label)
+  return { label, text, tip = tip }
 end
 local function SetPair(pair, head, body)
-  -- keyword: 10 pt, otherwise 9 pt, otherwise two lines (nbNO, esES reached into the fold)
-  Look.FitText(pair[1], Spaced(head or ""), GF.HELP_LABEL)
+  GF.FitKeyword(pair[1], head)
   pair[2]:SetText(body or "")
   pair[1]:Show(); pair[2]:Show()
+  pair.tip:SetShown(pair[1].cut == true)
 end
 
 BuildHelp = function()
@@ -4912,7 +4970,7 @@ BuildHelp = function()
   for _, c in ipairs(UX.MANUAL) do most = math.max(most, c.n) end
   Hp.paras = {}
   for i = 1, most do Hp.paras[i] = HelpPair(pg.body) end
-  Hp.back = InkButton(pg.foot, L.BTN_BACK, 104, 22, function() UI.ClosePanel() end)
+  Hp.back = InkButton(pg.foot, L.BTN_BACK, 104, 22, function() GF.CloseHelp() end)
   Hp.back:SetPoint("BOTTOM", 0, 12)
   Hp.toc = InkButton(pg.foot, L.MANUAL_TOC, 104, 22, function() GF.ShowManual(0) end)
   Hp.next = InkButton(pg.foot, L.MANUAL_NEXT, 104, 22, function() GF.ShowManual((Hp.at or 0) + 1) end)
@@ -4920,14 +4978,17 @@ BuildHelp = function()
   GF.ShowManual(GF.manualPage)
 end
 
--- shows page i of the manual (0 = contents), filled in the active language, at the top
-function GF.ShowManual(i)
+-- shows page i of the manual (0 = contents), filled in the active language, at the top. ctx: a call by "?" from a
+-- view (1.7.1 fixer, B4): the page is shown but not remembered; only turning pages yourself (a row of the contents,
+-- "Next", "Contents") sets the page "?" opens on Wanted.
+function GF.ShowManual(i, ctx)
   local Hp = RP and RP.help
   if not Hp then return end
   i = tonumber(i) or 0
   if i < 0 or i > #UX.MANUAL then i = 0 end
   i = math.floor(i)
-  Hp.at, GF.manualPage = i, i
+  Hp.at = i
+  if not ctx then GF.manualPage = i end
   local M = UI.Manual()
   local ch = M.chapters[i]
   Look.FitText(Hp.head, ch and ch.title or L.HEAD_HELP, GF.FIT_NAME26)
@@ -4937,11 +4998,12 @@ function GF.ShowManual(i)
   Hp.intro[1]:SetShown(toc); Hp.intro[2]:SetShown(toc)
   for r, row in ipairs(Hp.rows) do
     Look.FitText(row.title, M.chapters[r].title, GF.HELP_ROW)
+    row.title:SetTextColor(C(Look.INK))   -- 1.7.1 fixer (B7): the row clicked last lost the mouse without OnLeave
     row:SetShown(toc)
   end
   for p, pair in ipairs(Hp.paras) do
     local x = ch and ch.paras[p]
-    if x then SetPair(pair, x[1], x[2]) else pair[1]:Hide(); pair[2]:Hide() end
+    if x then SetPair(pair, x[1], x[2]) else pair[1]:Hide(); pair[2]:Hide(); pair.tip:Hide() end
   end
   -- foot: contents = imprint and "Back"; a chapter = "Contents" and "Next" (the last chapter: "Contents" alone)
   if Hp.foot then Hp.foot:SetShown(toc) end
@@ -4989,8 +5051,48 @@ end
 -- "?": the chapter of the view now open, else the page last read in this session (at first the contents)
 function UI.OpenHelp()
   local want = GF.ManualContext()
-  UI.OpenPanel("help")
-  if want and RP.help then GF.ShowManual(want) end
+  local from = state.panel ~= "help" and state.panel or nil
+  local GL = ns.GuildLogUI
+  local chron = false
+  if not from and GL and type(GL.IsOpen) == "function" then
+    local ok, open = pcall(GL.IsOpen)
+    chron = ok and open == true
+  end
+  GF.helpWant = want
+  local ok, err = pcall(UI.OpenPanel, "help")   -- through the table: the guild chronicle steps aside (GuildLogUI)
+  GF.helpWant = nil
+  if not ok then error(err, 0) end
+  -- 1.7.1 fixer (B3): the way back into the sheet "?" came from (GF.CloseHelp)
+  if from or chron then GF.helpFrom = { panel = from, chronicle = chron } end
+end
+
+-- 1.7.1 fixer (B3): closing the manual ("?" again, "Back" in the contents) leads back into what lay open when "?" was
+-- pressed: Put on hit list, Copy all, the House Rules with their sheet, Back up book, Import book, the guild
+-- chronicle. The sheet is shown again, not opened anew, so what was typed stays (the reason, the pasted text). A tab
+-- or another button drops the way back (UI.OpenPanel, UI.ClosePanel clear GF.helpFrom); nothing is stored.
+function GF.CloseHelp()
+  local from = GF.helpFrom
+  GF.helpFrom = nil
+  if not (from and F and RP) then return UI.ClosePanel() end
+  local p = from.panel
+  if p == "settings" or p == "export" or p == "import" then
+    -- the House Rules open on the sheet in state.spage; the text page keeps its text (UI.OpenIO is what fills it)
+    return UI.OpenPanel(p)
+  end
+  local sheet = (p == "release" and RP.release) or (p == "take" and RP.take) or nil
+  if sheet and ((p == "release" and state.release) or (p == "take" and state.take)) then
+    UI.ClosePanel(true)
+    state.panel = p
+    P:Hide(); RP.empty:Hide()
+    sheet:Show()
+    return
+  end
+  UI.ClosePanel()
+  local GL = ns.GuildLogUI
+  if from.chronicle and GL and type(GL.Open) == "function" then
+    local ok, err = pcall(GL.Open)
+    if not ok and ns.ReportError then ns.ReportError(err) end
+  end
 end
 
 -- 1.2.0: sheet "Put on hit list": for whom (Guild & Friends, Guild, Friends) and a short reason.
@@ -5326,7 +5428,9 @@ function UI.OpenPanel(which)
   RP.settings:SetShown(which == "settings")
   RP.io:SetShown(which == "export" or which == "import")
   if RP.help then RP.help:SetShown(which == "help") end
-  if which == "help" then GF.ShowManual(GF.manualPage) end   -- 1.7.1: the page last read, at the top
+  GF.helpFrom = nil   -- 1.7.1 fixer: another sheet opened drops the way back of the manual (UI.OpenHelp sets it after)
+  -- 1.7.1: the page last read, at the top; from "?" the chapter of the open view (GF.helpWant, not remembered)
+  if which == "help" then GF.ShowManual(GF.helpWant or GF.manualPage, GF.helpWant ~= nil) end
   if which == "settings" then
     if RP.settings.page then RP.settings.sheetKey = nil end   -- 1.2.2: house rules open at the top
     UI.FillSettings()
@@ -5335,6 +5439,7 @@ end
 
 function UI.ClosePanel(silent)
   state.panel = nil
+  GF.helpFrom = nil
   if RP.release then RP.release:Hide() end
   if RP.take then RP.take:Hide() end
   if RP.settings then RP.settings:Hide(); RP.io:Hide() end
@@ -7048,7 +7153,8 @@ local function Build()
   help:SetPoint("RIGHT", gear, "LEFT", -8, 0)
   help:SetScript("OnClick", function()
     Look.Sound("click")
-    if state.panel == "help" then UI.ClosePanel() else UI.OpenHelp() end   -- 1.7.1: the chapter of the open view
+    -- 1.7.1: the chapter of the open view; closing leads back into the sheet "?" came from
+    if state.panel == "help" then GF.CloseHelp() else UI.OpenHelp() end
   end)
   F.help = help
 
