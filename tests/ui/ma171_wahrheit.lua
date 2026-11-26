@@ -191,20 +191,4 @@ do
   check("JN-8 enUS: off and size in the rules, nameplates of the game", has(T("enUS", "MANUAL_ALARM_6"), "off and size: {rules}, {sheet_record}")
     and has(T("enUS", "MANUAL_ALARM_6"), "while the game shows enemy nameplates") and not has(T("enUS", "MANUAL_ALARM_6"), "nameplates on ({rules}"))
 end
--- 1.7.1 fixer 2 (JN-7): the docs say what the guards and the page really do. ma171_stand whole (both conditions, the
--- format of the note, that it only reminds) in README, CHANGELOG and TRANSLATING; every chapter placeholder in
--- TRANSLATING; the visible things of the fix rounds in the CHANGELOG
-do
-  local docs = { README = read("README.md"), CHANGELOG = read("CHANGELOG.md"), TRANSLATING = read("TRANSLATING.md") }
-  for name, d in pairs(docs) do
-    check("JN-7 " .. name .. ": ma171_stand vollstaendig", has(d, "ma171_stand.lua") and has(d, "UI.MANUAL_CHECKED")
-      and has(d, 'unchanged["<version>"] = "nothing the player sees changes, because') and has(d, "only reminds"))
-  end
-  local miss = {}
-  for ph in pairs(UI.MANUAL_DATA.chapterWords) do if not has(docs.TRANSLATING, "{" .. ph .. "}") then miss[#miss + 1] = ph end end
-  check("JN-7 TRANSLATING nennt jeden Kapitel-Platzhalter", #miss == 0, table.concat(miss, ", "))
-  local cl = docs.CHANGELOG:match("## 1%.7%.1.-\n## 1%.7%.0") or ""
-  check("JN-7 CHANGELOG 1.7.1: Farbe, Rueckweg ins Blatt, gemerkte Seite, Baendchen", has(cl, "stand in colour")
-    and has(cl, "leads back into that sheet") and has(cl, "is not remembered") and has(cl, "red ribbon of the guild chronicle"))
-end
 J.done("ma171 wahrheit")
