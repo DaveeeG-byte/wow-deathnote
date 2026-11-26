@@ -6,6 +6,9 @@
 -- way in, at most three sentences per paragraph, every page head and row title not empty. Every other language: each
 -- chapter and the way in at most LEN_MAX times the characters of English (the length guard in 21 languages: a
 -- translation that says much more than enUS is caught here, before the page grows long), and at least LEN_MIN.
+-- 1.7.1 fixer (Seite B12): the titles are checked against the words of the cover as Locales/Themes/*.lua set them
+-- (harbor enUS: "Ship's Log"), the base words of the language otherwise, not against the same table the page reads;
+-- {guild} against the label the fourth tab really carries, in a world with the friends' book and in one without.
 -- Usage: luajit tests/ui/ma171_platzhalter.lua <project>
 local J = dofile((arg[0]:match("^(.*)/") or ".") .. "/_mv164.lua")
 local check = J.check
@@ -44,6 +47,30 @@ local function sentences(s)
   return n
 end
 
+-- the words of each cover per language, read from the theme files themselves (not through the loaded addon)
+local THEME = {}
+for _, cover in ipairs({ "harbor", "trade" }) do
+  local fake = { RegisterWords = function(cv, lang, fn) local T = {}; fn(T); THEME[cv .. "/" .. lang] = T end }
+  assert(loadfile(WT .. "/DeathNote/Locales/Themes/" .. cover .. ".lua"))("DeathNote", { Locale = fake })
+end
+local BASE = {}   -- lang -> the words of the plain cover (notebook), from its world
+local TITLE_KEYS = { log = "TAB_DEATHLOG", record = "TAB_RECORD", rules = "HEAD_RULES", unsolved = "TAB_UNSOLVED" }
+local function tabLabel(W, id)
+  local F = W.frame("DeathNoteFrame")
+  for _, t in ipairs(F and F.tabs or {}) do if t.id == id then return t.label end end
+end
+
+-- the first paragraph whose text uses {guild}, filled (wherever the texts put it)
+local function GuildPara(UI, L)
+  local M = UI.Manual(true)
+  for i, c in ipairs(UI.MANUAL_DATA.chapters) do
+    for p, k in ipairs(c.paras) do
+      if tostring(L[k[2]]):find("{guild}", 1, true) then return M.chapters[i].paras[p][2] end
+    end
+  end
+  return "(kein Absatz mit {guild})"
+end
+
 local firstWorld = true
 for _, cover in ipairs(COVERS) do
   for _, lang in ipairs(CODES) do
@@ -77,7 +104,7 @@ for _, cover in ipairs(COVERS) do
     end
     check(name .. " nur bekannte Platzhalter", #unknown == 0, table.concat(unknown, ", "))
     -- filled: nothing open, and the words are those of this language and cover
-    local M = UI.Manual()
+    local M = UI.Manual(true)   -- plain: words and characters without the colour of the marks (B2)
     local open = {}
     local all = { M.intro[1], M.intro[2] }
     for _, ch in ipairs(M.chapters) do
@@ -93,12 +120,22 @@ for _, cover in ipairs(COVERS) do
     -- the word of the cover follows: the chapter titles that are a tab word are that tab's word now
     local byId = {}
     for _, ch in ipairs(M.chapters) do byId[ch.id] = ch.title end
-    local guildWord = (ns.Friends and L.TAB_GUILD_FRIENDS) or L.TAB_GUILD
-    check(name .. " Titel folgen Sprache und Einband", byId.log == L.TAB_DEATHLOG and byId.record == L.TAB_RECORD
-      and byId.rules == L.HEAD_RULES and byId.unsolved == L.TAB_UNSOLVED and byId.wanted:find(L.TAB_WANTED, 1, true) ~= nil,
-      byId.log .. " / " .. byId.rules)
-    local start3 = M.chapters[1].paras[3][2]
-    check(name .. " {guild} ist das Wort des vierten Reiters", start3:find(guildWord, 1, true) ~= nil, start3)
+    if cover == "notebook" then
+      BASE[lang] = { TAB_WANTED = L.TAB_WANTED }
+      for _, k in pairs(TITLE_KEYS) do BASE[lang][k] = L[k] end
+    end
+    local TW = THEME[cover .. "/" .. lang] or {}
+    local function want(k) return TW[k] or (BASE[lang] or {})[k] end
+    local wrong = {}
+    for id, k in pairs(TITLE_KEYS) do
+      if byId[id] ~= want(k) then wrong[#wrong + 1] = id .. " '" .. tostring(byId[id]) .. "' statt '" .. tostring(want(k)) .. "'" end
+    end
+    if not (want("TAB_WANTED") and byId.wanted:find(want("TAB_WANTED"), 1, true)) then wrong[#wrong + 1] = "wanted '" .. byId.wanted .. "'" end
+    table.sort(wrong)
+    check(name .. " Titel folgen Sprache und Einband (Woerter aus Locales/Themes)", #wrong == 0, table.concat(wrong, "; "))
+    if lang == "enUS" and cover == "harbor" then
+      check(name .. " Anker: Kapitel Todesjournal heisst Ship's Log", byId.log == "Ship's Log", byId.log)
+    end
     if lang == "deDE" or lang == "enUS" then
       check(name .. " Einstieg hoechstens 60 Woerter", nwords(M.intro[2]) <= 60, nwords(M.intro[2]))
       for _, ch in ipairs(M.chapters) do
@@ -132,9 +169,30 @@ for _, cover in ipairs(COVERS) do
     end
     -- the book shows them: open the manual and one chapter, no error
     ns:Fire("TOGGLE_UI"); W.tick()
+    local start3 = GuildPara(UI, L)
+    local tabWord = tabLabel(W, "guild")
+    check(name .. " {guild} ist das Wort, das der vierte Reiter traegt (mit Freundesbuch)", ns.Friends ~= nil and tabWord ~= nil
+      and tabWord == L.TAB_GUILD_FRIENDS and start3:find(tabWord, 1, true) ~= nil, tostring(tabWord) .. " / " .. start3)
     UI.OpenPanel("help"); W.tick()
     local n, e = W.errors()
     check(name .. " keine Fehler", n == 0, e)
+  end
+end
+
+-- a world without the friends' book (ns.Friends gone before the book is built): {guild} is the tab's word "Guild"
+for _, cover in ipairs(COVERS) do
+  for _, lang in ipairs({ "deDE", "enUS" }) do
+    local W = J.world(lang, { db = { version = 5, settings = { welcomed = true, firstRun = "done", news171 = true,
+      ["ui.theme"] = cover, ui = { theme = cover } }, enemies = {}, deaths = {} } })
+    local ns, L = W.ns, W.ns.L
+    ns.Friends = nil
+    ns:Fire("TOGGLE_UI"); W.tick()
+    local tabWord = tabLabel(W, "guild")
+    local start3 = GuildPara(ns.UI, L)
+    check(lang .. "/" .. cover .. " ohne Freundesbuch: {guild} ist das Wort des vierten Reiters", tabWord == L.TAB_GUILD
+      and start3:find(tabWord, 1, true) ~= nil and not start3:find(L.TAB_GUILD_FRIENDS, 1, true), tostring(tabWord) .. " / " .. start3)
+    local n, e = W.errors()
+    check(lang .. "/" .. cover .. " ohne Freundesbuch: keine Fehler", n == 0, e)
   end
 end
 

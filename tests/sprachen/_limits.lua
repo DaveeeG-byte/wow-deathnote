@@ -10,7 +10,7 @@
 -- grow = true: the field grows with the text (1.2.0: tabs, word tabs); max is then the most the
 -- book's row of tabs can take without crowding the "?" and the gear button.
 -- enUS.lua carries the same number as "[max N]" in the comment of the key (checked by the test).
-return {
+local LIMITS = {
   -- cover tabs (1.2.0: width from the text, 84..150 px, Friz 11, plus "  123" from the code)
   TAB_WANTED   = { max = 16, field = "cover tab, grows 84..150 px, Friz 11, plus count", grow = true },
   TAB_UNSOLVED = { max = 16, field = "cover tab, grows 84..150 px, Friz 11, plus count", grow = true },
@@ -463,3 +463,21 @@ return {
   MANUAL_RULES_5_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
   MANUAL_LIMITS_5_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
 }
+-- 1.7.1 fixer (Seite B11): the fields of the manual as UI.lua builds them (GF.HELP_INTRO_HEAD, GF.HELP_ROW,
+-- GF.FIT_NAME26, GF.FitKeyword). Set here in one place, so keys added later get them too; the field texts written
+-- in the lines above are older and wrong where they differ (the way in is one line of 320 px, not 100 px in two;
+-- a row of the contents is Morpheus 13, then 11, not 15/13/12; a keyword breaks only at a gap between words).
+-- The limits (max) stay as they are.
+local FIELD = {
+  intro = "keyword of the manual's way in, one line over 320 px, Friz 10 (9 when longer), letter-spaced, ellipsis when cut",
+  title = "manual chapter: page head (320 px, Morpheus 26/22/19, one line, tooltip when cut) and a row of the contents"
+    .. " (232 px, Morpheus 13, then 11, then two lines, tooltip when cut)",
+  head = "keyword of a manual paragraph, 100 px, Friz: letter-spaced 10, letter-spaced 9, two lines broken only at a"
+    .. " gap between words (10, 9), plain one line (10, 9), last cut with a tooltip; never broken inside a word",
+}
+for k, v in pairs(LIMITS) do
+  if k == "MANUAL_INTRO_HEAD" then v.field = FIELD.intro
+  elseif k:match("^MANUAL_[%u_]+_TITLE$") then v.field = FIELD.title
+  elseif k:match("^MANUAL_[%u_]+_%d+_HEAD$") then v.field = FIELD.head end
+end
+return LIMITS
