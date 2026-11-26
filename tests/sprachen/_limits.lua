@@ -452,4 +452,14 @@ return {
   MANUAL_LIMITS_2_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
   MANUAL_LIMITS_3_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
   MANUAL_LIMITS_4_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
+  -- 1.7.1 fixer: keywords of the paragraphs added after the hunt
+  MANUAL_START_5_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
+  MANUAL_WANTED_6_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
+  MANUAL_ALARM_6_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
+  MANUAL_GRUDGE_5_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
+  MANUAL_MAP_5_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
+  MANUAL_HUNT_4_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
+  MANUAL_POST_5_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
+  MANUAL_RULES_5_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
+  MANUAL_LIMITS_5_HEAD = { max = 14, field = "keyword of a manual paragraph, 100 px, Friz 10 (9, then two lines), letter-spaced" },
 }

@@ -41,7 +41,7 @@ UX.FILTERS = {
   { id = "open",    key = "TAB_UNSOLVED" },
   { id = "journal", key = "TAB_DEATHLOG" },
   { id = "guild",   key = "TAB_GUILD" },
-  { id = "record",  key = "TAB_RECORD" },   -- 1.3.0: only from the first own kill on (RS.On)
+  { id = "record",  key = "TAB_RECORD" },   -- 1.3.1: there from the start while the rap sheet is kept (RS.On)
 }
 -- 1.4.0 overview: Wanted sorts by rank (default), kills on me, last seen, latest deed, name, level, class, bounty
 UX.SORTS = { "rank", "kills", "seen", "recent", "name", "level", "class", "bounty" }
@@ -92,10 +92,10 @@ UI.OV = OV                  -- for tests
 -- Keys per chapter: MANUAL_<KEY>_TITLE, MANUAL_<KEY>_<i>_HEAD and MANUAL_<KEY>_<i> for i = 1 .. n (KEY: the field key,
 -- else the id in capitals). Ids are English like the sheet ids ("alert"); the chapter Alert keeps its keys MANUAL_ALARM_*.
 UX.MANUAL = {
-  { id = "start", n = 4 }, { id = "wanted", n = 5 }, { id = "unsolved", n = 4 }, { id = "alert", key = "ALARM", n = 5 },
-  { id = "grudge", n = 4 }, { id = "log", n = 4 }, { id = "map", n = 4 }, { id = "guild", n = 4 },
-  { id = "hunt", n = 3 }, { id = "bounty", n = 4 }, { id = "record", n = 5 }, { id = "post", n = 4 },
-  { id = "rules", n = 4 }, { id = "limits", n = 4 },
+  { id = "start", n = 5 }, { id = "wanted", n = 6 }, { id = "unsolved", n = 4 }, { id = "alert", key = "ALARM", n = 6 },
+  { id = "grudge", n = 5 }, { id = "log", n = 4 }, { id = "map", n = 5 }, { id = "guild", n = 4 },
+  { id = "hunt", n = 4 }, { id = "bounty", n = 4 }, { id = "record", n = 5 }, { id = "post", n = 5 },
+  { id = "rules", n = 5 }, { id = "limits", n = 5 },
 }
 -- The version of the addon the manual was last checked against, sentence by sentence. Before raising it to a new
 -- version: bring tests/ui/manual_inventar.lua up to date, change the chapters it touches in all 21 languages, then set it.
@@ -129,9 +129,18 @@ UX.MANUAL_WORDS = {
   state_open = "STATE_OPEN", state_even = "STATE_EVEN", state_ahead = "STATE_AHEAD",
   path_r = "PATH_R", path_e = "PATH_E", path_j = "PATH_J", path_s = "PATH_S", awards = "RECORD_AWARDS",
   settled_sec = "SECTION_SETTLED", pardoned_sec = "SECTION_PARDONED",
+  -- 1.7.1 fixer: words for the paragraphs added after the hunt (revenge, notices, call links, guild tab, claims,
+  -- buttons that empty something or write into the guild chat)
+  payback = "BANNER_REVENGE", revenge_take = "ACT_REVENGE_TAKE", hunt_again = "ACT_HUNT_AGAIN",
+  banner_rank = "BANNER_RANK", banner_award = "BANNER_AWARD", banner_claim = "BANNER_CLAIM",
+  gchat = "CALL_GCHAT_LINK", map_link = "CALL_MAP", recommend = "GLOG_RECOMMEND",
+  src_all = "SRC_ALL", src_guild = "SRC_GUILD", src_friends = "SRC_FRIENDS", sync = "SYNC_BUTTON",
+  take = "ACT_TAKE", take_all = "ACT_TAKE_ALL", only_new = "SORT_ONLY_NEW", tie_loose = "ACT_TIE_LOOSE",
+  reopen = "ACT_REOPEN", earned_remove = "ACT_EARNED_REMOVE", record_clear = "RECORD_CLEAR",
+  guild_clear = "SET_GUILD_CLEAR", friends_clear = "SET_FRIENDS_CLEAR",
 }
 -- placeholders that name a chapter of the manual itself (its title, filled in turn)
-UX.MANUAL_CHAPTER_WORDS = { ch_bounty = "MANUAL_BOUNTY_TITLE" }
+UX.MANUAL_CHAPTER_WORDS = { ch_bounty = "MANUAL_BOUNTY_TITLE", ch_hunt = "MANUAL_HUNT_TITLE" }
 -- the chapter shown for a view (nil: the page last read in this session, at first the contents)
 UX.MANUAL_BY_ID = {}
 for i, c in ipairs(UX.MANUAL) do UX.MANUAL_BY_ID[c.id] = i end

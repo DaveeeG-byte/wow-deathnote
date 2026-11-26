@@ -2,7 +2,7 @@
 -- no placeholder stays open in any text of the manual, every placeholder a text uses is a known one, every word it
 -- names is a word the surface really shows (its key is read by the code of the book, not only by the manual) and
 -- equals the word of that language and cover (a cover's tab word follows by itself; {guild} is the label the fourth
--- tab really carries). German and English: at most 115 words per chapter (keywords not counted), at most 60 for the
+-- tab really carries). German and English: at most 150 words and 7 paragraphs per chapter (keywords not counted), at most 60 for the
 -- way in, at most three sentences per paragraph, every page head and row title not empty. Every other language: each
 -- chapter and the way in at most LEN_MAX times the characters of English (the length guard in 21 languages: a
 -- translation that says much more than enUS is caught here, before the page grows long), and at least LEN_MIN.
@@ -107,7 +107,7 @@ for _, cover in ipairs(COVERS) do
           n = n + nwords(p[2])
           if sentences(p[2]) > 3 then long = p[2] end
         end
-        check(name .. " Kapitel " .. ch.id .. ": hoechstens 115 Woerter", n <= 115, n)
+        check(name .. " Kapitel " .. ch.id .. ": hoechstens 150 Woerter, 7 Absaetze", n <= 150 and #ch.paras <= 7, n)
         check(name .. " Kapitel " .. ch.id .. ": Absatz hoechstens drei Saetze", long == nil, long)
       end
     end

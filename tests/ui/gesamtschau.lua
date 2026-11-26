@@ -95,14 +95,16 @@ local MAN = UI.Manual()
 check("G4 Gebrauchsanweisung: Einstieg und Inhalt mit 14 Kapiteln", W.text("Gebrauchsanweisung", true) ~= nil
   and #MAN.chapters == 14 and W.text(MAN.intro[2], true) ~= nil, #MAN.chapters)
 local function nwords(s) local n = 0; for _ in s:gmatch("%S+") do n = n + 1 end return n end
--- 1.7.1: the guard of 200 words for all paragraphs became a guard per chapter (rund 110: at most 115 words of
--- paragraphs, keywords not counted) and at most 60 words for the way in
+-- 1.7.1: the guard of 200 words for all paragraphs became a guard per chapter and at most 60 words for the way in.
+-- 1.7.1 fixer (after the hunt): a chapter has at most 7 paragraphs and 150 words of paragraphs (keywords not
+-- counted); what was missing came as new paragraphs, not as longer sentences
 check("G4 Einstieg hoechstens 60 Woerter", nwords(MAN.intro[2]) <= 60, nwords(MAN.intro[2]))
 for _, ch in ipairs(MAN.chapters) do
   check("G4 Kapitel im Inhalt sichtbar: " .. ch.title, W.text(ch.title, true) ~= nil)
   local n = 0
   for _, p in ipairs(ch.paras) do n = n + nwords(p[2]) end
-  check("G4 Kapitel hoechstens 115 Woerter: " .. ch.title, n <= 115, n)
+  check("G4 Kapitel hoechstens 150 Woerter: " .. ch.title, n <= 150, n)
+  check("G4 Kapitel hoechstens 7 Absaetze: " .. ch.title, #ch.paras <= 7, #ch.paras)
 end
 check("G4 Hover: Tooltip So geht das Buch", (function()
   G.GameTooltip._text = nil
