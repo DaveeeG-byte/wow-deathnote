@@ -12,12 +12,26 @@
 - "?" opens the chapter of the view that is open (Unsolved, Claims, Death Log, Guild & Friends, the hit list, Rap
   Sheet, House Rules, Back up book, Import book, Copy all, Wanted in its view Guilds); otherwise the page you read last
   in this session, at first the contents. Nothing about it is stored.
+- The words of buttons, tabs and sheets stand in colour in the texts, readable on the paper of all three covers.
+- "?" from a sheet (Put on hit list, Copy all, the House Rules on their sheet, Back up book, Import book, the guild
+  chronicle) and closing the manual again leads back into that sheet; what you typed stays (the reason, the pasted
+  text). Another tab or button drops the way back.
+- Only turning pages yourself (a row of the contents, "Next", "Contents") sets the page "?" opens later; a chapter
+  opened by "?" from a view is not remembered.
+- A keyword of a paragraph never breaks inside a word.
 - One chat line after the update says what is new.
+
+### Fixed
+- The red ribbon of the guild chronicle no longer stands over an open sheet of the fourth tab (Put on hit list after
+  the way back from the manual, Copy all right after opening it); a click on it laid the chronicle over the sheet.
 
 ### For contributors
 - Every visible change of the book brings the manual along in the same update: `tests/ui/manual_inventar.lua` lists
   every function with its chapter, and `tests/ui/ma171_stand.lua` turns red when the version in the TOC differs from
-  `UI.MANUAL_CHECKED` in `UI.lua`. The guard of 200 words for the whole manual became one per chapter (German and
+  `UI.MANUAL_CHECKED` in `UI.lua`, or when the inventory has neither a line with that version nor an entry
+  `unchanged["<version>"] = "nothing the player sees changes, because <a reason in words>"`; it only reminds, it
+  cannot see whether anybody read the chapters. Every number of a chapter is checked against the value the code uses
+  (`tests/ui/ma171_wahrheit.lua`). The guard of 200 words for the whole manual became one per chapter (German and
   English at most 7 paragraphs and 150 words, at most three sentences per paragraph; every other language within 0.25
   to 1.35 times the English length). Every line of the inventory names the paragraph that explains it, and a test
   checks that the paragraph belongs to that chapter. German sentences put no article in front of a word that a cover

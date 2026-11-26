@@ -555,14 +555,20 @@ Hit list, Bounty, Rap Sheet, Post and back up, House Rules, Limits and commands.
 the contents, one row per chapter; a chapter has "Contents" and "Next" in its foot. When a view with a chapter of its
 own is open (the tabs Unsolved, Death Log, Guild & Friends, Rap Sheet, the view Claims, the House Rules, Back up
 book and Import book, the sheets Put on hit list and Copy all, or Wanted in its view Guilds), "?" opens that chapter;
-otherwise the page you read last in this session (at first the contents). Nothing about it is stored. The words of the surface in
-the texts (tabs, buttons, sheets, switches) come from the language table, so they follow the language and the cover.
+otherwise the page you read last in this session (at first the contents); only turning pages yourself sets that page,
+a chapter opened by "?" from a view does not. Nothing about it is stored. Opened from a sheet (Put on hit list, Copy
+all, the House Rules on their sheet, Back up book, Import book, the guild chronicle), closing the manual leads back
+into that sheet, with what you typed. The words of the surface in the texts (tabs, buttons, sheets, switches) come
+from the language table, so they follow the language and the cover, and stand in colour.
 `/dn help` stays the list of commands.
 
 For contributors: every visible change of the book brings the manual along in the same update (the chapter's texts
 in all 21 languages, the line in `tests/ui/manual_inventar.lua` with the key of the paragraph that explains it, then
-`UI.MANUAL_CHECKED` in `UI.lua`);
-`tests/ui/ma171_stand.lua` turns red on a new version in the TOC until that is done. How the texts are built:
+`UI.MANUAL_CHECKED` in `UI.lua`).
+`tests/ui/ma171_stand.lua` turns red when the version in the TOC differs from `UI.MANUAL_CHECKED`, or when the
+inventory has neither a line with that version nor an entry
+`unchanged["<version>"] = "nothing the player sees changes, because <a reason in words>"`. It only reminds: it cannot
+see whether anybody read the chapters against the code. How the texts are built:
 `TRANSLATING.md`, section "The manual".
 
 ## House Rules

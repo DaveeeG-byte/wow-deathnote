@@ -146,6 +146,18 @@ do
     end
   end
   check("_limits: Titel und Stichwoerter beschrieben wie im Code", #bad == 0, bad[1])
+  -- 1.7.1 fixer 2 (JN-7): the comments translators read in enUS.lua say the same as the field of _limits.lua
+  local h = assert(io.open(J.WT .. "/DeathNote/Locales/enUS.lua", "r")); local en = h:read("*a"); h:close()
+  local off, n = {}, 0
+  for k, v in pairs(LIM) do
+    if k == "MANUAL_INTRO_HEAD" or k:match("^MANUAL_[%u_]+_TITLE$") or k:match("^MANUAL_[%u_]+_%d+_HEAD$") then
+      n = n + 1
+      local note = en:match("\nL%." .. k .. '%s*=%s*".-"%s*%-%-%s*([^\n]*)')
+      if note ~= ("[max %d] %s"):format(v.max, v.field) then off[#off + 1] = k .. ": " .. tostring(note) end
+    end
+  end
+  table.sort(off)
+  check("enUS: Kommentar jedes Titels und Stichworts gleich dem Feld in _limits (" .. n .. ")", n > 80 and #off == 0, off[1])
 end
 print(("      Leiter: gesperrt einzeilig %d, zwei Zeilen an der Wortluecke %d, ungesperrt %d, geschnitten mit Tooltip %d")
   :format(steps.spaced1, steps.spaced2, steps.plain, steps.cut))

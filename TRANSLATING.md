@@ -103,7 +103,7 @@ nine keys `MANUAL_<WORD>` / `MANUAL_<WORD>_HEAD` of 1.3.0.
   never typed out: write `{rules}`, `{claims}`, `{keep}` and so on, the list is `UX.MANUAL_WORDS` in `UI.lua` (key of
   the word in the language table). They fill from your own table, so the text names exactly the word the surface
   shows, also under another cover. `{guild}` is the label the fourth tab really carries (Guild or Guild & Friends),
-  `{ch_bounty}` the title of the chapter Bounty. Keep every placeholder of the English text, each where your sentence
+  `{ch_bounty}` and `{ch_hunt}` the titles of the chapters Bounty and Hit list. Keep every placeholder of the English text, each where your sentence
   needs it; an unknown one turns the test red.
 - **Length.** A paragraph has at most three short sentences; German and English at most 7 paragraphs and 150 words
   per chapter and 60 for the way in. Your language stays between 0.25 and 1.35 times the characters of the English chapter (Chinese and
@@ -111,7 +111,10 @@ nine keys `MANUAL_<WORD>` / `MANUAL_<WORD>_HEAD` of 1.3.0.
   not the README.
 - **Guards.** The inventory `tests/ui/manual_inventar.lua` names every function with its chapter; `UI.MANUAL_CHECKED`
   in `UI.lua` is the version the manual was last checked against. Both are kept by whoever changes the book, not by
-  translators (`tests/ui/ma171_stand.lua` turns red on a new version until the manual is brought along).
+  translators. `tests/ui/ma171_stand.lua` turns red when the TOC names another version than `UI.MANUAL_CHECKED`, or
+  when the inventory has neither a line with that version nor an entry
+  `unchanged["<version>"] = "nothing the player sees changes, because <a reason in words>"`; it only reminds, it
+  cannot see whether anybody read the chapters.
 
 ## Which test checks what
 
