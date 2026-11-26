@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.7.1 (unreleased)
+## 1.7.1 (2026-11-26)
 
 ### Changed
 - **The manual ("?") explains the whole book now.** It is a reference in 14 chapters instead of nine short paragraphs
